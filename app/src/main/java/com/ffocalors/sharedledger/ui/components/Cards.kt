@@ -1,6 +1,7 @@
 package com.ffocalors.sharedledger.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +13,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.FlightTakeoff
+import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.Restaurant
 import androidx.compose.material.icons.rounded.WarningAmber
 import androidx.compose.material3.Card
@@ -25,15 +29,27 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.ffocalors.sharedledger.ui.theme.DividerSubtle
+import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.SageGreenContainer
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
+import com.ffocalors.sharedledger.ui.theme.SurfaceWarmHigh
+import com.ffocalors.sharedledger.ui.theme.SurfaceWarmHighest
+import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLowest
 import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
 import com.ffocalors.sharedledger.ui.theme.sharedLedgerColors
+import com.ffocalors.sharedledger.ui.util.MoneyFormatter
 import java.math.BigDecimal
 
 @Composable
@@ -48,56 +64,175 @@ fun SettlementSummaryCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = SharedLedgerRadius.ExtraLarge,
-        colors = CardDefaults.cardColors(
-            containerColor = SageGreenContainer.copy(alpha = 0.18f),
-        ),
+        colors = CardDefaults.cardColors(containerColor = SurfaceWarmLowest),
         border = BorderStroke(
             SharedLedgerDimens.OutlineWidth,
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f),
+            SurfaceWarmHighest,
         ),
         elevation = CardDefaults.cardElevation(SharedLedgerElevation.Card),
     ) {
-        Column(
-            modifier = Modifier.padding(SharedLedgerSpacing.Large),
-            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(SharedLedgerRadius.ExtraLarge)
+                .drawBehind {
+                    val decorativeDiameter = SharedLedgerDimens.SummaryDecorativeSize.toPx()
+                    val decorativeOffset = SharedLedgerDimens.SummaryDecorativeOffset.toPx()
+                    val gradientCenter = Offset(
+                        x = size.width - decorativeDiameter / 2f + decorativeOffset,
+                        y = decorativeDiameter / 2f - decorativeOffset,
+                    )
+                    drawRect(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                IconContainerSage.copy(alpha = 0.3f),
+                                Color.Transparent,
+                            ),
+                            center = gradientCenter,
+                            radius = decorativeDiameter / 2f + SharedLedgerSpacing.Large.toPx(),
+                        ),
+                    )
+                }
         ) {
-            Text(
-                text = title,
-                style = SharedLedgerTextStyles.Label,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            AmountDisplay(
-                amount = primaryAmount,
-                currencyCode = currencyCode,
-                size = AmountSize.Large,
-                emphasis = AmountEmphasis.Standard,
-            )
-            if (statusContent != null) {
-                statusContent()
-            }
-            if (statistics.isNotEmpty()) {
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
-                ) {
-                    statistics.forEach { statistic ->
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = statistic.label,
-                                style = SharedLedgerTextStyles.Label,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            Text(
-                                text = statistic.value,
-                                style = SharedLedgerTextStyles.Body,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
+            Column(modifier = Modifier.padding(SharedLedgerSpacing.Large)) {
+                Text(
+                    text = title,
+                    style = SharedLedgerTextStyles.SummaryLabel,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                SummaryAmount(
+                    amount = primaryAmount,
+                    currencyCode = currencyCode,
+                    modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
+                )
+                if (statusContent != null) {
+                    Box(modifier = Modifier.padding(top = SharedLedgerSpacing.Medium)) {
+                        statusContent()
+                    }
+                }
+                if (statistics.isNotEmpty()) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(top = SharedLedgerSpacing.Large),
+                        color = DividerSubtle.copy(alpha = 0.6f),
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = SharedLedgerSpacing.Medium),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        statistics.take(3).forEachIndexed { index, statistic ->
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                horizontalAlignment = when (index) {
+                                    0 -> Alignment.Start
+                                    1 -> Alignment.CenterHorizontally
+                                    else -> Alignment.End
+                                },
+                            ) {
+                                Text(
+                                    text = statistic.label,
+                                    style = SharedLedgerTextStyles.SummaryLabel,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                Text(
+                                    text = statistic.value,
+                                    style = SharedLedgerTextStyles.SummaryStatValue,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                            }
                         }
                     }
                 }
             }
         }
+    }
+}
+
+/** Shared payable-status card used by both activity detail ledgers. */
+@Composable
+fun PaymentStatusCard(
+    title: String,
+    amount: BigDecimal,
+    modifier: Modifier = Modifier,
+    currencyCode: String = "CNY",
+    containerColor: Color? = null,
+    contentColor: Color? = null,
+    iconTint: Color? = null,
+    onClick: () -> Unit = {},
+) {
+    val resolvedContainer = containerColor ?: MaterialTheme.colorScheme.secondaryContainer
+    val resolvedContent = contentColor ?: MaterialTheme.colorScheme.onSecondaryContainer
+    val resolvedIconTint = iconTint ?: MaterialTheme.colorScheme.secondary
+    Card(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        shape = SharedLedgerRadius.Large,
+        colors = CardDefaults.cardColors(containerColor = resolvedContainer),
+        border = BorderStroke(
+            SharedLedgerDimens.OutlineWidth,
+            MaterialTheme.colorScheme.secondary.copy(alpha = 0.25f),
+        ),
+        elevation = CardDefaults.cardElevation(SharedLedgerElevation.Card),
+    ) {
+        Row(
+            modifier = Modifier.padding(SharedLedgerSpacing.Medium),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+        ) {
+            Surface(
+                modifier = Modifier.size(SharedLedgerDimens.AvatarLarge),
+                shape = SharedLedgerRadius.Full,
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = SharedLedgerElevation.Card,
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Rounded.Payments,
+                        contentDescription = null,
+                        tint = resolvedIconTint,
+                    )
+                }
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = title, style = SharedLedgerTextStyles.BodySecondary, color = resolvedContent)
+                AmountDisplay(
+                    amount = amount,
+                    currencyCode = currencyCode,
+                    size = AmountSize.SubActivity,
+                    emphasis = AmountEmphasis.Standard,
+                    modifier = Modifier.padding(top = SharedLedgerSpacing.XSmall / 2),
+                )
+            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                contentDescription = "查看待付款",
+                modifier = Modifier.size(SharedLedgerDimens.IconSmall),
+                tint = resolvedContent,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SummaryAmount(
+    amount: BigDecimal,
+    currencyCode: String,
+    modifier: Modifier = Modifier,
+) {
+    val formatted = MoneyFormatter.format(amount, currencyCode)
+    val symbolLength = formatted.indexOfFirst { it.isDigit() }.takeIf { it >= 0 } ?: 0
+    Row(modifier = modifier, verticalAlignment = Alignment.Bottom) {
+        Text(
+            text = formatted.take(symbolLength),
+            style = SharedLedgerTextStyles.SummaryCurrency,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Text(
+            text = formatted.drop(symbolLength),
+            style = SharedLedgerTextStyles.SummaryAmount,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
     }
 }
 
@@ -200,6 +335,138 @@ fun ActivityCard(
                 )
                 ParticipantAvatarGroup(activity.participants)
             }
+        }
+    }
+}
+
+@Composable
+fun SubActivityCard(
+    activity: SubActivityUiModel,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        shape = SharedLedgerRadius.Large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(
+            SharedLedgerDimens.OutlineWidth,
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+        ),
+        elevation = CardDefaults.cardElevation(SharedLedgerElevation.Card),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(SharedLedgerSpacing.Medium),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+        ) {
+            Surface(
+                modifier = Modifier.size(SharedLedgerDimens.IconContainerLarge),
+                shape = SharedLedgerRadius.Full,
+                color = activity.iconContainerColor.takeUnless { it == Color.Unspecified }
+                    ?: IconContainerSage,
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = activity.icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(SharedLedgerDimens.IconMedium),
+                        tint = activity.iconTint.takeUnless { it == Color.Unspecified }
+                            ?: MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
+            ) {
+                Text(
+                    text = activity.name,
+                    style = SharedLedgerTextStyles.Body,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+                ) {
+                    Surface(
+                        shape = SharedLedgerRadius.Full,
+                        color = SurfaceWarmHigh,
+                    ) {
+                        Text(
+                            text = "${activity.participantCount}人参与",
+                            modifier = Modifier.padding(
+                                horizontal = SharedLedgerSpacing.Small,
+                                vertical = SharedLedgerSpacing.XSmall / 2,
+                            ),
+                            style = SharedLedgerTextStyles.ActionLabel,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Text(
+                        text = activity.updatedAt,
+                        style = SharedLedgerTextStyles.ActionLabel,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
+                }
+            }
+            AmountDisplay(
+                amount = activity.amount,
+                currencyCode = activity.currencyCode,
+                size = AmountSize.SubActivity,
+                fractionDigitsOverride = activity.fractionDigitsOverride,
+            )
+        }
+    }
+}
+
+@Composable
+fun AddSubActivityButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .drawWithContent {
+                drawContent()
+                drawRoundRect(
+                    color = borderColor,
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(
+                        SharedLedgerDimens.AddSubActivityCornerRadius.toPx(),
+                    ),
+                    style = androidx.compose.ui.graphics.drawscope.Stroke(
+                        width = SharedLedgerDimens.AddSubActivityBorderWidth.toPx(),
+                        pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(
+                            floatArrayOf(
+                                SharedLedgerSpacing.Small.toPx(),
+                                SharedLedgerSpacing.Small.toPx(),
+                            ),
+                        ),
+                    ),
+                )
+            },
+        shape = SharedLedgerRadius.Large,
+        color = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.primary,
+    ) {
+        Row(
+            modifier = Modifier.padding(vertical = SharedLedgerSpacing.Medium),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Add,
+                contentDescription = null,
+                modifier = Modifier.size(SharedLedgerDimens.IconMedium),
+            )
+            Spacer(Modifier.width(SharedLedgerSpacing.Small))
+            Text(text = "添加子活动", style = SharedLedgerTextStyles.BodySecondary)
         }
     }
 }

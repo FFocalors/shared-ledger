@@ -19,7 +19,7 @@ object SharedLedgerTextStyles {
         fontFamily = SharedLedgerFontFamily,
         fontSize = 18.sp,
         lineHeight = 24.sp,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Medium,
     )
     val CardTitle = TextStyle(
         fontFamily = SharedLedgerFontFamily,
@@ -45,6 +45,47 @@ object SharedLedgerTextStyles {
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp,
         fontWeight = FontWeight.Medium,
+    )
+    val SummaryLabel = Label
+    val SummaryAmount = TextStyle(
+        fontFamily = SharedLedgerFontFamily,
+        fontSize = 40.sp,
+        lineHeight = 48.sp,
+        letterSpacing = (-1).sp,
+        fontWeight = FontWeight.SemiBold,
+    )
+    val SummaryCurrency = TextStyle(
+        fontFamily = SharedLedgerFontFamily,
+        fontSize = 24.sp,
+        lineHeight = 30.sp,
+        fontWeight = FontWeight.SemiBold,
+    )
+    val SubActivityAmount = TextStyle(
+        fontFamily = SharedLedgerFontFamily,
+        fontSize = 18.sp,
+        lineHeight = 24.sp,
+        fontWeight = FontWeight.Medium,
+    )
+    val SummaryStatValue = TextStyle(
+        fontFamily = SharedLedgerFontFamily,
+        fontSize = 16.sp,
+        lineHeight = 24.sp,
+        fontWeight = FontWeight.Medium,
+    )
+    val CardMeta = BodySecondary
+    val ActionLabel = TextStyle(
+        fontFamily = SharedLedgerFontFamily,
+        fontSize = 11.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.5.sp,
+        fontWeight = FontWeight.Medium,
+    )
+    val BottomActionLabel = Label
+    val BottomActionEmphasizedLabel = TextStyle(
+        fontFamily = SharedLedgerFontFamily,
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
+        fontWeight = FontWeight.SemiBold,
     )
     val AmountLarge = TextStyle(
         fontFamily = SharedLedgerFontFamily,

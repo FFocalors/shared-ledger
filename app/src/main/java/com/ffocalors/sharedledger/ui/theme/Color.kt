@@ -24,6 +24,25 @@ val AppOutlineVariant = Color(0xFFC5C8BB)
 val ErrorRed = Color(0xFFBA1A1A)
 val ErrorContainer = Color(0xFFFFDAD6)
 
+// Semantic surfaces from the SharedLedger UI Concept Stitch design system.
+val SurfaceWarm = Color(0xFFFBF9F8)
+val SurfaceWarmLowest = Color(0xFFFFFFFF)
+val SurfaceWarmLow = Color(0xFFF5F3F3)
+val SurfaceWarmHigh = Color(0xFFEAE8E7)
+val SurfaceWarmHighest = Color(0xFFE4E2E2)
+val IconContainerSage = Color(0xFFD7E9BA)
+val IconContainerOrange = Color(0xFFFFDDB5)
+val IconContainerNeutral = Color(0xFFE9E2D4)
+val IconContainerNeutralTint = Color(0xFF575449)
+val IconContainerTertiary = Color(0xFFCEC8BA)
+val IconTintSage = Color(0xFF121F03)
+val IconTintOrange = Color(0xFF2A1800)
+val IconTintNeutral = Color(0xFF1E1B13)
+val SubActivityBreakfastContainer = Color(0xFFFED39C)
+val TextPrimary = Color(0xFF1B1C1C)
+val TextSecondary = Color(0xFF45483E)
+val DividerSubtle = Color(0xFFC5C8BB)
+
 @Immutable
 data class SharedLedgerSemanticColors(
     val success: Color,

@@ -34,12 +34,14 @@ fun AmountDisplay(
     currencyCode: String = "CNY",
     size: AmountSize = AmountSize.Medium,
     emphasis: AmountEmphasis = AmountEmphasis.Standard,
+    fractionDigitsOverride: Int? = null,
 ) {
     val semantic = MaterialTheme.sharedLedgerColors
     val style = when (size) {
         AmountSize.Large -> SharedLedgerTextStyles.AmountLarge
         AmountSize.Medium -> SharedLedgerTextStyles.AmountMedium
         AmountSize.Small -> SharedLedgerTextStyles.AmountSmall
+        AmountSize.SubActivity -> SharedLedgerTextStyles.SubActivityAmount
     }
     val color = when (emphasis) {
         AmountEmphasis.Primary -> MaterialTheme.colorScheme.primary
@@ -48,7 +50,7 @@ fun AmountDisplay(
         AmountEmphasis.Warning -> semantic.warning
     }
     Text(
-        text = MoneyFormatter.format(amount, currencyCode),
+        text = MoneyFormatter.format(amount, currencyCode, fractionDigitsOverride),
         modifier = modifier,
         style = style,
         color = color,

@@ -23,6 +23,7 @@ enum class AmountSize {
     Large,
     Medium,
     Small,
+    SubActivity,
 }
 
 enum class AmountEmphasis {
@@ -59,6 +60,19 @@ data class ActivityCardUiModel(
 )
 
 @Immutable
+data class SubActivityUiModel(
+    val name: String,
+    val amount: BigDecimal,
+    val participantCount: Int,
+    val updatedAt: String,
+    val icon: ImageVector,
+    val currencyCode: String = "CNY",
+    val iconContainerColor: Color = Color.Unspecified,
+    val iconTint: Color = Color.Unspecified,
+    val fractionDigitsOverride: Int? = null,
+)
+
+@Immutable
 data class ExpenseCardUiModel(
     val name: String,
     val amount: BigDecimal,
@@ -80,4 +94,13 @@ data class BottomActionItem(
     val label: String,
     val icon: ImageVector,
     val onClick: () -> Unit,
+)
+
+@Immutable
+data class QuickActionItem(
+    val label: String,
+    val icon: ImageVector,
+    val onClick: () -> Unit = {},
+    val iconContainerColor: Color = Color.Unspecified,
+    val iconTint: Color = Color.Unspecified,
 )

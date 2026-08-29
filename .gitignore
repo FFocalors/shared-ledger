@@ -17,6 +17,7 @@ local.properties
 # Local IDE and generated build output
 .idea/
 **/build/
+/.kotlin/
 
 # Local environment and signing secrets
 .env
