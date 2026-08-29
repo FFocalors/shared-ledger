@@ -1,0 +1,29 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Local IDE and generated build output
+.idea/
+**/build/
+
+# Local environment and signing secrets
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+
+# Supabase CLI local state
+supabase/.temp/
