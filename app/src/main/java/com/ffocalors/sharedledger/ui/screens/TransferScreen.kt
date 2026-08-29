@@ -2,9 +2,9 @@ package com.ffocalors.sharedledger.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,12 +12,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Person
@@ -103,7 +104,7 @@ fun TransferScreen(
                 title = title,
                 showBackButton = true,
                 onBackClick = onBack,
-                modifier = Modifier.statusBarsPadding(),
+                containerColor = MaterialTheme.colorScheme.background,
             )
         },
     ) { innerPadding ->
@@ -159,80 +160,89 @@ private fun ParticipantPicker(
     onSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
-    ) {
-        participants.forEachIndexed { index, item ->
-            val selected = index == selectedIndex
-            Surface(
-                modifier = Modifier
-                    .width(160.dp)
-                    .clickable { onSelected(index) },
-                shape = SharedLedgerRadius.ExtraLarge,
-                color = if (selected) {
-                    MaterialTheme.colorScheme.primaryContainer
-                } else {
-                    SurfaceWarmLow
-                },
-                contentColor = if (selected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                },
-                border = BorderStroke(
-                    SharedLedgerDimens.OutlineWidth,
-                    if (selected) Color.Transparent else MaterialTheme.colorScheme.outlineVariant,
-                ),
-                shadowElevation = if (selected) SharedLedgerElevation.Card else 0.dp,
-            ) {
-                Column(
-                    modifier = Modifier.padding(SharedLedgerSpacing.Medium),
-                    verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        // The picker is already inside the page's horizontal padding. Its maxWidth is therefore
+        // the actual available content width; do not subtract page padding a second time.
+        val itemSpacing = SharedLedgerSpacing.Medium
+        val twoCardWidth = (maxWidth - itemSpacing) / 2
+        val cardWidth = if (participants.size >= 2) twoCardWidth else maxWidth
+
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(itemSpacing),
+        ) {
+            itemsIndexed(
+                items = participants,
+                key = { _, item -> item.participant.name },
+            ) { index, item ->
+                val selected = index == selectedIndex
+                Surface(
+                    modifier = Modifier
+                        .width(cardWidth)
+                        .clickable { onSelected(index) },
+                    shape = SharedLedgerRadius.ExtraLarge,
+                    color = if (selected) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        SurfaceWarmLow
+                    },
+                    contentColor = if (selected) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+                    border = BorderStroke(
+                        SharedLedgerDimens.OutlineWidth,
+                        if (selected) Color.Transparent else MaterialTheme.colorScheme.outlineVariant,
+                    ),
+                    shadowElevation = if (selected) SharedLedgerElevation.Card else 0.dp,
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
+                    Column(
+                        modifier = Modifier.padding(SharedLedgerSpacing.Medium),
+                        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
                     ) {
-                        ParticipantAvatar(
-                            name = item.participant.name,
-                            backgroundColor = item.participant.backgroundColor,
-                            size = SharedLedgerDimens.AvatarLarge,
-                        )
-                        if (selected) {
-                            Icon(
-                                imageVector = Icons.Rounded.CheckCircle,
-                                contentDescription = "已选择${item.participant.name}",
-                                modifier = Modifier.width(SharedLedgerDimens.IconMedium),
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            ParticipantAvatar(
+                                name = item.participant.name,
+                                backgroundColor = item.participant.backgroundColor,
+                                size = SharedLedgerDimens.AvatarLarge,
                             )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Rounded.Person,
-                                contentDescription = null,
-                                modifier = Modifier.width(SharedLedgerDimens.IconMedium),
-                                tint = MaterialTheme.colorScheme.outline,
-                            )
+                            if (selected) {
+                                Icon(
+                                    imageVector = Icons.Rounded.CheckCircle,
+                                    contentDescription = "已选择${item.participant.name}",
+                                    modifier = Modifier.width(SharedLedgerDimens.IconMedium),
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Rounded.Person,
+                                    contentDescription = null,
+                                    modifier = Modifier.width(SharedLedgerDimens.IconMedium),
+                                    tint = MaterialTheme.colorScheme.outline,
+                                )
+                            }
                         }
+                        Text(
+                            text = item.participant.name,
+                            style = SharedLedgerTextStyles.Body,
+                            color = if (selected) {
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                        )
+                        AmountDisplay(
+                            amount = item.amount,
+                            currencyCode = "CNY",
+                            fractionDigitsOverride = 1,
+                            size = AmountSize.SubActivity,
+                            emphasis = AmountEmphasis.Standard,
+                        )
                     }
-                    Text(
-                        text = item.participant.name,
-                        style = SharedLedgerTextStyles.Body,
-                        color = if (selected) {
-                            MaterialTheme.colorScheme.onPrimaryContainer
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        },
-                    )
-                    AmountDisplay(
-                        amount = item.amount,
-                        currencyCode = "CNY",
-                        fractionDigitsOverride = 1,
-                        size = AmountSize.SubActivity,
-                        emphasis = AmountEmphasis.Standard,
-                    )
                 }
             }
         }

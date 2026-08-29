@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -99,7 +98,7 @@ fun LedgerUnitScreen(
                 title = "门票",
                 showBackButton = true,
                 onBackClick = onBack,
-                modifier = Modifier.statusBarsPadding(),
+                containerColor = Cream,
                 businessAction = {
                     Icon(
                         imageVector = Icons.Rounded.Group,

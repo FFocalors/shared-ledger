@@ -10,6 +10,7 @@ import androidx.navigation.navArgument
 import com.ffocalors.sharedledger.ui.components.ActivityKind
 import com.ffocalors.sharedledger.ui.demo.DemoRouteIds
 import com.ffocalors.sharedledger.ui.screens.CreateActivityScreen
+import com.ffocalors.sharedledger.ui.screens.CreateSubActivityScreen
 import com.ffocalors.sharedledger.ui.screens.FinalSettlementScreen
 import com.ffocalors.sharedledger.ui.screens.HomeScreen
 import com.ffocalors.sharedledger.ui.screens.LargeActivityScreen
@@ -82,6 +83,9 @@ fun SharedLedgerApp(modifier: Modifier = Modifier) {
             LargeActivityScreen(
                 onBack = { navController.navigateUp() },
                 onSubActivityClick = { id -> navController.navigate(SharedLedgerRoutes.ledgerUnit(id)) },
+                onAddSubActivity = {
+                    navController.navigate(SharedLedgerRoutes.createSubActivity(activityId))
+                },
                 onFinalSettlement = {
                     navController.navigate(SharedLedgerRoutes.finalSettlement(activityId))
                 },
@@ -91,6 +95,16 @@ fun SharedLedgerApp(modifier: Modifier = Modifier) {
                 onReceive = {
                     navController.navigate(SharedLedgerRoutes.transfer(activityId, TransferRouteMode.RECEIVE))
                 },
+            )
+        }
+        composable(
+            route = SharedLedgerRoutes.CREATE_SUB_ACTIVITY_PATTERN,
+            arguments = listOf(navArgument("activityId") { type = NavType.StringType }),
+        ) {
+            CreateSubActivityScreen(
+                parentActivityName = "日本旅行",
+                onBack = { navController.navigateUp() },
+                onCreate = { navController.navigateUp() },
             )
         }
         composable(

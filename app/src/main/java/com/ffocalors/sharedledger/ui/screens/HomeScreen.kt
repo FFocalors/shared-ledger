@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -47,6 +46,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -102,7 +104,7 @@ fun HomeScreen(
             SharedLedgerTopBar(
                 title = "SharedLedger",
                 avatarName = "我",
-                modifier = Modifier.statusBarsPadding(),
+                containerColor = AppBackground,
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -242,7 +244,7 @@ private fun HomeTabs(
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(28.dp),
+            horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XLarge),
         ) {
             HomeTabButton(
                 label = "进行中",
@@ -265,10 +267,21 @@ private fun HomeTabButton(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
+    val indicatorColor = MaterialTheme.colorScheme.primary
     Column(
         modifier = Modifier
             .clickable(onClick = onClick)
-            .padding(top = 1.dp),
+            .padding(top = 1.dp)
+            .drawBehind {
+                if (selected) {
+                    val indicatorHeight = (SharedLedgerSpacing.XSmall / 2).toPx()
+                    drawRect(
+                        color = indicatorColor,
+                        topLeft = Offset(0f, size.height - indicatorHeight),
+                        size = Size(size.width, indicatorHeight),
+                    )
+                }
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
@@ -279,20 +292,10 @@ private fun HomeTabButton(
             } else {
                 MaterialTheme.colorScheme.onSurfaceVariant
             },
+            maxLines = 1,
+            softWrap = false,
         )
         Spacer(Modifier.height(8.dp))
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(2.dp),
-        ) {
-            if (selected) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.primary,
-                ) {}
-            }
-        }
     }
 }
 

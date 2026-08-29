@@ -11,6 +11,8 @@ class RoutesTest {
         assertEquals("create-activity", SharedLedgerRoutes.CREATE_ACTIVITY)
         assertEquals("normal-activity/demo-normal", SharedLedgerRoutes.normalActivity(DemoRouteIds.NORMAL_ACTIVITY))
         assertEquals("large-activity/demo-large", SharedLedgerRoutes.largeActivity(DemoRouteIds.LARGE_ACTIVITY))
+        assertEquals("create-sub-activity/{activityId}", SharedLedgerRoutes.CREATE_SUB_ACTIVITY_PATTERN)
+        assertEquals("create-sub-activity/demo-large", SharedLedgerRoutes.createSubActivity(DemoRouteIds.LARGE_ACTIVITY))
         assertEquals("ledger-unit/demo-ticket", SharedLedgerRoutes.ledgerUnit(DemoRouteIds.TICKET_LEDGER))
         assertEquals("new-expense/demo-ticket", SharedLedgerRoutes.newExpense(DemoRouteIds.TICKET_LEDGER))
         assertEquals("final-settlement/demo-large", SharedLedgerRoutes.finalSettlement(DemoRouteIds.LARGE_ACTIVITY))

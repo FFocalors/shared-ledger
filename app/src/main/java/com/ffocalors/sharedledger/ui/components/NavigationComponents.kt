@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.MoreVert
@@ -45,6 +46,7 @@ import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLow
 fun SharedLedgerTopBar(
     title: String,
     modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.background,
     showBackButton: Boolean = false,
     avatarName: String = "我",
     onBackClick: () -> Unit = {},
@@ -53,10 +55,12 @@ fun SharedLedgerTopBar(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.background,
+        color = containerColor,
     ) {
         Box(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding(),
             contentAlignment = Alignment.Center,
         ) {
             Row(

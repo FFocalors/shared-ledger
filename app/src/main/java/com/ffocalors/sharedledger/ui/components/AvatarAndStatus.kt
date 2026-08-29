@@ -1,10 +1,11 @@
 package com.ffocalors.sharedledger.ui.components
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -71,8 +72,8 @@ fun ParticipantAvatarGroup(
     maxVisible: Int = 3,
     avatarSize: Dp = SharedLedgerDimens.AvatarSmall,
 ) {
-    val visible = participants.take(maxVisible)
-    val remaining = (participants.size - visible.size).coerceAtLeast(0)
+    val visible = participants.take(maxVisible.coerceAtLeast(0))
+    val overflowCount = (participants.size - visible.size).coerceAtLeast(0)
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(SharedLedgerDimens.AvatarOverlap),
@@ -85,19 +86,28 @@ fun ParticipantAvatarGroup(
                 size = avatarSize,
             )
         }
-        if (remaining > 0) {
-            Box(
+        if (overflowCount > 0) {
+            Surface(
                 modifier = Modifier
-                    .size(avatarSize)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center,
+                    .height(avatarSize)
+                    .defaultMinSize(minWidth = avatarSize),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surfaceVariant,
             ) {
-                Text(
-                    text = "+$remaining",
-                    style = SharedLedgerTextStyles.Label,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Box(
+                    modifier = Modifier
+                        .height(avatarSize)
+                        .padding(horizontal = SharedLedgerSpacing.XSmall),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "+$overflowCount",
+                        style = SharedLedgerTextStyles.Label,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                }
             }
         }
     }

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -46,7 +45,6 @@ import com.ffocalors.sharedledger.ui.components.AmountEmphasis
 import com.ffocalors.sharedledger.ui.components.AmountSize
 import com.ffocalors.sharedledger.ui.components.BottomActionItem
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatarGroup
-import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.QuickActionItem
 import com.ffocalors.sharedledger.ui.components.SettlementStatistic
 import com.ffocalors.sharedledger.ui.components.SettlementSummaryCard
@@ -56,6 +54,7 @@ import com.ffocalors.sharedledger.ui.components.SharedLedgerSecondaryButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.components.SubActivityCard
 import com.ffocalors.sharedledger.ui.components.SubActivityUiModel
+import com.ffocalors.sharedledger.ui.demo.DemoData
 import com.ffocalors.sharedledger.ui.theme.IconContainerNeutralTint
 import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.IconContainerTertiary
@@ -73,14 +72,7 @@ private const val BreakfastId = "demo-breakfast"
 private const val TicketId = "demo-ticket"
 private const val HotelId = "demo-hotel"
 
-private val LargeActivityParticipants = listOf(
-    ParticipantUiModel("林"),
-    ParticipantUiModel("周"),
-    ParticipantUiModel("陈"),
-    ParticipantUiModel("赵"),
-    ParticipantUiModel("王"),
-    ParticipantUiModel("李"),
-)
+private val LargeActivityParticipants = DemoData.japanTravel.participants
 
 private val LargeActivitySubActivities = listOf(
     SubActivityUiModel(
@@ -124,6 +116,7 @@ fun LargeActivityScreen(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
     onSubActivityClick: (id: String) -> Unit = {},
+    onAddSubActivity: () -> Unit = {},
     onFinalSettlement: () -> Unit = {},
     onTransfer: () -> Unit = {},
     onReceive: () -> Unit = {},
@@ -140,7 +133,7 @@ fun LargeActivityScreen(
                 title = "日本旅行",
                 showBackButton = true,
                 onBackClick = onBack,
-                modifier = Modifier.statusBarsPadding(),
+                containerColor = MaterialTheme.colorScheme.background,
                 businessAction = {
                     ParticipantAvatarGroup(
                         participants = LargeActivityParticipants,
@@ -249,7 +242,7 @@ fun LargeActivityScreen(
                 }
                 item(key = "add-sub-activity") {
                     AddSubActivityButton(
-                        onClick = {},
+                        onClick = onAddSubActivity,
                         modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
                     )
                 }

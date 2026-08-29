@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -103,7 +102,7 @@ fun NormalActivityScreen(
                 title = "周末聚餐",
                 showBackButton = true,
                 onBackClick = onBack,
-                modifier = Modifier.statusBarsPadding(),
+                containerColor = MaterialTheme.colorScheme.background,
                 businessAction = {
                     Icon(
                         imageVector = Icons.Rounded.Group,

@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
@@ -144,10 +145,14 @@ fun SegmentedControl(
     require(options.isNotEmpty()) { "SegmentedControl 至少需要一个选项" }
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = SharedLedgerRadius.Large,
+        shape = SharedLedgerRadius.Full,
         color = MaterialTheme.colorScheme.surfaceVariant,
     ) {
-        Row(modifier = Modifier.padding(SharedLedgerSpacing.XSmall)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(SharedLedgerSpacing.XSmall),
+        ) {
             options.forEachIndexed { index, label ->
                 Segment(
                     label = label,
@@ -171,7 +176,7 @@ private fun RowScope.Segment(
         modifier = Modifier
             .weight(1f)
             .clickable(enabled = enabled, onClick = onClick),
-        shape = SharedLedgerRadius.Medium,
+        shape = SharedLedgerRadius.Full,
         color = if (selected) {
             MaterialTheme.colorScheme.primaryContainer
         } else {
@@ -190,7 +195,13 @@ private fun RowScope.Segment(
             ),
             contentAlignment = Alignment.Center,
         ) {
-            Text(text = label, style = SharedLedgerTextStyles.BodySecondary)
+            Text(
+                text = label,
+                style = SharedLedgerTextStyles.BodySecondary,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Clip,
+            )
         }
     }
 }

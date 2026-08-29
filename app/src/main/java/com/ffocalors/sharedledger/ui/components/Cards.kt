@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
@@ -36,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.theme.DividerSubtle
 import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.SageGreenContainer
@@ -510,7 +512,11 @@ fun ExpenseCard(
                     )
                 }
             }
-            Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .widthIn(min = 0.dp),
+            ) {
                 Text(
                     text = expense.name,
                     style = SharedLedgerTextStyles.Body,
@@ -531,6 +537,8 @@ fun ExpenseCard(
                 if (expense.participants.isNotEmpty()) {
                     ParticipantAvatarGroup(
                         participants = expense.participants,
+                        // Match Stitch's compact expense row: two avatars plus one overflow chip.
+                        maxVisible = 2,
                         modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
                     )
                 }

@@ -6,6 +6,7 @@ object SharedLedgerRoutes {
     const val CREATE_ACTIVITY = "create-activity"
     const val NORMAL_ACTIVITY_PATTERN = "normal-activity/{activityId}"
     const val LARGE_ACTIVITY_PATTERN = "large-activity/{activityId}"
+    const val CREATE_SUB_ACTIVITY_PATTERN = "create-sub-activity/{activityId}"
     const val LEDGER_UNIT_PATTERN = "ledger-unit/{ledgerUnitId}"
     const val NEW_EXPENSE_PATTERN = "new-expense/{ledgerUnitId}"
     const val TRANSFER_PATTERN = "transfer/{activityId}?mode={mode}"
@@ -13,6 +14,7 @@ object SharedLedgerRoutes {
 
     fun normalActivity(activityId: String) = "normal-activity/$activityId"
     fun largeActivity(activityId: String) = "large-activity/$activityId"
+    fun createSubActivity(activityId: String) = "create-sub-activity/$activityId"
     fun ledgerUnit(ledgerUnitId: String) = "ledger-unit/$ledgerUnitId"
     fun newExpense(ledgerUnitId: String) = "new-expense/$ledgerUnitId"
     fun transfer(activityId: String, mode: TransferRouteMode) = "transfer/$activityId?mode=${mode.value}"

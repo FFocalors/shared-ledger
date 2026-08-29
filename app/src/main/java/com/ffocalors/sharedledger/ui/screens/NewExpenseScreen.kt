@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -106,7 +104,7 @@ fun NewExpenseScreen(
                 title = "新增消费",
                 showBackButton = true,
                 onBackClick = onBack,
-                modifier = Modifier.statusBarsPadding(),
+                containerColor = AppBackground,
                 onMoreClick = {},
             )
         },
@@ -420,16 +418,22 @@ private fun SplitSection(
         ) {
             Text(
                 text = "分摊方式",
-                modifier = Modifier.weight(1f),
                 style = SharedLedgerTextStyles.BodySecondary,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            SegmentedControl(
-                options = listOf("手动分摊", "AA均摊"),
-                selectedIndex = selectedIndex,
-                onSelected = onSelected,
-                modifier = Modifier.width(172.dp),
-            )
+            Box(
+                modifier = Modifier.weight(1f),
+                contentAlignment = Alignment.CenterEnd,
+            ) {
+                SegmentedControl(
+                    options = listOf("手动分摊", "AA均摊"),
+                    selectedIndex = selectedIndex,
+                    onSelected = onSelected,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .widthIn(max = 172.dp),
+                )
+            }
         }
         SplitStatus(total = total, currencyCode = currencyCode)
         NewExpenseParticipants.forEach { participant ->
