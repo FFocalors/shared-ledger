@@ -1,16 +1,16 @@
 # SharedLedger 后端文档
 
-> 文档状态：`设计中 / 未部署`
+> 文档状态：`业务基线已确认 / 后端分阶段实施中`
 >
-> 本目录用于约束 SharedLedger V0.1 的 Supabase 数据模型、权限边界和 Android 接入契约。当前内容是开发前设计资料，不表示远程 Supabase 项目、数据库表、视图、RLS policy 或 RPC 已经创建。
+> 本目录用于约束 SharedLedger V0.1 的业务规则、Supabase 数据模型、权限边界和 Android 接入契约。业务规则以 `BUSINESS_LOGIC.md` 为基线；数据库实际状态以已应用 migration 为准。
 
 ## 当前状态
 
 - Android 端是 Kotlin + Jetpack Compose 的纯前端原型，页面和导航可用于验证交互与视觉。
-- 当前没有真实 Supabase 连接，也没有 Supabase Android SDK。
+- Supabase 已完成身份、活动生命周期和消费核心的 Phase 1、2A、2B migration；后续债务、转账、预付款和最终结算尚未实现。
+- Android 当前仍未接入 Supabase Android SDK。
 - 当前没有 Repository、ViewModel、domain/data 层或持久化实现；页面数据仍是 `DemoData` 和本地 UI state。
-- 当前没有执行 SQL、创建 migration、配置真实环境变量或部署任何表/RPC。
-- 本轮只补充后端设计文档，不接入后端、不改变 Android/Gradle 配置、不安装依赖。
+- 本目录中的设计文档可能覆盖尚未实现的后续阶段，不应将目标设计误认为当前已部署能力。
 
 ## V0.1 后端目标
 
@@ -28,10 +28,11 @@
 
 | 文档 | 用途 | 状态 |
 | --- | --- | --- |
+| [BUSINESS_LOGIC.md](./BUSINESS_LOGIC.md) | 已确认的业务规则、金额口径、权限边界和 MVP 完成标准 | `业务基线` |
 | [database-schema.md](./database-schema.md) | 实体、字段、关系、约束、索引、RLS 和迁移边界 | `设计中` |
 | [api-contracts.md](./api-contracts.md) | Auth、Data API、RPC、页面映射、请求响应和接入前置清单 | `设计中` |
 
-阅读顺序建议：先阅读数据库模型，再阅读 API 契约；发生字段、状态或权限变化时，两份文档必须一起更新。
+阅读顺序建议：先阅读业务逻辑，再阅读数据库模型和 API 契约；发生业务规则、字段、状态或权限变化时，应同步复核相关文档和 migration。
 
 ## 架构边界
 
@@ -142,7 +143,6 @@ Storage：附件能力单独设计，使用私有 bucket 和短期 signed URL
 
 页面当前仍是原型状态，具体回调 payload 和真实数据加载缺口见 [api-contracts.md](./api-contracts.md) 的页面映射与接入前置清单。
 
-## 本轮明确结论
+## 当前实施边界
 
-本轮只写文档。任何数据库表、视图、RLS policy、GRANT、RPC、Edge Function、Storage bucket 和 Realtime channel 均未部署；下一步应先完成“待确认决策”和 schema 审查，再进入 Supabase 实施。
-
+当前数据库已实现身份与参与人基础、活动生命周期 RPC，以及消费、付款和分摊核心；`BUSINESS_LOGIC.md` 中的债务、转账、预付款、最终结算、争议和附件等能力仍是后续目标。Android 后端接入、Edge Function、Storage 和 Realtime 也尚未开始。
