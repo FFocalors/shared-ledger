@@ -477,7 +477,7 @@ select pg_temp.assert_true(
 -- the Activity lock, with the complete fact transaction rolled back.
 set local role authenticated;
 select pg_temp.authenticate('f4300000-0000-0000-0000-000000000001');
-update public.activities set archived_at = now() where id = 'f4000000-0000-0000-0000-000000000003';
+select * from public.archive_activity('f4000000-0000-0000-0000-000000000003');
 
 do $test$
 declare v_before bigint;
@@ -528,7 +528,7 @@ end;
 $test$;
 
 -- Archived also blocks voiding an existing settlement.
-update public.activities set archived_at = now() where id = 'f4000000-0000-0000-0000-000000000004';
+select * from public.archive_activity('f4000000-0000-0000-0000-000000000004');
 do $test$
 declare v_before bigint;
 begin
