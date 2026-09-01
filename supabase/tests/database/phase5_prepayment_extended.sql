@@ -195,9 +195,9 @@ select pg_temp.assert_true(
 
 -- archived, creator proxy, claimed member, anon/outsider rejection and
 -- financial_version success/failure/no-op semantics.
-update public.activities set archived_at=now() where id='f6000000-0000-0000-0000-000000000001';
+select pg_temp.assert_true((select archived and changed from public.archive_activity('f6000000-0000-0000-0000-000000000001')), 'creator archives through the Phase 6 RPC');
 do $archived$ begin begin perform * from public.create_prepayment('f6000000-0000-0000-0000-000000000001','f6200000-0000-0000-0000-000000000012','f6200000-0000-0000-0000-000000000011',1,now(),null); raise exception 'archived write succeeded'; exception when sqlstate '55000' then null; end; end $archived$;
-update public.activities set archived_at=null where id='f6000000-0000-0000-0000-000000000001';
+select pg_temp.assert_true((select not archived and changed from public.unarchive_activity('f6000000-0000-0000-0000-000000000001')), 'creator unarchives through the Phase 6 RPC');
 -- Verify creator proxy is a real transfer fact, then verify a claimed member
 -- cannot forge the proxy field.
 reset role; set local role service_role;
