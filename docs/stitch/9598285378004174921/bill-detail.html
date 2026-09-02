@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>账单详情 - SharedLedger</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#e9e2d4",
+                        "secondary-fixed-dim": "#e9bf8b",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#575449",
+                        "secondary": "#78582d",
+                        "error-container": "#ffdad6",
+                        "surface-tint": "#54643f",
+                        "inverse-surface": "#303030",
+                        "surface-container-low": "#f5f3f3",
+                        "inverse-primary": "#bbcda0",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#fed39c",
+                        "on-background": "#1b1c1c",
+                        "primary-container": "#bdcfa2",
+                        "error": "#ba1a1a",
+                        "outline": "#75786e",
+                        "on-tertiary-fixed": "#1e1b13",
+                        "tertiary": "#625e53",
+                        "primary-fixed": "#d7e9ba",
+                        "inverse-on-surface": "#f2f0f0",
+                        "surface-container": "#efeded",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#2a1800",
+                        "on-surface-variant": "#45483e",
+                        "surface": "#fbf9f8",
+                        "on-secondary-container": "#79592d",
+                        "background": "#fbf9f8",
+                        "primary": "#54643f",
+                        "on-tertiary-fixed-variant": "#4a473c",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#3d4b29",
+                        "surface-container-high": "#eae8e7",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#5e4118",
+                        "tertiary-container": "#cec8ba",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#fbf9f8",
+                        "tertiary-fixed-dim": "#ccc6b8",
+                        "surface-dim": "#dbd9d9",
+                        "outline-variant": "#c5c8bb",
+                        "surface-variant": "#e4e2e2",
+                        "on-primary-container": "#495935",
+                        "on-surface": "#1b1c1c",
+                        "primary-fixed-dim": "#bbcda0",
+                        "secondary-fixed": "#ffddb5",
+                        "on-primary-fixed": "#121f03",
+                        "surface-container-highest": "#e4e2e2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-page": "24px",
+                        "base": "4px",
+                        "stack-lg": "32px",
+                        "stack-md": "16px",
+                        "stack-sm": "8px",
+                        "gutter-card": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "title-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "display-amount": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }],
+                        "headline-lg": ["28px", { "lineHeight": "34px", "fontWeight": "600" }],
+                        "title-md": ["18px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "display-amount": ["40px", { "lineHeight": "48px", "letterSpacing": "-1px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #fbf9f8; }
+        .soft-shadow { box-shadow: 0 4px 24px -4px rgba(84, 100, 63, 0.08); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<script>
+        function toggleBottomSheet() {
+            const sheet = document.getElementById('bottom-sheet');
+            sheet.classList.toggle('translate-y-full');
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-[100px]">
+<!-- Top App Bar -->
+<header class="bg-background flex justify-between items-center px-margin-page py-4 w-full max-w-[480px] mx-auto sticky top-0 z-10">
+<div class="flex items-center gap-4">
+<button aria-label="返回" class="text-primary hover:bg-surface-container-low transition-colors rounded-full p-2">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-headline-lg-mobile font-headline-lg-mobile font-semibold text-primary">账单详情</h1>
+</div>
+</header>
+<main class="max-w-[480px] mx-auto px-margin-page flex flex-col gap-stack-lg pt-4">
+<!-- Status Banner (Deleted State) -->
+<div class="bg-error-container text-on-error-container p-3 rounded-lg flex items-center justify-center gap-2 mb-[-16px]">
+<span class="material-symbols-outlined">delete</span>
+<span class="font-medium text-body-lg">此账单已删除</span>
+</div>
+<!-- Hero Section -->
+<section class="bg-surface-container-lowest rounded-xl p-6 soft-shadow border border-outline-variant flex flex-col items-center text-center relative group">
+<button aria-label="编辑" class="absolute top-4 right-4 text-on-surface-variant hover:bg-surface-container-low transition-colors rounded-full p-2 hidden">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<div class="bg-primary-container text-on-primary-container p-3 rounded-full mb-4">
+<span class="material-symbols-outlined text-[32px]">restaurant</span>
+</div>
+<h2 class="text-title-md font-title-md mb-2 flex items-center gap-2">晚餐 (新光天地) <button aria-label="编辑" class="text-primary hover:bg-surface-container-low transition-colors rounded-full p-1 hidden"><span class="material-symbols-outlined text-[18px]">edit</span></button></h2>
+<div class="text-display-amount font-display-amount text-primary mb-1">¥450.00</div>
+<div class="text-body-md text-on-surface-variant mb-2">基础币: 450.00 CNY | 原币: 450.00 CNY</div>
+<p class="text-body-md font-body-md text-on-surface-variant flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span> 2023年10月24日 19:30
+            </p>
+<p class="text-body-md font-body-md text-on-surface-variant mt-2 italic">"庆祝项目上线聚餐"</p>
+</section>
+<!-- Payment Info -->
+<section>
+<h3 class="text-title-md font-title-md text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">payments</span> 付款信息
+            </h3>
+<div class="bg-surface-container-lowest rounded-xl p-4 soft-shadow border border-outline-variant flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<img alt="Alice" class="w-10 h-10 rounded-full border-[4px] border-background object-cover" data-alt="A smiling young Asian woman with short black hair wearing a casual sage green sweater, portrait style, warm lighting, soft background, modern clean aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlKiYV3CwrmBO1srENrMlsmA0fI0Oxf1GREMdF1rBOoMFeW4_Ta1bqSCD9eKaiKLObSynQxd3BtqDOYngijmHJvV3xvUnala_qb_erDBU4Kkh-flALZwA3B1VeFa8YyTtdEUDRWVvp_s4qqzpCkwx1CtoeOVnD6cZD0kljdb6sNqQVXOEumEUmP6k5KIcy-okM6yTym_TNZAslPFnnc4i7C2GwaCYgQ5UaGEo11HapOOgA8spgbaSo"/>
+<div>
+<div class="text-body-lg font-body-lg font-medium">Alice (我)</div>
+<div class="text-label-md font-label-md text-on-surface-variant">垫付总计</div>
+</div>
+</div>
+<div class="text-body-lg font-body-lg text-primary font-medium">¥450.00</div>
+</div>
+</div>
+</section>
+<!-- Split Info -->
+<section>
+<h3 class="text-title-md font-title-md text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">pie_chart</span> 分摊详情 <span class="text-label-md bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded ml-2">AA 平摊</span>
+</h3>
+<div class="bg-surface-container-lowest rounded-xl p-4 soft-shadow border border-outline-variant flex flex-col gap-stack-md">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-3">
+<img alt="Bob" class="w-10 h-10 rounded-full border-[4px] border-background object-cover" data-alt="A portrait of a young Asian man with neat hair wearing a dark blue t-shirt, warm casual lighting, minimalist studio background, modern app avatar style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPtK91kmtZeT3gyuP8Coxy2L-EGw1d5zFoMioONuSJhPXc7ODCaZJWXpZ7rtfBuLD8TvDtI-EIt9nY47hUpKxvCtquY70Lt9pgxXjT-8mQ2pY7Slx2DGfqhlCCA5Jy0K9ULEjS_Ab6MRw9DTQlsU0my1iwRvQy7cqQde-gIm7UOV-za_AzFHLjyu0qTrrG9FNNOvj-bD6XyGpNh4LMPwPKfwYIG_G8oJbn_3weVvqHE8oTf7GcAKvI"/>
+<div>
+<div class="text-body-lg font-body-lg font-medium">Bob</div>
+</div>
+</div>
+<p class="text-body-sm text-on-surface-variant ml-13">应承担 ¥150，<span class="text-error font-medium">当前未结清</span>。</p>
+</div>
+<div class="h-[1px] bg-outline-variant w-full"></div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-3">
+<img alt="Carol" class="w-10 h-10 rounded-full border-[4px] border-background object-cover" data-alt="A portrait of a cheerful young Asian woman with long brown hair wearing a white linen shirt, bright airy lighting, soft natural background, clean lifestyle aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAk-69Plx9VI86AcTUgh-YQ7pqOj6LN3DSRSM9JQTUaVRFSuECe78-DfLU5abJNjoBGkRCjgbvsQMEgt_4mFijeUR6Ubp6LvC4XIileBNeD-ENQ4E4Xh6JaeHWC1_NXD0KzGzkM8-UrPQR7G6Je07l4JV6RqHTqrgoTr9wIk-mlv9PNryZvzzZXOanxVII1EL1iWpTh3MgDY12Ua3sh_bQq76G8nCub4V05wy1QopWQaZyrkHsBVdln"/>
+<div>
+<div class="text-body-lg font-body-lg font-medium">Carol</div>
+</div>
+</div>
+<p class="text-body-sm text-on-surface-variant ml-13">应承担 <span class="line-through">¥150</span>，<span class="text-primary font-medium">已结清</span>。</p>
+</div>
+<div class="h-[1px] bg-outline-variant w-full"></div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-3">
+<img alt="Alice" class="w-10 h-10 rounded-full border-[4px] border-background object-cover" data-alt="A smiling young Asian woman with short black hair wearing a casual sage green sweater, portrait style, warm lighting, soft background, modern clean aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuOZ-pedVEvNpE5G13qPLnGBkd2FEUtCPrCLvIqiHxiXWAcNX2dLND1Qh_d8izixM6UPeySFzfTMJcNN1v31MPgVtxmTSrrTiNb9KBsvs6D5Z4GOU8nhf6Vn56nCBQ5nOeBVq4CGW1jlRSz72UebytwFDdqWdDjzWwy_xiDmRQEdzdugIxPivtKJswTpZoiy4tSdBEmqlka2z9Sl3bDzi6fgyrI8c-e0W992XHW9-WIFDgvdwo-pIf"/>
+<div>
+<div class="text-body-lg font-body-lg font-medium flex items-center gap-2">Alice (我) <span class="text-label-md font-label-md text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">垫付方</span></div>
+</div>
+</div>
+<p class="text-body-sm text-on-surface-variant ml-13">应承担 ¥150，实际支付 ¥450，<span class="text-primary font-medium">净垫付 ¥300</span>。</p>
+</div>
+</div>
+</section>
+<!-- Attachments -->
+<section>
+<h3 class="text-title-md font-title-md text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">receipt_long</span> 消费凭证
+            </h3>
+<div class="flex gap-4 overflow-x-auto pb-4 snap-x">
+<div class="w-32 h-32 flex-shrink-0 snap-center rounded-lg overflow-hidden border border-outline-variant soft-shadow relative cursor-pointer group">
+<img alt="Receipt" class="w-full h-full object-cover group-hover:scale-105 transition-transform" data-alt="A close up photo of a printed restaurant receipt resting on a clean wooden table. The receipt shows various food items and a total of 450. Warm ambient lighting, shallow depth of field, modern lifestyle aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD86ZkTg58Q3j-ZdkbJzDj7506ew8ByP_iuHEuz_JUwYRxjp0VrltITKDmvS0g2z3rf6SgxrRelqg13HhdrSrX0I-UQDJXWqh3HXjTQEXfj9ljSl310X1-Dko5PV3sD4KVEs6UQB7gnKAY1juy72krDkbQMHT7jv5DbLND_w5KjrMy7X1Blg0FjLDCr8plciluKEWvcSyNF3jEZ2r4HzfT9evf8T5qedsYjKs8ox2fOrSnpXqxlbtFO"/>
+<div class="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-white">zoom_in</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Actions -->
+<div class="fixed bottom-0 left-0 right-0 w-full z-40 px-4 pb-6 pt-4 max-w-[480px] mx-auto bg-surface-container/90 backdrop-blur-md rounded-t-[32px] border-t border-outline-variant/30 flex justify-center gap-4">
+<button class="flex-1 py-3 px-6 rounded-full bg-primary text-on-primary text-title-md font-title-md hover:opacity-90 transition-opacity soft-shadow font-medium">
+            恢复账单
+        </button>
+<button class="w-[52px] h-[52px] flex items-center justify-center rounded-full bg-surface-container-high text-primary hover:bg-surface-container-highest transition-colors border border-outline-variant soft-shadow" onclick="toggleBottomSheet()">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Bottom Sheet -->
+<div class="fixed inset-x-0 bottom-0 z-50 transform translate-y-full transition-transform duration-300 ease-in-out" id="bottom-sheet">
+<div class="absolute inset-0 bg-black/50" onclick="toggleBottomSheet()"></div>
+<div class="relative bg-surface-container-lowest rounded-t-3xl p-6 max-w-[480px] mx-auto shadow-[0_-8px_32px_rgba(0,0,0,0.1)]">
+<div class="w-12 h-1.5 bg-outline-variant rounded-full mx-auto mb-6"></div>
+<div class="flex flex-col gap-2">
+<button class="w-full text-left py-4 px-4 hover:bg-surface-container-low rounded-xl flex items-center gap-3 transition-colors text-body-lg font-medium text-on-surface">
+<span class="material-symbols-outlined text-primary">currency_exchange</span> 添加退款
+        </button>
+<button class="w-full text-left py-4 px-4 hover:bg-error-container/50 rounded-xl flex items-center gap-3 transition-colors text-body-lg font-medium text-error">
+<span class="material-symbols-outlined text-error">delete</span> 永久删除
+        </button>
+</div>
+</div>
+</div>
+</body></html>

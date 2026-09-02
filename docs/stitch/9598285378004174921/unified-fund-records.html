@@ -1,0 +1,241 @@
+<!DOCTYPE html><html class="light" lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Unified Ledger - 统一资金记录</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#e9bf8b",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed": "#ffddb5",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#54643f",
+                        "on-tertiary-container": "#575449",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#5e4118",
+                        "outline": "#75786e",
+                        "primary-container": "#bdcfa2",
+                        "on-primary-fixed-variant": "#3d4b29",
+                        "inverse-surface": "#303030",
+                        "inverse-primary": "#bbcda0",
+                        "on-secondary-fixed": "#2a1800",
+                        "surface-container-low": "#f5f3f3",
+                        "on-primary-fixed": "#121f03",
+                        "background": "#fbf9f8",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#4a473c",
+                        "tertiary": "#625e53",
+                        "primary-fixed-dim": "#bbcda0",
+                        "on-background": "#1b1c1c",
+                        "primary": "#54643f",
+                        "tertiary-container": "#cec8ba",
+                        "tertiary-fixed-dim": "#ccc6b8",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#dbd9d9",
+                        "on-primary-container": "#495935",
+                        "surface-container-high": "#eae8e7",
+                        "secondary": "#78582d",
+                        "on-tertiary-fixed": "#1e1b13",
+                        "on-surface": "#1b1c1c",
+                        "outline-variant": "#c5c8bb",
+                        "on-secondary-container": "#79592d",
+                        "inverse-on-surface": "#f2f0f0",
+                        "tertiary-fixed": "#e9e2d4",
+                        "surface-container-highest": "#e4e2e2",
+                        "primary-fixed": "#d7e9ba",
+                        "on-primary": "#ffffff",
+                        "surface-variant": "#e4e2e2",
+                        "secondary-container": "#fed39c",
+                        "surface-bright": "#fbf9f8",
+                        "on-error-container": "#93000a",
+                        "surface": "#fbf9f8",
+                        "on-error": "#ffffff",
+                        "surface-container": "#efeded",
+                        "on-surface-variant": "#45483e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1.5rem"
+                    },
+                    "spacing": {
+                        "stack-md": "16px",
+                        "stack-lg": "32px",
+                        "margin-page": "24px",
+                        "base": "4px",
+                        "gutter-card": "16px",
+                        "stack-sm": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "title-md": ["Inter"],
+                        "display-amount": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "title-md": ["18px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "display-amount": ["40px", { "lineHeight": "48px", "letterSpacing": "-1px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg": ["28px", { "lineHeight": "34px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill-1 {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom Scrollbar for filter row */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased h-screen flex flex-col items-center">
+<div class="w-full max-w-[480px] bg-background h-full flex flex-col relative overflow-hidden shadow-xl sm:rounded-[32px] sm:h-[850px] sm:my-auto">
+<!-- TopAppBar -->
+<header class="bg-background docked full-width top-0 flex justify-between items-center w-full px-margin-page h-16 shrink-0 z-20">
+<button class="p-2 -ml-2 rounded-full hover:bg-surface-container-high active:scale-95 transition-transform duration-200 text-on-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">统一资金记录</h1>
+<button class="p-2 -mr-2 rounded-full hover:bg-surface-container-high active:scale-95 transition-transform duration-200 text-on-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</header>
+<!-- Main Scrollable Content -->
+<main class="flex-1 overflow-y-auto w-full px-margin-page pb-stack-md">
+<!-- Filter Section -->
+<section class="mb-stack-lg sticky top-0 bg-background/95 backdrop-blur-sm z-10 pt-stack-sm pb-stack-md -mx-margin-page px-margin-page">
+<div class="flex flex-col gap-stack-sm">
+<!-- Row 1 -->
+<div class="flex items-center gap-stack-sm overflow-x-auto no-scrollbar">
+<button class="px-4 py-2 rounded-full bg-primary-container text-on-primary-container font-label-md text-label-md whitespace-nowrap active:scale-95 transition-transform">全部记录</button>
+<button class="px-4 py-2 rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md whitespace-nowrap active:scale-95 transition-transform">结算转账</button>
+<button class="px-4 py-2 rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md whitespace-nowrap active:scale-95 transition-transform">预存资金</button>
+</div>
+<!-- Row 2 & Sort -->
+<div class="flex items-center justify-between gap-stack-sm">
+<div class="flex items-center gap-stack-sm overflow-x-auto no-scrollbar">
+<button class="px-4 py-2 rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md whitespace-nowrap active:scale-95 transition-transform">预存退回</button>
+<button class="px-4 py-2 rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md whitespace-nowrap active:scale-95 transition-transform">最终清算</button>
+</div>
+<button class="flex items-center gap-1 text-on-surface-variant p-2 rounded-full hover:bg-surface-container-low shrink-0">
+<span class="material-symbols-outlined text-[18px]">sort</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Record List -->
+<div class="flex flex-col gap-stack-md">
+<!-- Card 1: Settlement Transfer - Valid -->
+<article class="bg-surface-container-lowest rounded-2xl p-gutter-card shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-outline-variant/30 relative overflow-hidden group cursor-pointer active:scale-[0.98] transition-transform duration-200">
+<div class="flex justify-between items-start mb-stack-sm">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-label-md text-label-md text-on-surface-variant">结算转账</span>
+</div>
+<span class="px-2 py-1 rounded bg-primary-container/30 text-on-primary-container font-label-md text-label-md">有效</span>
+</div>
+<div class="flex items-center gap-2 mb-stack-md text-on-surface font-title-md text-title-md">
+<span class="">Alice</span>
+<span class="material-symbols-outlined text-outline text-[16px]">arrow_forward</span>
+<span class="">Bob</span>
+</div>
+<div class="flex justify-between items-end mb-stack-sm">
+<span class="text-on-surface-variant text-[13px]">今天 14:30</span>
+<span class="font-title-md text-title-md text-primary font-semibold">¥1,000.00</span>
+</div>
+<div class="text-on-surface-variant/70 text-[13px] mb-stack-sm border-t border-outline-variant/20 pt-2">
+                        偿还欠款 ¥300 + 新增预存 ¥700
+                    </div>
+<div class="flex justify-between items-center text-on-surface-variant/50 text-[12px]">
+<span class="">记录人：Alice</span>
+<span class="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+</article>
+<!-- Card 2: Prepayment - Disputed -->
+<article class="bg-surface-container-lowest rounded-2xl p-gutter-card shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-outline-variant/30 relative overflow-hidden group cursor-pointer active:scale-[0.98] transition-transform duration-200">
+<div class="flex justify-between items-start mb-stack-sm">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-md text-label-md text-on-surface-variant">预存资金</span>
+</div>
+<span class="px-2 py-1 rounded bg-error-container/50 text-error font-label-md text-label-md">存在争议</span>
+</div>
+<div class="flex items-center gap-2 mb-stack-md text-on-surface font-title-md text-title-md">
+<span class="">Charlie</span>
+<span class="material-symbols-outlined text-outline text-[16px]">arrow_forward</span>
+<span class="">公共账户</span>
+</div>
+<div class="flex justify-between items-end mb-stack-sm">
+<span class="text-on-surface-variant text-[13px]">昨天 09:15</span>
+<span class="font-title-md text-title-md text-secondary font-semibold">¥500.00</span>
+</div>
+<div class="text-on-surface-variant/70 text-[13px] mb-stack-sm border-t border-outline-variant/20 pt-2">
+                        充值团建备用金
+                    </div>
+<div class="flex justify-between items-center text-on-surface-variant/50 text-[12px]">
+<span class="">Charlie 代记</span>
+<span class="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+</article>
+<!-- Card 3: Voided -->
+<article class="bg-surface-container-lowest/50 rounded-2xl p-gutter-card border border-outline-variant/20 relative overflow-hidden group cursor-pointer opacity-70">
+<div class="flex justify-between items-start mb-stack-sm">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+<span class="font-label-md text-label-md text-on-surface-variant">结算转账</span>
+</div>
+<span class="px-2 py-1 rounded bg-surface-variant text-on-surface-variant font-label-md text-label-md">已作废</span>
+</div>
+<div class="flex items-center gap-2 mb-stack-md text-on-surface/50 font-title-md text-title-md line-through">
+<span class="">Bob</span>
+<span class="material-symbols-outlined text-outline text-[16px]">arrow_forward</span>
+<span class="">Alice</span>
+</div>
+<div class="flex justify-between items-end mb-stack-sm opacity-50">
+<span class="text-on-surface-variant text-[13px]">3月10日 18:20</span>
+<span class="font-title-md text-title-md text-on-surface font-semibold line-through">¥200.00</span>
+</div>
+<div class="text-on-surface-variant/50 text-[12px] pt-2 border-t border-outline-variant/20">
+                        作废原因：金额填写错误
+                    </div>
+</article>
+</div>
+<!-- Spacer for bottom nav if needed -->
+<div class="h-8"></div>
+</main>
+<!-- BottomNavBar (Semantic Shell: Only render if top-level, Ledger is active based on intent) -->
+
+<!-- Mobile Bottom Nav Overlay -->
+
+</div>
+
+
+</body></html>

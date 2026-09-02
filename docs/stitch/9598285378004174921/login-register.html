@@ -1,0 +1,257 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>SharedLedger - 登录/注册</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#e9e2d4",
+                        "secondary-fixed-dim": "#e9bf8b",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#575449",
+                        "secondary": "#78582d",
+                        "error-container": "#ffdad6",
+                        "surface-tint": "#54643f",
+                        "inverse-surface": "#303030",
+                        "surface-container-low": "#f5f3f3",
+                        "inverse-primary": "#bbcda0",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#fed39c",
+                        "on-background": "#1b1c1c",
+                        "primary-container": "#bdcfa2",
+                        "error": "#ba1a1a",
+                        "outline": "#75786e",
+                        "on-tertiary-fixed": "#1e1b13",
+                        "tertiary": "#625e53",
+                        "primary-fixed": "#d7e9ba",
+                        "inverse-on-surface": "#f2f0f0",
+                        "surface-container": "#efeded",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#2a1800",
+                        "on-surface-variant": "#45483e",
+                        "surface": "#fbf9f8",
+                        "on-secondary-container": "#79592d",
+                        "background": "#fbf9f8",
+                        "primary": "#54643f",
+                        "on-tertiary-fixed-variant": "#4a473c",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#3d4b29",
+                        "surface-container-high": "#eae8e7",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#5e4118",
+                        "tertiary-container": "#cec8ba",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#fbf9f8",
+                        "tertiary-fixed-dim": "#ccc6b8",
+                        "surface-dim": "#dbd9d9",
+                        "outline-variant": "#c5c8bb",
+                        "surface-variant": "#e4e2e2",
+                        "on-primary-container": "#495935",
+                        "on-surface": "#1b1c1c",
+                        "primary-fixed-dim": "#bbcda0",
+                        "secondary-fixed": "#ffddb5",
+                        "on-primary-fixed": "#121f03",
+                        "surface-container-highest": "#e4e2e2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "card": "24px"
+                    },
+                    "spacing": {
+                        "margin-page": "24px",
+                        "base": "4px",
+                        "stack-lg": "32px",
+                        "stack-md": "16px",
+                        "stack-sm": "8px",
+                        "gutter-card": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "title-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "display-amount": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }],
+                        "headline-lg": ["28px", { "lineHeight": "34px", "fontWeight": "600" }],
+                        "title-md": ["18px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "display-amount": ["40px", { "lineHeight": "48px", "letterSpacing": "-1px", "fontWeight": "600" }]
+                    },
+                    "boxShadow": {
+                        "ambient": "0 4px 24px -4px rgba(0, 0, 0, 0.08)",
+                        "ambient-accent": "0 4px 24px -4px rgba(84, 100, 63, 0.4)"
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fbf9f8; /* Changed to match theme surface/background */
+        }
+        .segmented-control {
+            background-color: rgba(84, 100, 63, 0.1); /* Sage 10% opacity */
+        }
+        .input-field {
+            background-color: #ffffff;
+            border: 1px solid rgba(84, 100, 63, 0.2);
+        }
+        .input-field:focus {
+            border-color: #54643f;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(84, 100, 63, 0.2);
+        }
+        /* Primary Action Button */
+        .btn-accent {
+            background-color: #54643f; /* Deep Olive Green */
+            color: white;
+        }
+        .btn-accent:hover {
+            background-color: #435032;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-center items-center p-4">
+<!-- Main Container -->
+<main class="w-full max-w-[480px] mx-auto p-margin-page flex flex-col gap-stack-lg transition-all duration-300 bg-surface-container-low rounded-card shadow-ambient p-6">
+<!-- Header Section -->
+<header class="text-center flex flex-col gap-stack-sm">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">SharedLedger</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">松弛、透明且可信的多人记账</p>
+</header>
+<!-- Segmented Control -->
+<div class="flex p-1 rounded-full segmented-control w-full relative bg-surface-container-high">
+<div class="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-surface-container-lowest rounded-full shadow-sm transition-transform duration-300 ease-out z-0" id="active-bg"></div>
+<button class="flex-1 py-2 relative z-10 font-title-md text-title-md text-primary transition-colors text-center" id="btn-login" onclick="switchTab('login')">登录</button>
+<button class="flex-1 py-2 relative z-10 font-title-md text-title-md text-on-surface-variant transition-colors text-center" id="btn-register" onclick="switchTab('register')">注册</button>
+</div>
+<!-- Forms Container -->
+<div class="relative w-full overflow-visible" style="min-height: 380px;">
+<!-- Login Form -->
+<form class="absolute top-0 left-0 w-full flex flex-col gap-stack-md transition-all duration-300 transform translate-x-0 opacity-100" id="form-login"><div class="hidden text-error text-label-md px-4" id="login-error">请输入正确的邮箱或密码</div>
+<div class="flex flex-col gap-2">
+<label class="sr-only" for="login-email">邮箱</label>
+<input class="w-full rounded-full px-6 py-4 input-field font-body-lg text-body-lg text-on-surface placeholder:text-outline rounded-xl border-outline-variant bg-surface-container-lowest" id="login-email" placeholder="邮箱" required="" type="email">
+</div>
+<div class="flex flex-col gap-2 relative">
+<label class="sr-only" for="login-password">密码</label>
+<input class="w-full rounded-full px-6 py-4 pr-12 input-field font-body-lg text-body-lg text-on-surface placeholder:text-outline rounded-xl border-outline-variant bg-surface-container-lowest" id="login-password" placeholder="密码" required="" type="password">
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors focus:outline-none" onclick="togglePasswordVisibility('login-password')" type="button">
+<span class="material-symbols-outlined" id="login-password-icon">visibility_off</span>
+</button>
+</div>
+<div class="text-right">
+<a class="font-label-md text-label-md text-primary hover:underline" href="#">忘记密码？</a>
+</div>
+<button class="w-full mt-2 rounded-full py-4 btn-accent font-title-md text-title-md shadow-ambient-accent transition-all active:scale-95 text-on-primary bg-[#DDB480]" type="submit"><span class="flex items-center justify-center gap-2">登录</span></button>
+</form>
+<!-- Register Form -->
+<form class="absolute top-0 left-0 w-full flex flex-col gap-stack-md transition-all duration-300 transform translate-x-full opacity-0 pointer-events-none" id="form-register"><div class="hidden text-error text-label-md px-4" id="register-error">请检查您的输入信息</div>
+<div class="flex flex-col gap-2">
+<label class="sr-only" for="reg-nickname">昵称</label>
+<input class="w-full rounded-full px-6 py-4 input-field font-body-lg text-body-lg text-on-surface placeholder:text-outline rounded-xl border-outline-variant bg-surface-container-lowest" id="reg-nickname" placeholder="昵称" required="" type="text">
+</div>
+<div class="flex flex-col gap-2">
+<label class="sr-only" for="reg-email">邮箱</label>
+<input class="w-full rounded-full px-6 py-4 input-field font-body-lg text-body-lg text-on-surface placeholder:text-outline rounded-xl border-outline-variant bg-surface-container-lowest" id="reg-email" placeholder="邮箱" required="" type="email">
+</div>
+<div class="flex flex-col gap-2 relative">
+<label class="sr-only" for="reg-password">密码</label>
+<input class="w-full rounded-full px-6 py-4 pr-12 input-field font-body-lg text-body-lg text-on-surface placeholder:text-outline rounded-xl border-outline-variant bg-surface-container-lowest" id="reg-password" placeholder="密码" required="" type="password">
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors focus:outline-none" onclick="togglePasswordVisibility('reg-password')" type="button">
+<span class="material-symbols-outlined" id="reg-password-icon">visibility_off</span>
+</button>
+</div>
+<div class="flex flex-col gap-2 relative">
+<label class="sr-only" for="reg-confirm-password">确认密码</label>
+<input class="w-full rounded-full px-6 py-4 pr-12 input-field font-body-lg text-body-lg text-on-surface placeholder:text-outline rounded-xl border-outline-variant bg-surface-container-lowest" id="reg-confirm-password" placeholder="确认密码" required="" type="password">
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors focus:outline-none" onclick="togglePasswordVisibility('reg-confirm-password')" type="button">
+<span class="material-symbols-outlined" id="reg-confirm-password-icon">visibility_off</span>
+</button>
+</div>
+<button class="w-full mt-2 rounded-full py-4 btn-accent font-title-md text-title-md shadow-ambient-accent transition-all active:scale-95 bg-primary text-on-primary" type="submit">
+                    注册
+                </button>
+</form>
+</div>
+</main>
+<script>
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(inputId + '-icon');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility';
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility_off';
+            }
+        }
+
+        function switchTab(tab) {
+            const formLogin = document.getElementById('form-login');
+            const formRegister = document.getElementById('form-register');
+            const btnLogin = document.getElementById('btn-login');
+            const btnRegister = document.getElementById('btn-register');
+            const activeBg = document.getElementById('active-bg');
+            const formContainer = formLogin.parentElement;
+
+            if (tab === 'login') {
+                // UI changes
+                activeBg.style.transform = 'translateX(0)';
+                btnLogin.classList.replace('text-on-surface-variant', 'text-primary');
+                btnRegister.classList.replace('text-primary', 'text-on-surface-variant');
+
+                // Form animation
+                formLogin.classList.remove('translate-x-[-100%]', 'opacity-0', 'pointer-events-none');
+                formLogin.classList.add('translate-x-0', 'opacity-100');
+
+                formRegister.classList.remove('translate-x-0', 'opacity-100');
+                formRegister.classList.add('translate-x-full', 'opacity-0', 'pointer-events-none');
+
+                // Adjust container height
+                formContainer.style.minHeight = '380px';
+
+            } else {
+                // UI changes
+                activeBg.style.transform = 'translateX(100%)';
+                btnRegister.classList.replace('text-on-surface-variant', 'text-primary');
+                btnLogin.classList.replace('text-primary', 'text-on-surface-variant');
+
+                // Form animation
+                formLogin.classList.remove('translate-x-0', 'opacity-100');
+                formLogin.classList.add('translate-x-[-100%]', 'opacity-0', 'pointer-events-none');
+
+                formRegister.classList.remove('translate-x-full', 'opacity-0', 'pointer-events-none');
+                formRegister.classList.add('translate-x-0', 'opacity-100');
+
+                // Adjust container height
+                formContainer.style.minHeight = '460px';
+            }
+        }
+    </script>
+
+
+</body></html>

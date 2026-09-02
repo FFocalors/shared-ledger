@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>资金记录详情 - SharedLedger</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed": "#e9e2d4",
+                    "secondary-fixed-dim": "#e9bf8b",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#575449",
+                    "secondary": "#78582d",
+                    "error-container": "#ffdad6",
+                    "surface-tint": "#54643f",
+                    "inverse-surface": "#303030",
+                    "surface-container-low": "#f5f3f3",
+                    "inverse-primary": "#bbcda0",
+                    "on-primary": "#ffffff",
+                    "secondary-container": "#fed39c",
+                    "on-background": "#1b1c1c",
+                    "primary-container": "#bdcfa2",
+                    "error": "#ba1a1a",
+                    "outline": "#75786e",
+                    "on-tertiary-fixed": "#1e1b13",
+                    "tertiary": "#625e53",
+                    "primary-fixed": "#d7e9ba",
+                    "inverse-on-surface": "#f2f0f0",
+                    "surface-container": "#efeded",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed": "#2a1800",
+                    "on-surface-variant": "#45483e",
+                    "surface": "#fbf9f8",
+                    "on-secondary-container": "#79592d",
+                    "background": "#fbf9f8",
+                    "primary": "#54643f",
+                    "on-tertiary-fixed-variant": "#4a473c",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed-variant": "#3d4b29",
+                    "surface-container-high": "#eae8e7",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-fixed-variant": "#5e4118",
+                    "tertiary-container": "#cec8ba",
+                    "on-error": "#ffffff",
+                    "surface-bright": "#fbf9f8",
+                    "tertiary-fixed-dim": "#ccc6b8",
+                    "surface-dim": "#dbd9d9",
+                    "outline-variant": "#c5c8bb",
+                    "surface-variant": "#e4e2e2",
+                    "on-primary-container": "#495935",
+                    "on-surface": "#1b1c1c",
+                    "primary-fixed-dim": "#bbcda0",
+                    "secondary-fixed": "#ffddb5",
+                    "on-primary-fixed": "#121f03",
+                    "surface-container-highest": "#e4e2e2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-page": "24px",
+                    "base": "4px",
+                    "stack-lg": "32px",
+                    "stack-md": "16px",
+                    "stack-sm": "8px",
+                    "gutter-card": "16px"
+            },
+            "fontFamily": {
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "label-md": [
+                            "Inter"
+                    ],
+                    "headline-lg": [
+                            "Inter"
+                    ],
+                    "title-md": [
+                            "Inter"
+                    ],
+                    "headline-lg-mobile": [
+                            "Inter"
+                    ],
+                    "display-amount": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "body-lg": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-md": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.5px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "headline-lg": [
+                            "28px",
+                            {
+                                    "lineHeight": "34px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "title-md": [
+                            "18px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "24px",
+                            {
+                                    "lineHeight": "30px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-amount": [
+                            "40px",
+                            {
+                                    "lineHeight": "48px",
+                                    "letterSpacing": "-1px",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        body { background-color: #EBE4D6; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .fill-icon { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+
+        .card-shadow {
+            box-shadow: 0 4px 24px -4px rgba(84, 100, 63, 0.08);
+        }
+        .ambient-glow-error {
+            box-shadow: 0 4px 24px -4px rgba(186, 26, 26, 0.15);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="font-body-md text-on-surface antialiased pb-24 min-h-screen">
+<!-- TopAppBar -->
+<header class="bg-background dark:bg-background docked full-width top-0 bg-background dark:bg-background flat no shadows flex justify-between items-center px-margin-page py-4 w-full max-w-[480px] mx-auto sticky z-10">
+<div class="flex items-center gap-3">
+<button class="p-2 rounded-full hover:bg-surface-container-low transition-colors text-on-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-title-md">arrow_back</span>
+</button>
+<h1 class="text-headline-lg-mobile font-headline-lg-mobile font-semibold text-primary dark:text-primary-fixed-dim tracking-tight">资金记录</h1>
+</div>
+<button class="p-2 rounded-full hover:bg-surface-container-low transition-colors text-on-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-title-md">more_vert</span>
+</button>
+</header>
+<main class="max-w-[480px] mx-auto px-margin-page flex flex-col gap-stack-lg mt-4">
+<!-- 争议提示卡片 (Conditional/Error State) -->
+<div class="bg-error-container text-on-error-container rounded-xl p-4 flex items-start gap-3 ambient-glow-error border border-error/20">
+<span class="material-symbols-outlined fill-icon text-error mt-0.5">warning</span>
+<div class="flex-1">
+<p class="font-label-md text-label-md mb-1 font-bold">该记录存在争议</p>
+<p class="text-body-md font-body-md opacity-90">争议仅用于提醒双方核对，不会改变当前账务结果</p>
+</div>
+<button class="text-label-md font-label-md font-bold text-error bg-surface-container-lowest/50 px-3 py-1.5 rounded-full hover:bg-surface-container-lowest transition-colors">取消争议</button>
+</div>
+<!-- 核心卡片 -->
+<section class="bg-surface-container-lowest rounded-[24px] p-6 card-shadow border border-outline-variant/30 flex flex-col gap-6 relative overflow-hidden">
+<!-- 状态标签 -->
+<div class="absolute top-4 right-4 bg-primary-container text-on-primary-container px-3 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span class="font-label-md text-label-md">有效</span>
+</div>
+<!-- 收付款人关系 -->
+<div class="flex items-center justify-center gap-4 mt-2">
+<div class="flex flex-col items-center gap-2">
+<img class="w-14 h-14 rounded-full object-cover border-2 border-surface-container-lowest shadow-sm" data-alt="A modern, high-quality circular avatar of a young Asian man smiling casually in soft, warm daylight against a blurred natural background. The lighting is bright and airy, fitting a modern light-mode ui design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_S6XnrJnSMW7GpzNtwdGzYdGv6n6-nTh0MNkSyHuxaG0BKPf2V9tghlqKEtG0HwBb5yeXQnhPC58BsO-Sq4PqIRb6FjvA2nbYmWFynzpLldgdYz3mIo3j2Dr9DvkbHbtIkUKnRHNLG0pAAo206xtxSiEbQplVvH0PZZmbDZtYrKSqBauIwrY6ip9AEJwXY6ZP7ojgQqa0RBAHGntfrsODxKGFX5KID42Kefk2wpxhF89oknwnopdP"/>
+<span class="font-body-md text-body-md text-on-surface">张三</span>
+</div>
+<div class="flex flex-col items-center text-outline-variant gap-1">
+<span class="font-label-md text-label-md bg-surface-container px-2 py-0.5 rounded text-on-surface-variant">还款 + 预存</span>
+<span class="material-symbols-outlined text-[24px] text-primary">arrow_forward</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<img class="w-14 h-14 rounded-full object-cover border-2 border-surface-container-lowest shadow-sm" data-alt="A modern, high-quality circular avatar of a young Asian woman with short hair looking friendly in a modern cafe setting. The lighting is bright and airy, fitting a modern light-mode ui design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9iIzbPnuHUyOaToykhyMx854gPj9L1xDV-wwn3Kqh8qfW8S4hrgnUyI7Hmna6SE1Z7L2lmzFHXUJixPTGPahTVYFZ1ajPS2aJirNquDNz2V4uiIdy3ZNz4EuNNRDxFheOmV4UoInohWiR7lBpnI9CN0C7Y7FSvSfndI_Z0_U4-G2pXQrm4wPUjw2reBxEXqneJjF-M1UuWJXkZ8_cLnVTB_76dW-ivc6WZ8QzgBc9rcCXomzq_X5N"/>
+<span class="font-body-md text-body-md text-on-surface">李四</span>
+</div>
+</div>
+<!-- 金额展示 -->
+<div class="flex flex-col items-center justify-center py-2">
+<p class="text-on-surface-variant font-label-md text-label-md mb-1">总金额 (CNY)</p>
+<h2 class="font-display-amount text-display-amount text-on-background tracking-tight">¥1,000.00</h2>
+</div>
+<!-- 时间 -->
+<div class="flex items-center justify-center text-outline font-body-md text-body-md gap-2 border-t border-surface-variant pt-4">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>2023年10月24日 14:30</span>
+</div>
+</section>
+<!-- 资金组成区域 -->
+<section class="flex flex-col gap-stack-md">
+<h3 class="font-title-md text-title-md text-on-background px-1">资金构成</h3>
+<div class="bg-surface-container-lowest rounded-[20px] p-5 card-shadow border border-outline-variant/30 flex flex-col gap-4">
+<div class="flex items-center justify-between pb-3 border-b border-surface-variant">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined">restart_alt</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-lg text-body-lg text-on-surface">偿还已有欠款</span>
+</div>
+</div>
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">¥300.00</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-lg text-body-lg text-on-surface">新增预存</span>
+</div>
+</div>
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">¥700.00</span>
+</div>
+</div>
+</section>
+<!-- 记录信息 -->
+<section class="flex flex-col gap-stack-md">
+<h3 class="font-title-md text-title-md text-on-background px-1">记录详情</h3>
+<div class="bg-surface-container-lowest rounded-[20px] p-5 card-shadow border border-outline-variant/30">
+<ul class="flex flex-col gap-4">
+<li class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">记录人</span>
+<div class="flex items-center gap-2">
+<img class="w-6 h-6 rounded-full object-cover" data-alt="A modern, high-quality circular avatar of a young Asian man smiling casually in soft, warm daylight against a blurred natural background. The lighting is bright and airy, fitting a modern light-mode ui design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIhqU2tWYP6LlZrvWqvoIEfEFcJpwh0FnU0mOBOf86j37VZchy3H-REBtMkLJB-jNEClaaZtp2GP1WlBMpNu3CkEhTrdLjcUVwwRxV7fJvJGfk05xeFfB6eV5U-Vrv7R98T1Bg2DIxjnOXdRsN_v8ES8cdAn4a0mTA7Wku7l0WyweTt4K36CEbjQp7Fb_4ldMPIuMoVvYPhrv659zsWrM_ykVSVuBYWWaHt5vFsZO5KaSYXneuuooO"/>
+<span class="font-body-md text-body-md text-on-surface">张三</span>
+</div>
+</li>
+<li class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">记录方式</span>
+<span class="font-body-md text-body-md text-on-surface">本人记录</span>
+</li>
+<li class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">创建时间</span>
+<span class="font-body-md text-body-md text-on-surface">2023-10-24 14:32:05</span>
+</li>
+</ul>
+</div>
+</section>
+<!-- 底部操作区域 -->
+<section class="mt-8 flex flex-col gap-4">
+<button class="w-full py-4 rounded-xl bg-primary text-on-primary font-body-lg text-body-lg font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">flag</span>
+                 取消争议
+             </button>
+</section>
+</main>
+</body></html>

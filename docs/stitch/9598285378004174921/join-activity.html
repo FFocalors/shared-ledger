@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>SharedLedger - 加入活动</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed": "#e9e2d4",
+                    "secondary-fixed-dim": "#e9bf8b",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#575449",
+                    "secondary": "#78582d",
+                    "error-container": "#ffdad6",
+                    "surface-tint": "#54643f",
+                    "inverse-surface": "#303030",
+                    "surface-container-low": "#f5f3f3",
+                    "inverse-primary": "#bbcda0",
+                    "on-primary": "#ffffff",
+                    "secondary-container": "#fed39c",
+                    "on-background": "#1b1c1c",
+                    "primary-container": "#bdcfa2",
+                    "error": "#ba1a1a",
+                    "outline": "#75786e",
+                    "on-tertiary-fixed": "#1e1b13",
+                    "tertiary": "#625e53",
+                    "primary-fixed": "#d7e9ba",
+                    "inverse-on-surface": "#f2f0f0",
+                    "surface-container": "#efeded",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed": "#2a1800",
+                    "on-surface-variant": "#45483e",
+                    "surface": "#fbf9f8",
+                    "on-secondary-container": "#79592d",
+                    "background": "#fbf9f8",
+                    "primary": "#54643f",
+                    "on-tertiary-fixed-variant": "#4a473c",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed-variant": "#3d4b29",
+                    "surface-container-high": "#eae8e7",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-fixed-variant": "#5e4118",
+                    "tertiary-container": "#cec8ba",
+                    "on-error": "#ffffff",
+                    "surface-bright": "#fbf9f8",
+                    "tertiary-fixed-dim": "#ccc6b8",
+                    "surface-dim": "#dbd9d9",
+                    "outline-variant": "#c5c8bb",
+                    "surface-variant": "#e4e2e2",
+                    "on-primary-container": "#495935",
+                    "on-surface": "#1b1c1c",
+                    "primary-fixed-dim": "#bbcda0",
+                    "secondary-fixed": "#ffddb5",
+                    "on-primary-fixed": "#121f03",
+                    "surface-container-highest": "#e4e2e2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-page": "24px",
+                    "base": "4px",
+                    "stack-lg": "32px",
+                    "stack-md": "16px",
+                    "stack-sm": "8px",
+                    "gutter-card": "16px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "title-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "display-amount": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500"}],
+                    "headline-lg": ["28px", {"lineHeight": "34px", "fontWeight": "600"}],
+                    "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "500"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "30px", "fontWeight": "600"}],
+                    "display-amount": ["40px", {"lineHeight": "48px", "letterSpacing": "-1px", "fontWeight": "600"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .code-input:focus-within {
+            border-color: #54643f;
+            box-shadow: 0 0 0 1px #54643f;
+        }
+        .code-input input:focus {
+            outline: none;
+        }
+        /* Custom scrollbar hide for cleaner look */
+        ::-webkit-scrollbar { display: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen relative selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top App Bar (Custom for focused task) -->
+<header class="fixed top-0 left-0 right-0 w-full max-w-[480px] mx-auto z-50 bg-background/90 backdrop-blur-md">
+<div class="flex items-center justify-between px-margin-page h-16">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors active:scale-95 text-on-surface">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="text-title-md font-title-md text-on-surface absolute left-1/2 -translate-x-1/2 pointer-events-none">
+                加入活动
+            </h1>
+<div class="w-10 h-10"></div> <!-- Spacer for centering -->
+</div>
+</header>
+<main class="w-full max-w-[480px] mx-auto px-margin-page pb-32 flex flex-col gap-stack-lg pt-4">
+<!-- ==================== STATE 1: INPUT CODE ==================== -->
+<section class="flex flex-col gap-stack-md transition-opacity duration-300" id="state-input">
+<div class="flex flex-col gap-1">
+<h2 class="text-title-md font-title-md text-on-surface">
+                    输入邀请码
+                </h2>
+<p class="text-body-md font-body-md text-on-surface-variant">
+                    向活动创建者获取 8 位数字邀请码以加入账本。
+                </p>
+</div>
+<!-- 8 Digit Input Area -->
+<div class="mt-4 flex justify-between gap-2" id="code-container">
+<!-- Creating 8 individual inputs for a tactile, premium feel -->
+<div class="code-input w-full aspect-[3/4] bg-surface-container-low rounded-xl border border-outline-variant/30 flex items-center justify-center transition-all">
+<input class="w-full h-full bg-transparent text-center text-headline-lg-mobile font-headline-lg-mobile text-on-surface border-none p-0 focus:ring-0" inputmode="numeric" maxlength="1" placeholder="-" type="text"/>
+</div>
+<div class="code-input w-full aspect-[3/4] bg-surface-container-low rounded-xl border border-outline-variant/30 flex items-center justify-center transition-all">
+<input class="w-full h-full bg-transparent text-center text-headline-lg-mobile font-headline-lg-mobile text-on-surface border-none p-0 focus:ring-0" inputmode="numeric" maxlength="1" placeholder="-" type="text"/>
+</div>
+<div class="code-input w-full aspect-[3/4] bg-surface-container-low rounded-xl border border-outline-variant/30 flex items-center justify-center transition-all">
+<input class="w-full h-full bg-transparent text-center text-headline-lg-mobile font-headline-lg-mobile text-on-surface border-none p-0 focus:ring-0" inputmode="numeric" maxlength="1" placeholder="-" type="text"/>
+</div>
+<div class="code-input w-full aspect-[3/4] bg-surface-container-low rounded-xl border border-outline-variant/30 flex items-center justify-center transition-all">
+<input class="w-full h-full bg-transparent text-center text-headline-lg-mobile font-headline-lg-mobile text-on-surface border-none p-0 focus:ring-0" inputmode="numeric" maxlength="1" placeholder="-" type="text"/>
+</div>
+<!-- Spacing for visual grouping (4 + 4) -->
+<div class="w-2"></div>
+<div class="code-input w-full aspect-[3/4] bg-surface-container-low rounded-xl border border-outline-variant/30 flex items-center justify-center transition-all">
+<input class="w-full h-full bg-transparent text-center text-headline-lg-mobile font-headline-lg-mobile text-on-surface border-none p-0 focus:ring-0" inputmode="numeric" maxlength="1" placeholder="-" type="text"/>
+</div>
+<div class="code-input w-full aspect-[3/4] bg-surface-container-low rounded-xl border border-outline-variant/30 flex items-center justify-center transition-all">
+<input class="w-full h-full bg-transparent text-center text-headline-lg-mobile font-headline-lg-mobile text-on-surface border-none p-0 focus:ring-0" inputmode="numeric" maxlength="1" placeholder="-" type="text"/>
+</div>
+<div class="code-input w-full aspect-[3/4] bg-surface-container-low rounded-xl border border-outline-variant/30 flex items-center justify-center transition-all">
+<input class="w-full h-full bg-transparent text-center text-headline-lg-mobile font-headline-lg-mobile text-on-surface border-none p-0 focus:ring-0" inputmode="numeric" maxlength="1" placeholder="-" type="text"/>
+</div>
+<div class="code-input w-full aspect-[3/4] bg-surface-container-low rounded-xl border border-outline-variant/30 flex items-center justify-center transition-all">
+<input class="w-full h-full bg-transparent text-center text-headline-lg-mobile font-headline-lg-mobile text-on-surface border-none p-0 focus:ring-0" inputmode="numeric" maxlength="1" placeholder="-" type="text"/>
+</div>
+</div>
+<button class="w-full mt-stack-md bg-primary text-on-primary h-14 rounded-full flex items-center justify-center gap-2 hover:bg-primary/90 active:scale-[0.98] transition-all shadow-[0_4px_24px_rgba(84,100,63,0.15)]" id="btn-find">
+<span class="text-body-lg font-body-lg font-medium">查找活动</span>
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">search</span>
+</button>
+<!-- Error States (Hidden by default) -->
+<div class="hidden mt-2 p-3 bg-error-container text-on-error-container rounded-xl flex items-center gap-2" id="error-invalid">
+<span class="material-symbols-outlined text-[20px]">error</span>
+<span class="text-body-md">邀请码无效，请检查后重试</span>
+</div>
+<div class="hidden mt-2 p-3 bg-error-container text-on-error-container rounded-xl flex items-center gap-2" id="error-deleted">
+<span class="material-symbols-outlined text-[20px]">delete_forever</span>
+<span class="text-body-md">该活动已被删除</span>
+</div>
+<div class="hidden mt-2 p-3 bg-surface-container-high text-on-surface-variant rounded-xl flex items-center gap-2" id="error-joined">
+<span class="material-symbols-outlined text-[20px]">info</span>
+<span class="text-body-md">你已加入此活动</span>
+</div></section>
+<!-- ==================== STATE 2: CONFIRM IDENTITY ==================== -->
+<section class="hidden flex-col gap-stack-lg transition-opacity duration-300 opacity-0" id="state-confirm">
+<!-- Activity Summary Card (Level 1 Surface) -->
+<div class="bg-surface-container-low rounded-[24px] p-6 border border-outline-variant/20 flex flex-col gap-4 shadow-[0_4px_32px_rgba(0,0,0,0.03)] relative overflow-hidden">
+<!-- Decorative ambient gradient -->
+<div class="absolute -top-12 -right-12 w-32 h-32 bg-primary-container/40 blur-[40px] rounded-full pointer-events-none"></div>
+<div class="flex items-start justify-between relative z-10">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 mb-1">
+<span class="bg-tertiary-container text-on-tertiary-container px-2 py-0.5 rounded-full text-[10px] font-label-md tracking-wide">
+                                大型活动
+                            </span>
+<span class="bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded-full text-[10px] font-label-md tracking-wide flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">group</span>
+                                8 人参与
+                            </span>
+</div>
+<h2 class="text-headline-lg-mobile font-headline-lg-mobile text-on-surface">
+                            日本关西秋季行
+                        </h2>
+<p class="text-body-md font-body-md text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">calendar_month</span>
+                            2023.10.15 - 10.25
+                        </p>
+</div>
+<div class="w-12 h-12 rounded-2xl bg-secondary-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">flight_takeoff</span>
+</div>
+</div>
+</div>
+<!-- Participant List -->
+<div class="flex flex-col gap-stack-md">
+<div class="flex items-center justify-between px-2">
+<h3 class="text-title-md font-title-md text-on-surface">
+                        请选择你在账本中的身份
+                    </h3>
+<span class="text-label-md font-label-md text-on-surface-variant">
+                        5/8 已认领
+                    </span>
+</div>
+<div class="flex flex-col gap-3"><!-- Bound to others (Disabled) -->
+<div class="flex items-center justify-between p-4 bg-surface-container-low/50 rounded-[20px] border border-outline-variant/10 opacity-60">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">person</span>
+</div>
+<span class="text-body-lg font-body-lg text-on-surface-variant">王五</span>
+</div>
+<div class="flex items-center gap-1 text-outline">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+<span class="text-label-md font-label-md">已被认领</span>
+</div>
+</div>
+<!-- Bound to current user (Claimed) -->
+<div class="flex items-center justify-between p-4 bg-primary-container/10 rounded-[20px] border border-primary/20">
+<div class="flex items-center gap-4">
+<img class="w-10 h-10 rounded-full object-cover bg-surface-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5Xgzto0zm8OArGNyr6wbz_PfkYN1-EzFyMEHW1h1UqqtQMhmUXbVjaDzBSmdq43GS1Ra2oUvk1iD-2YwCzvPZsTrp557AV9HQoKDqSvhaDrp-3Q3TW2ffjYY6dwKxaf9dAbBNlITUCo1ILiQVUoqYRHnK4clGRSA8YyUQ2rrXNuXOWc__K8Z8PpXJJDJgrW766o44GkW_u1v1dwkN_8eLCM7VeE1v6SEg0Y7PmPMkFAN8APyvYccX"/>
+<span class="text-body-lg font-body-lg text-on-surface font-medium">我 (张三)</span>
+</div>
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span class="text-label-md font-label-md">已认领</span>
+</div>
+</div>
+<!-- Unbound (Selectable) -->
+<div class="group flex items-center justify-between p-4 bg-surface rounded-[20px] border border-outline-variant/30 hover:border-primary/50 transition-colors cursor-pointer active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant border border-dashed border-outline-variant">
+<span class="material-symbols-outlined">person</span>
+</div>
+<span class="text-body-lg font-body-lg text-on-surface">李四</span>
+</div>
+<button class="px-4 py-1.5 rounded-full bg-primary-container text-on-primary-container text-label-md font-label-md group-hover:bg-primary group-hover:text-on-primary transition-colors">
+        这是我
+    </button>
+</div>
+<!-- Locked List Message -->
+<div class="p-4 bg-surface-container-low rounded-[20px] border border-outline-variant/20 mt-2">
+<p class="text-body-md font-body-md text-on-surface-variant text-center">
+        参与人名单已锁定，只能认领已有参与人
+    </p>
+</div></div>
+</div>
+<!-- Contextual Bottom Action Bar (Docked) -->
+<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-surface-container pt-4 pb-8 px-margin-page rounded-t-[32px] shadow-[0_-8px_32px_rgba(0,0,0,0.04)] z-50">
+<button class="w-full h-14 rounded-full bg-primary text-on-primary flex items-center justify-center gap-2 shadow-[0_8px_24px_rgba(84,100,63,0.25)] hover:bg-primary/90 active:scale-[0.98] transition-all">
+<span class="text-body-lg font-body-lg font-medium">确认加入</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_forward</span>
+</button>
+</div>
+<!-- Spacer for bottom bar -->
+<div class="h-16"></div>
+</section>
+</main>
+<script>
+        // Simple micro-interaction for input auto-advance
+        const inputs = document.querySelectorAll('.code-input input');
+        inputs.forEach((input, index) => {
+            // Only allow numbers
+            input.addEventListener('keypress', function(e) {
+                if (e.key < '0' || e.key > '9') {
+                    e.preventDefault();
+                }
+            });
+
+            input.addEventListener('input', function() {
+                if(this.value.length === 1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            });
+            input.addEventListener('keydown', function(e) {
+                if(e.key === 'Backspace' && this.value.length === 0 && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+        });
+
+        // Toggle states for demonstration
+        const btnFind = document.getElementById('btn-find');
+        const stateInput = document.getElementById('state-input');
+        const stateConfirm = document.getElementById('state-confirm');
+
+        btnFind.addEventListener('click', () => {
+            // Simulate loading
+            const originalText = btnFind.innerHTML;
+            btnFind.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span>';
+
+            setTimeout(() => {
+                // Fade out state 1
+                stateInput.classList.add('hidden');
+                stateInput.classList.remove('flex');
+
+                // Show state 2
+                stateConfirm.classList.remove('hidden');
+                stateConfirm.classList.add('flex');
+
+                // Trigger reflow for transition
+                void stateConfirm.offsetWidth;
+
+                stateConfirm.classList.remove('opacity-0');
+            }, 600);
+        });
+    </script>
+</body></html>
