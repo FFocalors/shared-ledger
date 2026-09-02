@@ -12,24 +12,18 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,7 +33,6 @@ import com.ffocalors.sharedledger.ui.components.AmountDisplay
 import com.ffocalors.sharedledger.ui.components.AmountSize
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
-import com.ffocalors.sharedledger.ui.components.SharedLedgerSecondaryButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.components.WarningCard
 import com.ffocalors.sharedledger.ui.theme.IconContainerOrange
@@ -56,56 +49,121 @@ import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLowest
 import com.ffocalors.sharedledger.ui.theme.WarmBrown
 import java.math.BigDecimal
 
+data class FinalSettlementRequest(
+    val activityId: String,
+    val previewItemId: String,
+    val fromParticipantId: String,
+    val toParticipantId: String,
+    val amount: BigDecimal,
+    val currency: String,
+    val ordinaryAmount: BigDecimal,
+    val prepaymentReturnAmount: BigDecimal,
+    val sourceFinancialVersion: Long,
+)
+
+/** Request contract shared by the demo host and a future create/execute RPC adapter. */
+fun FinalSettlementRequest.isValid(): Boolean =
+    activityId.isNotBlank() &&
+        previewItemId.isNotBlank() &&
+        fromParticipantId.isNotBlank() &&
+        toParticipantId.isNotBlank() &&
+        fromParticipantId != toParticipantId &&
+        amount > BigDecimal.ZERO &&
+        currency.length == 3 &&
+        currency == currency.uppercase() &&
+        ordinaryAmount >= BigDecimal.ZERO &&
+        prepaymentReturnAmount >= BigDecimal.ZERO &&
+        ordinaryAmount + prepaymentReturnAmount == amount &&
+        sourceFinancialVersion >= 1L
+
 private data class SettlementSuggestion(
     val id: String,
+    val fromParticipantId: String,
+    val toParticipantId: String,
     val from: ParticipantUiModel,
     val to: ParticipantUiModel,
     val amount: BigDecimal,
-    val actionLabel: String,
-    val filledAction: Boolean = true,
+    val currency: String,
+    val ordinaryAmount: BigDecimal,
+    val prepaymentReturnAmount: BigDecimal,
+    val sourceFinancialVersion: Long,
 )
+
+private fun SettlementSuggestion.toRequest(activityId: String): FinalSettlementRequest =
+    FinalSettlementRequest(
+        activityId = activityId,
+        previewItemId = id,
+        fromParticipantId = fromParticipantId,
+        toParticipantId = toParticipantId,
+        amount = amount,
+        currency = currency,
+        ordinaryAmount = ordinaryAmount,
+        prepaymentReturnAmount = prepaymentReturnAmount,
+        sourceFinancialVersion = sourceFinancialVersion,
+    )
 
 private val SettlementSuggestions = listOf(
     SettlementSuggestion(
         id = "zhang-san-wang-wu",
+        fromParticipantId = "fake-alice",
+        toParticipantId = "fake-bob",
         from = ParticipantUiModel("张三", IconContainerSage),
         to = ParticipantUiModel("王五"),
         amount = BigDecimal("320.0"),
-        actionLabel = "记录已支付",
+        currency = "CNY",
+        ordinaryAmount = BigDecimal("320.0"),
+        prepaymentReturnAmount = BigDecimal.ZERO,
+        sourceFinancialVersion = 12L,
     ),
     SettlementSuggestion(
         id = "li-si-zhao-liu",
+        fromParticipantId = "fake-bob",
+        toParticipantId = "fake-carol",
         from = ParticipantUiModel("李四", IconContainerOrange),
         to = ParticipantUiModel("赵六"),
         amount = BigDecimal("180.0"),
-        actionLabel = "记录已支付",
+        currency = "CNY",
+        ordinaryAmount = BigDecimal("180.0"),
+        prepaymentReturnAmount = BigDecimal.ZERO,
+        sourceFinancialVersion = 12L,
     ),
     SettlementSuggestion(
         id = "wang-wu-zhang-san",
+        fromParticipantId = "fake-carol",
+        toParticipantId = "fake-alice",
         from = ParticipantUiModel("王五"),
         to = ParticipantUiModel("张三", IconContainerSage),
         amount = BigDecimal("60.0"),
-        actionLabel = "记录已支付",
+        currency = "CNY",
+        ordinaryAmount = BigDecimal("60.0"),
+        prepaymentReturnAmount = BigDecimal.ZERO,
+        sourceFinancialVersion = 12L,
     ),
 )
 
 private val DepositReturn = SettlementSuggestion(
     id = "zhang-san-li-si-return",
+    fromParticipantId = "fake-alice",
+    toParticipantId = "fake-bob",
     from = ParticipantUiModel("张三", IconContainerSage),
     to = ParticipantUiModel("李四", IconContainerOrange),
     amount = BigDecimal("200.0"),
-    actionLabel = "记录返还",
-    filledAction = false,
+    currency = "CNY",
+    ordinaryAmount = BigDecimal.ZERO,
+    prepaymentReturnAmount = BigDecimal("200.0"),
+    sourceFinancialVersion = 12L,
 )
 
 /**
- * Large-activity settlement review. This is a local UI demo: recording an item only changes its
- * button state and never creates a real transfer or calculates a settlement.
+ * Large-activity settlement review. Each execution emits a complete request; the host owns
+ * persistence and can later replace the handler with the create/execute settlement RPC.
  */
 @Composable
 fun FinalSettlementScreen(
+    activityId: String = "demo-large",
     modifier: Modifier = Modifier,
-    onBack: () -> Unit = {},
+    onBack: (() -> Unit)? = null,
+    onFinalize: ((FinalSettlementRequest) -> Unit)? = null,
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -113,7 +171,7 @@ fun FinalSettlementScreen(
         topBar = {
             SharedLedgerTopBar(
                 title = "共享账本",
-                showBackButton = true,
+                showBackButton = onBack != null,
                 onBackClick = onBack,
                 containerColor = MaterialTheme.colorScheme.background,
             )
@@ -159,6 +217,13 @@ fun FinalSettlementScreen(
                         text = "当前存在 1 条有争议的转账记录，请在结算前仔细核对。",
                     )
                 }
+                item(key = "demo-boundary") {
+                    Text(
+                        text = "演示 · 活动：$activityId",
+                        style = SharedLedgerTextStyles.Label,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
                 item(key = "suggested-header") {
                     SettlementSectionHeader(
                         title = "建议转账 (3笔)",
@@ -169,7 +234,10 @@ fun FinalSettlementScreen(
                     items = SettlementSuggestions,
                     key = { it.id },
                 ) { suggestion ->
-                    SettlementSuggestionCard(suggestion = suggestion)
+                    SettlementSuggestionCard(
+                        suggestion = suggestion,
+                        onExecute = onFinalize?.let { callback -> { callback(suggestion.toRequest(activityId)) } },
+                    )
                 }
                 item(key = "returns-header") {
                     Text(
@@ -180,7 +248,10 @@ fun FinalSettlementScreen(
                     )
                 }
                 item(key = DepositReturn.id) {
-                    SettlementSuggestionCard(suggestion = DepositReturn)
+                    SettlementSuggestionCard(
+                        suggestion = DepositReturn,
+                        onExecute = onFinalize?.let { callback -> { callback(DepositReturn.toRequest(activityId)) } },
+                    )
                 }
             }
         }
@@ -223,9 +294,9 @@ private fun SettlementSectionHeader(
 @Composable
 private fun SettlementSuggestionCard(
     suggestion: SettlementSuggestion,
+    onExecute: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
-    var recorded by rememberSaveable { mutableStateOf(false) }
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = SharedLedgerRadius.Large,
@@ -270,42 +341,27 @@ private fun SettlementSuggestionCard(
                     modifier = Modifier.padding(start = SharedLedgerSpacing.XSmall),
                 )
             }
-            if (recorded) {
-                Surface(
-                    shape = SharedLedgerRadius.Full,
-                    color = SurfaceWarmLow,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                ) {
-                    Text(
-                        text = "已记录",
-                        modifier = Modifier.padding(
-                            horizontal = SharedLedgerSpacing.MediumSmall,
-                            vertical = SharedLedgerSpacing.Small,
-                        ),
-                        style = SharedLedgerTextStyles.Label,
-                    )
-                }
-            } else if (suggestion.filledAction) {
-                Button(
-                    onClick = { recorded = true },
-                    modifier = Modifier.width(104.dp),
-                    shape = SharedLedgerRadius.Full,
-                    contentPadding = PaddingValues(horizontal = SharedLedgerSpacing.Small),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                    ),
-                ) {
-                    Text(text = suggestion.actionLabel, style = SharedLedgerTextStyles.Label)
-                }
+            if (onExecute == null) {
+                SuggestionBadge("演示建议")
             } else {
-                SharedLedgerSecondaryButton(
-                    text = suggestion.actionLabel,
-                    onClick = { recorded = true },
-                    modifier = Modifier.width(104.dp),
-                )
+                TextButton(onClick = onExecute) { Text("执行") }
             }
         }
+    }
+}
+
+@Composable
+private fun SuggestionBadge(text: String) {
+    Surface(
+        shape = SharedLedgerRadius.Full,
+        color = SurfaceWarmLow,
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    ) {
+        Text(
+            text = text,
+            modifier = Modifier.padding(horizontal = SharedLedgerSpacing.MediumSmall, vertical = SharedLedgerSpacing.Small),
+            style = SharedLedgerTextStyles.Label,
+        )
     }
 }
 

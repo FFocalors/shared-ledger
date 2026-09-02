@@ -19,7 +19,6 @@ import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
 import androidx.compose.material.icons.rounded.AccountBalanceWallet
 import androidx.compose.material.icons.rounded.Analytics
 import androidx.compose.material.icons.rounded.DoneAll
-import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Hotel
 import androidx.compose.material.icons.rounded.RequestQuote
 import androidx.compose.material.icons.rounded.Restaurant
@@ -83,6 +82,7 @@ private val LargeActivitySubActivities = listOf(
         icon = Icons.Rounded.Restaurant,
         iconContainerColor = SubActivityBreakfastContainer,
         iconTint = WarmBrown,
+        ledgerUnitId = BreakfastId,
     ),
     SubActivityUiModel(
         name = "门票",
@@ -93,6 +93,7 @@ private val LargeActivitySubActivities = listOf(
         currencyCode = "EUR",
         iconContainerColor = IconContainerSage,
         iconTint = SageGreen,
+        ledgerUnitId = TicketId,
     ),
     SubActivityUiModel(
         name = "酒店",
@@ -102,6 +103,7 @@ private val LargeActivitySubActivities = listOf(
         icon = Icons.Rounded.Hotel,
         iconContainerColor = IconContainerTertiary,
         iconTint = IconContainerNeutralTint,
+        ledgerUnitId = HotelId,
     ),
 )
 
@@ -120,7 +122,9 @@ fun LargeActivityScreen(
     onFinalSettlement: () -> Unit = {},
     onTransfer: () -> Unit = {},
     onReceive: () -> Unit = {},
-    onShowPrepayment: () -> Unit = {},
+    onFundRecords: () -> Unit = {},
+    onShowPrepayment: (() -> Unit)? = null,
+    onManageActivity: (() -> Unit)? = null,
 ) {
     var showPrepaymentSheet by remember { mutableStateOf(false) }
     val prepaymentSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -133,6 +137,7 @@ fun LargeActivityScreen(
                 title = "日本旅行",
                 showBackButton = true,
                 onBackClick = onBack,
+                onMoreClick = onManageActivity,
                 containerColor = MaterialTheme.colorScheme.background,
                 businessAction = {
                     ParticipantAvatarGroup(
@@ -163,7 +168,7 @@ fun LargeActivityScreen(
                             "预存",
                             Icons.Rounded.AccountBalanceWallet,
                             onClick = {
-                                onShowPrepayment()
+                                onShowPrepayment?.invoke()
                                 showPrepaymentSheet = true
                             },
                         ),
@@ -204,16 +209,9 @@ fun LargeActivityScreen(
                 item(key = "quick-actions") {
                     SharedLedgerActionItemsRow(
                         items = listOf(
-                            QuickActionItem("查看总体结算", Icons.Rounded.Analytics),
+                            QuickActionItem("查看总体结算", Icons.Rounded.Analytics, onClick = onFinalSettlement),
                             QuickActionItem("最终结算", Icons.Rounded.DoneAll, onClick = onFinalSettlement),
-                            QuickActionItem(
-                                "预存记录",
-                                Icons.Rounded.History,
-                                onClick = {
-                                    onShowPrepayment()
-                                    showPrepaymentSheet = true
-                                },
-                            ),
+                            QuickActionItem("资金记录", Icons.Rounded.AccountBalanceWallet, onClick = onFundRecords),
                         ),
                         modifier = Modifier.padding(top = SharedLedgerSpacing.Medium),
                     )
@@ -230,13 +228,7 @@ fun LargeActivityScreen(
                     SubActivityCard(
                         activity = activity,
                         onClick = {
-                            onSubActivityClick(
-                                when (activity.name) {
-                                    "早餐" -> BreakfastId
-                                    "门票" -> TicketId
-                                    else -> HotelId
-                                },
-                            )
+                            onSubActivityClick(activity.ledgerUnitId)
                         },
                     )
                 }
@@ -255,13 +247,13 @@ fun LargeActivityScreen(
             onDismissRequest = { showPrepaymentSheet = false },
             sheetState = prepaymentSheetState,
         ) {
-            PrepaymentSheetContent()
+            PrepaymentSheetContent(onDismiss = { showPrepaymentSheet = false })
         }
     }
 }
 
 @Composable
-private fun PrepaymentSheetContent() {
+private fun PrepaymentSheetContent(onDismiss: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -307,8 +299,8 @@ private fun PrepaymentSheetContent() {
             }
         }
         SharedLedgerSecondaryButton(
-            text = "追加预存",
-            onClick = {},
+            text = "关闭",
+            onClick = onDismiss,
             modifier = Modifier.fillMaxWidth(),
         )
     }

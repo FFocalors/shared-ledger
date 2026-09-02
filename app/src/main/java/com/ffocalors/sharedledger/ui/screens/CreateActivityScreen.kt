@@ -49,6 +49,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.components.ActivityKind
+import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.theme.AppBackground
@@ -85,9 +86,7 @@ fun CreateActivityScreen(
                 showBackButton = true,
                 onBackClick = onBackClick,
                 containerColor = AppBackground,
-                // The shared top bar keeps its standard trailing action slot;
-                // it is intentionally inert on this transactional screen.
-                onMoreClick = {},
+                showMoreButton = false,
             )
         },
         bottomBar = {
@@ -405,28 +404,11 @@ private fun CreateActivityBottomBar(onClick: () -> Unit) {
                 bottom = SharedLedgerSpacing.Large,
             ),
     ) {
-        Button(
+        SharedLedgerButton(
+            text = "创建活动",
             onClick = onClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = WarmOrangeContainer,
-                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-            ),
-            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
-        ) {
-            Text(
-                text = "创建活动",
-                style = SharedLedgerTextStyles.CardTitle,
-            )
-            Spacer(modifier = Modifier.width(SharedLedgerSpacing.Small))
-            Icon(
-                imageVector = Icons.Rounded.ArrowForward,
-                contentDescription = null,
-            )
-        }
+            icon = Icons.Rounded.ArrowForward,
+        )
     }
 }
 

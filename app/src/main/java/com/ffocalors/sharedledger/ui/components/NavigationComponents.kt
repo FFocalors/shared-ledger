@@ -26,6 +26,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.foundation.shape.CircleShape
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
@@ -49,9 +51,16 @@ fun SharedLedgerTopBar(
     containerColor: Color = MaterialTheme.colorScheme.background,
     showBackButton: Boolean = false,
     avatarName: String = "我",
-    onBackClick: () -> Unit = {},
-    onMoreClick: () -> Unit = {},
+    onBackClick: (() -> Unit)? = null,
+    onMoreClick: (() -> Unit)? = null,
+    actionIcon: ImageVector? = null,
+    actionContentDescription: String? = null,
+    onActionClick: (() -> Unit)? = null,
+    showMoreButton: Boolean = true,
     businessAction: (@Composable RowScope.() -> Unit)? = null,
+    titleStyle: TextStyle = SharedLedgerTextStyles.CardTitle,
+    titleColor: Color = MaterialTheme.colorScheme.onBackground,
+    moreButtonContainerColor: Color = Color.Transparent,
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -71,52 +80,70 @@ fun SharedLedgerTopBar(
                     .padding(horizontal = SharedLedgerDimens.PageHorizontalPadding, vertical = SharedLedgerSpacing.Medium),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-            if (showBackButton) {
-                Box(
-                    modifier = Modifier
-                        .size(SharedLedgerDimens.TopBarActionSize)
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), CircleShape)
-                        .clickable(onClick = onBackClick),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = "返回",
-                        modifier = Modifier.size(SharedLedgerDimens.IconMedium),
-                        tint = TextPrimary,
+                if (showBackButton && onBackClick != null) {
+                    Box(
+                        modifier = Modifier
+                            .size(SharedLedgerDimens.TopBarActionSize)
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), CircleShape)
+                            .clickable(onClick = onBackClick),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = "返回",
+                            modifier = Modifier.size(SharedLedgerDimens.IconMedium),
+                            tint = TextPrimary,
+                        )
+                    }
+                } else {
+                    ParticipantAvatar(
+                        name = avatarName,
+                        size = SharedLedgerDimens.AvatarMedium,
                     )
                 }
-            } else {
-                ParticipantAvatar(
-                    name = avatarName,
-                    size = SharedLedgerDimens.AvatarMedium,
+                Text(
+                    text = title,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = SharedLedgerSpacing.Medium),
+                    style = titleStyle,
+                    color = titleColor,
                 )
-            }
-            Text(
-                text = title,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = SharedLedgerSpacing.Medium),
-                style = SharedLedgerTextStyles.CardTitle,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-            businessAction?.invoke(this)
-            Box(
-                modifier = Modifier
-                    .size(SharedLedgerDimens.TopBarActionSize)
-                    .clickable(onClick = onMoreClick),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.MoreVert,
-                    contentDescription = "更多",
-                    modifier = Modifier.size(SharedLedgerDimens.IconMedium),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                businessAction?.invoke(this)
+                if (actionIcon != null && onActionClick != null) {
+                    Box(
+                        modifier = Modifier
+                            .size(SharedLedgerDimens.TopBarActionSize)
+                            .clickable(onClick = onActionClick),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = actionIcon,
+                            contentDescription = actionContentDescription ?: "操作",
+                            modifier = Modifier.size(SharedLedgerDimens.IconMedium),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
+                if (showMoreButton && onMoreClick != null) {
+                    Box(
+                        modifier = Modifier
+                            .size(SharedLedgerDimens.TopBarActionSize)
+                            .background(moreButtonContainerColor, CircleShape)
+                            .clickable(onClick = onMoreClick),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.MoreVert,
+                            contentDescription = "更多",
+                            modifier = Modifier.size(SharedLedgerDimens.IconMedium),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
             }
         }
     }
-}
 }
 
 @Composable

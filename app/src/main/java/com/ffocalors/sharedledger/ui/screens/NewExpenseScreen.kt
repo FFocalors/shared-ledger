@@ -105,7 +105,7 @@ fun NewExpenseScreen(
                 showBackButton = true,
                 onBackClick = onBack,
                 containerColor = AppBackground,
-                onMoreClick = {},
+                showMoreButton = false,
             )
         },
         bottomBar = {

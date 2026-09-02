@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CalendarToday
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Group
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.LocalTaxi
 import androidx.compose.material.icons.rounded.RequestQuote
 import androidx.compose.material.icons.rounded.Restaurant
@@ -44,6 +45,8 @@ import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.SettlementStatistic
 import com.ffocalors.sharedledger.ui.components.SettlementSummaryCard
 import com.ffocalors.sharedledger.ui.components.SharedLedgerBottomActionBar
+import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
+import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.DividerSubtle
@@ -73,6 +76,7 @@ private val NormalActivityExpenses = listOf(
         payerName = "张三",
         participantCount = 5,
         participants = NormalActivityParticipants,
+        expenseId = com.ffocalors.sharedledger.ui.demo.DemoRouteIds.DINNER_EXPENSE,
     ),
     ExpenseCardUiModel(
         name = "打车",
@@ -80,6 +84,7 @@ private val NormalActivityExpenses = listOf(
         payerName = "李四",
         participantCount = 5,
         participants = listOf(NormalActivityParticipants[1], NormalActivityParticipants[4]),
+        expenseId = com.ffocalors.sharedledger.ui.demo.DemoRouteIds.TAXI_EXPENSE,
     ),
 )
 
@@ -93,6 +98,9 @@ fun NormalActivityScreen(
     onTransfer: () -> Unit = {},
     onNewExpense: () -> Unit = {},
     onReceive: () -> Unit = {},
+    onFundRecords: () -> Unit = {},
+    onManageActivity: (() -> Unit)? = null,
+    onExpenseClick: (String) -> Unit = {},
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -102,6 +110,7 @@ fun NormalActivityScreen(
                 title = "周末聚餐",
                 showBackButton = true,
                 onBackClick = onBack,
+                onMoreClick = onManageActivity,
                 containerColor = MaterialTheme.colorScheme.background,
                 businessAction = {
                     Icon(
@@ -167,6 +176,15 @@ fun NormalActivityScreen(
                         ),
                     )
                 }
+                item(key = "fund-records") {
+                    SharedLedgerButton(
+                        text = "资金记录",
+                        onClick = onFundRecords,
+                        tone = SharedLedgerButtonTone.Neutral,
+                        icon = Icons.Rounded.History,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
                 item(key = "my-status") {
                     PaymentStatusCard(
                         title = "你需要支付给 张三",
@@ -176,6 +194,7 @@ fun NormalActivityScreen(
                 item(key = "expenses") {
                     ExpenseTimeline(
                         expenses = NormalActivityExpenses,
+                        onExpenseClick = onExpenseClick,
                     )
                 }
             }
@@ -186,6 +205,7 @@ fun NormalActivityScreen(
 @Composable
 private fun ExpenseTimeline(
     expenses: List<ExpenseCardUiModel>,
+    onExpenseClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -201,6 +221,7 @@ private fun ExpenseTimeline(
             TimelineExpense(
                 expense = expense,
                 icon = if (index == 0) Icons.Rounded.Restaurant else Icons.Rounded.LocalTaxi,
+                onClick = { onExpenseClick(expense.expenseId) },
             )
         }
     }
@@ -250,6 +271,7 @@ private fun TimelineDateHeader(modifier: Modifier = Modifier) {
 private fun TimelineExpense(
     expense: ExpenseCardUiModel,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -273,6 +295,7 @@ private fun TimelineExpense(
         ExpenseCard(
             expense = expense,
             icon = icon,
+            onClick = onClick,
             modifier = Modifier
                 .weight(1f)
                 .padding(vertical = SharedLedgerSpacing.Small),

@@ -48,6 +48,7 @@ import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.SharedLedgerPrimaryButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.demo.DemoRouteIds
 import com.ffocalors.sharedledger.ui.theme.IconContainerOrange
 import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
@@ -68,14 +69,45 @@ enum class TransferMode {
 }
 
 private data class TransferParticipant(
+    val participantId: String,
     val participant: ParticipantUiModel,
     val amount: BigDecimal,
 )
 
 private val TransferParticipants = listOf(
-    TransferParticipant(ParticipantUiModel("张三", IconContainerSage), BigDecimal("300.0")),
-    TransferParticipant(ParticipantUiModel("李四", IconContainerOrange), BigDecimal("120.0")),
+    TransferParticipant("demo-participant-zhangsan", ParticipantUiModel("张三", IconContainerSage), BigDecimal("300.0")),
+    TransferParticipant("demo-participant-lisi", ParticipantUiModel("李四", IconContainerOrange), BigDecimal("120.0")),
 )
+
+/** Submission boundary for a future repository/API call. The backend can return its real ID
+ * asynchronously; the host should then call [SharedLedgerRoutes.transferDetail] with that ID. */
+data class TransferDraft(
+    val activityId: String,
+    val ledgerUnitId: String?,
+    val mode: TransferMode,
+    val participantId: String,
+    val amount: String,
+)
+
+/** Result boundary returned by a repository/backend after a transfer is created. */
+data class TransferCreationResult(
+    val transferId: String,
+    val activityId: String,
+    val ledgerUnitId: String?,
+)
+
+/** Deterministic demo backend response; a real integration replaces this with its API result. */
+internal fun demoCreateTransfer(draft: TransferDraft): TransferCreationResult =
+    TransferCreationResult(
+        transferId = DemoRouteIds.transfer(
+            activityId = draft.activityId,
+            ledgerUnitId = draft.ledgerUnitId,
+            mode = if (draft.mode == TransferMode.RECEIVE) "receive" else "transfer",
+            participantId = draft.participantId,
+        ),
+        activityId = draft.activityId,
+        ledgerUnitId = draft.ledgerUnitId,
+    )
 
 /**
  * Focused transfer/receive UI. It intentionally keeps all state local and does not create a
@@ -84,9 +116,11 @@ private val TransferParticipants = listOf(
 @Composable
 fun TransferScreen(
     mode: TransferMode,
+    activityId: String = "demo-normal",
+    ledgerUnitId: String? = null,
     modifier: Modifier = Modifier,
-    onBack: () -> Unit = {},
-    onConfirm: () -> Unit = {},
+    onBack: (() -> Unit)? = null,
+    onConfirm: ((TransferDraft) -> Unit)? = null,
 ) {
     var selectedIndex by rememberSaveable(mode) { mutableIntStateOf(0) }
     var amountText by rememberSaveable(mode) {
@@ -95,6 +129,7 @@ fun TransferScreen(
     val selected = TransferParticipants[selectedIndex.coerceIn(0, TransferParticipants.lastIndex)]
     val isTransfer = mode == TransferMode.TRANSFER
     val title = if (isTransfer) "转账" else "收款"
+    val isAmountValid = isValidTransferAmount(amountText)
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -102,7 +137,7 @@ fun TransferScreen(
         topBar = {
             SharedLedgerTopBar(
                 title = title,
-                showBackButton = true,
+                showBackButton = onBack != null,
                 onBackClick = onBack,
                 containerColor = MaterialTheme.colorScheme.background,
             )
@@ -145,8 +180,19 @@ fun TransferScreen(
                     mode = mode,
                     selected = selected,
                     amountText = amountText,
+                    isAmountValid = isAmountValid,
                     onAmountChange = { amountText = sanitizeCnyAmount(it) },
-                    onConfirm = onConfirm,
+                    onConfirm = onConfirm?.let { callback -> {
+                        callback(
+                            TransferDraft(
+                                activityId = activityId,
+                                ledgerUnitId = ledgerUnitId,
+                                mode = mode,
+                                participantId = selected.participantId,
+                                amount = amountText,
+                            ),
+                        )
+                    } },
                 )
             }
         }
@@ -254,8 +300,9 @@ private fun TransferAmountCard(
     mode: TransferMode,
     selected: TransferParticipant,
     amountText: String,
+    isAmountValid: Boolean,
     onAmountChange: (String) -> Unit,
-    onConfirm: () -> Unit,
+    onConfirm: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val isTransfer = mode == TransferMode.TRANSFER
@@ -302,11 +349,21 @@ private fun TransferAmountCard(
                 style = SharedLedgerTextStyles.Label,
                 color = MaterialTheme.colorScheme.outline,
             )
-            SharedLedgerPrimaryButton(
-                text = if (isTransfer) "确认已转账" else "确认已收款",
-                onClick = onConfirm,
-                icon = Icons.Rounded.ArrowForward,
-            )
+            if (!isAmountValid) {
+                Text(
+                    text = "请输入大于 0 的金额",
+                    style = SharedLedgerTextStyles.Label,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+            onConfirm?.let { callback ->
+                SharedLedgerPrimaryButton(
+                    text = if (isTransfer) "确认已转账" else "确认已收款",
+                    onClick = callback,
+                    enabled = isAmountValid,
+                    icon = Icons.Rounded.ArrowForward,
+                )
+            }
         }
     }
 }
@@ -320,6 +377,9 @@ private fun sanitizeCnyAmount(value: String): String {
         filtered.substring(0, dotIndex + 1) + filtered.substring(dotIndex + 1).take(1)
     }
 }
+
+internal fun isValidTransferAmount(value: String): Boolean =
+    value.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
 
 @Preview(name = "转账", showBackground = true, widthDp = 390, heightDp = 844)
 @Composable

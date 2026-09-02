@@ -24,11 +24,79 @@ val AppOutlineVariant = Color(0xFFC5C8BB)
 val ErrorRed = Color(0xFFBA1A1A)
 val ErrorContainer = Color(0xFFFFDAD6)
 
+/** Button palette tokens from the Stitch color reference. */
+val SoftPrimary = Color(0xFFBDCFA2)
+val SoftPrimaryContent = Color(0xFF4A4A4A)
+val WarmSecondary = Color(0xFFDDB480)
+val WarmSecondaryContent = Color(0xFF4A4A4A)
+val Neutral = Color(0xFFEBE4D6)
+val NeutralContent = Color(0xFF4A4A4A)
+val Inverted = Color(0xFF4A4A4A)
+val InvertedContent = Color(0xFFEBE4D6)
+
+@Immutable
+data class SharedLedgerButtonColorPair(
+    val containerColor: Color,
+    val contentColor: Color,
+)
+
+/** Explicit button tokens; Material color roles remain available for the rest of the app. */
+@Immutable
+data class SharedLedgerButtonPalette(
+    val softPrimary: SharedLedgerButtonColorPair = SharedLedgerButtonColorPair(
+        containerColor = SoftPrimary,
+        contentColor = SoftPrimaryContent,
+    ),
+    val warmSecondary: SharedLedgerButtonColorPair = SharedLedgerButtonColorPair(
+        containerColor = WarmSecondary,
+        contentColor = WarmSecondaryContent,
+    ),
+    val neutral: SharedLedgerButtonColorPair = SharedLedgerButtonColorPair(
+        containerColor = Neutral,
+        contentColor = NeutralContent,
+    ),
+    val inverted: SharedLedgerButtonColorPair = SharedLedgerButtonColorPair(
+        containerColor = Inverted,
+        contentColor = InvertedContent,
+    ),
+)
+
+val DefaultSharedLedgerButtonPalette = SharedLedgerButtonPalette()
+
+/** WCAG 2 contrast ratio for a foreground/background pair. */
+fun sharedLedgerContrastRatio(foreground: Color, background: Color): Double {
+    fun channel(value: Float): Double {
+        val normalized = value.toDouble()
+        return if (normalized <= 0.03928) {
+            normalized / 12.92
+        } else {
+            Math.pow((normalized + 0.055) / 1.055, 2.4)
+        }
+    }
+
+    fun luminance(color: Color): Double =
+        0.2126 * channel(color.red) +
+            0.7152 * channel(color.green) +
+            0.0722 * channel(color.blue)
+
+    val foregroundLuminance = luminance(foreground)
+    val backgroundLuminance = luminance(background)
+    val lighter = maxOf(foregroundLuminance, backgroundLuminance)
+    val darker = minOf(foregroundLuminance, backgroundLuminance)
+    return (lighter + 0.05) / (darker + 0.05)
+}
+
+fun hasAccessibleButtonContrast(
+    palette: SharedLedgerButtonColorPair,
+    minimumRatio: Double = 4.5,
+): Boolean = sharedLedgerContrastRatio(palette.contentColor, palette.containerColor) >= minimumRatio
+
 // Semantic surfaces from the SharedLedger UI Concept Stitch design system.
 val SurfaceWarm = Color(0xFFFBF9F8)
 val SurfaceWarmLowest = Color(0xFFFFFFFF)
 val SurfaceWarmLow = Color(0xFFF5F3F3)
 val SurfaceWarmHigh = Color(0xFFEAE8E7)
+val SurfaceWarmContainer = Color(0xFFEFEDED)
 val SurfaceWarmHighest = Color(0xFFE4E2E2)
 val IconContainerSage = Color(0xFFD7E9BA)
 val IconContainerOrange = Color(0xFFFFDDB5)

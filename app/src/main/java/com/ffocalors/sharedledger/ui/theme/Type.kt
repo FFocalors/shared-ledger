@@ -87,6 +87,12 @@ object SharedLedgerTextStyles {
         lineHeight = 20.sp,
         fontWeight = FontWeight.SemiBold,
     )
+    val Button = TextStyle(
+        fontFamily = SharedLedgerFontFamily,
+        fontSize = 16.sp,
+        lineHeight = 24.sp,
+        fontWeight = FontWeight.Medium,
+    )
     val AmountLarge = TextStyle(
         fontFamily = SharedLedgerFontFamily,
         fontSize = 40.sp,

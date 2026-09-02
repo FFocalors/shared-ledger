@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Group
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.RequestQuote
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material3.HorizontalDivider
@@ -35,6 +36,8 @@ import com.ffocalors.sharedledger.ui.components.PaymentStatusCard
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.SettlementSummaryCard
 import com.ffocalors.sharedledger.ui.components.SharedLedgerBottomActionBar
+import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
+import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.theme.Cream
 import com.ffocalors.sharedledger.ui.theme.IconContainerSage
@@ -51,7 +54,7 @@ private val LedgerUnitParticipants = listOf(
     ParticipantUiModel("王五"),
 )
 
-private val LedgerUnitExpenses = listOf(
+private val TicketLedgerUnitExpenses = listOf(
     ExpenseCardUiModel(
         name = "东京塔门票",
         amount = BigDecimal("120.0"),
@@ -59,6 +62,7 @@ private val LedgerUnitExpenses = listOf(
         participantCount = 3,
         participants = LedgerUnitParticipants,
         currencyCode = "CNY",
+        expenseId = com.ffocalors.sharedledger.ui.demo.DemoRouteIds.TICKET_EXPENSE,
     ),
     ExpenseCardUiModel(
         name = "浅草寺导览",
@@ -67,6 +71,7 @@ private val LedgerUnitExpenses = listOf(
         participantCount = 3,
         participants = LedgerUnitParticipants,
         currencyCode = "CNY",
+        expenseId = "demo-expense-asakusa",
     ),
     ExpenseCardUiModel(
         name = "迪士尼快速通票",
@@ -75,27 +80,91 @@ private val LedgerUnitExpenses = listOf(
         participantCount = 2,
         participants = listOf(LedgerUnitParticipants[0], LedgerUnitParticipants[2]),
         currencyCode = "CNY",
+        expenseId = "demo-expense-disney",
     ),
 )
 
+private val BreakfastLedgerUnitExpenses = listOf(
+    ExpenseCardUiModel(
+        name = "酒店早餐",
+        amount = BigDecimal("320.0"),
+        payerName = "张三",
+        participantCount = 5,
+        participants = LedgerUnitParticipants,
+        currencyCode = "CNY",
+        expenseId = "demo-expense-breakfast",
+    ),
+    ExpenseCardUiModel(
+        name = "咖啡",
+        amount = BigDecimal("80.0"),
+        payerName = "李四",
+        participantCount = 2,
+        participants = LedgerUnitParticipants.take(2),
+        currencyCode = "CNY",
+        expenseId = "demo-expense-coffee",
+    ),
+)
+
+private val HotelLedgerUnitExpenses = listOf(
+    ExpenseCardUiModel(
+        name = "酒店房费",
+        amount = BigDecimal("3200.0"),
+        payerName = "张三",
+        participantCount = 4,
+        participants = LedgerUnitParticipants,
+        currencyCode = "CNY",
+        expenseId = "demo-expense-hotel",
+    ),
+    ExpenseCardUiModel(
+        name = "城市税",
+        amount = BigDecimal("160.0"),
+        payerName = "王五",
+        participantCount = 4,
+        participants = LedgerUnitParticipants,
+        currencyCode = "CNY",
+        expenseId = "demo-expense-city-tax",
+    ),
+)
+
+private data class LedgerUnitDemoData(
+    val title: String,
+    val expenses: List<ExpenseCardUiModel>,
+)
+
+private fun ledgerUnitDemoData(ledgerUnitId: String): LedgerUnitDemoData = when (ledgerUnitId) {
+    com.ffocalors.sharedledger.ui.demo.DemoRouteIds.BREAKFAST_LEDGER ->
+        LedgerUnitDemoData("早餐", BreakfastLedgerUnitExpenses)
+    com.ffocalors.sharedledger.ui.demo.DemoRouteIds.HOTEL_LEDGER ->
+        LedgerUnitDemoData("酒店", HotelLedgerUnitExpenses)
+    else -> LedgerUnitDemoData("门票", TicketLedgerUnitExpenses)
+}
+
+/** Stable presentation helper used by navigation/model tests to verify ledger-unit identity. */
+internal fun ledgerUnitDemoTitle(ledgerUnitId: String): String = ledgerUnitDemoData(ledgerUnitId).title
+
 /**
- * 门票子活动详情。它是大型活动中的一个独立 Ledger，导航意图通过回调交给宿主处理。
+ * 大型活动中的独立 Ledger，页面内容由 [ledgerUnitId] 选择，导航意图通过回调交给宿主处理。
  */
 @Composable
 fun LedgerUnitScreen(
+    activityId: String = com.ffocalors.sharedledger.ui.demo.DemoRouteIds.LARGE_ACTIVITY,
+    ledgerUnitId: String = com.ffocalors.sharedledger.ui.demo.DemoRouteIds.TICKET_LEDGER,
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
     onTransfer: () -> Unit = {},
     onNewExpense: () -> Unit = {},
     onReceive: () -> Unit = {},
+    onFundRecords: () -> Unit = {},
+    onExpenseClick: (String) -> Unit = {},
 ) {
+    val demoData = ledgerUnitDemoData(ledgerUnitId)
     Scaffold(
         modifier = modifier.fillMaxSize(),
         // Stitch’s LedgerUnit frame uses the warm cream layer outside the cards.
         containerColor = Cream,
         topBar = {
             SharedLedgerTopBar(
-                title = "门票",
+                title = demoData.title,
                 showBackButton = true,
                 onBackClick = onBack,
                 containerColor = Cream,
@@ -173,13 +242,22 @@ fun LedgerUnitScreen(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                     Text(
-                                        text = "日本旅行 / 门票",
+                                        text = "日本旅行 / ${demoData.title}",
                                         style = SharedLedgerTextStyles.BodySecondary,
                                         color = MaterialTheme.colorScheme.onSurface,
                                     )
                                 }
                             }
                         },
+                    )
+                }
+                item(key = "fund-records") {
+                    SharedLedgerButton(
+                        text = "资金记录",
+                        onClick = onFundRecords,
+                        tone = SharedLedgerButtonTone.Neutral,
+                        icon = Icons.Rounded.History,
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
                 item(key = "my-status") {
@@ -191,13 +269,15 @@ fun LedgerUnitScreen(
                 item(key = "today") {
                     LedgerUnitExpenseSection(
                         title = "今天",
-                        expenses = LedgerUnitExpenses.take(2),
+                        expenses = demoData.expenses.take(2),
+                        onExpenseClick = onExpenseClick,
                     )
                 }
                 item(key = "yesterday") {
                     LedgerUnitExpenseSection(
                         title = "昨天",
-                        expenses = LedgerUnitExpenses.drop(2),
+                        expenses = demoData.expenses.drop(2),
+                        onExpenseClick = onExpenseClick,
                     )
                 }
             }
@@ -209,6 +289,7 @@ fun LedgerUnitScreen(
 private fun LedgerUnitExpenseSection(
     title: String,
     expenses: List<ExpenseCardUiModel>,
+    onExpenseClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -225,6 +306,7 @@ private fun LedgerUnitExpenseSection(
             ExpenseCard(
                 expense = expense,
                 icon = Icons.AutoMirrored.Rounded.ReceiptLong,
+                onClick = { onExpenseClick(expense.expenseId) },
             )
         }
     }
