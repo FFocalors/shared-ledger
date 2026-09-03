@@ -164,3 +164,14 @@ large-Activity deterministic recommendation and does not alter daily debt.
 signatures, RLS/permissions, computed views, Realtime publication, and image
 Storage protocol are frozen for Android integration. Future changes require a
 new migration and explicit contract revision.
+
+## Android integration handoff
+
+Android 与 Supabase 的正式联调按
+[ANDROID_SUPABASE_INTEGRATION_PLAN.md](./ANDROID_SUPABASE_INTEGRATION_PLAN.md)
+中的五个阶段执行。Android DTO、Repository 和 RPC 调用必须以本文公开签名
+和 `supabase/migrations/` 中当前 16 条 migration 为准。
+
+[api-contracts.md](./api-contracts.md) 已标记为废弃的历史设计，其中旧 RPC
+和表名不得用于新代码。联调期间发现契约缺口时，不直接修改既有 migration；
+应新增 migration、数据库测试和显式契约修订，再更新本文。

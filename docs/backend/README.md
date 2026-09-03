@@ -1,16 +1,16 @@
 # SharedLedger 后端文档
 
-> 文档状态：`业务基线已确认 / 后端分阶段实施中`
+> 文档状态：`后端契约冻结 / Android × Supabase 联调开始`
 >
 > 本目录用于约束 SharedLedger V0.1 的业务规则、Supabase 数据模型、权限边界和 Android 接入契约。业务规则以 `BUSINESS_LOGIC.md` 为基线；数据库实际状态以已应用 migration 为准。
 
 ## 当前状态
 
-- Android 端是 Kotlin + Jetpack Compose 的纯前端原型，页面和导航可用于验证交互与视觉。
-- Supabase 已完成身份、活动生命周期和消费核心的 Phase 1、2A、2B migration；后续债务、转账、预付款和最终结算尚未实现。
-- Android 当前仍未接入 Supabase Android SDK。
-- 当前没有 Repository、ViewModel、domain/data 层或持久化实现；页面数据仍是 `DemoData` 和本地 UI state。
-- 本目录中的设计文档可能覆盖尚未实现的后续阶段，不应将目标设计误认为当前已部署能力。
+- Android 端已完成 Kotlin + Jetpack Compose 前端原型、正式路由和阶段性 UI 优化。
+- Supabase Phase 1–7 共 16 条 migration 已冻结身份、活动、消费、债务、资金流、预存、最终结算、争议、附件、Realtime 和 Storage 契约。
+- Android 当前仍未接入 Supabase SDK、真实 Auth 和生产 Repository；Runtime 仍包含 `DemoData`、`DemoAuth`、`FakeFinancialRecordRepository` 和本地 UI state。
+- 项目当前状态为 `Integration GO`，尚未达到 `E2E Acceptance READY`。
+- 后续实施统一按 [ANDROID_SUPABASE_INTEGRATION_PLAN.md](./ANDROID_SUPABASE_INTEGRATION_PLAN.md) 的五个阶段进行。
 
 ## V0.1 后端目标
 
@@ -29,10 +29,12 @@
 | 文档 | 用途 | 状态 |
 | --- | --- | --- |
 | [BUSINESS_LOGIC.md](./BUSINESS_LOGIC.md) | 已确认的业务规则、金额口径、权限边界和 MVP 完成标准 | `业务基线` |
-| [database-schema.md](./database-schema.md) | 实体、字段、关系、约束、索引、RLS 和迁移边界 | `设计中` |
-| [api-contracts.md](./api-contracts.md) | Auth、Data API、RPC、页面映射、请求响应和接入前置清单 | `设计中` |
+| [BACKEND_INTEGRATION_READINESS.md](./BACKEND_INTEGRATION_READINESS.md) | 已冻结的真实 RPC、读取、错误、Realtime 与 Storage 契约 | `执行基线` |
+| [ANDROID_SUPABASE_INTEGRATION_PLAN.md](./ANDROID_SUPABASE_INTEGRATION_PLAN.md) | Android × Supabase 五阶段联调路线、验收和 Demo 退出策略 | `执行基线` |
+| [database-schema.md](./database-schema.md) | 早期实体设计与 schema 说明；实际状态以 migration 为准 | `参考` |
+| [api-contracts.md](./api-contracts.md) | 早期 API 目标设计，部分名称与已冻结数据库不一致 | `废弃` |
 
-阅读顺序建议：先阅读业务逻辑，再阅读数据库模型和 API 契约；发生业务规则、字段、状态或权限变化时，应同步复核相关文档和 migration。
+阅读顺序建议：先阅读业务逻辑，再阅读 Backend Integration Readiness，最后按 Android × Supabase 联调路线实施。不得从废弃的 API 契约复制 RPC 或表名。
 
 ## 架构边界
 
@@ -76,13 +78,13 @@ Storage：附件能力单独设计，使用私有 bucket 和短期 signed URL
 
 ## 建议实施顺序
 
-1. **产品决策**：先确定访客成员、邀请方式、预存语义、收款确认、多币种汇率、结算锁定和成员可见范围。
-2. **Schema / migrations**：根据 [database-schema.md](./database-schema.md) 固定表、枚举、外键、约束、索引和软删除语义；生成可审查 migration。
-3. **RLS / grants / tests**：为每个暴露表写最小权限 policy，核对 Data API 暴露和 grants，覆盖成员、非成员、角色和跨活动访问测试。
-4. **RPC**：先实现创建活动、创建子活动、创建消费、记录资金流、结算预览/最终确认等原子函数；默认 security invoker。
-5. **Kotlin DTO / Repository**：建立 snake_case 到 camelCase 的 mapper、Auth provider、Data API query、RPC client 和统一错误模型；保留 fake repository 供 UI 过渡。
-6. **页面接线**：将页面回调升级为 typed payload，移除静态 DemoData 作为业务来源，补齐 loading/empty/error/retry/提交中状态。
-7. **E2E**：在真实 Auth、RLS、RPC 和 Android 页面之间验证创建活动→邀请/加入→记账→资金流→结算→归档的完整路径，并验证断网重试不会重复记账。
+1. **Phase 1**：Supabase 基础设施、数据分层和 Auth。
+2. **Phase 2**：Activity、Participant、ActivityMember 和 LedgerUnit。
+3. **Phase 3**：Expense 创建、修改、删除、恢复、Refund 和债务投影核对。
+4. **Phase 4**：Settlement、Prepayment、资金记录、争议与 Final Settlement。
+5. **Phase 5**：Storage、Activity-scoped Realtime 和双账号 E2E 收口。
+
+每个阶段完成后再退出对应 Runtime Demo/Fake 数据；`@Preview` Sample Data 可以继续保留。
 
 ## 阶段验收门槛
 
@@ -121,7 +123,7 @@ Storage：附件能力单独设计，使用私有 bucket 和短期 signed URL
 
 每次变更必须：
 
-1. 同步更新本入口、`database-schema.md` 和 `api-contracts.md` 中受影响的字段/枚举/权限/示例。
+1. 同步更新本入口、`BACKEND_INTEGRATION_READINESS.md` 和 `ANDROID_SUPABASE_INTEGRATION_PLAN.md` 中受影响的字段、枚举、权限、阶段和验收项；历史文档只补充必要的废弃说明。
 2. 说明变更原因、兼容性、migration 影响、客户端最小改动和测试范围。
 3. 不把本地实验、未执行 SQL 或临时 mock 误标记为已实现/已部署。
 4. 先更新契约和测试，再实现 migration、RPC 或 Kotlin 接线；需要破坏兼容性时增加版本或迁移说明。
@@ -129,20 +131,26 @@ Storage：附件能力单独设计，使用私有 bucket 和短期 signed URL
 
 ## 当前正式页面范围
 
-以下 9 个页面/route 是本轮 API 映射范围；测试展示页不属于正式业务页面：
+以下 15 个页面/route 是当前 Android 联调范围；测试展示页不属于正式业务页面：
 
-1. 首页：`home`
-2. 创建活动：`create-activity`
-3. 普通活动详情：`normal-activity/{activityId}`
-4. 大型活动详情：`large-activity/{activityId}`
-5. 创建子活动：`create-sub-activity/{activityId}`
-6. 账本单元：`ledger-unit/{ledgerUnitId}`
-7. 新增消费：`new-expense/{ledgerUnitId}`
-8. 转账/收款：`transfer/{activityId}?mode={mode}`
-9. 最终结算：`final-settlement/{activityId}`
+1. 登录/注册：`auth`
+2. 首页：`home`
+3. 加入活动：`join-activity`
+4. 创建活动：`create-activity`
+5. 普通活动详情：`normal-activity/{activityId}`
+6. 大型活动详情：`large-activity/{activityId}`
+7. 创建子活动：`create-sub-activity/{activityId}`
+8. 账本单元：`ledger-unit/{activityId}/{ledgerUnitId}`
+9. 新增消费：`new-expense/{activityId}?ledgerUnitId={ledgerUnitId}`
+10. 消费详情：`expense-detail/{expenseId}`
+11. 转账/收款：`transfer/{activityId}?mode={mode}&ledgerUnitId={ledgerUnitId}`
+12. 统一资金记录：`fund-records/{activityId}?ledgerUnitId={ledgerUnitId}`
+13. 资金记录详情：`transfer-detail/{activityId}/{transferId}?ledgerUnitId={ledgerUnitId}`
+14. 活动管理：`activity-management/{activityId}`
+15. 最终结算：`final-settlement/{activityId}`
 
-页面当前仍是原型状态，具体回调 payload 和真实数据加载缺口见 [api-contracts.md](./api-contracts.md) 的页面映射与接入前置清单。
+页面当前仍以原型数据运行为主，真实数据替换顺序和验收门槛见 [ANDROID_SUPABASE_INTEGRATION_PLAN.md](./ANDROID_SUPABASE_INTEGRATION_PLAN.md)。
 
 ## 当前实施边界
 
-当前数据库已实现身份与参与人基础、活动生命周期 RPC，以及消费、付款和分摊核心；`BUSINESS_LOGIC.md` 中的债务、转账、预付款、最终结算、争议和附件等能力仍是后续目标。Android 后端接入、Edge Function、Storage 和 Realtime 也尚未开始。
+数据库 Phase 1–7 契约已经冻结，包含身份、活动生命周期、消费、债务投影、转账、预存、最终结算、争议、附件、Realtime publication 和私有 Storage 协议。当前实施重点已切换为 Android SDK、Repository、UI 接线和真实环境 E2E；未来数据库变化必须通过新 migration 和显式契约修订完成。

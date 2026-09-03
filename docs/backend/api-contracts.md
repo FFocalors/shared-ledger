@@ -1,6 +1,8 @@
-# SharedLedger V0.1 API 契约
+# SharedLedger V0.1 API 契约（历史设计）
 
-> 状态：设计稿，供后续 Android data/domain 层和 Supabase schema 实现使用。本文中的 API 尚未接入项目，也不代表 Supabase 中已经存在同名表、视图或函数。
+> 状态：`废弃`。本文保留用于追溯早期设计，不得作为 Android 联调、RPC 命名、表名或 DTO 实现依据。
+>
+> 当前唯一真实契约是 [BACKEND_INTEGRATION_READINESS.md](./BACKEND_INTEGRATION_READINESS.md) 与 `supabase/migrations/` 中当前 16 条 migration；实施顺序见 [ANDROID_SUPABASE_INTEGRATION_PLAN.md](./ANDROID_SUPABASE_INTEGRATION_PLAN.md)。本文中的 `create_activity_with_owner`、`join_activity_by_invite`、`create_expense_with_allocations`、`money_transfers` 等名称可能与已冻结数据库不一致。
 >
 > 设计边界：V0.1 只覆盖活动、参与者、分账、转账和结算的最小闭环。简单读取使用 Supabase Data API；涉及多个表的写入使用数据库函数 RPC，以保证事务和权限检查集中在数据库侧。
 
