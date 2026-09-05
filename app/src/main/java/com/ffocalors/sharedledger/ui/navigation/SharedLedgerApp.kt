@@ -1,6 +1,7 @@
 package com.ffocalors.sharedledger.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,7 +19,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.ffocalors.sharedledger.BuildConfig
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ffocalors.sharedledger.data.auth.AuthRepositoryFactory
+import com.ffocalors.sharedledger.data.auth.AuthState
 import com.ffocalors.sharedledger.data.financial.FakeActorContext
 import com.ffocalors.sharedledger.data.financial.FakeFinancialRecordRepository
 import com.ffocalors.sharedledger.data.financial.FinancialReadResult
@@ -64,6 +67,54 @@ import java.math.BigDecimal
 
 @Composable
 fun SharedLedgerApp(modifier: Modifier = Modifier) {
+    val authRepository = remember { AuthRepositoryFactory.create() }
+    val authViewModel: com.ffocalors.sharedledger.ui.auth.AuthViewModel = viewModel(
+        factory = com.ffocalors.sharedledger.ui.auth.AuthViewModel.Factory(authRepository),
+    )
+    val authUiState by authViewModel.uiState.collectAsState()
+
+    when (val authState = authUiState.authState) {
+        AuthState.Loading -> AuthLoadingScreen(modifier)
+        is AuthState.Authenticated -> AuthenticatedNavHost(
+            modifier = modifier,
+            onSignOut = authViewModel::signOut,
+        )
+        AuthState.Unauthenticated, is AuthState.Error -> AuthScreen(
+            modifier = modifier,
+            errorMessage = authUiState.message,
+            isLoading = authUiState.isSubmitting,
+            onLogin = authViewModel::signIn,
+            onRegister = authViewModel::signUp,
+            onForgotPassword = { email ->
+                authViewModel.showMessage(
+                    if (email.isBlank()) "请输入邮箱后再申请重置密码" else "密码重置功能尚未接入，请联系管理员",
+                )
+            },
+        )
+    }
+}
+
+@Composable
+private fun AuthLoadingScreen(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+        verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
+    ) {
+        CircularProgressIndicator()
+        Text(
+            text = "正在恢复登录状态…",
+            modifier = Modifier.padding(top = SharedLedgerSpacing.Medium),
+            style = SharedLedgerTextStyles.BodySecondary,
+        )
+    }
+}
+
+@Composable
+private fun AuthenticatedNavHost(
+    modifier: Modifier = Modifier,
+    onSignOut: () -> Unit,
+) {
     val navController = rememberNavController()
     val demoActorContext = remember {
         FakeActorContext(
@@ -75,55 +126,11 @@ fun SharedLedgerApp(modifier: Modifier = Modifier) {
         FakeFinancialRecordRepository(actorContext = demoActorContext)
     }
     val demoActor = demoActorContext.actor
-    var authError by rememberSaveable { mutableStateOf<String?>(null) }
-
     NavHost(
         navController = navController,
-        startDestination = SharedLedgerRoutes.START_DESTINATION,
+        startDestination = SharedLedgerRoutes.HOME,
         modifier = modifier,
     ) {
-        composable(SharedLedgerRoutes.AUTH) {
-            AuthScreen(
-                errorMessage = authError,
-                showDemoCredentials = BuildConfig.DEBUG,
-                showDemoRegistrationNotice = BuildConfig.DEBUG,
-                onLogin = { email, password ->
-                    if (DemoAdminCredentials.matches(email, password)) {
-                        authError = null
-                        val navigation = SharedLedgerRoutes.authSuccessNavigation()
-                        navController.navigate(navigation.destination) {
-                            popUpTo(navigation.popUpTo) { inclusive = navigation.inclusive }
-                            launchSingleTop = navigation.launchSingleTop
-                        }
-                    } else {
-                        authError = if (BuildConfig.DEBUG) {
-                            "登录失败：请输入 Debug 演示管理员账号和密码"
-                        } else {
-                            "登录失败：当前版本未配置后端认证服务"
-                        }
-                    }
-                },
-                onRegister = { _, _, _ ->
-                    if (BuildConfig.DEBUG) {
-                        authError = null
-                        val navigation = SharedLedgerRoutes.authSuccessNavigation()
-                        navController.navigate(navigation.destination) {
-                            popUpTo(navigation.popUpTo) { inclusive = navigation.inclusive }
-                            launchSingleTop = navigation.launchSingleTop
-                        }
-                    } else {
-                        authError = "注册失败：当前版本未配置后端注册服务"
-                    }
-                },
-                onForgotPassword = { email ->
-                    authError = if (email.isBlank()) {
-                        "请输入邮箱后再申请重置密码"
-                    } else {
-                        "演示：已记录密码重置请求（$email）"
-                    }
-                },
-            )
-        }
         composable(SharedLedgerRoutes.HOME) {
             HomeScreen(
                 onActivityClick = { activity ->
@@ -135,6 +142,7 @@ fun SharedLedgerApp(modifier: Modifier = Modifier) {
                 },
                 onCreateActivity = { navController.navigate(SharedLedgerRoutes.CREATE_ACTIVITY) },
                 onJoinActivity = { navController.navigate(SharedLedgerRoutes.JOIN_ACTIVITY) },
+                onSignOut = onSignOut,
             )
         }
         composable(SharedLedgerRoutes.JOIN_ACTIVITY) {

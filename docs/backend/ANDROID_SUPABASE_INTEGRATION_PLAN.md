@@ -40,13 +40,13 @@ Supabase Auth / PostgREST / RPC / Storage / Realtime
 
 ## 3. 开始联调前的准备
 
-- [ ] 确认 [BACKEND_INTEGRATION_READINESS.md](./BACKEND_INTEGRATION_READINESS.md) 与 16 条 migration 为唯一后端契约。
+- [x] 确认 [BACKEND_INTEGRATION_READINESS.md](./BACKEND_INTEGRATION_READINESS.md) 与 16 条 migration 为唯一后端契约。
 - [x] 将旧 [api-contracts.md](./api-contracts.md) 标记为废弃。
-- [ ] 将本机 `JAVA_HOME` 修正为 JDK 根目录，而不是 `bin` 目录。
-- [ ] 安装 Supabase CLI，并通过 `supabase --help`、`supabase --version` 和项目状态检查验证环境。
-- [ ] 在空本地数据库重新应用全部 migration，并运行数据库测试与安全检查。
-- [ ] 确认 `main` clean 后创建 integration feature 分支。
-- [ ] 确认 Android 环境配置不会把本地或生产密钥提交到 Git。
+- [x] 将本机 `JAVA_HOME` 修正为 JDK 根目录，而不是 `bin` 目录（当前用户环境为 `D:\project\JDK`）。
+- [x] 安装 Supabase CLI，并通过 `supabase --help`、`supabase --version` 和项目状态检查验证环境（CLI 2.116.0；Docker Engine 29.7.2）。
+- [x] 在空本地数据库重新应用全部 16 条 migration；本次未修改 migration。`supabase test db --local` 已执行：7 个脚本的 78 项断言通过，另有 5 个历史脚本因缺少 TAP plan 被 pg_prove 判为解析失败，详见 Phase 1 实测记录。
+- [x] 确认 `main` clean 后创建 integration feature 分支：`codex/integration-phase-1-auth`。
+- [x] 确认 Android 环境配置不会把本地或生产密钥提交到 Git。
 
 ## 4. Integration Phase 1：基础设施与 Auth
 
@@ -59,6 +59,33 @@ Supabase Auth / PostgREST / RPC / Storage / Realtime
 - 启动流程调整为：恢复 Session；有效进入 Home，无效进入 Auth。
 - 本阶段不接入资金业务。
 
+### Phase 1 实际进展（2026-09-05，已完成）
+
+- [x] 已固定并引入 Supabase Kotlin 3.8.0、Ktor 3.5.1、Kotlin serialization
+  1.11.0 和 coroutines 1.11.0；仅启用 core/Auth/PostgREST，没有 Storage、
+  Realtime 或 Activity 业务接线。
+- [x] 已建立 `SupabaseClientProvider`、`AuthRepository`、
+  `SupabaseAuthRepository`、Auth 状态/错误映射和 `AuthViewModel` 分层。
+- [x] 已接入真实邮箱密码注册/登录、昵称 metadata、profiles 读取、Session
+  初始化/恢复、失效回 Auth、退出登录和重复提交保护。
+- [x] 已移除 `DemoAuth` Runtime 文件及 Debug 假账号提示；Preview/Sample、
+  Home/Activity/Expense DemoData 和 FakeFinancialRecordRepository 保留。
+- [x] 已加入 INTERNET 权限和 fail-safe BuildConfig 配置读取；Debug 仅允许
+  `10.0.2.2`、`127.0.0.1`、`localhost` 使用本地 HTTP，Release 仍要求 HTTPS。
+- [x] Docker Desktop 重装后 Engine 29.7.2 正常；Supabase 本地最小栈已启动。
+- [x] 空库顺序应用 16 条 migration 并完成 seed；migration history 全部匹配，
+  本次验证未产生 migration 文件变化。
+- [x] 本地 API URL 与 publishable key 已写入 Git 忽略的 `local.properties`；
+  Android Emulator 使用 `10.0.2.2:54321`，未写入 service role/secret key。
+- [x] 本地 Auth API 实测完成：随机测试账号完成昵称注册、登录、当前用户/session、
+  `profiles` 读取和退出；publishable/anon 兼容入口均返回成功。
+- [x] 真机 UI 验收完成：注册、登录、进入 Home、force-stop 后重启恢复 Session、
+  退出回 AuthScreen、Auth Gate 和同账号重新登录均通过。
+- [!] Supabase `vector` 是日志采集辅助服务，当前重启属于已知非阻塞技术债；
+  Auth、DB、Kong、REST 等本阶段核心服务健康，不影响本阶段 Auth 验收。
+
+详细配置见 [ANDROID_SUPABASE_SETUP.md](./ANDROID_SUPABASE_SETUP.md)。
+
 ### 验收门槛
 
 ```text
@@ -69,9 +96,13 @@ Supabase Auth / PostgREST / RPC / Storage / Realtime
 → 退出后返回登录页
 ```
 
-- [ ] APK 和日志中不存在 `service_role`、secret key 或数据库密码。
-- [ ] Session 过期能够刷新或明确回到登录页。
-- [ ] 注册、登录、恢复和退出均有 loading、error 与重复点击保护。
+- [x] 已核对 APK/日志和 Git diff，不存在 `service_role`、secret key 或数据库密码；
+  `local.properties` 已被 Git 忽略。
+- [x] Session 失效能够刷新或明确回到登录页。
+- [x] 注册、登录、恢复和退出均有 loading、error 与重复点击保护。
+
+Phase 1 已完成并可进入后续集成排期。Phase 2（Activity、Expense、Transfer、
+Storage、Realtime）尚未开始；本阶段未修改或创建任何后端 migration。
 
 ## 5. Integration Phase 2：活动与身份主链
 
@@ -240,7 +271,7 @@ Runtime Demo/Fake 必须按阶段退出，不一次性删除：
 Backend Contract Freeze ✅
 Frontend Prototype Freeze ✅
         ↓
-Phase 1  Supabase Foundation + Auth
+Phase 1  Supabase Foundation + Auth ✅
         ↓
 Phase 2  Activity + Participant + Member
         ↓

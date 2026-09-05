@@ -8,7 +8,7 @@
 
 - Android 端已完成 Kotlin + Jetpack Compose 前端原型、正式路由和阶段性 UI 优化。
 - Supabase Phase 1–7 共 16 条 migration 已冻结身份、活动、消费、债务、资金流、预存、最终结算、争议、附件、Realtime 和 Storage 契约。
-- Android 当前仍未接入 Supabase SDK、真实 Auth 和生产 Repository；Runtime 仍包含 `DemoData`、`DemoAuth`、`FakeFinancialRecordRepository` 和本地 UI state。
+- Android 当前已接入 Supabase SDK 和 Phase 1 真实 Auth；Activity、Expense 等业务仍保留 `DemoData`、`FakeFinancialRecordRepository` 和本地 UI state，等待后续联调阶段替换。
 - 项目当前状态为 `Integration GO`，尚未达到 `E2E Acceptance READY`。
 - 后续实施统一按 [ANDROID_SUPABASE_INTEGRATION_PLAN.md](./ANDROID_SUPABASE_INTEGRATION_PLAN.md) 的五个阶段进行。
 

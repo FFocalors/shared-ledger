@@ -73,7 +73,6 @@ import com.ffocalors.sharedledger.ui.theme.SoftCharcoal
 import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLowest
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
-import com.ffocalors.sharedledger.BuildConfig
 
 /** The two authentication forms available on [AuthScreen]. */
 enum class AuthMode {
@@ -95,8 +94,6 @@ fun AuthScreen(
     initialMode: AuthMode = AuthMode.Login,
     isLoading: Boolean = false,
     errorMessage: String? = null,
-    showDemoCredentials: Boolean = BuildConfig.DEBUG,
-    showDemoRegistrationNotice: Boolean = BuildConfig.DEBUG,
     onLogin: ((email: String, password: String) -> Unit)? = null,
     onRegister: ((nickname: String, email: String, password: String) -> Unit)? = null,
     onForgotPassword: ((email: String) -> Unit)? = null,
@@ -191,10 +188,6 @@ fun AuthScreen(
                 },
             )
 
-            if (showDemoCredentials) {
-                DemoCredentialsHint()
-            }
-
             AnimatedContent(
                 targetState = mode,
                 modifier = Modifier
@@ -272,7 +265,6 @@ fun AuthScreen(
                         passwordError = registerPasswordError,
                         confirmPasswordError = registerConfirmPasswordError,
                         formError = formError,
-                        showDemoRegistrationNotice = showDemoRegistrationNotice,
                         isLoading = isLoading,
                         submitAvailable = onRegister != null,
                         onNicknameChange = {
@@ -496,7 +488,6 @@ private fun RegisterForm(
     passwordError: String?,
     confirmPasswordError: String?,
     formError: String?,
-    showDemoRegistrationNotice: Boolean,
     isLoading: Boolean,
     submitAvailable: Boolean,
     onNicknameChange: (String) -> Unit,
@@ -512,16 +503,6 @@ private fun RegisterForm(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         AuthFormError(message = formError)
-        if (showDemoRegistrationNotice) {
-            Text(
-                text = "演示回调：注册不会写入 Supabase，仅进入示例首页。",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 4.dp, vertical = 0.dp),
-                style = SharedLedgerTextStyles.Label,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
         AuthTextField(
             value = nickname,
             onValueChange = onNicknameChange,
@@ -571,32 +552,6 @@ private fun RegisterForm(
     }
 }
 
-@Composable
-private fun DemoCredentialsHint() {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 32.dp, max = 40.dp)
-            .semantics {
-                contentDescription = "Debug 演示管理员账号：admin@sharedledger.test，密码：Admin123!"
-            },
-        shape = SharedLedgerRadius.Medium,
-        color = Color.Transparent,
-    ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = "Debug 演示管理员（可直接输入）：admin@sharedledger.test / Admin123!",
-                modifier = Modifier.padding(horizontal = 4.dp),
-                style = SharedLedgerTextStyles.Label,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-            )
-        }
-    }
-}
 
 @Composable
 private fun AuthFormError(message: String?) {
