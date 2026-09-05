@@ -69,7 +69,9 @@ import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
 fun CreateActivityScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
-    onCreate: (ActivityKind) -> Unit = {},
+    onCreate: (String, ActivityKind, Boolean) -> Unit = { _, _, _ -> },
+    isLoading: Boolean = false,
+    errorMessage: String? = null,
 ) {
     var activityName by rememberSaveable { mutableStateOf("") }
     var selectedKindName by rememberSaveable { mutableStateOf(ActivityKind.Standard.name) }
@@ -90,7 +92,11 @@ fun CreateActivityScreen(
             )
         },
         bottomBar = {
-            CreateActivityBottomBar(onClick = { onCreate(selectedKind) })
+            CreateActivityBottomBar(
+                onClick = { onCreate(activityName, selectedKind, multiCurrencyEnabled) },
+                enabled = activityName.isNotBlank() && !isLoading,
+                loading = isLoading,
+            )
         },
     ) { innerPadding ->
         Box(
@@ -123,6 +129,9 @@ fun CreateActivityScreen(
                     multiCurrencyEnabled = multiCurrencyEnabled,
                     onMultiCurrencyChange = { multiCurrencyEnabled = it },
                 )
+                if (errorMessage != null) {
+                    Text(errorMessage, color = MaterialTheme.colorScheme.error, style = SharedLedgerTextStyles.BodySecondary)
+                }
             }
         }
     }
@@ -386,7 +395,7 @@ private fun CreateSectionLabel(text: String) {
 }
 
 @Composable
-private fun CreateActivityBottomBar(onClick: () -> Unit) {
+private fun CreateActivityBottomBar(onClick: () -> Unit, enabled: Boolean, loading: Boolean) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -407,6 +416,9 @@ private fun CreateActivityBottomBar(onClick: () -> Unit) {
         SharedLedgerButton(
             text = "创建活动",
             onClick = onClick,
+            enabled = enabled,
+            loading = loading,
+            loadingText = "正在创建",
             icon = Icons.Rounded.ArrowForward,
         )
     }

@@ -3,6 +3,7 @@ package com.ffocalors.sharedledger.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -22,6 +23,8 @@ import androidx.navigation.navArgument
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ffocalors.sharedledger.data.auth.AuthRepositoryFactory
 import com.ffocalors.sharedledger.data.auth.AuthState
+import com.ffocalors.sharedledger.ui.activity.ActivityViewModel
+import com.ffocalors.sharedledger.data.activity.ActivityType
 import com.ffocalors.sharedledger.data.financial.FakeActorContext
 import com.ffocalors.sharedledger.data.financial.FakeFinancialRecordRepository
 import com.ffocalors.sharedledger.data.financial.FinancialReadResult
@@ -75,10 +78,13 @@ fun SharedLedgerApp(modifier: Modifier = Modifier) {
 
     when (val authState = authUiState.authState) {
         AuthState.Loading -> AuthLoadingScreen(modifier)
-        is AuthState.Authenticated -> AuthenticatedNavHost(
-            modifier = modifier,
-            onSignOut = authViewModel::signOut,
-        )
+        is AuthState.Authenticated -> key(authState.user.id) {
+            AuthenticatedNavHost(
+                modifier = modifier,
+                currentUserId = authState.user.id,
+                onSignOut = authViewModel::signOut,
+            )
+        }
         AuthState.Unauthenticated, is AuthState.Error -> AuthScreen(
             modifier = modifier,
             errorMessage = authUiState.message,
@@ -113,9 +119,18 @@ private fun AuthLoadingScreen(modifier: Modifier = Modifier) {
 @Composable
 private fun AuthenticatedNavHost(
     modifier: Modifier = Modifier,
+    currentUserId: String,
     onSignOut: () -> Unit,
 ) {
     val navController = rememberNavController()
+    val activityViewModel: ActivityViewModel = viewModel(
+        key = "activity-$currentUserId",
+        factory = ActivityViewModel.Factory(currentUserId = currentUserId),
+    )
+    val homeState by activityViewModel.home.collectAsState()
+    val viewModelJoinState by activityViewModel.join.collectAsState()
+    var joinInviteCode by rememberSaveable { mutableStateOf("") }
+    var selectedJoinParticipantId by rememberSaveable { mutableStateOf<String?>(null) }
     val demoActorContext = remember {
         FakeActorContext(
             actor = RecorderInfo("fake-app-user", "Fake Demo 管理员"),
@@ -126,13 +141,31 @@ private fun AuthenticatedNavHost(
         FakeFinancialRecordRepository(actorContext = demoActorContext)
     }
     val demoActor = demoActorContext.actor
+    fun requireParticipantBinding(activityId: String, action: () -> Unit) {
+        val detail = activityViewModel.detail(activityId).value.detail
+        if (activityViewModel.isCurrentUserBound(detail)) {
+            action()
+        } else {
+            navController.navigate(SharedLedgerRoutes.activityManagement(activityId)) {
+                launchSingleTop = true
+            }
+        }
+    }
     NavHost(
         navController = navController,
         startDestination = SharedLedgerRoutes.HOME,
         modifier = modifier,
     ) {
         composable(SharedLedgerRoutes.HOME) {
+            androidx.compose.runtime.LaunchedEffect(currentUserId) {
+                activityViewModel.resetJoin()
+                activityViewModel.refreshHome()
+            }
             HomeScreen(
+                activities = homeState.activities,
+                isLoading = homeState.isLoading,
+                errorMessage = homeState.errorMessage,
+                onRetry = { activityViewModel.refreshHome() },
                 onActivityClick = { activity ->
                     val destination = when (activity.kind) {
                         ActivityKind.Large -> SharedLedgerRoutes.largeActivity(activity.activityId)
@@ -146,30 +179,41 @@ private fun AuthenticatedNavHost(
             )
         }
         composable(SharedLedgerRoutes.JOIN_ACTIVITY) {
-            var joinState by remember { mutableStateOf(JoinActivityUiState()) }
+            androidx.compose.runtime.LaunchedEffect(Unit) {
+                activityViewModel.resetJoin()
+                joinInviteCode = ""
+                selectedJoinParticipantId = null
+            }
+            val joinState = viewModelJoinState.copy(
+                inviteCode = viewModelJoinState.inviteCode.ifBlank { joinInviteCode },
+                selectedParticipantId = selectedJoinParticipantId ?: viewModelJoinState.selectedParticipantId,
+            )
             JoinActivityScreen(
                 state = joinState,
                 onBackClick = { navController.navigateUp() },
                 onInviteCodeChange = { value ->
-                    joinState = joinState.copy(inviteCode = value.filter(Char::isDigit).take(8))
+                    joinInviteCode = value.filter(Char::isDigit).take(8)
                 },
                 onValidateInviteCode = { code ->
-                    joinState = joinState.copy(
-                        inviteCode = code,
-                        status = if (code.length == 8) JoinActivityStatus.ReadyToJoin
-                        else JoinActivityStatus.InvalidCode,
-                    )
+                    activityViewModel.joinActivity(code)
                 },
                 onParticipantSelected = { participantId ->
+                    selectedJoinParticipantId = participantId
                     val selected = joinState.preview.participants.firstOrNull { it.participantId == participantId }
-                    joinState = joinState.copy(
-                        selectedParticipantId = participantId,
-                        selectedParticipantName = selected?.name,
-                    )
+                    activityViewModel.selectJoinParticipant(participantId, selected?.name)
                 },
                 onJoinActivity = { participantId ->
-                    if (participantId.isNotBlank()) {
-                        joinState = joinState.copy(status = JoinActivityStatus.Joined)
+                    val activityId = activityViewModel.joinedActivityId()
+                    if (participantId.isNotBlank() && activityId != null) activityViewModel.claimParticipant(activityId, participantId)
+                },
+                onCompleteJoinWithoutClaim = {
+                    activityViewModel.completeJoinWithoutClaim()
+                },
+                onUnclaimActivity = {
+                    val activityId = activityViewModel.joinedActivityId()
+                    if (activityId != null) {
+                        activityViewModel.unclaimParticipant(activityId)
+                        activityViewModel.resetJoin()
                     }
                 },
                 onJoinSuccessNavigate = {
@@ -181,15 +225,16 @@ private fun AuthenticatedNavHost(
             )
         }
         composable(SharedLedgerRoutes.CREATE_ACTIVITY) {
+            val creating by activityViewModel.actionLoading.collectAsState()
+            val message by activityViewModel.message.collectAsState()
             CreateActivityScreen(
                 onBackClick = { navController.navigateUp() },
-                onCreate = { kind ->
-                    val destination = when (kind) {
-                        ActivityKind.Standard -> SharedLedgerRoutes.normalActivity(DemoRouteIds.CREATED_NORMAL_ACTIVITY)
-                        ActivityKind.Large -> SharedLedgerRoutes.largeActivity(DemoRouteIds.CREATED_LARGE_ACTIVITY)
-                    }
-                    navController.navigate(destination) {
-                        popUpTo(SharedLedgerRoutes.CREATE_ACTIVITY) { inclusive = true }
+                isLoading = creating,
+                errorMessage = message,
+                onCreate = { name, kind, multiCurrency ->
+                    activityViewModel.createActivity(name, kind, multiCurrency) { created ->
+                        val destination = if (created.type == ActivityType.Large) SharedLedgerRoutes.largeActivity(created.id) else SharedLedgerRoutes.normalActivity(created.id)
+                        navController.navigate(destination) { popUpTo(SharedLedgerRoutes.CREATE_ACTIVITY) { inclusive = true } }
                     }
                 },
             )
@@ -200,16 +245,30 @@ private fun AuthenticatedNavHost(
         ) { backStackEntry ->
             val activityId = backStackEntry.arguments?.getString("activityId")
                 ?: DemoRouteIds.NORMAL_ACTIVITY
+            val detailState by activityViewModel.detail(activityId).collectAsState()
+            androidx.compose.runtime.LaunchedEffect(activityId) {
+                activityViewModel.loadDetail(activityId)
+            }
             NormalActivityScreen(
+                activity = detailState.detail,
+                isLoading = detailState.isLoading,
+                errorMessage = detailState.errorMessage,
+                onRetry = { activityViewModel.loadDetail(activityId, force = true) },
                 onBack = { navController.navigateUp() },
                 onTransfer = {
-                    navController.navigate(SharedLedgerRoutes.transfer(activityId, TransferRouteMode.TRANSFER))
+                    requireParticipantBinding(activityId) {
+                        navController.navigate(SharedLedgerRoutes.transfer(activityId, TransferRouteMode.TRANSFER))
+                    }
                 },
                 onNewExpense = {
-                    navController.navigate(SharedLedgerRoutes.newExpense(activityId))
+                    requireParticipantBinding(activityId) {
+                        navController.navigate(SharedLedgerRoutes.newExpense(activityId))
+                    }
                 },
                 onReceive = {
-                    navController.navigate(SharedLedgerRoutes.transfer(activityId, TransferRouteMode.RECEIVE))
+                    requireParticipantBinding(activityId) {
+                        navController.navigate(SharedLedgerRoutes.transfer(activityId, TransferRouteMode.RECEIVE))
+                    }
                 },
                 onFundRecords = {
                     navController.navigate(SharedLedgerRoutes.fundRecords(activityId)) { launchSingleTop = true }
@@ -228,7 +287,15 @@ private fun AuthenticatedNavHost(
         ) { backStackEntry ->
             val activityId = backStackEntry.arguments?.getString("activityId")
                 ?: DemoRouteIds.LARGE_ACTIVITY
+            val detailState by activityViewModel.detail(activityId).collectAsState()
+            androidx.compose.runtime.LaunchedEffect(activityId) {
+                activityViewModel.loadDetail(activityId)
+            }
             LargeActivityScreen(
+                activity = detailState.detail,
+                isLoading = detailState.isLoading,
+                errorMessage = detailState.errorMessage,
+                onRetry = { activityViewModel.loadDetail(activityId, force = true) },
                 onBack = { navController.navigateUp() },
                 onSubActivityClick = { id ->
                     navController.navigate(SharedLedgerRoutes.ledgerUnit(activityId, id))
@@ -237,13 +304,19 @@ private fun AuthenticatedNavHost(
                     navController.navigate(SharedLedgerRoutes.createSubActivity(activityId))
                 },
                 onFinalSettlement = {
-                    navController.navigate(SharedLedgerRoutes.finalSettlement(activityId))
+                    requireParticipantBinding(activityId) {
+                        navController.navigate(SharedLedgerRoutes.finalSettlement(activityId))
+                    }
                 },
                 onTransfer = {
-                    navController.navigate(SharedLedgerRoutes.transfer(activityId, TransferRouteMode.TRANSFER))
+                    requireParticipantBinding(activityId) {
+                        navController.navigate(SharedLedgerRoutes.transfer(activityId, TransferRouteMode.TRANSFER))
+                    }
                 },
                 onReceive = {
-                    navController.navigate(SharedLedgerRoutes.transfer(activityId, TransferRouteMode.RECEIVE))
+                    requireParticipantBinding(activityId) {
+                        navController.navigate(SharedLedgerRoutes.transfer(activityId, TransferRouteMode.RECEIVE))
+                    }
                 },
                 onFundRecords = {
                     navController.navigate(SharedLedgerRoutes.fundRecords(activityId)) { launchSingleTop = true }
@@ -256,11 +329,25 @@ private fun AuthenticatedNavHost(
         composable(
             route = SharedLedgerRoutes.CREATE_SUB_ACTIVITY_PATTERN,
             arguments = listOf(navArgument("activityId") { type = NavType.StringType }),
-        ) {
+        ) { backStackEntry ->
+            val activityId = backStackEntry.arguments?.getString("activityId")
+                ?: DemoRouteIds.LARGE_ACTIVITY
+            val detailState by activityViewModel.detail(activityId).collectAsState()
+            val creating by activityViewModel.actionLoading.collectAsState()
+            val message by activityViewModel.message.collectAsState()
+            androidx.compose.runtime.LaunchedEffect(activityId) {
+                activityViewModel.loadDetail(activityId)
+            }
             CreateSubActivityScreen(
-                parentActivityName = "日本旅行",
+                activity = detailState.detail,
+                isLoading = creating || detailState.isLoading,
+                errorMessage = message ?: detailState.errorMessage,
                 onBack = { navController.navigateUp() },
-                onCreate = { navController.navigateUp() },
+                onCreate = { name ->
+                    activityViewModel.createSubActivity(activityId, name) {
+                        navController.navigateUp()
+                    }
+                },
             )
         }
         composable(
@@ -274,22 +361,36 @@ private fun AuthenticatedNavHost(
                 ?: DemoRouteIds.LARGE_ACTIVITY
             val ledgerUnitId = backStackEntry.arguments?.getString("ledgerUnitId")
                 ?: DemoRouteIds.TICKET_LEDGER
+            val detailState by activityViewModel.detail(activityId).collectAsState()
+            androidx.compose.runtime.LaunchedEffect(activityId) {
+                activityViewModel.loadDetail(activityId)
+            }
             LedgerUnitScreen(
                 activityId = activityId,
                 ledgerUnitId = ledgerUnitId,
+                activity = detailState.detail,
+                isLoading = detailState.isLoading,
+                errorMessage = detailState.errorMessage,
+                onRetry = { activityViewModel.loadDetail(activityId, force = true) },
                 onBack = { navController.navigateUp() },
                 onTransfer = {
-                    navController.navigate(
-                        SharedLedgerRoutes.transfer(activityId, TransferRouteMode.TRANSFER, ledgerUnitId),
-                    )
+                    requireParticipantBinding(activityId) {
+                        navController.navigate(
+                            SharedLedgerRoutes.transfer(activityId, TransferRouteMode.TRANSFER, ledgerUnitId),
+                        )
+                    }
                 },
                 onNewExpense = {
-                    navController.navigate(SharedLedgerRoutes.newExpense(activityId, ledgerUnitId))
+                    requireParticipantBinding(activityId) {
+                        navController.navigate(SharedLedgerRoutes.newExpense(activityId, ledgerUnitId))
+                    }
                 },
                 onReceive = {
-                    navController.navigate(
-                        SharedLedgerRoutes.transfer(activityId, TransferRouteMode.RECEIVE, ledgerUnitId),
-                    )
+                    requireParticipantBinding(activityId) {
+                        navController.navigate(
+                            SharedLedgerRoutes.transfer(activityId, TransferRouteMode.RECEIVE, ledgerUnitId),
+                        )
+                    }
                 },
                 onFundRecords = {
                     navController.navigate(SharedLedgerRoutes.fundRecords(activityId, ledgerUnitId)) {
@@ -396,17 +497,69 @@ private fun AuthenticatedNavHost(
         ) { backStackEntry ->
             val activityId = backStackEntry.arguments?.getString("activityId")
                 ?: DemoRouteIds.NORMAL_ACTIVITY
+            val detailState by activityViewModel.detail(activityId).collectAsState()
+            val managementState = activityViewModel.managementState(activityId)
+            val actionLoading by activityViewModel.actionLoading.collectAsState()
+            androidx.compose.runtime.LaunchedEffect(activityId) {
+                activityViewModel.loadDetail(activityId)
+            }
             ActivityManagementScreen(
                 activityId = activityId,
+                state = managementState
+                    ?: com.ffocalors.sharedledger.ui.screens.ActivityManagementUiState(),
+                isLoading = detailState.isLoading || managementState == null || actionLoading,
+                errorMessage = detailState.errorMessage,
+                onRetry = { activityViewModel.loadDetail(activityId, force = true) },
                 onBackClick = { navController.navigateUp() },
+                onMultiCurrencyChange = { targetActivityId, enabled ->
+                    if (targetActivityId == activityId) {
+                        activityViewModel.updateSettings(
+                            activityId = activityId,
+                            name = managementState?.activityName.orEmpty(),
+                            multiCurrency = enabled,
+                        )
+                    }
+                },
+                onCreateParticipant = { targetActivityId, name ->
+                    if (targetActivityId == activityId) {
+                        activityViewModel.createParticipant(activityId, name)
+                    }
+                },
+                onBindParticipant = { targetActivityId, participantId ->
+                    if (targetActivityId == activityId) {
+                        activityViewModel.bindCurrentUser(activityId, participantId)
+                    }
+                },
+                onUnbindParticipant = { targetActivityId ->
+                    if (targetActivityId == activityId) {
+                        activityViewModel.unbindCurrentUser(activityId)
+                    }
+                },
+                onTransferOwnership = { targetActivityId, memberId ->
+                    if (targetActivityId == activityId) {
+                        activityViewModel.transferCreator(activityId, memberId)
+                    }
+                },
+                onRemoveMember = { targetActivityId, memberId ->
+                    if (targetActivityId == activityId) {
+                        activityViewModel.removeMember(activityId, memberId)
+                    }
+                },
                 onArchiveActivity = { targetActivityId ->
-                    if (targetActivityId == activityId) navController.navigateUp()
+                    if (targetActivityId == activityId) {
+                        activityViewModel.archiveActivity(activityId) { navController.navigateUp() }
+                    }
                 },
                 onLeaveActivity = { targetActivityId ->
-                    if (targetActivityId == activityId) navController.navigateUp()
+                    if (targetActivityId == activityId) {
+                        activityViewModel.removeMember(activityId, currentUserId)
+                        navController.navigateUp()
+                    }
                 },
                 onDeleteActivity = { targetActivityId ->
-                    if (targetActivityId == activityId) navController.navigateUp()
+                    if (targetActivityId == activityId) {
+                        activityViewModel.deleteActivity(activityId) { navController.navigateUp() }
+                    }
                 },
             )
         }

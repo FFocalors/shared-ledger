@@ -42,6 +42,7 @@ import com.ffocalors.sharedledger.ui.components.ExpenseCard
 import com.ffocalors.sharedledger.ui.components.ExpenseCardUiModel
 import com.ffocalors.sharedledger.ui.components.PaymentStatusCard
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
+import com.ffocalors.sharedledger.ui.components.ParticipantAvatarGroup
 import com.ffocalors.sharedledger.ui.components.SettlementStatistic
 import com.ffocalors.sharedledger.ui.components.SettlementSummaryCard
 import com.ffocalors.sharedledger.ui.components.SharedLedgerBottomActionBar
@@ -59,6 +60,7 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
 import com.ffocalors.sharedledger.ui.util.MoneyFormatter
+import com.ffocalors.sharedledger.data.activity.ActivityDetail
 import java.math.BigDecimal
 
 private val NormalActivityParticipants = listOf(
@@ -93,6 +95,12 @@ private val NormalActivityExpenses = listOf(
  */
 @Composable
 fun NormalActivityScreen(
+    activityTitle: String = "周末聚餐",
+    participants: List<ParticipantUiModel> = NormalActivityParticipants,
+    activity: ActivityDetail? = null,
+    isLoading: Boolean = false,
+    errorMessage: String? = null,
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
     onTransfer: () -> Unit = {},
@@ -102,24 +110,37 @@ fun NormalActivityScreen(
     onManageActivity: (() -> Unit)? = null,
     onExpenseClick: (String) -> Unit = {},
 ) {
+    val displayTitle = activity?.summary?.name ?: activityTitle
+    val displayParticipants = activity?.participants?.mapIndexed { index, participant ->
+        ParticipantUiModel(
+            name = participant.name,
+            backgroundColor = if (index % 2 == 0) IconContainerSage else WarmOrangeContainer,
+        )
+    } ?: participants
+    val displayUsers = activity?.members?.mapIndexed { index, member ->
+        ParticipantUiModel(
+            name = member.displayName,
+            backgroundColor = if (index % 2 == 0) IconContainerSage else WarmOrangeContainer,
+        )
+    } ?: emptyList()
+    val displayCurrency = activity?.summary?.baseCurrency ?: "CNY"
+    val outstandingDebt = activity?.summary?.totalDebt?.toBigDecimalOrNull() ?: BigDecimal("320.0")
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             SharedLedgerTopBar(
-                title = "周末聚餐",
+                title = displayTitle,
                 showBackButton = true,
                 onBackClick = onBack,
                 onMoreClick = onManageActivity,
                 containerColor = MaterialTheme.colorScheme.background,
                 businessAction = {
-                    Icon(
-                        imageVector = Icons.Rounded.Group,
-                        contentDescription = "参与成员",
-                        modifier = Modifier
-                            .size(SharedLedgerDimens.TopBarActionSize)
-                            .padding(SharedLedgerSpacing.Small),
-                        tint = MaterialTheme.colorScheme.onSurface,
+                    ParticipantAvatarGroup(
+                        participants = displayUsers,
+                        maxVisible = 2,
+                        avatarSize = SharedLedgerDimens.AvatarSmall,
+                        modifier = Modifier.padding(end = SharedLedgerSpacing.Small),
                     )
                 },
             )
@@ -162,42 +183,110 @@ fun NormalActivityScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
             ) {
-                item(key = "summary") {
-                    SettlementSummaryCard(
-                        title = "当前待结算",
-                        primaryAmount = BigDecimal("320.0"),
-                        statistics = listOf(
-                            // The empty leading column preserves Stitch's right-aligned total.
-                            SettlementStatistic("", ""),
-                            SettlementStatistic(
-                                "总消费",
-                                MoneyFormatter.format(BigDecimal("860.0"), "CNY"),
+                if (isLoading || errorMessage != null) {
+                    item(key = "activity-state") {
+                        ActivityDetailStateMessage(
+                            isLoading = isLoading,
+                            errorMessage = errorMessage,
+                            onRetry = onRetry,
+                        )
+                    }
+                } else {
+                    item(key = "summary") {
+                        SettlementSummaryCard(
+                            title = "当前待结算",
+                            primaryAmount = outstandingDebt,
+                            currencyCode = displayCurrency,
+                            statistics = listOf(
+                                // Expense totals remain a Phase 3 placeholder; debt is real activity data.
+                                SettlementStatistic("", ""),
+                                SettlementStatistic(
+                                    "参与人",
+                                    "${displayParticipants.size} 人",
+                                ),
                             ),
-                        ),
-                    )
-                }
-                item(key = "fund-records") {
-                    SharedLedgerButton(
-                        text = "资金记录",
-                        onClick = onFundRecords,
-                        tone = SharedLedgerButtonTone.Neutral,
-                        icon = Icons.Rounded.History,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-                item(key = "my-status") {
-                    PaymentStatusCard(
-                        title = "你需要支付给 张三",
-                        amount = BigDecimal("120.0"),
-                    )
-                }
-                item(key = "expenses") {
-                    ExpenseTimeline(
-                        expenses = NormalActivityExpenses,
-                        onExpenseClick = onExpenseClick,
-                    )
+                        )
+                    }
+                    item(key = "fund-records") {
+                        SharedLedgerButton(
+                            text = "资金记录",
+                            onClick = onFundRecords,
+                            tone = SharedLedgerButtonTone.Neutral,
+                            icon = Icons.Rounded.History,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                    item(key = "my-status") {
+                        PaymentStatusCard(
+                            title = "账务状态将在下一阶段接入",
+                            amount = BigDecimal.ZERO,
+                        )
+                    }
+                    item(key = "expenses") {
+                        if (activity == null) {
+                            ExpenseTimeline(
+                                expenses = NormalActivityExpenses.map { expense ->
+                                    expense.copy(
+                                        participantCount = displayParticipants.size,
+                                        participants = displayParticipants,
+                                        currencyCode = displayCurrency,
+                                    )
+                                },
+                                onExpenseClick = onExpenseClick,
+                            )
+                        } else {
+                            ExpensePhasePlaceholder()
+                        }
+                    }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ExpensePhasePlaceholder() {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
+    ) {
+        Text("活动明细", style = SharedLedgerTextStyles.SectionTitle, color = MaterialTheme.colorScheme.onBackground)
+        Text(
+            "账单数据将在 Expense 联调阶段接入",
+            style = SharedLedgerTextStyles.BodySecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun ActivityDetailStateMessage(
+    isLoading: Boolean,
+    errorMessage: String?,
+    onRetry: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = SharedLedgerSpacing.XLarge),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+    ) {
+        if (isLoading) {
+            androidx.compose.material3.CircularProgressIndicator()
+            Text("正在加载活动…", style = SharedLedgerTextStyles.BodySecondary)
+        } else {
+            Text(
+                text = errorMessage ?: "活动加载失败",
+                style = SharedLedgerTextStyles.BodySecondary,
+                color = MaterialTheme.colorScheme.error,
+            )
+            SharedLedgerButton(
+                text = "重试",
+                onClick = onRetry,
+                tone = SharedLedgerButtonTone.SoftPrimary,
+            )
         }
     }
 }

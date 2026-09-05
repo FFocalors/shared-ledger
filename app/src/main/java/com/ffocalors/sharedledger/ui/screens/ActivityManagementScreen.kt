@@ -40,6 +40,7 @@ import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -75,6 +76,7 @@ import androidx.compose.ui.unit.sp
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonVariant
+import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.AppSurface
@@ -101,7 +103,7 @@ data class ActivityManagementUiState(
     val baseCurrency: String = "CNY (¥)",
     val multiCurrencyEnabled: Boolean = true,
     val joinCode: String = "5831 2746",
-    val participantListLocked: Boolean = true,
+    val participantListLocked: Boolean = false,
     val participantListLockMessage: String = "参与人名单已锁定 (已产生正式账单)",
     val participants: List<ActivityManagementParticipant> = listOf(
         ActivityManagementParticipant("Participant 1", "A", isBound = true, participantId = "demo-participant-1"),
@@ -112,15 +114,15 @@ data class ActivityManagementUiState(
             name = "Alice",
             initial = "A",
             role = "创建者",
-            detail = "关联参与人: Participant 1",
+            detail = "绑定参与人: Participant 1",
             isCreator = true,
             memberId = "demo-member-alice",
         ),
         ActivityManagementMember(
             name = "Charlie",
             initial = "C",
-            role = "成员",
-            detail = "账号已关联",
+            role = "用户",
+            detail = "未绑定参与人",
             memberId = "demo-member-charlie",
         ),
     ),
@@ -133,6 +135,10 @@ data class ActivityManagementUiState(
     val showLeaveAction: Boolean = false,
     /** The original Stitch screen exposes an ownership action; it must target a non-creator row. */
     val showTransferOwnershipAction: Boolean = true,
+    val currentUserName: String = "",
+    val currentUserParticipantId: String? = null,
+    val currentUserParticipantName: String? = null,
+    val canBindParticipant: Boolean = false,
 )
 
 @Immutable
@@ -141,14 +147,16 @@ data class ActivityManagementParticipant(
     val initial: String = name.take(1),
     val isBound: Boolean,
     val participantId: String = "",
+    val boundUserName: String? = null,
+    val isBoundToCurrentUser: Boolean = false,
 )
 
 @Immutable
 data class ActivityManagementMember(
     val name: String,
     val initial: String = name.take(1),
-    val role: String = "成员",
-    val detail: String = "账号已关联",
+    val role: String = "用户",
+    val detail: String = "未绑定参与人",
     val isCreator: Boolean = false,
     val canRemove: Boolean = !isCreator,
     val memberId: String = "",
@@ -173,12 +181,18 @@ fun ActivityManagementScreen(
     activityId: String = com.ffocalors.sharedledger.ui.demo.DemoRouteIds.NORMAL_ACTIVITY,
     modifier: Modifier = Modifier,
     state: ActivityManagementUiState = ActivityManagementUiState(),
+    isLoading: Boolean = false,
+    errorMessage: String? = null,
+    onRetry: () -> Unit = {},
     onBackClick: () -> Unit = {},
     onMoreClick: ((String) -> Unit)? = null,
     onCopyJoinCode: (String, String) -> Unit = { _, _ -> },
     onInviteClick: (String) -> Unit = {},
     onEditActivity: (String) -> Unit = {},
     onManagePermissions: (String) -> Unit = {},
+    onCreateParticipant: (String, String) -> Unit = { _, _ -> },
+    onBindParticipant: (String, String) -> Unit = { _, _ -> },
+    onUnbindParticipant: (String) -> Unit = {},
     onMultiCurrencyChange: (String, Boolean) -> Unit = { _, _ -> },
     onTransferOwnership: (String, String) -> Unit = { _, _ -> },
     onRemoveMember: (String, String) -> Unit = { _, _ -> },
@@ -237,36 +251,65 @@ fun ActivityManagementScreen(
                 verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XLarge),
             ) {
                 ActivityManagementPageTitle()
+                if (state.currentUserName.isNotBlank() && state.currentUserParticipantId == null) {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = SharedLedgerRadius.Medium,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    ) {
+                        Text(
+                            text = "当前用户“${state.currentUserName}”尚未绑定参与人。请在下方选择自己的参与人；绑定后才能记账、转账或收款。",
+                            modifier = Modifier.padding(SharedLedgerSpacing.Medium),
+                            style = SharedLedgerTextStyles.BodySecondary,
+                        )
+                    }
+                } else if (state.currentUserParticipantName != null) {
+                    Text(
+                        text = "当前绑定参与人：${state.currentUserParticipantName}",
+                        style = SharedLedgerTextStyles.Label,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
                 BasicInfoCard(
                     state = state,
                     onCopyJoinCode = {
-                        runAction("演示：加入码已准备复制") {
+                            runAction("加入码已准备复制") {
                             onCopyJoinCode(activityId, state.joinCode)
                         }
                     },
                 )
                 if (state.showInviteEntry) {
                     SharedLedgerButton(
-                        text = "邀请成员",
+                        text = "邀请用户",
                         onClick = {
-                            runAction("演示：已打开邀请入口") { onInviteClick(activityId) }
+                            runAction("已打开邀请入口") { onInviteClick(activityId) }
                         },
                         modifier = Modifier.fillMaxWidth(),
                         variant = SharedLedgerButtonVariant.Neutral,
                         icon = Icons.Rounded.PersonAdd,
                     )
                 }
-                ParticipantManagementCard(state = state)
+                ParticipantManagementCard(
+                    state = state,
+                    onCreateParticipant = { name -> onCreateParticipant(activityId, name) },
+                    onBindParticipant = { participantId ->
+                        runAction("已绑定参与人") { onBindParticipant(activityId, participantId) }
+                    },
+                    onUnbindParticipant = {
+                        runAction("已解除参与人绑定") { onUnbindParticipant(activityId) }
+                    },
+                )
                 ActivityMembersCard(
                     members = state.members,
                     showTransferOwnershipAction = state.showTransferOwnershipAction,
                     onTransferOwnership = { memberId ->
-                        runAction("演示：已提交创建者转移") {
+                        runAction("已提交创建者转移") {
                             onTransferOwnership(activityId, memberId)
                         }
                     },
                     onRemoveMember = { memberId ->
-                        runAction("演示：已提交移除成员") {
+                            runAction("已提交移除用户") {
                             onRemoveMember(activityId, memberId)
                         }
                     },
@@ -275,13 +318,13 @@ fun ActivityManagementScreen(
                     ActivitySettingsCard(
                         state = state,
                         onEditActivity = {
-                            runAction("演示：已打开活动资料") { onEditActivity(activityId) }
+                            runAction("已打开活动资料") { onEditActivity(activityId) }
                         },
                         onManagePermissions = {
-                            runAction("演示：已打开成员权限") { onManagePermissions(activityId) }
+                            runAction("已打开用户权限") { onManagePermissions(activityId) }
                         },
                         onMultiCurrencyChange = { enabled ->
-                            runAction("演示：多币种已${if (enabled) "开启" else "关闭"}") {
+                            runAction("多币种已${if (enabled) "开启" else "关闭"}") {
                                 onMultiCurrencyChange(activityId, enabled)
                             }
                         },
@@ -297,6 +340,41 @@ fun ActivityManagementScreen(
                     onDeleteClick = { pendingConfirmation = ManagementConfirmation.Delete },
                 )
             }
+            if (isLoading || errorMessage != null) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = AppBackground,
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(SharedLedgerSpacing.Large),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator()
+                            Text(
+                                text = "正在加载活动信息…",
+                                modifier = Modifier.padding(top = SharedLedgerSpacing.Medium),
+                                style = SharedLedgerTextStyles.BodySecondary,
+                            )
+                        } else {
+                            Text(
+                                text = errorMessage ?: "活动信息加载失败",
+                                style = SharedLedgerTextStyles.BodySecondary,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                            SharedLedgerButton(
+                                text = "重试",
+                                onClick = onRetry,
+                                modifier = Modifier.padding(top = SharedLedgerSpacing.Medium),
+                                variant = SharedLedgerButtonVariant.Primary,
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -307,13 +385,13 @@ fun ActivityManagementScreen(
             onConfirm = {
                 pendingConfirmation = null
                 when (confirmation) {
-                    ManagementConfirmation.Archive -> runAction("演示：活动已归档") {
+                    ManagementConfirmation.Archive -> runAction("活动已归档") {
                         onArchiveActivity(activityId)
                     }
-                    ManagementConfirmation.Leave -> runAction("演示：已退出活动") {
+                    ManagementConfirmation.Leave -> runAction("已退出活动") {
                         onLeaveActivity(activityId)
                     }
-                    ManagementConfirmation.Delete -> runAction("演示：活动已删除") {
+                    ManagementConfirmation.Delete -> runAction("活动已删除") {
                         onDeleteActivity(activityId)
                     }
                 }
@@ -335,7 +413,7 @@ private fun ActivityManagementPageTitle() {
             modifier = Modifier.semantics { heading() },
         )
         Text(
-            text = "管理您的活动详情、成员及状态。",
+            text = "管理您的活动详情、用户及状态。",
             style = SharedLedgerTextStyles.BodySecondary,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -424,7 +502,14 @@ private fun JoinCodeRow(
 }
 
 @Composable
-private fun ParticipantManagementCard(state: ActivityManagementUiState) {
+private fun ParticipantManagementCard(
+    state: ActivityManagementUiState,
+    onCreateParticipant: (String) -> Unit,
+    onBindParticipant: (String) -> Unit,
+    onUnbindParticipant: () -> Unit,
+) {
+    var showCreateDialog by rememberSaveable { mutableStateOf(false) }
+    var participantName by rememberSaveable { mutableStateOf("") }
     ManagementCard {
         if (state.participantListLocked) {
             Surface(
@@ -447,23 +532,66 @@ private fun ParticipantManagementCard(state: ActivityManagementUiState) {
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
-                        text = state.participantListLockMessage,
+                        text = "参与人是账务身份；用户需先绑定参与人，才能记账或发起资金操作。",
                         style = SharedLedgerTextStyles.Label,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
         }
-        CardHeader(icon = Icons.Rounded.Group, title = "参与人管理")
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(modifier = Modifier.weight(1f)) {
+                CardHeader(icon = Icons.Rounded.Group, title = "参与人管理")
+            }
+            TextButton(onClick = { showCreateDialog = true }) {
+                Text("添加参与人", style = SharedLedgerTextStyles.Label)
+            }
+        }
         Column(modifier = Modifier.fillMaxWidth()) {
             state.participants.forEachIndexed { index, participant ->
                 ParticipantManagementRow(
                     participant = participant,
                     index = index,
                     showDivider = index < state.participants.lastIndex,
+                    canBindParticipant = state.canBindParticipant,
+                    onBindParticipant = onBindParticipant,
+                    onUnbindParticipant = onUnbindParticipant,
                 )
             }
         }
+    }
+    if (showCreateDialog) {
+        AlertDialog(
+            onDismissRequest = { showCreateDialog = false },
+            title = { Text("添加参与人", style = SharedLedgerTextStyles.CardTitle) },
+            text = {
+                SharedLedgerTextField(
+                    value = participantName,
+                    onValueChange = { participantName = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = "请输入姓名",
+                )
+            },
+            dismissButton = {
+                TextButton(onClick = { showCreateDialog = false }) { Text("取消") }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val name = participantName.trim()
+                        if (name.isNotBlank()) {
+                            onCreateParticipant(name)
+                            participantName = ""
+                            showCreateDialog = false
+                        }
+                    },
+                    enabled = participantName.isNotBlank(),
+                ) { Text("添加") }
+            },
+        )
     }
 }
 
@@ -472,6 +600,9 @@ private fun ParticipantManagementRow(
     participant: ActivityManagementParticipant,
     index: Int,
     showDivider: Boolean,
+    canBindParticipant: Boolean,
+    onBindParticipant: (String) -> Unit,
+    onUnbindParticipant: () -> Unit,
 ) {
     Column {
         Row(
@@ -496,7 +627,11 @@ private fun ParticipantManagementRow(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = if (participant.isBound) "已绑定" else "未绑定",
+                    text = when {
+                        participant.isBoundToCurrentUser -> "已绑定当前用户"
+                        participant.isBound -> "已绑定用户：${participant.boundUserName ?: "其他用户"}"
+                        else -> "未绑定用户"
+                    },
                     style = SharedLedgerTextStyles.Label,
                     color = if (participant.isBound) {
                         MaterialTheme.colorScheme.primary
@@ -504,6 +639,24 @@ private fun ParticipantManagementRow(
                         MaterialTheme.colorScheme.onSurfaceVariant
                     },
                 )
+            }
+            when {
+                participant.isBoundToCurrentUser -> {
+                    TextButton(
+                        onClick = onUnbindParticipant,
+                        modifier = Modifier.semantics {
+                            contentDescription = "解除绑定参与人 ${participant.name}"
+                        },
+                    ) { Text("解除绑定") }
+                }
+                canBindParticipant && !participant.isBound -> {
+                    TextButton(
+                        onClick = { onBindParticipant(participant.participantId) },
+                        modifier = Modifier.semantics {
+                            contentDescription = "绑定参与人 ${participant.name}"
+                        },
+                    ) { Text("绑定") }
+                }
             }
         }
         if (showDivider) {
@@ -520,7 +673,7 @@ private fun ActivityMembersCard(
     onRemoveMember: (String) -> Unit,
 ) {
     ManagementCard {
-        CardHeader(icon = Icons.Rounded.Person, title = "活动成员")
+        CardHeader(icon = Icons.Rounded.Person, title = "活动用户")
         Column(modifier = Modifier.fillMaxWidth()) {
             members.forEachIndexed { index, member ->
                 ActivityMemberRow(
@@ -613,7 +766,7 @@ private fun ActivityMemberRow(
                 IconButton(
                     onClick = onRemoveMember,
                     modifier = Modifier.semantics {
-                        contentDescription = "移除成员 ${member.name}"
+                        contentDescription = "移除用户 ${member.name}"
                     },
                 ) {
                     Icon(
@@ -650,10 +803,10 @@ private fun ActivitySettingsCard(
         DividerLine()
         SettingsActionRow(
             icon = Icons.Rounded.Group,
-            title = "成员权限",
+            title = "用户权限",
             value = state.permissionSummary,
             onClick = onManagePermissions,
-            contentDescription = "管理成员权限",
+            contentDescription = "管理用户权限",
         )
         DividerLine()
         Row(

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
@@ -57,6 +58,8 @@ import com.ffocalors.sharedledger.ui.components.AmountDisplay
 import com.ffocalors.sharedledger.ui.components.AmountEmphasis
 import com.ffocalors.sharedledger.ui.components.AmountSize
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatarGroup
+import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
+import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.demo.DemoData
 import com.ffocalors.sharedledger.ui.theme.AppBackground
@@ -82,6 +85,10 @@ import com.ffocalors.sharedledger.ui.theme.sharedLedgerColors
 fun HomeScreen(
     onActivityClick: (ActivityCardUiModel) -> Unit,
     modifier: Modifier = Modifier,
+    activities: List<ActivityCardUiModel> = listOf(DemoData.japanTravel, DemoData.weekendDinner),
+    isLoading: Boolean = false,
+    errorMessage: String? = null,
+    onRetry: () -> Unit = {},
     onFabClick: () -> Unit = {},
     onCreateActivity: () -> Unit = {},
     onJoinActivity: () -> Unit = {},
@@ -163,29 +170,47 @@ fun HomeScreen(
                 Spacer(Modifier.height(SharedLedgerSpacing.Large))
             }
 
-            if (selectedTab == HomeTab.InProgress) {
+            if (isLoading) {
+                item { androidx.compose.material3.CircularProgressIndicator(modifier = Modifier.padding(SharedLedgerDimens.PageHorizontalPadding)) }
+            } else if (errorMessage != null) {
                 item {
-                    HomeActivityCard(
-                        activity = DemoData.japanTravel,
-                        onClick = { onActivityClick(DemoData.japanTravel) },
-                        modifier = Modifier.padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
-                        showAmount = true,
-                    )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+                    ) {
+                        Text(errorMessage, color = MaterialTheme.colorScheme.error)
+                        SharedLedgerButton(
+                            text = "重试",
+                            onClick = onRetry,
+                            tone = SharedLedgerButtonTone.SoftPrimary,
+                        )
+                    }
                 }
-                item {
-                    Spacer(Modifier.height(SharedLedgerSpacing.Large))
-                }
-                item {
-                    HomeActivityCard(
-                        activity = DemoData.weekendDinner,
-                        onClick = { onActivityClick(DemoData.weekendDinner) },
-                        modifier = Modifier.padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
-                        showAmount = false,
-                    )
+            } else if (selectedTab == HomeTab.InProgress) {
+                val visibleActivities = activities.filter { it.status != ActivityStatus.Archived }
+                if (visibleActivities.isEmpty()) {
+                    item { EmptyArchivedState(modifier = Modifier.padding(horizontal = SharedLedgerDimens.PageHorizontalPadding)) }
+                } else {
+                    items(visibleActivities, key = { it.activityId }) { activity ->
+                        HomeActivityCard(
+                            activity = activity,
+                            onClick = { onActivityClick(activity) },
+                            modifier = Modifier.padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
+                            showAmount = activity.totalAmount != null,
+                        )
+                    }
                 }
             } else {
-                item {
-                    EmptyArchivedState(
+                val archivedActivities = activities.filter { it.status == ActivityStatus.Archived }
+                if (archivedActivities.isEmpty()) item { EmptyArchivedState(modifier = Modifier.padding(horizontal = SharedLedgerDimens.PageHorizontalPadding)) }
+                else items(archivedActivities, key = { it.activityId }) { activity ->
+                    HomeActivityCard(
+                        activity = activity,
+                        onClick = { onActivityClick(activity) },
+                        showAmount = false,
                         modifier = Modifier.padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
                     )
                 }

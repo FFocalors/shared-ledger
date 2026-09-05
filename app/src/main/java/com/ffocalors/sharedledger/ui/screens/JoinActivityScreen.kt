@@ -39,6 +39,7 @@ import androidx.compose.material.icons.rounded.Group
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.PersonRemove
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -134,6 +135,29 @@ data class JoinActivityUiState(
     val selectedParticipantId: String? = null,
 )
 
+internal enum class JoinConfirmationAction {
+    Disabled,
+    CompleteWithoutClaim,
+    ClaimSelectedParticipant,
+    UnclaimCurrentParticipant,
+}
+
+internal fun resolveJoinConfirmationAction(state: JoinActivityUiState): JoinConfirmationAction {
+    if (state.status != JoinActivityStatus.ReadyToJoin) return JoinConfirmationAction.Disabled
+
+    val currentUserParticipant = state.preview.participants.firstOrNull {
+        it.state == JoinParticipantState.ClaimedByCurrentUser
+    }
+    val currentUserClaimed = currentUserParticipant != null &&
+        (state.selectedParticipantId == null || state.selectedParticipantId == currentUserParticipant.participantId)
+
+    return when {
+        currentUserClaimed -> JoinConfirmationAction.UnclaimCurrentParticipant
+        state.selectedParticipantId?.isNotBlank() == true -> JoinConfirmationAction.ClaimSelectedParticipant
+        else -> JoinConfirmationAction.CompleteWithoutClaim
+    }
+}
+
 /**
  * Controlled join-activity flow. The host owns validation, joining, and
  * navigation; this screen only renders the supplied state and emits events.
@@ -147,6 +171,8 @@ fun JoinActivityScreen(
     onValidateInviteCode: (String) -> Unit = {},
     onParticipantSelected: (String) -> Unit = {},
     onJoinActivity: (String) -> Unit = {},
+    onCompleteJoinWithoutClaim: () -> Unit = {},
+    onUnclaimActivity: () -> Unit = {},
     onJoinSuccessNavigate: () -> Unit = {},
 ) {
     LaunchedEffect(state.status) {
@@ -170,6 +196,8 @@ fun JoinActivityScreen(
                 JoinActivityBottomBar(
                     state = state,
                     onJoinActivity = onJoinActivity,
+                    onCompleteJoinWithoutClaim = onCompleteJoinWithoutClaim,
+                    onUnclaimActivity = onUnclaimActivity,
                 )
             }
         },
@@ -501,7 +529,11 @@ private fun JoinActivityConfirmation(
                     ),
                 ) {
                     Text(
-                        text = "参与人名单已锁定，只能认领已有参与人",
+                        text = if (state.preview.participants.isEmpty()) {
+                            "当前暂无预设参与人，可直接加入活动；之后也可以再关联参与人。"
+                        } else {
+                            "认领参与人是可选操作，也可以直接加入活动。"
+                        },
                         modifier = Modifier.padding(SharedLedgerSpacing.Medium),
                         style = SharedLedgerTextStyles.BodySecondary,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -750,12 +782,17 @@ private fun ParticipantStatus(
 private fun JoinActivityBottomBar(
     state: JoinActivityUiState,
     onJoinActivity: (String) -> Unit,
+    onCompleteJoinWithoutClaim: () -> Unit,
+    onUnclaimActivity: () -> Unit,
 ) {
     val currentUserParticipant = state.preview.participants.firstOrNull {
         it.state == JoinParticipantState.ClaimedByCurrentUser
     }
     val identityId = state.selectedParticipantId ?: currentUserParticipant?.participantId
-    val canJoin = identityId != null && identityId.isNotBlank() && state.status == JoinActivityStatus.ReadyToJoin
+    val currentUserClaimed = currentUserParticipant != null &&
+        (state.selectedParticipantId == null || state.selectedParticipantId == currentUserParticipant.participantId)
+    val confirmationAction = resolveJoinConfirmationAction(state)
+    val canJoin = confirmationAction != JoinConfirmationAction.Disabled
 
     Box(
         modifier = Modifier.fillMaxWidth(),
@@ -771,20 +808,32 @@ private fun JoinActivityBottomBar(
             shadowElevation = SharedLedgerElevation.Floating,
         ) {
             SharedLedgerButton(
-                text = when (state.status) {
-                    JoinActivityStatus.Joined -> "已加入"
+                text = when {
+                    state.status == JoinActivityStatus.Joined -> "已加入"
+                    currentUserClaimed -> "解除认领"
                     else -> "确认加入"
                 },
-                onClick = { identityId?.let(onJoinActivity) },
+                onClick = {
+                    when (confirmationAction) {
+                        JoinConfirmationAction.UnclaimCurrentParticipant -> onUnclaimActivity()
+                        JoinConfirmationAction.ClaimSelectedParticipant -> identityId?.let(onJoinActivity)
+                        JoinConfirmationAction.CompleteWithoutClaim -> onCompleteJoinWithoutClaim()
+                        JoinConfirmationAction.Disabled -> Unit
+                    }
+                },
                 enabled = canJoin,
-                variant = if (state.status == JoinActivityStatus.Joined) {
+                variant = if (currentUserClaimed) {
+                    SharedLedgerButtonVariant.Neutral
+                } else if (state.status == JoinActivityStatus.Joined) {
                     SharedLedgerButtonVariant.Success
                 } else {
                     SharedLedgerButtonVariant.Primary
                 },
                 loading = state.status == JoinActivityStatus.Joining,
                 loadingText = "正在加入",
-                icon = if (state.status == JoinActivityStatus.Joined) Icons.Rounded.CheckCircle else Icons.Rounded.ArrowForward,
+                icon = if (currentUserClaimed) Icons.Rounded.PersonRemove
+                else if (state.status == JoinActivityStatus.Joined) Icons.Rounded.CheckCircle
+                else Icons.Rounded.ArrowForward,
                 modifier = Modifier.padding(
                     start = SharedLedgerDimens.PageHorizontalPadding,
                     top = SharedLedgerSpacing.Medium,

@@ -101,8 +101,10 @@ Supabase Auth / PostgREST / RPC / Storage / Realtime
 - [x] Session 失效能够刷新或明确回到登录页。
 - [x] 注册、登录、恢复和退出均有 loading、error 与重复点击保护。
 
-Phase 1 已完成并可进入后续集成排期。Phase 2（Activity、Expense、Transfer、
-Storage、Realtime）尚未开始；本阶段未修改或创建任何后端 migration。
+Phase 1 已完成并可进入后续集成排期。Phase 2 的 Activity、Participant、
+ActivityMember（用户）和 LedgerUnit Android 真实接线已完成收尾；本次仅修改
+Android、真机准备脚本和集成文档，未修改或创建任何后端 migration。Expense、
+资金记录、结算、Storage 和 Realtime 仍按后续阶段处理。
 
 ## 5. Integration Phase 2：活动与身份主链
 
@@ -118,6 +120,94 @@ Home
 接入真实活动列表、普通/大型活动创建、加入码加入、Participant 创建、Claim/Unclaim、Member、Creator、子活动、活动设置和 Financial Status。
 
 对应页面包括：首页、加入活动、活动管理、普通活动、大型活动、创建子活动和账本单元。
+
+### Phase 2 后端契约摘要（2026-09-05）
+
+本阶段以 `BACKEND_INTEGRATION_READINESS.md` 和当前 16 条 migration 为准，已逐条核对 migration 中的表、RLS、公开 RPC 和返回列；`api-contracts.md` 继续保持废弃状态。
+
+活动与身份主链使用以下公开表和字段：
+
+- `activities`：`id`、`join_code`、`name`、`type`（`normal`/`large`）、`base_currency`、`multi_currency_enabled`、`created_by`、`archived_at`、`is_deleted`、`participants_locked_at`、`financial_version` 及生命周期时间/操作者字段。
+- `activity_members`：`id`、`activity_id`、`user_id`、`joined_at`、`created_at`；权限成员与账务 Participant 分离。
+- `ledger_units`：`id`、`activity_id`、`name`、`type`（`default`/`root`/`sub_activity`）、删除标记及时间/操作者字段。
+- `participants`：`id`、`activity_id`、`name`、`participant_order`、删除标记及时间/操作者字段。
+- `participant_claims`：`id`、`activity_id`、`participant_id`、`user_id`、`claimed_at`；每个用户和 Participant 的唯一 Claim 约束由数据库维护。
+
+Phase 2 写入只调用以下公开 RPC：
+
+```text
+create_activity(name, type, base_currency, multi_currency_enabled)
+  -> activity_id, join_code, activity_name, activity_type,
+     activity_base_currency, activity_multi_currency_enabled
+join_activity_by_code(join_code)
+  -> activity_id, is_new
+create_participant(activity_id, name, participant_order)
+  -> participant_id, participant_name, participant_order
+claim_participant(activity_id, participant_id)
+  -> claim_id, claimed_participant_id, is_new
+unclaim_participant(activity_id)
+  -> boolean
+create_sub_activity(activity_id, name)
+  -> parent_activity_id, ledger_unit_id, created_name, created_type
+update_activity_settings(activity_id, name, base_currency, multi_currency_enabled)
+  -> activity_id, activity_name, activity_base_currency,
+     activity_multi_currency_enabled
+archive_activity(activity_id), unarchive_activity(activity_id)
+  -> activity_id, archived, changed, archived_at, total_debt,
+     total_prepayment, completed, has_unsettled, warning
+delete_participant(participant_id), delete_activity(activity_id)
+remove_activity_member(activity_id, user_id)
+transfer_activity_creator(activity_id, new_creator_user_id)
+```
+
+活动列表、成员、Participant、LedgerUnit、Claim 和金融状态使用受 RLS 保护的 Data API 读取。客户端必须保存公开 RPC 的 `snake_case` 返回列并映射为 Android domain model；不能依据 private helper 的内部列名或旧契约重命名。`participant_financial_status` 和 `activity_financial_status` 只作为服务端计算结果读取，不能由客户端自行推导权限或金融状态。
+
+### Phase 2 本地真实 API 验收（2026-09-05）
+
+使用本地 Supabase 的两个一次性普通账号，通过 publishable/anon 客户端入口完成以下链路；测试输出未记录 key 或 token：
+
+```text
+A 注册                                  PASS
+B 注册                                  PASS
+A create_activity(type=large)           PASS
+A create_participant                    PASS
+B join_activity_by_code                 PASS
+B claim_participant                     PASS
+A create_sub_activity                   PASS
+A 通过 Data API 读取                    PASS
+B 通过 Data API 读取                    PASS
+A/B 数据快照一致                        PASS
+```
+
+两端最终读取结果均为 `1 activity / 2 activity_members / 1 participant / 2 ledger_units / 1 participant_claim`，包含大型活动的 root unit 和新建 sub-activity unit。A/B 读取均经过各自认证会话和 RLS；没有使用 service role 模拟客户端授权。16 条 migration 的本地 history 全部匹配，`supabase/migrations/` 零改动。
+
+本次链路未发现 Backend Contract 问题，也未发现种子/测试数据导致的失败。此前一次数量断言失败是测试脚本对 PowerShell 嵌套 JSON 数组的处理问题，使用保留原始数组的验收脚本复核后已通过，不属于后端或 Android 客户端缺陷。
+
+当前仍未执行的 Phase 2 负向验收包括：非成员读取拒绝、普通成员执行 Creator 专属操作被拒绝、归档后写入被拒绝，以及设置/成员移除/Creator 转移的真机 UI 验收。这些不阻塞本次主链路记录，但在 Phase 2 完成前必须补齐。
+
+### Phase 2 Android 实际进展（2026-09-05，已完成主链路收尾）
+
+- [x] 已建立 Activity Repository、DTO/domain mapper 和 ViewModel；Compose 页面不
+  直接调用 Supabase SDK。
+- [x] 首页活动列表、普通/大型活动创建、加入码加入、Participant 创建、Claim/
+  Unclaim、子活动创建、活动设置/生命周期操作和活动管理已接入真实 UUID 与冻结
+  契约中的公开 RPC/Data API。
+- [x] 已明确区分账务 Participant 与真实 Auth 用户（ActivityMember）；加入时可
+  立即绑定或暂不绑定，加入后可在活动管理中绑定/解除绑定，创建者同样需要绑定
+  Participant 后才能进入资金类操作。
+- [x] 未绑定 Participant 的用户仍可浏览活动，但转账、收款、新增消费和最终结算
+  等资金入口会被引导至绑定流程；活动页右上角成员头像改为读取真实活动用户。
+- [x] 已修复不同登录用户复用 Activity ViewModel 导致活动列表串用的问题，并为
+  Home、Join、Activity Detail 和管理页补齐加载、重试和操作状态接线。
+- [x] 用户已使用两台真机账号完成 Activity 主链路的基本验证：创建活动、加入码
+  加入、绑定 Participant、创建子活动以及双方刷新后查看一致数据。
+- [x] 真机准备脚本已固定目标设备并串联本地 Supabase 端口映射、Debug 构建、安装
+  和启动，便于后续联调复验。
+
+以下项目仍保留为未验收项，不因本次主链路通过而标记完成：非成员读取拒绝、普通
+成员执行 Creator 专属操作被拒绝、归档后写入被拒绝，以及设置/成员移除/Creator
+转移的真机 UI 负向验收。资金类 Expense、Transfer、资金记录和结算仍使用现有
+Demo/Fake 实现，分别留到 Phase 3/4 接线。
 
 ### 模型约束
 
@@ -136,9 +226,17 @@ A 创建大型活动
 → A/B 刷新后看到一致数据
 ```
 
+- [x] A 创建大型活动，B 使用加入码加入并绑定 Participant，A 创建子活动，A/B
+  刷新后看到一致数据（用户真机双账号主链路基本通过）。
 - [ ] 非成员无法读取活动。
 - [ ] 普通成员无法执行 Creator 专属操作。
-- [ ] 页面路由和 Repository 使用真实 UUID，不使用显示名称或 Demo ID。
+- [x] 页面路由和 Repository 使用真实 UUID，不使用显示名称或 Demo ID。
+
+Phase 2 后端主链路和 Android Activity/Participant/ActivityMember/LedgerUnit 真实接线
+已完成；用户真机双账号主链路基本通过。本阶段 Demo/Fake 退出边界保持为：退出
+Home、Activity、Participant、Member、LedgerUnit 的 Runtime `DemoData`；Expense、
+资金记录和结算的 Runtime Demo/Fake 数据保留到 Phase 3/4，不提前清理。上述未验收
+的负向用例仍需在后续验收中补齐。
 
 ## 6. Integration Phase 3：Expense 完整链路
 
@@ -273,7 +371,7 @@ Frontend Prototype Freeze ✅
         ↓
 Phase 1  Supabase Foundation + Auth ✅
         ↓
-Phase 2  Activity + Participant + Member
+Phase 2  Activity + Participant + Member ✅（Android 真实接线完成，双账号主链路基本通过；负向验收保留）
         ↓
 Phase 3  Expense End-to-End
         ↓

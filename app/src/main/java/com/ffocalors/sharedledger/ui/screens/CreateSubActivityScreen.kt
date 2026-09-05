@@ -41,6 +41,7 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
+import com.ffocalors.sharedledger.data.activity.ActivityDetail
 
 /**
  * Static V0.1 form for creating a child activity. It only owns local form
@@ -50,13 +51,20 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
 fun CreateSubActivityScreen(
     parentActivityName: String = "日本旅行",
     participants: List<ParticipantUiModel> = DemoData.japanTravel.participants,
+    activity: ActivityDetail? = null,
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
-    onCreate: () -> Unit = {},
+    onCreate: (String) -> Unit = {},
+    isLoading: Boolean = false,
+    errorMessage: String? = null,
 ) {
+    val displayParentActivityName = activity?.summary?.name ?: parentActivityName
+    val displayParticipants = activity?.participants?.map { participant ->
+        ParticipantUiModel(participant.name)
+    } ?: participants
     var activityName by rememberSaveable { mutableStateOf("") }
-    var selectedNamesCsv by rememberSaveable {
-        mutableStateOf(participants.joinToString("|") { it.name })
+    var selectedNamesCsv by rememberSaveable(displayParticipants.joinToString("|")) {
+        mutableStateOf(displayParticipants.joinToString("|") { it.name })
     }
     val selectedNames = selectedNamesCsv.split("|").filter { it.isNotBlank() }.toSet()
 
@@ -85,7 +93,8 @@ fun CreateSubActivityScreen(
             ) {
                 SharedLedgerPrimaryButton(
                     text = "创建子活动",
-                    onClick = onCreate,
+                    onClick = { onCreate(activityName.trim()) },
+                    enabled = activityName.isNotBlank() && !isLoading,
                     modifier = Modifier.widthIn(max = SharedLedgerDimens.ContentMaxWidth),
                 )
             }
@@ -116,7 +125,7 @@ fun CreateSubActivityScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = parentActivityName,
+                            text = displayParentActivityName,
                             style = SharedLedgerTextStyles.Body,
                             color = MaterialTheme.colorScheme.onSurface,
                         )
@@ -149,7 +158,7 @@ fun CreateSubActivityScreen(
                     color = MaterialTheme.colorScheme.surface,
                 ) {
                     Column(modifier = Modifier.padding(SharedLedgerSpacing.Small)) {
-                        participants.forEach { participant ->
+                        displayParticipants.forEach { participant ->
                             val selected = participant.name in selectedNames
                             Row(
                                 modifier = Modifier
@@ -158,7 +167,7 @@ fun CreateSubActivityScreen(
                                         val nextNames = selectedNames.toMutableSet().apply {
                                             if (selected) remove(participant.name) else add(participant.name)
                                         }
-                                        selectedNamesCsv = participants
+                                        selectedNamesCsv = displayParticipants
                                             .map { it.name }
                                             .filter { it in nextNames }
                                             .joinToString("|")
@@ -202,6 +211,14 @@ fun CreateSubActivityScreen(
                 }
             }
 
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage,
+                    style = SharedLedgerTextStyles.BodySecondary,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+
             FormSection(title = "基准币") {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
@@ -225,6 +242,9 @@ fun CreateSubActivityScreen(
                         )
                     }
                 }
+            }
+            if (errorMessage != null) {
+                Text(errorMessage, color = MaterialTheme.colorScheme.error, style = SharedLedgerTextStyles.BodySecondary)
             }
         }
     }
