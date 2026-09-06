@@ -61,9 +61,10 @@ import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
 import com.ffocalors.sharedledger.ui.util.MoneyFormatter
 import com.ffocalors.sharedledger.data.activity.ActivityDetail
+import com.ffocalors.sharedledger.ui.expense.ExpenseListUiState
 import java.math.BigDecimal
 
-private val NormalActivityParticipants = listOf(
+private val PreviewNormalActivityParticipants = listOf(
     ParticipantUiModel("张三", IconContainerSage),
     ParticipantUiModel("李四", WarmOrangeContainer),
     ParticipantUiModel("王五"),
@@ -71,13 +72,13 @@ private val NormalActivityParticipants = listOf(
     ParticipantUiModel("我"),
 )
 
-private val NormalActivityExpenses = listOf(
+private val PreviewNormalActivityExpenses = listOf(
     ExpenseCardUiModel(
         name = "晚餐",
         amount = BigDecimal("560.0"),
         payerName = "张三",
         participantCount = 5,
-        participants = NormalActivityParticipants,
+        participants = PreviewNormalActivityParticipants,
         expenseId = com.ffocalors.sharedledger.ui.demo.DemoRouteIds.DINNER_EXPENSE,
     ),
     ExpenseCardUiModel(
@@ -85,7 +86,7 @@ private val NormalActivityExpenses = listOf(
         amount = BigDecimal("100.0"),
         payerName = "李四",
         participantCount = 5,
-        participants = listOf(NormalActivityParticipants[1], NormalActivityParticipants[4]),
+        participants = listOf(PreviewNormalActivityParticipants[1], PreviewNormalActivityParticipants[4]),
         expenseId = com.ffocalors.sharedledger.ui.demo.DemoRouteIds.TAXI_EXPENSE,
     ),
 )
@@ -96,10 +97,14 @@ private val NormalActivityExpenses = listOf(
 @Composable
 fun NormalActivityScreen(
     activityTitle: String = "周末聚餐",
-    participants: List<ParticipantUiModel> = NormalActivityParticipants,
+    participants: List<ParticipantUiModel> = PreviewNormalActivityParticipants,
     activity: ActivityDetail? = null,
     isLoading: Boolean = false,
     errorMessage: String? = null,
+    expenses: List<ExpenseCardUiModel> = emptyList(),
+    expenseLoading: Boolean = false,
+    expenseErrorMessage: String? = null,
+    onExpenseRetry: () -> Unit = {},
     onRetry: () -> Unit = {},
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
@@ -109,6 +114,7 @@ fun NormalActivityScreen(
     onFundRecords: () -> Unit = {},
     onManageActivity: (() -> Unit)? = null,
     onExpenseClick: (String) -> Unit = {},
+    previewMode: Boolean = false,
 ) {
     val displayTitle = activity?.summary?.name ?: activityTitle
     val displayParticipants = activity?.participants?.mapIndexed { index, participant ->
@@ -183,12 +189,12 @@ fun NormalActivityScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
             ) {
-                if (isLoading || errorMessage != null) {
+                if (isLoading || errorMessage != null || expenseLoading || expenseErrorMessage != null) {
                     item(key = "activity-state") {
                         ActivityDetailStateMessage(
-                            isLoading = isLoading,
-                            errorMessage = errorMessage,
-                            onRetry = onRetry,
+                            isLoading = isLoading || expenseLoading,
+                            errorMessage = errorMessage ?: expenseErrorMessage,
+                            onRetry = if (errorMessage != null) onRetry else onExpenseRetry,
                         )
                     }
                 } else {
@@ -223,9 +229,9 @@ fun NormalActivityScreen(
                         )
                     }
                     item(key = "expenses") {
-                        if (activity == null) {
+                        if (previewMode) {
                             ExpenseTimeline(
-                                expenses = NormalActivityExpenses.map { expense ->
+                                expenses = PreviewNormalActivityExpenses.map { expense ->
                                     expense.copy(
                                         participantCount = displayParticipants.size,
                                         participants = displayParticipants,
@@ -235,28 +241,15 @@ fun NormalActivityScreen(
                                 onExpenseClick = onExpenseClick,
                             )
                         } else {
-                            ExpensePhasePlaceholder()
+                            ExpenseTimeline(
+                                expenses = expenses,
+                                onExpenseClick = onExpenseClick,
+                            )
                         }
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun ExpensePhasePlaceholder() {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
-    ) {
-        Text("活动明细", style = SharedLedgerTextStyles.SectionTitle, color = MaterialTheme.colorScheme.onBackground)
-        Text(
-            "账单数据将在 Expense 联调阶段接入",
-            style = SharedLedgerTextStyles.BodySecondary,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }
 
@@ -305,13 +298,17 @@ private fun ExpenseTimeline(
             color = MaterialTheme.colorScheme.onBackground,
         )
         Spacer(Modifier.height(SharedLedgerSpacing.Medium))
-        TimelineDateHeader()
-        expenses.forEachIndexed { index, expense ->
-            TimelineExpense(
-                expense = expense,
-                icon = if (index == 0) Icons.Rounded.Restaurant else Icons.Rounded.LocalTaxi,
-                onClick = { onExpenseClick(expense.expenseId) },
-            )
+        if (expenses.isEmpty()) {
+            Text("暂无账单", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        } else {
+            TimelineDateHeader()
+            expenses.forEachIndexed { index, expense ->
+                TimelineExpense(
+                    expense = expense,
+                    icon = if (index == 0) Icons.Rounded.Restaurant else Icons.Rounded.LocalTaxi,
+                    onClick = { onExpenseClick(expense.expenseId) },
+                )
+            }
         }
     }
 }
@@ -396,6 +393,6 @@ private fun TimelineExpense(
 @Composable
 private fun NormalActivityScreenPreview() {
     SharedLedgerTheme {
-        NormalActivityScreen()
+        NormalActivityScreen(previewMode = true)
     }
 }

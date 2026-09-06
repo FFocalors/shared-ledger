@@ -50,19 +50,19 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
 import java.math.BigDecimal
 import com.ffocalors.sharedledger.data.activity.ActivityDetail
 
-private val LedgerUnitParticipants = listOf(
+private val PreviewLedgerUnitParticipants = listOf(
     ParticipantUiModel("张三", IconContainerSage),
     ParticipantUiModel("李四", WarmOrangeContainer),
     ParticipantUiModel("王五"),
 )
 
-private val TicketLedgerUnitExpenses = listOf(
+private val PreviewTicketLedgerUnitExpenses = listOf(
     ExpenseCardUiModel(
         name = "东京塔门票",
         amount = BigDecimal("120.0"),
         payerName = "张三",
         participantCount = 3,
-        participants = LedgerUnitParticipants,
+        participants = PreviewLedgerUnitParticipants,
         currencyCode = "CNY",
         expenseId = com.ffocalors.sharedledger.ui.demo.DemoRouteIds.TICKET_EXPENSE,
     ),
@@ -71,7 +71,7 @@ private val TicketLedgerUnitExpenses = listOf(
         amount = BigDecimal("850.0"),
         payerName = "李四",
         participantCount = 3,
-        participants = LedgerUnitParticipants,
+        participants = PreviewLedgerUnitParticipants,
         currencyCode = "CNY",
         expenseId = "demo-expense-asakusa",
     ),
@@ -80,19 +80,19 @@ private val TicketLedgerUnitExpenses = listOf(
         amount = BigDecimal("1200.0"),
         payerName = "我",
         participantCount = 2,
-        participants = listOf(LedgerUnitParticipants[0], LedgerUnitParticipants[2]),
+        participants = listOf(PreviewLedgerUnitParticipants[0], PreviewLedgerUnitParticipants[2]),
         currencyCode = "CNY",
         expenseId = "demo-expense-disney",
     ),
 )
 
-private val BreakfastLedgerUnitExpenses = listOf(
+private val PreviewBreakfastLedgerUnitExpenses = listOf(
     ExpenseCardUiModel(
         name = "酒店早餐",
         amount = BigDecimal("320.0"),
         payerName = "张三",
         participantCount = 5,
-        participants = LedgerUnitParticipants,
+        participants = PreviewLedgerUnitParticipants,
         currencyCode = "CNY",
         expenseId = "demo-expense-breakfast",
     ),
@@ -101,19 +101,19 @@ private val BreakfastLedgerUnitExpenses = listOf(
         amount = BigDecimal("80.0"),
         payerName = "李四",
         participantCount = 2,
-        participants = LedgerUnitParticipants.take(2),
+        participants = PreviewLedgerUnitParticipants.take(2),
         currencyCode = "CNY",
         expenseId = "demo-expense-coffee",
     ),
 )
 
-private val HotelLedgerUnitExpenses = listOf(
+private val PreviewHotelLedgerUnitExpenses = listOf(
     ExpenseCardUiModel(
         name = "酒店房费",
         amount = BigDecimal("3200.0"),
         payerName = "张三",
         participantCount = 4,
-        participants = LedgerUnitParticipants,
+        participants = PreviewLedgerUnitParticipants,
         currencyCode = "CNY",
         expenseId = "demo-expense-hotel",
     ),
@@ -122,27 +122,27 @@ private val HotelLedgerUnitExpenses = listOf(
         amount = BigDecimal("160.0"),
         payerName = "王五",
         participantCount = 4,
-        participants = LedgerUnitParticipants,
+        participants = PreviewLedgerUnitParticipants,
         currencyCode = "CNY",
         expenseId = "demo-expense-city-tax",
     ),
 )
 
-private data class LedgerUnitDemoData(
+private data class LedgerUnitPreviewData(
     val title: String,
     val expenses: List<ExpenseCardUiModel>,
 )
 
-private fun ledgerUnitDemoData(ledgerUnitId: String): LedgerUnitDemoData = when (ledgerUnitId) {
+private fun ledgerUnitPreviewData(ledgerUnitId: String): LedgerUnitPreviewData = when (ledgerUnitId) {
     com.ffocalors.sharedledger.ui.demo.DemoRouteIds.BREAKFAST_LEDGER ->
-        LedgerUnitDemoData("早餐", BreakfastLedgerUnitExpenses)
+        LedgerUnitPreviewData("早餐", PreviewBreakfastLedgerUnitExpenses)
     com.ffocalors.sharedledger.ui.demo.DemoRouteIds.HOTEL_LEDGER ->
-        LedgerUnitDemoData("酒店", HotelLedgerUnitExpenses)
-    else -> LedgerUnitDemoData("门票", TicketLedgerUnitExpenses)
+        LedgerUnitPreviewData("酒店", PreviewHotelLedgerUnitExpenses)
+    else -> LedgerUnitPreviewData("门票", PreviewTicketLedgerUnitExpenses)
 }
 
 /** Stable presentation helper used by navigation/model tests to verify ledger-unit identity. */
-internal fun ledgerUnitDemoTitle(ledgerUnitId: String): String = ledgerUnitDemoData(ledgerUnitId).title
+internal fun ledgerUnitDemoTitle(ledgerUnitId: String): String = ledgerUnitPreviewData(ledgerUnitId).title
 
 /**
  * 大型活动中的独立 Ledger，页面内容由 [ledgerUnitId] 选择，导航意图通过回调交给宿主处理。
@@ -155,6 +155,12 @@ fun LedgerUnitScreen(
     activity: ActivityDetail? = null,
     isLoading: Boolean = false,
     errorMessage: String? = null,
+    expenses: List<ExpenseCardUiModel> = emptyList(),
+    totalBaseAmount: BigDecimal? = null,
+    participantBound: Boolean = false,
+    expenseLoading: Boolean = false,
+    expenseErrorMessage: String? = null,
+    onExpenseRetry: () -> Unit = {},
     onRetry: () -> Unit = {},
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
@@ -163,11 +169,13 @@ fun LedgerUnitScreen(
     onReceive: () -> Unit = {},
     onFundRecords: () -> Unit = {},
     onExpenseClick: (String) -> Unit = {},
+    previewMode: Boolean = false,
 ) {
-    val demoData = ledgerUnitDemoData(ledgerUnitId)
+    val previewData = ledgerUnitPreviewData(ledgerUnitId)
     val displayTitle = ledgerUnitTitle?.takeIf { it.isNotBlank() }
         ?: activity?.ledgerUnits?.firstOrNull { it.id == ledgerUnitId }?.name
-        ?: demoData.title
+        ?: if (previewMode) previewData.title else "子活动"
+    val displayTotal = if (previewMode) previewData.expenses.sumOf { it.amount } else totalBaseAmount
     val displayUsers = activity?.members?.mapIndexed { index, member ->
         ParticipantUiModel(
             name = member.displayName,
@@ -232,19 +240,19 @@ fun LedgerUnitScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
             ) {
-                if (isLoading || errorMessage != null) {
+                if (isLoading || errorMessage != null || expenseLoading || expenseErrorMessage != null) {
                     item(key = "ledger-state") {
                         LedgerUnitStateMessage(
-                            isLoading = isLoading,
-                            errorMessage = errorMessage,
-                            onRetry = onRetry,
+                            isLoading = isLoading || expenseLoading,
+                            errorMessage = errorMessage ?: expenseErrorMessage,
+                            onRetry = if (errorMessage != null) onRetry else onExpenseRetry,
                         )
                     }
                 } else {
                     item(key = "summary") {
                         SettlementSummaryCard(
-                            title = "消费合计",
-                            primaryAmount = BigDecimal("2450.0"),
+                            title = if (previewMode) "消费合计" else "我的应承担合计",
+                            primaryAmount = displayTotal?.takeIf { previewMode || participantBound },
                             currencyCode = activity?.summary?.baseCurrency ?: "CNY",
                             statistics = emptyList(),
                             statusContent = {
@@ -290,21 +298,25 @@ fun LedgerUnitScreen(
                         )
                     }
                     item(key = "today") {
-                        if (activity == null) {
+                        if (previewMode) {
                             LedgerUnitExpenseSection(
                                 title = "今天",
-                                expenses = demoData.expenses.take(2),
+                                expenses = previewData.expenses.take(2),
                                 onExpenseClick = onExpenseClick,
                             )
                         } else {
-                            LedgerUnitExpensePlaceholder()
+                            LedgerUnitExpenseSection(
+                                title = "今天",
+                                expenses = expenses,
+                                onExpenseClick = onExpenseClick,
+                            )
                         }
                     }
                     item(key = "yesterday") {
-                        if (activity == null) {
+                        if (previewMode) {
                             LedgerUnitExpenseSection(
                                 title = "昨天",
-                                expenses = demoData.expenses.drop(2),
+                                expenses = previewData.expenses.drop(2),
                                 onExpenseClick = onExpenseClick,
                             )
                         }
@@ -312,22 +324,6 @@ fun LedgerUnitScreen(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun LedgerUnitExpensePlaceholder() {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
-    ) {
-        Text("账单明细", style = SharedLedgerTextStyles.SectionTitle, color = MaterialTheme.colorScheme.onBackground)
-        Text(
-            "账单数据将在 Expense 联调阶段接入",
-            style = SharedLedgerTextStyles.BodySecondary,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }
 
@@ -375,12 +371,16 @@ private fun LedgerUnitExpenseSection(
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(horizontal = SharedLedgerSpacing.XSmall),
         )
-        expenses.forEach { expense ->
-            ExpenseCard(
-                expense = expense,
-                icon = Icons.AutoMirrored.Rounded.ReceiptLong,
-                onClick = { onExpenseClick(expense.expenseId) },
-            )
+        if (expenses.isEmpty()) {
+            Text("暂无账单", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        } else {
+            expenses.forEach { expense ->
+                ExpenseCard(
+                    expense = expense,
+                    icon = Icons.AutoMirrored.Rounded.ReceiptLong,
+                    onClick = { onExpenseClick(expense.expenseId) },
+                )
+            }
         }
     }
 }
@@ -389,6 +389,6 @@ private fun LedgerUnitExpenseSection(
 @Composable
 private fun LedgerUnitScreenPreview() {
     SharedLedgerTheme {
-        LedgerUnitScreen()
+        LedgerUnitScreen(previewMode = true)
     }
 }

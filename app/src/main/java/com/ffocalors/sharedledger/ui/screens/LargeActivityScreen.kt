@@ -113,6 +113,8 @@ fun LargeActivityScreen(
     participants: List<ParticipantUiModel> = LargeActivityParticipants,
     subActivities: List<SubActivityUiModel> = LargeActivitySubActivities,
     activity: ActivityDetail? = null,
+    ledgerUnitAmounts: Map<String, BigDecimal> = emptyMap(),
+    participantBound: Boolean? = null,
     isLoading: Boolean = false,
     errorMessage: String? = null,
     onRetry: () -> Unit = {},
@@ -149,7 +151,7 @@ fun LargeActivityScreen(
         }
         SubActivityUiModel(
             name = ledgerUnit.name,
-            amount = BigDecimal.ZERO,
+            amount = ledgerUnitAmounts[ledgerUnit.id] ?: BigDecimal.ZERO,
             participantCount = displayParticipants.size,
             updatedAt = ledgerUnit.createdAt?.take(10) ?: "已创建",
             icon = icon,
@@ -157,6 +159,7 @@ fun LargeActivityScreen(
             iconContainerColor = if (index % 2 == 0) IconContainerSage else IconContainerTertiary,
             iconTint = if (index % 2 == 0) SageGreen else IconContainerNeutralTint,
             ledgerUnitId = ledgerUnit.id,
+            amountAvailable = participantBound ?: false,
         )
     } ?: subActivities
     val outstandingDebt = activity?.summary?.totalDebt?.toBigDecimalOrNull() ?: BigDecimal("2480.0")

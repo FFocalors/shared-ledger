@@ -86,6 +86,7 @@ import com.ffocalors.sharedledger.ui.theme.SurfaceWarmHigh
 import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLowest
 import com.ffocalors.sharedledger.ui.theme.WarmBrown
 import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
+import com.ffocalors.sharedledger.ui.util.MoneyFormatter
 
 /** The state needed to render one expense. [expenseId] is the stable identity used by callbacks. */
 @Immutable
@@ -170,7 +171,6 @@ fun ExpenseDetailScreen(
     onVoid: ((expenseId: String) -> Unit)? = null,
     onRestore: ((expenseId: String) -> Unit)? = null,
     onAddRefund: ((expenseId: String) -> Unit)? = null,
-    onDeletePermanently: ((expenseId: String) -> Unit)? = null,
     onAttachmentClick: ((expenseId: String, attachmentId: String) -> Unit)? = null,
 ) {
     var sheetVisible by rememberSaveable(uiState.expenseId) { mutableStateOf(false) }
@@ -209,7 +209,7 @@ fun ExpenseDetailScreen(
             val hasMoreActions = if (uiState.status == ExpenseDetailStatus.Active) {
                 onEdit != null || onAddRefund != null || onVoid != null
             } else {
-                onAddRefund != null || onDeletePermanently != null
+                onAddRefund != null
             }
             if (primaryAction != null || hasMoreActions) {
                 ExpenseDetailBottomBar(
@@ -283,10 +283,6 @@ fun ExpenseDetailScreen(
                      sheetVisible = false
                      callback(uiState.expenseId)
                  } },
-                 onDeletePermanently = onDeletePermanently?.let { callback -> {
-                     sheetVisible = false
-                     callback(uiState.expenseId)
-                 } },
             )
         }
     }
@@ -338,7 +334,7 @@ private fun ExpenseHeroCard(uiState: ExpenseDetailUiState) {
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                text = "¥${uiState.amount}",
+                text = formatExpenseDetailAmount(uiState.amount, uiState.currencyCode),
                 modifier = Modifier.padding(top = 2.dp),
                 style = SharedLedgerTextStyles.AmountLarge,
                 color = MaterialTheme.colorScheme.primary,
@@ -425,8 +421,18 @@ private fun PaymentCard(uiState: ExpenseDetailUiState) {
                 )
                 Text("垫付总计", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Text("¥${uiState.amount}", style = SharedLedgerTextStyles.Body, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
+            Text(formatExpenseDetailAmount(uiState.amount, uiState.currencyCode), style = SharedLedgerTextStyles.Body, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
         }
+    }
+}
+
+internal fun formatExpenseDetailAmount(amount: String, currencyCode: String): String {
+    val normalizedCode = currencyCode.trim().uppercase()
+    val decimal = amount.toBigDecimalOrNull()
+    return if (decimal != null) {
+        MoneyFormatter.format(decimal, normalizedCode)
+    } else {
+        "$normalizedCode $amount".trim()
     }
 }
 
@@ -608,7 +614,6 @@ private fun ExpenseActionSheet(
     onEdit: (() -> Unit)?,
     onVoid: (() -> Unit)?,
     onAddRefund: (() -> Unit)?,
-    onDeletePermanently: (() -> Unit)?,
 ) {
     Column(
         modifier = Modifier
@@ -629,7 +634,6 @@ private fun ExpenseActionSheet(
             onVoid?.let { callback -> ActionSheetButton(Icons.Rounded.Delete, "作废账单", SharedLedgerButtonTone.Danger, onClick = callback) }
         } else {
             onAddRefund?.let { callback -> ActionSheetButton(Icons.Rounded.CurrencyExchange, "添加退款", SharedLedgerButtonTone.WarmSecondary, onClick = callback) }
-            onDeletePermanently?.let { callback -> ActionSheetButton(Icons.Rounded.Delete, "永久删除", SharedLedgerButtonTone.Danger, onClick = callback) }
         }
     }
 }

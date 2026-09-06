@@ -40,6 +40,11 @@ financial-status views, plus `transfer_disputes`, `audit_logs`, and `attachments
 The exchange-rate cache is reference data only and never rewrites an Expense's
 stored FX snapshot.
 
+Phase 3 Android联调发现并修复了已作废 Expense 的读取缺口：仍属于该
+ActivityMember 的用户现在可以读取 deleted Expense 及其 payments/splits，
+从而能够打开历史详情并继续通过 `restore_expense` 恢复。Activity 与
+LedgerUnit 的非删除限制、成员范围以及 restore RPC 的授权边界保持不变。
+
 ## Realtime and Storage
 
 The collaboration and financial tables are members of `supabase_realtime`; the
@@ -170,7 +175,7 @@ new migration and explicit contract revision.
 Android 与 Supabase 的正式联调按
 [ANDROID_SUPABASE_INTEGRATION_PLAN.md](./ANDROID_SUPABASE_INTEGRATION_PLAN.md)
 中的五个阶段执行。Android DTO、Repository 和 RPC 调用必须以本文公开签名
-和 `supabase/migrations/` 中当前 16 条 migration 为准。
+和 `supabase/migrations/` 中当前 17 条 migration 为准。
 
 [api-contracts.md](./api-contracts.md) 已标记为废弃的历史设计，其中旧 RPC
 和表名不得用于新代码。联调期间发现契约缺口时，不直接修改既有 migration；

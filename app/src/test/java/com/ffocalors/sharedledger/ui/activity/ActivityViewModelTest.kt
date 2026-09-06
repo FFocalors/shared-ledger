@@ -10,6 +10,8 @@ import com.ffocalors.sharedledger.data.activity.ActivityRepository
 import com.ffocalors.sharedledger.data.activity.ActivityFinancialStatus
 import com.ffocalors.sharedledger.data.activity.LedgerUnit
 import com.ffocalors.sharedledger.data.activity.Participant
+import com.ffocalors.sharedledger.data.expense.ParticipantExpenseShareRepository
+import com.ffocalors.sharedledger.data.expense.ParticipantExpenseShareSnapshot
 import com.ffocalors.sharedledger.ui.screens.JoinActivityStatus
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CompletableDeferred
@@ -34,7 +36,7 @@ class ActivityViewModelTest {
     fun homeMappingUsesRealIdsAndActivityType() = runTest(dispatcher) {
         Dispatchers.setMain(dispatcher)
         val repository = FakeActivityRepository(summary).apply { activities = listOf(summary) }
-        val viewModel = ActivityViewModel(repository, "user-1")
+        val viewModel = ActivityViewModel(repository, "user-1", FakeParticipantExpenseShareRepository())
 
         viewModel.loadHome()
         advanceUntilIdle()
@@ -66,8 +68,8 @@ class ActivityViewModelTest {
         val second = summary.copy(id = "activity-user-b", name = "B 的活动")
         val repositoryA = FakeActivityRepository(first).apply { activities = listOf(first) }
         val repositoryB = FakeActivityRepository(second).apply { activities = listOf(second) }
-        val viewModelA = ActivityViewModel(repositoryA, "user-a")
-        val viewModelB = ActivityViewModel(repositoryB, "user-b")
+        val viewModelA = ActivityViewModel(repositoryA, "user-a", FakeParticipantExpenseShareRepository())
+        val viewModelB = ActivityViewModel(repositoryB, "user-b", FakeParticipantExpenseShareRepository())
 
         viewModelA.loadHome()
         viewModelB.loadHome()
@@ -81,6 +83,59 @@ class ActivityViewModelTest {
         advanceUntilIdle()
         assertTrue(viewModelB.home.value.activities.isEmpty())
         assertEquals("activity-user-a", viewModelA.home.value.activities.single().activityId)
+    }
+
+    @Test
+    fun homeShareFailureIsRetryableErrorAndUnboundRemainsDistinct() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeActivityRepository(summary).apply { activities = listOf(summary) }
+        val failingViewModel = ActivityViewModel(
+            repository,
+            "user-1",
+            FakeParticipantExpenseShareRepository(Result.failure(IllegalStateException("network"))),
+        )
+
+        failingViewModel.loadHome()
+        advanceUntilIdle()
+
+        assertEquals("我的应承担金额加载失败，请重试", failingViewModel.home.value.errorMessage)
+        assertTrue(failingViewModel.home.value.activities.isEmpty())
+
+        val unboundViewModel = ActivityViewModel(
+            repository,
+            "user-1",
+            FakeParticipantExpenseShareRepository(Result.success(ParticipantExpenseShareSnapshot.unbound())),
+        )
+        unboundViewModel.loadHome()
+        advanceUntilIdle()
+
+        assertTrue(unboundViewModel.home.value.errorMessage == null)
+        assertTrue(!unboundViewModel.home.value.activities.single().amountAvailable)
+        assertTrue(unboundViewModel.home.value.activities.single().totalAmount == null)
+    }
+
+    @Test
+    fun forceRefreshReloadsFinancialStatusAfterReturningFromChild() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val zero = summary.copy(totalDebt = "0.0")
+        val updated = summary.copy(totalDebt = "150.0")
+        val repository = FakeActivityRepository(zero).apply {
+            detailOverride = { if (detailCalls.get() == 1) detailFor(zero) else detailFor(updated) }
+        }
+        val viewModel = ActivityViewModel(repository, "user-1")
+
+        viewModel.loadDetail("activity-1")
+        advanceUntilIdle()
+        assertEquals("0.0", viewModel.detail("activity-1").value.detail?.summary?.totalDebt)
+
+        viewModel.loadDetail("activity-1")
+        advanceUntilIdle()
+        assertEquals(1, repository.detailCalls.get())
+
+        viewModel.loadDetail("activity-1", force = true)
+        advanceUntilIdle()
+        assertEquals("150.0", viewModel.detail("activity-1").value.detail?.summary?.totalDebt)
+        assertEquals(2, repository.detailCalls.get())
     }
 
     @Test
@@ -193,21 +248,26 @@ class ActivityViewModelTest {
         var joinDetail: ActivityDetail? = null
         val createCalls = AtomicInteger()
         val claimCalls = AtomicInteger()
+        val detailCalls = AtomicInteger()
+        var detailOverride: (() -> ActivityDetail)? = null
         var lastClaimedParticipantId: String? = null
         var memberUserId: String = "user-1"
         var memberDisplayName: String = "Alex"
         var memberIsCreator: Boolean = true
         var memberParticipantId: String = "p"
         override suspend fun listActivities() = Result.success(activities)
-        override suspend fun getActivity(activityId: String) = Result.success(
-            ActivityDetail(
-                defaultSummary,
-                listOf(ActivityMember("m", memberUserId, memberDisplayName, memberIsCreator, lastClaimedParticipantId)),
-                listOf(Participant(memberParticipantId, activityId, "Alex", 0, lastClaimedParticipantId, lastClaimedParticipantId?.let { "Alex" })),
-                listOf(LedgerUnit("u", activityId, "日本旅行", "root")),
-                ActivityRole.Creator,
-                ActivityPermissions.forRole(ActivityRole.Creator),
-            ),
+        override suspend fun getActivity(activityId: String): Result<ActivityDetail> {
+            detailCalls.incrementAndGet()
+            return Result.success(detailOverride?.invoke() ?: detailFor(defaultSummary, activityId))
+        }
+
+        fun detailFor(summary: ActivitySummary, activityId: String = summary.id) = ActivityDetail(
+            summary,
+            listOf(ActivityMember("m", memberUserId, memberDisplayName, memberIsCreator, lastClaimedParticipantId)),
+            listOf(Participant(memberParticipantId, activityId, "Alex", 0, lastClaimedParticipantId, lastClaimedParticipantId?.let { "Alex" })),
+            listOf(LedgerUnit("u", activityId, "日本旅行", "root")),
+            ActivityRole.Creator,
+            ActivityPermissions.forRole(ActivityRole.Creator),
         )
         override suspend fun createActivity(name: String, type: ActivityType, baseCurrency: String, multiCurrencyEnabled: Boolean): Result<ActivitySummary> {
             createCalls.incrementAndGet()
@@ -230,4 +290,23 @@ class ActivityViewModelTest {
         override suspend fun removeMember(activityId: String, userId: String) = Result.success(Unit)
         override suspend fun transferCreator(activityId: String, newCreatorUserId: String) = Result.success(Unit)
     }
+}
+
+private class FakeParticipantExpenseShareRepository(
+    private val result: Result<ParticipantExpenseShareSnapshot> = Result.success(
+        ParticipantExpenseShareSnapshot(
+            isBound = true,
+            activityTotalBaseAmount = java.math.BigDecimal("100.0"),
+            ledgerUnitTotals = emptyMap(),
+            expenseTotals = emptyMap(),
+        ),
+    ),
+) : ParticipantExpenseShareRepository {
+    override suspend fun getForActivity(activityId: String, currentUserId: String) = result
+
+    override suspend fun getForLedgerUnit(
+        activityId: String,
+        ledgerUnitId: String,
+        currentUserId: String,
+    ) = result
 }

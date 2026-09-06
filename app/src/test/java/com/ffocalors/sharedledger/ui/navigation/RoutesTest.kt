@@ -56,6 +56,14 @@ class RoutesTest {
         )
         assertEquals("normal-activity/demo-created-normal", SharedLedgerRoutes.normalActivity(DemoRouteIds.CREATED_NORMAL_ACTIVITY))
         assertEquals("large-activity/demo-created-large", SharedLedgerRoutes.largeActivity(DemoRouteIds.CREATED_LARGE_ACTIVITY))
+        assertEquals(
+            "new-expense/activity-real?ledgerUnitId=unit-real&mode=edit&expenseId=expense-real",
+            SharedLedgerRoutes.newExpense("activity-real", "unit-real", ExpenseFormRouteMode.EDIT, "expense-real"),
+        )
+        assertEquals(
+            "expense-detail/expense-real?activityId=activity-real&ledgerUnitId=unit-real",
+            SharedLedgerRoutes.expenseDetail("activity-real", "expense-real", "unit-real"),
+        )
     }
 
     @Test
@@ -191,6 +199,50 @@ class RoutesTest {
                 launchSingleTop = true,
             ),
             SharedLedgerRoutes.authSuccessNavigation(),
+        )
+    }
+
+    @Test
+    fun financialActionGateRequiresCurrentUserParticipantBinding() {
+        val role = com.ffocalors.sharedledger.data.activity.ActivityRole.Member
+        val detail = com.ffocalors.sharedledger.data.activity.ActivityDetail(
+            summary = com.ffocalors.sharedledger.data.activity.ActivitySummary(
+                id = "activity-real",
+                name = "旅行",
+                type = com.ffocalors.sharedledger.data.activity.ActivityType.Normal,
+                joinCode = "JOIN01",
+                baseCurrency = "CNY",
+                multiCurrencyEnabled = false,
+                createdBy = "creator",
+                archivedAt = null,
+                participantCount = 1,
+                status = com.ffocalors.sharedledger.data.activity.ActivityFinancialStatus.Active,
+                totalDebt = "0",
+                totalPrepayment = "0",
+            ),
+            members = listOf(
+                com.ffocalors.sharedledger.data.activity.ActivityMember(
+                    id = "member-real",
+                    userId = "user-real",
+                    displayName = "用户",
+                    isCreator = false,
+                    claimedParticipantId = "participant-real",
+                ),
+            ),
+            participants = emptyList(),
+            ledgerUnits = emptyList(),
+            currentUserRole = role,
+            permissions = com.ffocalors.sharedledger.data.activity.ActivityPermissions.forRole(role),
+        )
+
+        assertTrue(canPerformFinancialAction(detail, "user-real"))
+        assertEquals(false, canPerformFinancialAction(detail, "other-user"))
+        assertEquals(
+            false,
+            canPerformFinancialAction(
+                detail.copy(members = detail.members.map { it.copy(claimedParticipantId = null) }),
+                "user-real",
+            ),
         )
     }
 }

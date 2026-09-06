@@ -29,6 +29,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -45,7 +46,8 @@ import com.ffocalors.sharedledger.ui.components.AmountEmphasis
 import com.ffocalors.sharedledger.ui.components.AmountSize
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
-import com.ffocalors.sharedledger.ui.components.SharedLedgerPrimaryButton
+import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
+import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.demo.DemoRouteIds
@@ -60,6 +62,8 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
 import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLow
 import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLowest
 import com.ffocalors.sharedledger.ui.util.MoneyFormatter
+import com.ffocalors.sharedledger.ui.transfer.TransferCandidateUi
+import com.ffocalors.sharedledger.ui.transfer.TransferUiState
 import java.math.BigDecimal
 
 /** The two lightweight UI states supported by the single transfer screen. */
@@ -74,13 +78,6 @@ private data class TransferParticipant(
     val amount: BigDecimal,
 )
 
-private val TransferParticipants = listOf(
-    TransferParticipant("demo-participant-zhangsan", ParticipantUiModel("张三", IconContainerSage), BigDecimal("300.0")),
-    TransferParticipant("demo-participant-lisi", ParticipantUiModel("李四", IconContainerOrange), BigDecimal("120.0")),
-)
-
-/** Submission boundary for a future repository/API call. The backend can return its real ID
- * asynchronously; the host should then call [SharedLedgerRoutes.transferDetail] with that ID. */
 data class TransferDraft(
     val activityId: String,
     val ledgerUnitId: String?,
@@ -89,47 +86,58 @@ data class TransferDraft(
     val amount: String,
 )
 
-/** Result boundary returned by a repository/backend after a transfer is created. */
+/** Preview/test compatibility only; the runtime transfer route does not call this helper. */
 data class TransferCreationResult(
     val transferId: String,
     val activityId: String,
     val ledgerUnitId: String?,
 )
 
-/** Deterministic demo backend response; a real integration replaces this with its API result. */
-internal fun demoCreateTransfer(draft: TransferDraft): TransferCreationResult =
-    TransferCreationResult(
-        transferId = DemoRouteIds.transfer(
-            activityId = draft.activityId,
-            ledgerUnitId = draft.ledgerUnitId,
-            mode = if (draft.mode == TransferMode.RECEIVE) "receive" else "transfer",
-            participantId = draft.participantId,
-        ),
+internal fun demoCreateTransfer(draft: TransferDraft): TransferCreationResult = TransferCreationResult(
+    transferId = DemoRouteIds.transfer(
         activityId = draft.activityId,
         ledgerUnitId = draft.ledgerUnitId,
-    )
+        mode = if (draft.mode == TransferMode.RECEIVE) "receive" else "transfer",
+        participantId = draft.participantId,
+    ),
+    activityId = draft.activityId,
+    ledgerUnitId = draft.ledgerUnitId,
+)
 
 /**
- * Focused transfer/receive UI. It intentionally keeps all state local and does not create a
  * ledger transfer; the host decides what to do after [onConfirm].
  */
 @Composable
 fun TransferScreen(
     mode: TransferMode,
-    activityId: String = "demo-normal",
+    activityId: String,
     ledgerUnitId: String? = null,
+    state: TransferUiState = TransferUiState(),
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
+    onRetry: () -> Unit = {},
     onConfirm: ((TransferDraft) -> Unit)? = null,
 ) {
     var selectedIndex by rememberSaveable(mode) { mutableIntStateOf(0) }
-    var amountText by rememberSaveable(mode) {
-        mutableStateOf(if (mode == TransferMode.TRANSFER) "200.0" else "300.0")
+    var amountText by rememberSaveable(mode) { mutableStateOf("") }
+    val participants = state.candidates.mapIndexed { index, candidate ->
+        TransferParticipant(
+            participantId = candidate.participantId,
+            participant = ParticipantUiModel(
+                candidate.participantName,
+                if (index % 2 == 0) IconContainerSage else IconContainerOrange,
+            ),
+            amount = candidate.amount,
+        )
     }
-    val selected = TransferParticipants[selectedIndex.coerceIn(0, TransferParticipants.lastIndex)]
+    LaunchedEffect(mode, state.candidates) {
+        selectedIndex = selectedIndex.coerceIn(0, (participants.size - 1).coerceAtLeast(0))
+        amountText = participants.getOrNull(selectedIndex)?.amount?.toPlainString().orEmpty()
+    }
+    val selected = participants.getOrNull(selectedIndex)
     val isTransfer = mode == TransferMode.TRANSFER
     val title = if (isTransfer) "转账" else "收款"
-    val isAmountValid = isValidTransferAmount(amountText)
+    val isAmountValid = selected != null && isValidTransferAmount(amountText, selected.amount)
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -151,49 +159,60 @@ fun TransferScreen(
                 .padding(innerPadding),
             contentAlignment = Alignment.TopCenter,
         ) {
-            Column(
-                modifier = Modifier
-                    .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(
-                        start = SharedLedgerDimens.PageHorizontalPadding,
-                        top = SharedLedgerSpacing.Medium,
-                        end = SharedLedgerDimens.PageHorizontalPadding,
-                        bottom = SharedLedgerSpacing.XLarge,
-                    ),
-                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
-            ) {
-                Text(
-                    text = if (isTransfer) "你需要付款给" else "当前欠你钱的人",
-                    style = SharedLedgerTextStyles.PageTitle,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
+            when {
+                state.isLoading -> TransferStateMessage("正在加载真实债务…", onBack)
+                state.errorMessage != null -> TransferErrorMessage(state.errorMessage, onBack, onRetry)
+                state.emptyMessage != null || selected == null -> TransferEmptyMessage(state.emptyMessage ?: "当前没有可结算的债务", onBack, onRetry)
+                else -> Column(
+                    modifier = Modifier
+                        .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .padding(
+                            start = SharedLedgerDimens.PageHorizontalPadding,
+                            top = SharedLedgerSpacing.Medium,
+                            end = SharedLedgerDimens.PageHorizontalPadding,
+                            bottom = SharedLedgerSpacing.XLarge,
+                        ),
+                    verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+                ) {
+                    Text(
+                        text = if (isTransfer) "你需要付款给" else "当前欠你钱的人",
+                        style = SharedLedgerTextStyles.PageTitle,
+                        color = MaterialTheme.colorScheme.onBackground,
+                    )
 
-                ParticipantPicker(
-                    participants = TransferParticipants,
-                    selectedIndex = selectedIndex,
-                    onSelected = { selectedIndex = it },
-                )
+                    ParticipantPicker(
+                        participants = participants,
+                        selectedIndex = selectedIndex,
+                        currencyCode = state.baseCurrency,
+                        onSelected = { index ->
+                            selectedIndex = index
+                            amountText = participants[index].amount.toPlainString()
+                        },
+                    )
 
-                TransferAmountCard(
-                    mode = mode,
-                    selected = selected,
-                    amountText = amountText,
-                    isAmountValid = isAmountValid,
-                    onAmountChange = { amountText = sanitizeCnyAmount(it) },
-                    onConfirm = onConfirm?.let { callback -> {
-                        callback(
-                            TransferDraft(
-                                activityId = activityId,
-                                ledgerUnitId = ledgerUnitId,
-                                mode = mode,
-                                participantId = selected.participantId,
-                                amount = amountText,
-                            ),
-                        )
-                    } },
-                )
+                    TransferAmountCard(
+                        mode = mode,
+                        selected = selected,
+                        amountText = amountText,
+                        isAmountValid = isAmountValid,
+                        currencyCode = state.baseCurrency,
+                        isSubmitting = state.isSubmitting,
+                        onAmountChange = { amountText = sanitizeCnyAmount(it) },
+                        onConfirm = onConfirm?.let { callback -> {
+                            callback(
+                                TransferDraft(
+                                    activityId = activityId,
+                                    ledgerUnitId = ledgerUnitId,
+                                    mode = mode,
+                                    participantId = selected.participantId,
+                                    amount = amountText,
+                                ),
+                            )
+                        } },
+                    )
+                }
             }
         }
     }
@@ -203,6 +222,7 @@ fun TransferScreen(
 private fun ParticipantPicker(
     participants: List<TransferParticipant>,
     selectedIndex: Int,
+    currencyCode: String,
     onSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -283,7 +303,7 @@ private fun ParticipantPicker(
                         )
                         AmountDisplay(
                             amount = item.amount,
-                            currencyCode = "CNY",
+                            currencyCode = currencyCode,
                             fractionDigitsOverride = 1,
                             size = AmountSize.SubActivity,
                             emphasis = AmountEmphasis.Standard,
@@ -301,6 +321,8 @@ private fun TransferAmountCard(
     selected: TransferParticipant,
     amountText: String,
     isAmountValid: Boolean,
+    currencyCode: String,
+    isSubmitting: Boolean,
     onAmountChange: (String) -> Unit,
     onConfirm: (() -> Unit)?,
     modifier: Modifier = Modifier,
@@ -329,11 +351,11 @@ private fun TransferAmountCard(
                 value = amountText,
                 onValueChange = onAmountChange,
                 modifier = Modifier.fillMaxWidth(),
-                label = "金额（CNY）",
+                label = "金额（$currencyCode）",
                 placeholder = "0.0",
                 leadingIcon = {
                     Text(
-                        text = "¥",
+                        text = currencySymbol(currencyCode),
                         style = SharedLedgerTextStyles.SummaryCurrency,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
@@ -342,25 +364,32 @@ private fun TransferAmountCard(
             )
             Text(
                 text = if (isTransfer) {
-                    "最多可转 ${MoneyFormatter.format(selected.amount, "CNY", 1)}"
+                    "最多可转 ${MoneyFormatter.format(selected.amount, currencyCode, 1)}"
                 } else {
-                    "当前欠款 ${MoneyFormatter.format(selected.amount, "CNY", 1)}"
+                    "当前欠款 ${MoneyFormatter.format(selected.amount, currencyCode, 1)}"
                 },
                 style = SharedLedgerTextStyles.Label,
                 color = MaterialTheme.colorScheme.outline,
             )
-            if (!isAmountValid) {
+            if (!isAmountValid && amountText.isNotBlank()) {
                 Text(
-                    text = "请输入大于 0 的金额",
+                    text = if (amountText.toBigDecimalOrNull()?.let { it > selected.amount } == true) {
+                        "金额不能超过当前债务"
+                    } else {
+                        "请输入大于 0 的金额"
+                    },
                     style = SharedLedgerTextStyles.Label,
                     color = MaterialTheme.colorScheme.error,
                 )
             }
             onConfirm?.let { callback ->
-                SharedLedgerPrimaryButton(
+                SharedLedgerButton(
                     text = if (isTransfer) "确认已转账" else "确认已收款",
                     onClick = callback,
-                    enabled = isAmountValid,
+                    enabled = isAmountValid && !isSubmitting,
+                    loading = isSubmitting,
+                    loadingText = "提交中…",
+                    tone = if (isTransfer) SharedLedgerButtonTone.SoftPrimary else SharedLedgerButtonTone.WarmSecondary,
                     icon = Icons.Rounded.ArrowForward,
                 )
             }
@@ -381,11 +410,69 @@ private fun sanitizeCnyAmount(value: String): String {
 internal fun isValidTransferAmount(value: String): Boolean =
     value.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
 
+internal fun isValidTransferAmount(value: String, maxAmount: BigDecimal): Boolean =
+    value.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO && it <= maxAmount } == true
+
+private fun currencySymbol(currencyCode: String): String = when (currencyCode.uppercase()) {
+    "CNY" -> "¥"
+    "USD" -> "$"
+    "EUR" -> "€"
+    "GBP" -> "£"
+    "JPY" -> "¥"
+    else -> currencyCode.uppercase()
+}
+
+@Composable
+private fun TransferStateMessage(message: String, onBack: (() -> Unit)?) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(SharedLedgerSpacing.XLarge),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+    ) {
+        androidx.compose.material3.CircularProgressIndicator()
+        Text(message, style = SharedLedgerTextStyles.BodySecondary)
+        onBack?.let { SharedLedgerButton("返回", it, tone = SharedLedgerButtonTone.Neutral) }
+    }
+}
+
+@Composable
+private fun TransferErrorMessage(message: String, onBack: (() -> Unit)?, onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(SharedLedgerSpacing.XLarge),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+    ) {
+        Text(message, style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.error)
+        SharedLedgerButton("重试", onRetry, tone = SharedLedgerButtonTone.SoftPrimary)
+        onBack?.let { SharedLedgerButton("返回", it, tone = SharedLedgerButtonTone.Neutral) }
+    }
+}
+
+@Composable
+private fun TransferEmptyMessage(message: String, onBack: (() -> Unit)?, onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(SharedLedgerSpacing.XLarge),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+    ) {
+        Text(message, style = SharedLedgerTextStyles.BodySecondary)
+        SharedLedgerButton("刷新", onRetry, tone = SharedLedgerButtonTone.SoftPrimary)
+        onBack?.let { SharedLedgerButton("返回", it, tone = SharedLedgerButtonTone.Neutral) }
+    }
+}
+
 @Preview(name = "转账", showBackground = true, widthDp = 390, heightDp = 844)
 @Composable
 private fun TransferScreenPreview() {
     SharedLedgerTheme {
-        TransferScreen(mode = TransferMode.TRANSFER)
+        TransferScreen(
+            mode = TransferMode.TRANSFER,
+            activityId = "preview",
+            state = TransferUiState(
+                isLoading = false,
+                candidates = listOf(TransferCandidateUi("preview-bob", "李四", BigDecimal("300.0"))),
+            ),
+        )
     }
 }
 
@@ -393,6 +480,13 @@ private fun TransferScreenPreview() {
 @Composable
 private fun ReceiveScreenPreview() {
     SharedLedgerTheme {
-        TransferScreen(mode = TransferMode.RECEIVE)
+        TransferScreen(
+            mode = TransferMode.RECEIVE,
+            activityId = "preview",
+            state = TransferUiState(
+                isLoading = false,
+                candidates = listOf(TransferCandidateUi("preview-alice", "张三", BigDecimal("120.0"))),
+            ),
+        )
     }
 }

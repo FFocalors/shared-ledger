@@ -199,7 +199,7 @@ fun HomeScreen(
                             activity = activity,
                             onClick = { onActivityClick(activity) },
                             modifier = Modifier.padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
-                            showAmount = activity.totalAmount != null,
+                            showAmount = true,
                         )
                     }
                 }
@@ -373,19 +373,27 @@ private fun HomeActivityCard(
                 HomeStatusBadge(status = activity.status)
             }
 
-            if (showAmount && activity.totalAmount != null) {
+            if (showAmount) {
                 Spacer(Modifier.height(SharedLedgerSpacing.Large))
-                Text(
-                    text = "总金额",
-                    style = SharedLedgerTextStyles.Label,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                AmountDisplay(
-                    amount = activity.totalAmount,
-                    currencyCode = activity.currencyCode,
-                    size = AmountSize.Large,
-                    emphasis = AmountEmphasis.Primary,
-                )
+                if (activity.amountAvailable && activity.totalAmount != null) {
+                    Text(
+                        text = "总应承担",
+                        style = SharedLedgerTextStyles.Label,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    AmountDisplay(
+                        amount = activity.totalAmount,
+                        currencyCode = activity.currencyCode,
+                        size = AmountSize.Large,
+                        emphasis = AmountEmphasis.Primary,
+                    )
+                } else {
+                    Text(
+                        text = "未绑定参与人",
+                        style = SharedLedgerTextStyles.BodySecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
                 Spacer(Modifier.height(SharedLedgerSpacing.Large))
             } else {
                 Spacer(Modifier.height(SharedLedgerSpacing.Medium))

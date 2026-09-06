@@ -11,6 +11,10 @@ import com.ffocalors.sharedledger.data.activity.ActivityRepositoryFactory
 import com.ffocalors.sharedledger.data.activity.ActivitySummary
 import com.ffocalors.sharedledger.data.activity.ActivityType
 import com.ffocalors.sharedledger.data.activity.toUiKind
+import com.ffocalors.sharedledger.data.expense.ParticipantExpenseShareRepository
+import com.ffocalors.sharedledger.data.expense.ParticipantExpenseShareRepositoryFactory
+import com.ffocalors.sharedledger.data.expense.ParticipantExpenseShareSnapshot
+import com.ffocalors.sharedledger.data.expense.ExpenseOperationException
 import com.ffocalors.sharedledger.ui.components.ActivityCardUiModel
 import com.ffocalors.sharedledger.ui.components.ActivityStatus
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
@@ -45,6 +49,7 @@ data class ActivityDetailUiState(
 class ActivityViewModel(
     private val repository: ActivityRepository,
     private val currentUserId: String,
+    private val participantExpenseShareRepository: ParticipantExpenseShareRepository = ParticipantExpenseShareRepositoryFactory.create(),
 ) : ViewModel() {
     private val _home = MutableStateFlow(ActivityHomeUiState())
     val home: StateFlow<ActivityHomeUiState> = _home.asStateFlow()
@@ -140,7 +145,22 @@ class ActivityViewModel(
         viewModelScope.launch {
             _home.value = ActivityHomeUiState(isLoading = true)
             repository.listActivities().fold(
-                onSuccess = { _home.value = ActivityHomeUiState(false, it.map(::toCard)) },
+                onSuccess = { summaries ->
+                    val cards = mutableListOf<ActivityCardUiModel>()
+                    for (summary in summaries) {
+                        val sharesResult = participantExpenseShareRepository
+                            .getForActivity(summary.id, currentUserId)
+                        if (sharesResult.isFailure) {
+                            _home.value = ActivityHomeUiState(
+                                isLoading = false,
+                                errorMessage = participantShareMessage(sharesResult.exceptionOrNull()),
+                            )
+                            return@launch
+                        }
+                        cards += toCard(summary, sharesResult.getOrNull())
+                    }
+                    _home.value = ActivityHomeUiState(false, cards)
+                },
                 onFailure = { _home.value = ActivityHomeUiState(false, errorMessage = messageFor(it)) },
             )
         }
@@ -171,7 +191,7 @@ class ActivityViewModel(
         viewModelScope.launch {
             try {
                 repository.createActivity(name, if (kind == com.ffocalors.sharedledger.ui.components.ActivityKind.Large) ActivityType.Large else ActivityType.Normal, "CNY", multiCurrency)
-                    .fold({ _message.value = "活动已创建"; _home.value = _home.value.copy(activities = listOf(toCard(it)) + _home.value.activities); onSuccess(it) }, { _message.value = messageFor(it) })
+                    .fold({ _message.value = "活动已创建"; loadHome(force = true); onSuccess(it) }, { _message.value = messageFor(it) })
             } finally {
                 _actionLoading.value = false
             }
@@ -299,16 +319,17 @@ class ActivityViewModel(
         }
     }
 
-    private fun toCard(summary: ActivitySummary): ActivityCardUiModel = ActivityCardUiModel(
+    private fun toCard(summary: ActivitySummary, shares: ParticipantExpenseShareSnapshot?): ActivityCardUiModel = ActivityCardUiModel(
         name = summary.name,
         kind = summary.type.toUiKind(),
         participantCount = summary.participantCount,
         status = if (summary.archivedAt != null) ActivityStatus.Archived else if (summary.status == com.ffocalors.sharedledger.data.activity.ActivityFinancialStatus.Completed) ActivityStatus.Settled else ActivityStatus.InProgress,
-        totalAmount = summary.totalDebt.toBigDecimalOrNull(),
+        totalAmount = shares?.activityTotalBaseAmount,
         currencyCode = summary.baseCurrency,
         updatedAt = summary.archivedAt?.take(10) ?: "刚刚更新",
         participants = summary.participantNames.mapIndexed { index, name -> ParticipantUiModel(name, if (index % 2 == 0) IconContainerSage else WarmOrangeContainer) },
         activityId = summary.id,
+        amountAvailable = shares?.isBound == true,
     )
 
     private fun toJoinState(detail: ActivityDetail): JoinActivityUiState = JoinActivityUiState(
@@ -336,8 +357,20 @@ class ActivityViewModel(
     private fun messageFor(error: Throwable): String =
         (error as? ActivityOperationException)?.userMessage ?: ActivityErrorMapper.toUserMessage(error)
 
-    class Factory(private val repository: ActivityRepository = ActivityRepositoryFactory.create(), private val currentUserId: String) : ViewModelProvider.Factory {
+    private fun participantShareMessage(error: Throwable?): String =
+        (error as? ExpenseOperationException)?.userMessage
+            ?: "我的应承担金额加载失败，请重试"
+
+    class Factory(
+        private val repository: ActivityRepository = ActivityRepositoryFactory.create(),
+        private val currentUserId: String,
+        private val participantExpenseShareRepository: ParticipantExpenseShareRepository = ParticipantExpenseShareRepositoryFactory.create(),
+    ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T = ActivityViewModel(repository, currentUserId) as T
+        override fun <T : ViewModel> create(modelClass: Class<T>): T = ActivityViewModel(
+            repository,
+            currentUserId,
+            participantExpenseShareRepository,
+        ) as T
     }
 }

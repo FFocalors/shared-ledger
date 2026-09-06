@@ -58,6 +58,7 @@ data class ActivityCardUiModel(
     val updatedAt: String,
     val participants: List<ParticipantUiModel> = emptyList(),
     val activityId: String = "",
+    val amountAvailable: Boolean = true,
 )
 
 @Immutable
@@ -72,6 +73,7 @@ data class SubActivityUiModel(
     val iconTint: Color = Color.Unspecified,
     val fractionDigitsOverride: Int? = null,
     val ledgerUnitId: String = "",
+    val amountAvailable: Boolean = true,
 )
 
 @Immutable
@@ -84,6 +86,7 @@ data class ExpenseCardUiModel(
     val time: String? = null,
     val participants: List<ParticipantUiModel> = emptyList(),
     val expenseId: String = "",
+    val amountAvailable: Boolean = true,
 )
 
 @Immutable

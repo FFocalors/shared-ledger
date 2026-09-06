@@ -284,6 +284,23 @@ Expense List
 - [ ] 快速重复点击不会产生重复消费。
 - [ ] 并发修改能显示明确冲突并重新读取。
 
+### Phase 3 Android 实际进展（2026-09-05，UI/ViewModel/Navigation 已接线）
+
+- [x] 已复用现有 `ExpenseRepository`，新增按当前 Auth 用户隔离的
+  `ExpenseViewModel`、列表/详情/表单状态和 Factory。
+- [x] 普通活动默认 LedgerUnit、大型活动子账本均通过真实 UUID 加载 active
+  Expense；列表空态、加载态、失败重试和详情入口已接入。
+- [x] 新增、编辑、作废、恢复、退款路由与真实 Supabase RPC 已接通；退款仍由
+  repository 统一转负并携带 `original_expense_id`。
+- [x] 表单已接入真实 Participant UUID、单/多付款人、AA/手动分摊、金额合计校验、
+  币种/汇率、ISO-8601 `occurred_at` 和备注；重复提交会被阻止。
+- [x] 详情页付款人和分摊人使用真实名称，暂不伪造 Paid/debt/settlement 状态；
+  附件保留不可用占位，Storage 延后到 Phase 5；永久删除入口已移除。
+- [x] 已新增 ViewModel、payload、mapper、错误映射测试；migrations 当前为 17
+  条，其中唯一新增项为 deleted Expense 读取/恢复契约修复。
+- [ ] 双账号真机新增、修改、作废、恢复、退款及金额投影一致性仍待用户验收。
+- [ ] 并发修改、快速重复点击和服务端权限负向用例仍待真机验收。
+
 ## 7. Integration Phase 4：资金链与 Final Settlement
 
 ### 统一资金记录范围

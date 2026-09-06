@@ -6,14 +6,65 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
-val localProperties = Properties().apply {
-    val localPropertiesFile = rootProject.file("local.properties")
-    if (localPropertiesFile.isFile) localPropertiesFile.inputStream().use(::load)
+val supabaseEnvironment = providers.gradleProperty("supabaseEnvironment")
+    .orElse("local")
+    .get()
+    .trim()
+    .lowercase()
+if (supabaseEnvironment != "local" && supabaseEnvironment != "hosted") {
+    throw GradleException(
+        "Unsupported supabaseEnvironment='$supabaseEnvironment'. Use 'local' or 'hosted'.",
+    )
+}
+
+val supabasePropertiesFile = rootProject.file(
+    if (supabaseEnvironment == "hosted") "local.hosted.properties" else "local.properties",
+)
+if (supabaseEnvironment == "hosted" && !supabasePropertiesFile.isFile) {
+    throw GradleException(
+        "supabaseEnvironment=hosted requires ${supabasePropertiesFile.absolutePath}. " +
+            "Run scripts\\connect-hosted-supabase-device.ps1 first.",
+    )
+}
+
+val supabaseProperties = Properties().apply {
+    if (supabasePropertiesFile.isFile) {
+        supabasePropertiesFile.inputStream().use(::load)
+    }
 }
 
 fun buildConfigValue(name: String): String {
-    val localValue = localProperties.getProperty(name)?.trim().orEmpty()
-    return localValue.ifBlank { System.getenv(name)?.trim().orEmpty() }
+    val fileValue = supabaseProperties.getProperty(name)?.trim().orEmpty()
+    return fileValue.ifBlank { System.getenv(name)?.trim().orEmpty() }
+}
+
+val supabaseUrl = buildConfigValue("SUPABASE_URL")
+val supabasePublishableKey = supabaseProperties.getProperty("SUPABASE_PUBLISHABLE_KEY")
+    ?.trim()
+    .orEmpty()
+    .ifBlank {
+        supabaseProperties.getProperty("SUPABASE_ANON_KEY")?.trim().orEmpty()
+    }
+    .ifBlank {
+        System.getenv("SUPABASE_PUBLISHABLE_KEY")?.trim().orEmpty()
+    }
+    .ifBlank {
+        System.getenv("SUPABASE_ANON_KEY")?.trim().orEmpty()
+    }
+
+if (supabaseEnvironment == "hosted") {
+    if (supabaseUrl.isBlank()) {
+        throw GradleException(
+            "Hosted Supabase URL is empty in ${supabasePropertiesFile.absolutePath} " +
+                "and SUPABASE_URL is not set in the environment.",
+        )
+    }
+    if (supabasePublishableKey.isBlank()) {
+        throw GradleException(
+            "Hosted Supabase client key is empty in ${supabasePropertiesFile.absolutePath}. " +
+                "Set SUPABASE_PUBLISHABLE_KEY (or legacy SUPABASE_ANON_KEY).",
+        )
+    }
 }
 
 fun quoteBuildConfig(value: String): String = "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
@@ -30,14 +81,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "SUPABASE_URL", quoteBuildConfig(buildConfigValue("SUPABASE_URL")))
+        buildConfigField("String", "SUPABASE_URL", quoteBuildConfig(supabaseUrl))
         buildConfigField(
             "String",
             "SUPABASE_PUBLISHABLE_KEY",
-            quoteBuildConfig(
-                buildConfigValue("SUPABASE_PUBLISHABLE_KEY")
-                    .ifBlank { buildConfigValue("SUPABASE_ANON_KEY") },
-            ),
+            quoteBuildConfig(supabasePublishableKey),
         )
     }
 

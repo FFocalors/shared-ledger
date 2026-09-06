@@ -57,7 +57,7 @@ import java.math.BigDecimal
 @Composable
 fun SettlementSummaryCard(
     title: String,
-    primaryAmount: BigDecimal,
+    primaryAmount: BigDecimal?,
     statistics: List<SettlementStatistic>,
     modifier: Modifier = Modifier,
     currencyCode: String = "CNY",
@@ -102,11 +102,20 @@ fun SettlementSummaryCard(
                     style = SharedLedgerTextStyles.SummaryLabel,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                SummaryAmount(
-                    amount = primaryAmount,
-                    currencyCode = currencyCode,
-                    modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
-                )
+                if (primaryAmount != null) {
+                    SummaryAmount(
+                        amount = primaryAmount,
+                        currencyCode = currencyCode,
+                        modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
+                    )
+                } else {
+                    Text(
+                        text = "未绑定参与人",
+                        style = SharedLedgerTextStyles.SummaryAmount,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
+                    )
+                }
                 if (statusContent != null) {
                     Box(modifier = Modifier.padding(top = SharedLedgerSpacing.Medium)) {
                         statusContent()
@@ -415,12 +424,20 @@ fun SubActivityCard(
                     )
                 }
             }
-            AmountDisplay(
-                amount = activity.amount,
-                currencyCode = activity.currencyCode,
-                size = AmountSize.SubActivity,
-                fractionDigitsOverride = activity.fractionDigitsOverride,
-            )
+            if (activity.amountAvailable) {
+                AmountDisplay(
+                    amount = activity.amount,
+                    currencyCode = activity.currencyCode,
+                    size = AmountSize.SubActivity,
+                    fractionDigitsOverride = activity.fractionDigitsOverride,
+                )
+            } else {
+                Text(
+                    text = "未绑定参与人",
+                    style = SharedLedgerTextStyles.Label,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }
@@ -544,11 +561,19 @@ fun ExpenseCard(
                 }
             }
             Spacer(Modifier.width(SharedLedgerSpacing.Small))
-            AmountDisplay(
-                amount = expense.amount,
-                currencyCode = expense.currencyCode,
-                size = AmountSize.Small,
-            )
+            if (expense.amountAvailable) {
+                AmountDisplay(
+                    amount = expense.amount,
+                    currencyCode = expense.currencyCode,
+                    size = AmountSize.Small,
+                )
+            } else {
+                Text(
+                    text = "未绑定参与人",
+                    style = SharedLedgerTextStyles.Label,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }

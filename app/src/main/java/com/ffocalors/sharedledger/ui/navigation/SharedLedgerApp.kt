@@ -2,6 +2,7 @@ package com.ffocalors.sharedledger.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -21,9 +22,17 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.navigation.NavBackStackEntry
 import com.ffocalors.sharedledger.data.auth.AuthRepositoryFactory
 import com.ffocalors.sharedledger.data.auth.AuthState
 import com.ffocalors.sharedledger.ui.activity.ActivityViewModel
+import com.ffocalors.sharedledger.ui.expense.ExpenseFormMode
+import com.ffocalors.sharedledger.ui.expense.ExpenseFormParticipant
+import com.ffocalors.sharedledger.ui.expense.ExpenseViewModel
+import com.ffocalors.sharedledger.ui.expense.toFormDraft
+import com.ffocalors.sharedledger.ui.expense.toUiState
 import com.ffocalors.sharedledger.data.activity.ActivityType
 import com.ffocalors.sharedledger.data.financial.FakeActorContext
 import com.ffocalors.sharedledger.data.financial.FakeFinancialRecordRepository
@@ -45,7 +54,6 @@ import com.ffocalors.sharedledger.ui.screens.CreateSubActivityScreen
 import com.ffocalors.sharedledger.ui.screens.AuthScreen
 import com.ffocalors.sharedledger.ui.screens.ActivityManagementScreen
 import com.ffocalors.sharedledger.ui.screens.ExpenseDetailScreen
-import com.ffocalors.sharedledger.ui.screens.ExpenseDetailStatus
 import com.ffocalors.sharedledger.ui.screens.JoinActivityScreen
 import com.ffocalors.sharedledger.ui.screens.JoinActivityStatus
 import com.ffocalors.sharedledger.ui.screens.JoinActivityUiState
@@ -62,8 +70,8 @@ import com.ffocalors.sharedledger.ui.screens.NewExpenseScreen
 import com.ffocalors.sharedledger.ui.screens.NormalActivityScreen
 import com.ffocalors.sharedledger.ui.screens.TransferMode
 import com.ffocalors.sharedledger.ui.screens.TransferScreen
-import com.ffocalors.sharedledger.ui.screens.demoExpenseDetailUiState
-import com.ffocalors.sharedledger.ui.screens.demoCreateTransfer
+import com.ffocalors.sharedledger.data.transfer.SettlementDirection
+import com.ffocalors.sharedledger.ui.transfer.TransferViewModel
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import java.math.BigDecimal
@@ -117,6 +125,21 @@ private fun AuthLoadingScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
+private fun RefreshActivityOnResume(
+    backStackEntry: NavBackStackEntry,
+    onResume: () -> Unit,
+) {
+    DisposableEffect(backStackEntry) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) onResume()
+        }
+        backStackEntry.lifecycle.addObserver(observer)
+        if (backStackEntry.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) onResume()
+        onDispose { backStackEntry.lifecycle.removeObserver(observer) }
+    }
+}
+
+@Composable
 private fun AuthenticatedNavHost(
     modifier: Modifier = Modifier,
     currentUserId: String,
@@ -126,6 +149,10 @@ private fun AuthenticatedNavHost(
     val activityViewModel: ActivityViewModel = viewModel(
         key = "activity-$currentUserId",
         factory = ActivityViewModel.Factory(currentUserId = currentUserId),
+    )
+    val expenseViewModel: ExpenseViewModel = viewModel(
+        key = "expense-$currentUserId",
+        factory = ExpenseViewModel.Factory(currentUserId = currentUserId),
     )
     val homeState by activityViewModel.home.collectAsState()
     val viewModelJoinState by activityViewModel.join.collectAsState()
@@ -143,7 +170,7 @@ private fun AuthenticatedNavHost(
     val demoActor = demoActorContext.actor
     fun requireParticipantBinding(activityId: String, action: () -> Unit) {
         val detail = activityViewModel.detail(activityId).value.detail
-        if (activityViewModel.isCurrentUserBound(detail)) {
+        if (canPerformFinancialAction(detail, currentUserId)) {
             action()
         } else {
             navController.navigate(SharedLedgerRoutes.activityManagement(activityId)) {
@@ -243,17 +270,51 @@ private fun AuthenticatedNavHost(
             route = SharedLedgerRoutes.NORMAL_ACTIVITY_PATTERN,
             arguments = listOf(navArgument("activityId") { type = NavType.StringType }),
         ) { backStackEntry ->
-            val activityId = backStackEntry.arguments?.getString("activityId")
-                ?: DemoRouteIds.NORMAL_ACTIVITY
+            val activityId = backStackEntry.arguments?.getString("activityId").orEmpty()
+            val routeError = "活动路由参数缺失".takeIf { activityId.isBlank() }
             val detailState by activityViewModel.detail(activityId).collectAsState()
-            androidx.compose.runtime.LaunchedEffect(activityId) {
-                activityViewModel.loadDetail(activityId)
+            val expenseState by expenseViewModel.listState("activity:$activityId").collectAsState()
+            RefreshActivityOnResume(backStackEntry) {
+                if (activityId.isNotBlank()) {
+                    activityViewModel.loadDetail(activityId, force = true)
+                    expenseViewModel.loadByActivity(
+                        activityId,
+                        force = true,
+                        baseCurrency = detailState.detail?.summary?.baseCurrency ?: "CNY",
+                    )
+                }
             }
+            androidx.compose.runtime.LaunchedEffect(activityId, detailState.detail?.summary?.baseCurrency) {
+                if (activityId.isNotBlank()) {
+                    expenseViewModel.loadByActivity(
+                        activityId,
+                        baseCurrency = detailState.detail?.summary?.baseCurrency ?: "CNY",
+                    )
+                }
+            }
+            val defaultLedgerUnitId = detailState.detail?.ledgerUnits?.firstOrNull { it.type.equals("default", true) || it.type.equals("root", true) }?.id
             NormalActivityScreen(
                 activity = detailState.detail,
                 isLoading = detailState.isLoading,
-                errorMessage = detailState.errorMessage,
-                onRetry = { activityViewModel.loadDetail(activityId, force = true) },
+                errorMessage = routeError ?: detailState.errorMessage,
+                expenses = expenseState.expenses,
+                expenseLoading = expenseState.isLoading,
+                expenseErrorMessage = expenseState.errorMessage,
+                onExpenseRetry = {
+                    expenseViewModel.loadByActivity(
+                        activityId,
+                        force = true,
+                        baseCurrency = detailState.detail?.summary?.baseCurrency ?: "CNY",
+                    )
+                },
+                onRetry = {
+                    activityViewModel.loadDetail(activityId, force = true)
+                    expenseViewModel.loadByActivity(
+                        activityId,
+                        force = true,
+                        baseCurrency = detailState.detail?.summary?.baseCurrency ?: "CNY",
+                    )
+                },
                 onBack = { navController.navigateUp() },
                 onTransfer = {
                     requireParticipantBinding(activityId) {
@@ -262,7 +323,7 @@ private fun AuthenticatedNavHost(
                 },
                 onNewExpense = {
                     requireParticipantBinding(activityId) {
-                        navController.navigate(SharedLedgerRoutes.newExpense(activityId))
+                        defaultLedgerUnitId?.let { navController.navigate(SharedLedgerRoutes.newExpense(activityId, it)) }
                     }
                 },
                 onReceive = {
@@ -277,7 +338,7 @@ private fun AuthenticatedNavHost(
                     navController.navigate(SharedLedgerRoutes.activityManagement(activityId))
                 },
                 onExpenseClick = { expenseId ->
-                    navController.navigate(SharedLedgerRoutes.expenseDetail(expenseId))
+                    navController.navigate(SharedLedgerRoutes.expenseDetail(activityId, expenseId, defaultLedgerUnitId))
                 },
             )
         }
@@ -288,14 +349,39 @@ private fun AuthenticatedNavHost(
             val activityId = backStackEntry.arguments?.getString("activityId")
                 ?: DemoRouteIds.LARGE_ACTIVITY
             val detailState by activityViewModel.detail(activityId).collectAsState()
-            androidx.compose.runtime.LaunchedEffect(activityId) {
-                activityViewModel.loadDetail(activityId)
+            val expenseState by expenseViewModel.listState("activity:$activityId").collectAsState()
+            RefreshActivityOnResume(backStackEntry) {
+                if (activityId.isNotBlank()) {
+                    activityViewModel.loadDetail(activityId, force = true)
+                    expenseViewModel.loadByActivity(
+                        activityId,
+                        force = true,
+                        baseCurrency = detailState.detail?.summary?.baseCurrency ?: "CNY",
+                    )
+                }
+            }
+            androidx.compose.runtime.LaunchedEffect(activityId, detailState.detail?.summary?.baseCurrency) {
+                if (activityId.isNotBlank()) {
+                    expenseViewModel.loadByActivity(
+                        activityId,
+                        baseCurrency = detailState.detail?.summary?.baseCurrency ?: "CNY",
+                    )
+                }
             }
             LargeActivityScreen(
                 activity = detailState.detail,
-                isLoading = detailState.isLoading,
-                errorMessage = detailState.errorMessage,
-                onRetry = { activityViewModel.loadDetail(activityId, force = true) },
+                ledgerUnitAmounts = expenseState.ledgerUnitTotals,
+                participantBound = expenseState.participantBound.takeIf { !expenseState.isLoading && expenseState.errorMessage == null },
+                isLoading = detailState.isLoading || expenseState.isLoading,
+                errorMessage = detailState.errorMessage ?: expenseState.errorMessage,
+                onRetry = {
+                    activityViewModel.loadDetail(activityId, force = true)
+                    expenseViewModel.loadByActivity(
+                        activityId,
+                        force = true,
+                        baseCurrency = detailState.detail?.summary?.baseCurrency ?: "CNY",
+                    )
+                },
                 onBack = { navController.navigateUp() },
                 onSubActivityClick = { id ->
                     navController.navigate(SharedLedgerRoutes.ledgerUnit(activityId, id))
@@ -357,21 +443,59 @@ private fun AuthenticatedNavHost(
                 navArgument("ledgerUnitId") { type = NavType.StringType },
             ),
         ) { backStackEntry ->
-            val activityId = backStackEntry.arguments?.getString("activityId")
-                ?: DemoRouteIds.LARGE_ACTIVITY
-            val ledgerUnitId = backStackEntry.arguments?.getString("ledgerUnitId")
-                ?: DemoRouteIds.TICKET_LEDGER
+            val activityId = backStackEntry.arguments?.getString("activityId").orEmpty()
+            val ledgerUnitId = backStackEntry.arguments?.getString("ledgerUnitId").orEmpty()
+            val routeError = "账本路由参数缺失".takeIf { activityId.isBlank() || ledgerUnitId.isBlank() }
             val detailState by activityViewModel.detail(activityId).collectAsState()
-            androidx.compose.runtime.LaunchedEffect(activityId) {
-                activityViewModel.loadDetail(activityId)
+            val expenseState by expenseViewModel.listState("ledger:$ledgerUnitId").collectAsState()
+            RefreshActivityOnResume(backStackEntry) {
+                if (activityId.isNotBlank()) {
+                    activityViewModel.loadDetail(activityId, force = true)
+                    expenseViewModel.loadByLedgerUnit(
+                        activityId,
+                        ledgerUnitId,
+                        force = true,
+                        baseCurrency = detailState.detail?.summary?.baseCurrency ?: "CNY",
+                    )
+                }
+            }
+            androidx.compose.runtime.LaunchedEffect(activityId, ledgerUnitId, detailState.detail?.summary?.baseCurrency) {
+                if (routeError == null) {
+                    expenseViewModel.loadByLedgerUnit(
+                        activityId,
+                        ledgerUnitId,
+                        baseCurrency = detailState.detail?.summary?.baseCurrency ?: "CNY",
+                    )
+                }
             }
             LedgerUnitScreen(
                 activityId = activityId,
                 ledgerUnitId = ledgerUnitId,
                 activity = detailState.detail,
                 isLoading = detailState.isLoading,
-                errorMessage = detailState.errorMessage,
-                onRetry = { activityViewModel.loadDetail(activityId, force = true) },
+                errorMessage = routeError ?: detailState.errorMessage,
+                expenses = expenseState.expenses,
+                totalBaseAmount = expenseState.totalBaseAmount,
+                participantBound = expenseState.participantBound,
+                expenseLoading = expenseState.isLoading,
+                expenseErrorMessage = expenseState.errorMessage,
+                onExpenseRetry = {
+                    expenseViewModel.loadByLedgerUnit(
+                        activityId,
+                        ledgerUnitId,
+                        force = true,
+                        baseCurrency = detailState.detail?.summary?.baseCurrency ?: "CNY",
+                    )
+                },
+                onRetry = {
+                    activityViewModel.loadDetail(activityId, force = true)
+                    expenseViewModel.loadByLedgerUnit(
+                        activityId,
+                        ledgerUnitId,
+                        force = true,
+                        baseCurrency = detailState.detail?.summary?.baseCurrency ?: "CNY",
+                    )
+                },
                 onBack = { navController.navigateUp() },
                 onTransfer = {
                     requireParticipantBinding(activityId) {
@@ -398,7 +522,7 @@ private fun AuthenticatedNavHost(
                     }
                 },
                 onExpenseClick = { expenseId ->
-                    navController.navigate(SharedLedgerRoutes.expenseDetail(expenseId))
+                    navController.navigate(SharedLedgerRoutes.expenseDetail(activityId, expenseId, ledgerUnitId))
                 },
             )
         }
@@ -411,12 +535,56 @@ private fun AuthenticatedNavHost(
                     nullable = true
                     defaultValue = null
                 },
+                navArgument("mode") { type = NavType.StringType; defaultValue = ExpenseFormRouteMode.CREATE.value },
+                navArgument("expenseId") { type = NavType.StringType; nullable = true; defaultValue = null },
             ),
-        ) {
-            NewExpenseScreen(
-                onBack = { navController.navigateUp() },
-                onSave = { navController.navigateUp() },
-            )
+        ) { backStackEntry ->
+            val activityId = backStackEntry.arguments?.getString("activityId").orEmpty()
+            val routeLedgerUnitId = backStackEntry.arguments?.getString("ledgerUnitId")
+            val expenseId = backStackEntry.arguments?.getString("expenseId")
+            val routeMode = parseExpenseFormMode(backStackEntry.arguments?.getString("mode"))
+            val activityState by activityViewModel.detail(activityId).collectAsState()
+            val detailExpenseState = if (expenseId == null) {
+                com.ffocalors.sharedledger.ui.expense.ExpenseDetailRouteState(isLoading = false)
+            } else {
+                val state by expenseViewModel.detailState(expenseId).collectAsState()
+                state
+            }
+            val formState by expenseViewModel.form.collectAsState()
+            androidx.compose.runtime.LaunchedEffect(activityId, expenseId) {
+                expenseViewModel.clearFormError()
+                activityViewModel.loadDetail(activityId)
+                if (expenseId != null) expenseViewModel.loadDetail(expenseId)
+            }
+            val activityDetail = activityState.detail
+            val resolvedLedgerUnitId = routeLedgerUnitId
+                ?: detailExpenseState.detail?.ledgerUnit?.id
+                ?: activityDetail?.ledgerUnits?.firstOrNull { it.type.equals("default", true) || it.type.equals("root", true) }?.id
+            val participants = activityDetail?.participants?.map { ExpenseFormParticipant(it.id, it.name) }
+                ?: detailExpenseState.detail?.participants?.map { ExpenseFormParticipant(it.id, it.name) }.orEmpty()
+            if (activityState.errorMessage != null || detailExpenseState.errorMessage != null) {
+                ExpenseRouteStatus(activityState.errorMessage ?: detailExpenseState.errorMessage ?: "账单加载失败", onBack = { navController.navigateUp() })
+            } else if (activityState.isLoading || resolvedLedgerUnitId == null || (expenseId != null && detailExpenseState.isLoading)) {
+                ExpenseRouteStatus("正在加载账单表单…", onBack = { navController.navigateUp() })
+            } else {
+                val formMode = when (routeMode) {
+                    ExpenseFormRouteMode.EDIT -> ExpenseFormMode.Edit
+                    ExpenseFormRouteMode.REFUND -> ExpenseFormMode.Refund
+                    ExpenseFormRouteMode.CREATE -> ExpenseFormMode.Create
+                }
+                NewExpenseScreen(
+                    ledgerUnitId = resolvedLedgerUnitId,
+                    participants = participants,
+                    baseCurrency = activityDetail?.summary?.baseCurrency ?: detailExpenseState.detail?.expense?.originalCurrency ?: "CNY",
+                    multiCurrencyEnabled = activityDetail?.summary?.multiCurrencyEnabled == true,
+                    mode = formMode,
+                    initialDraft = detailExpenseState.detail?.toFormDraft(formMode),
+                    isSubmitting = formState.isSubmitting,
+                    errorMessage = formState.errorMessage,
+                    onBack = { navController.navigateUp() },
+                    onSave = { draft -> expenseViewModel.submit(formMode, expenseId, activityId, draft) { navController.navigateUp() } },
+                )
+            }
         }
         composable(
             route = SharedLedgerRoutes.TRANSFER_PATTERN,
@@ -433,34 +601,39 @@ private fun AuthenticatedNavHost(
                 },
             ),
         ) { backStackEntry ->
-            val activityId = backStackEntry.arguments?.getString("activityId")
-                ?: DemoRouteIds.NORMAL_ACTIVITY
+            val activityId = backStackEntry.arguments?.getString("activityId").orEmpty()
             val ledgerUnitId = backStackEntry.arguments?.getString("ledgerUnitId")
             val mode = when (SharedLedgerRoutes.parseTransferMode(backStackEntry.arguments?.getString("mode"))) {
                 TransferRouteMode.RECEIVE -> TransferMode.RECEIVE
                 TransferRouteMode.TRANSFER -> TransferMode.TRANSFER
             }
+            val transferViewModel: TransferViewModel = viewModel(
+                key = "transfer-$activityId-${mode.name}",
+                factory = TransferViewModel.Factory(),
+            )
+            val transferState by transferViewModel.uiState.collectAsState()
+            androidx.compose.runtime.LaunchedEffect(activityId, mode) {
+                if (activityId.isNotBlank()) {
+                    transferViewModel.load(
+                        activityId,
+                        if (mode == TransferMode.RECEIVE) SettlementDirection.RECEIVE else SettlementDirection.TRANSFER,
+                    )
+                }
+            }
             TransferScreen(
                 mode = mode,
                 activityId = activityId,
                 ledgerUnitId = ledgerUnitId,
+                state = transferState.copy(
+                    errorMessage = transferState.errorMessage ?: "活动路由参数缺失".takeIf { activityId.isBlank() },
+                ),
                 onBack = { navController.navigateUp() },
+                onRetry = { transferViewModel.retry() },
                 onConfirm = { draft ->
-                    val created = demoCreateTransfer(draft)
-                    val written = financialRepository.create(
-                        demoTransferRecord(draft, created.transferId, demoActor),
-                    )
-                    if (written.isSuccess) {
-                        navController.navigate(
-                            SharedLedgerRoutes.transferDetail(
-                                activityId = created.activityId,
-                                transferId = created.transferId,
-                                ledgerUnitId = created.ledgerUnitId,
-                            ),
-                        ) {
-                            popUpTo(SharedLedgerRoutes.TRANSFER_PATTERN) { inclusive = true }
-                            launchSingleTop = true
-                        }
+                    transferViewModel.submit(draft) {
+                        activityViewModel.loadDetail(draft.activityId, force = true)
+                        activityViewModel.refreshHome()
+                        navController.navigateUp()
                     }
                 },
             )
@@ -565,33 +738,38 @@ private fun AuthenticatedNavHost(
         }
         composable(
             route = SharedLedgerRoutes.EXPENSE_DETAIL_PATTERN,
-            arguments = listOf(navArgument("expenseId") { type = NavType.StringType }),
+            arguments = listOf(
+                navArgument("expenseId") { type = NavType.StringType },
+                navArgument("activityId") { type = NavType.StringType; nullable = true; defaultValue = null },
+                navArgument("ledgerUnitId") { type = NavType.StringType; nullable = true; defaultValue = null },
+            ),
         ) { backStackEntry ->
-            val expenseId = backStackEntry.arguments?.getString("expenseId")
-                ?: DemoRouteIds.DINNER_EXPENSE
-            var expenseStatus by rememberSaveable(expenseId) {
-                mutableStateOf(demoExpenseDetailUiState(expenseId).status)
-            }
-            var expenseActionMessage by rememberSaveable(expenseId) { mutableStateOf<String?>(null) }
-            val expenseActionHandler = remember(expenseId) {
-                DemoExpenseActionHandler(
-                    onStatusChanged = { expenseStatus = it },
-                    onMessage = { expenseActionMessage = it },
+            val expenseId = backStackEntry.arguments?.getString("expenseId").orEmpty()
+            val routeActivityId = backStackEntry.arguments?.getString("activityId")
+            val routeLedgerUnitId = backStackEntry.arguments?.getString("ledgerUnitId")
+            val state by expenseViewModel.detailState(expenseId).collectAsState()
+            androidx.compose.runtime.LaunchedEffect(expenseId) { expenseViewModel.loadDetail(expenseId) }
+            val detail = state.detail
+            if (state.isLoading) {
+                ExpenseRouteStatus("正在加载账单详情…", onBack = { navController.navigateUp() })
+            } else if (state.errorMessage != null || detail == null) {
+                ExpenseRouteStatus(state.errorMessage ?: "账单不存在或已被删除", onBack = { navController.navigateUp() })
+            } else {
+                val activityId = routeActivityId ?: detail.ledgerUnit.activityId
+                val ledgerUnitId = routeLedgerUnitId ?: detail.ledgerUnit.id
+                ExpenseDetailScreen(
+                    uiState = detail.toUiState().copy(actionMessage = state.actionMessage),
+                    onBack = { navController.navigateUp() },
+                    onEdit = { id -> requireParticipantBinding(activityId) {
+                        navController.navigate(SharedLedgerRoutes.newExpense(activityId, ledgerUnitId, ExpenseFormRouteMode.EDIT, id))
+                    } },
+                    onVoid = { id -> requireParticipantBinding(activityId) { expenseViewModel.delete(id) } },
+                    onRestore = { id -> requireParticipantBinding(activityId) { expenseViewModel.restore(id) } },
+                    onAddRefund = { id -> requireParticipantBinding(activityId) {
+                        navController.navigate(SharedLedgerRoutes.newExpense(activityId, ledgerUnitId, ExpenseFormRouteMode.REFUND, id))
+                    } },
                 )
             }
-            ExpenseDetailScreen(
-                uiState = demoExpenseDetailUiState(expenseId).copy(
-                    status = expenseStatus,
-                    actionMessage = expenseActionMessage,
-                ),
-                onBack = { navController.navigateUp() },
-                onEdit = { id -> expenseActionHandler.edit(id) },
-                onVoid = { id -> expenseActionHandler.void(id) },
-                onRestore = { id -> expenseActionHandler.restore(id) },
-                onAddRefund = { id -> expenseActionHandler.addRefund(id) },
-                onDeletePermanently = { id -> expenseActionHandler.deletePermanently(id) },
-                onAttachmentClick = { id, attachmentId -> expenseActionHandler.viewAttachment(id, attachmentId) },
-            )
         }
         composable(
             route = SharedLedgerRoutes.TRANSFER_DETAIL_PATTERN,
@@ -648,6 +826,19 @@ private fun AuthenticatedNavHost(
                 },
             )
         }
+    }
+}
+
+@Composable
+private fun ExpenseRouteStatus(message: String, onBack: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(SharedLedgerSpacing.Large),
+        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium, androidx.compose.ui.Alignment.CenterVertically),
+    ) {
+        if (message.startsWith("正在")) CircularProgressIndicator()
+        Text(message, style = SharedLedgerTextStyles.BodySecondary)
+        SharedLedgerButton("返回", onBack, tone = SharedLedgerButtonTone.Neutral)
     }
 }
 
@@ -819,29 +1010,9 @@ private fun demoParticipant(participantId: String): ParticipantInfo = when (part
     else -> ParticipantInfo(participantId, participantId)
 }
 
-internal class DemoExpenseActionHandler(
-    private val onStatusChanged: (ExpenseDetailStatus) -> Unit,
-    private val onMessage: (String) -> Unit,
-) {
-    fun edit(expenseId: String) = onMessage("演示：已准备编辑账单 $expenseId")
-
-    fun void(expenseId: String) {
-        onStatusChanged(ExpenseDetailStatus.Deleted)
-        onMessage("演示：账单 $expenseId 已作废，历史记录仍保留")
-    }
-
-    fun restore(expenseId: String) {
-        onStatusChanged(ExpenseDetailStatus.Active)
-        onMessage("演示：账单 $expenseId 已恢复")
-    }
-
-    fun addRefund(expenseId: String) = onMessage("演示：已准备为账单 $expenseId 添加退款")
-
-    fun viewAttachment(expenseId: String, attachmentId: String) =
-        onMessage("演示：已打开账单 $expenseId 的凭证 $attachmentId")
-
-    fun deletePermanently(expenseId: String) {
-        onStatusChanged(ExpenseDetailStatus.Deleted)
-        onMessage("演示：已记录永久删除请求 $expenseId")
-    }
-}
+internal fun canPerformFinancialAction(
+    detail: com.ffocalors.sharedledger.data.activity.ActivityDetail?,
+    currentUserId: String,
+): Boolean = detail?.members?.any { member ->
+    member.userId == currentUserId && member.claimedParticipantId != null
+} == true

@@ -11,12 +11,12 @@ object SharedLedgerRoutes {
     const val LARGE_ACTIVITY_PATTERN = "large-activity/{activityId}"
     const val CREATE_SUB_ACTIVITY_PATTERN = "create-sub-activity/{activityId}"
     const val LEDGER_UNIT_PATTERN = "ledger-unit/{activityId}/{ledgerUnitId}"
-    const val NEW_EXPENSE_PATTERN = "new-expense/{activityId}?ledgerUnitId={ledgerUnitId}"
+    const val NEW_EXPENSE_PATTERN = "new-expense/{activityId}?ledgerUnitId={ledgerUnitId}&mode={mode}&expenseId={expenseId}"
     const val TRANSFER_PATTERN = "transfer/{activityId}?mode={mode}&ledgerUnitId={ledgerUnitId}"
     const val FUND_RECORDS_PATTERN = "fund-records/{activityId}?ledgerUnitId={ledgerUnitId}"
     const val FINAL_SETTLEMENT_PATTERN = "final-settlement/{activityId}"
     const val ACTIVITY_MANAGEMENT_PATTERN = "activity-management/{activityId}"
-    const val EXPENSE_DETAIL_PATTERN = "expense-detail/{expenseId}"
+    const val EXPENSE_DETAIL_PATTERN = "expense-detail/{expenseId}?activityId={activityId}&ledgerUnitId={ledgerUnitId}"
     const val TRANSFER_DETAIL_PATTERN = "transfer-detail/{activityId}/{transferId}?ledgerUnitId={ledgerUnitId}"
     const val ACTIVITY_MANAGEMENT = ACTIVITY_MANAGEMENT_PATTERN
     const val EXPENSE_DETAIL = EXPENSE_DETAIL_PATTERN
@@ -43,10 +43,14 @@ object SharedLedgerRoutes {
     fun createSubActivity(activityId: String) = createRoute("create-sub-activity", activityId)
     fun ledgerUnit(activityId: String, ledgerUnitId: String) =
         "${createRoute("ledger-unit", activityId)}/${routeSegment(ledgerUnitId, "ledgerUnitId")}"
-    fun newExpense(activityId: String, ledgerUnitId: String? = null): String {
+    fun newExpense(activityId: String, ledgerUnitId: String? = null, mode: ExpenseFormRouteMode? = null, expenseId: String? = null): String {
         val route = createRoute("new-expense", activityId)
-        return if (ledgerUnitId.isNullOrBlank()) route
-        else "$route?ledgerUnitId=${routeSegment(ledgerUnitId.orEmpty(), "ledgerUnitId")}"
+        val query = buildList {
+            ledgerUnitId?.takeIf { it.isNotBlank() }?.let { add("ledgerUnitId=${routeSegment(it, "ledgerUnitId")}") }
+            mode?.let { add("mode=${it.value}") }
+            expenseId?.takeIf { it.isNotBlank() }?.let { add("expenseId=${routeSegment(it, "expenseId")}") }
+        }
+        return if (query.isEmpty()) route else "$route?${query.joinToString("&")}"
     }
     fun transfer(activityId: String, mode: TransferRouteMode, ledgerUnitId: String? = null): String {
         val route = "${createRoute("transfer", activityId)}?mode=${mode.value}"
@@ -61,6 +65,14 @@ object SharedLedgerRoutes {
     fun finalSettlement(activityId: String) = createRoute("final-settlement", activityId)
     fun activityManagement(activityId: String) = createRoute("activity-management", activityId)
     fun expenseDetail(expenseId: String) = createRoute("expense-detail", expenseId)
+    fun expenseDetail(activityId: String, expenseId: String, ledgerUnitId: String? = null): String {
+        val route = createRoute("expense-detail", expenseId)
+        val query = buildList {
+            add("activityId=${routeSegment(activityId, "activityId")}")
+            ledgerUnitId?.takeIf { it.isNotBlank() }?.let { add("ledgerUnitId=${routeSegment(it, "ledgerUnitId")}") }
+        }
+        return "$route?${query.joinToString("&")}"
+    }
     fun transferDetail(activityId: String, transferId: String, ledgerUnitId: String? = null): String {
         val route = "${createRoute("transfer-detail", activityId)}/${routeSegment(transferId, "transferId")}"
         return if (ledgerUnitId.isNullOrBlank()) route
@@ -83,6 +95,18 @@ object SharedLedgerRoutes {
         TransferRouteMode.TRANSFER.value -> TransferRouteMode.TRANSFER
         else -> TransferRouteMode.TRANSFER
     }
+}
+
+enum class ExpenseFormRouteMode(val value: String) {
+    CREATE("create"),
+    EDIT("edit"),
+    REFUND("refund"),
+}
+
+fun parseExpenseFormMode(rawMode: String?): ExpenseFormRouteMode = when (rawMode?.lowercase()) {
+    ExpenseFormRouteMode.EDIT.value -> ExpenseFormRouteMode.EDIT
+    ExpenseFormRouteMode.REFUND.value -> ExpenseFormRouteMode.REFUND
+    else -> ExpenseFormRouteMode.CREATE
 }
 
 enum class TransferRouteMode(val value: String) {
