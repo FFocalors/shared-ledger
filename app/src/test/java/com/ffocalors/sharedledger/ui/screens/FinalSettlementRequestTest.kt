@@ -21,7 +21,7 @@ class FinalSettlementRequestTest {
         )
         assertTrue(request.isValid())
         assertFalse(request.copy(amount = BigDecimal("319.00")).isValid())
-        assertFalse(request.copy(sourceFinancialVersion = 0L).isValid())
+        assertFalse(request.copy(sourceFinancialVersion = -1L).isValid())
         assertFalse(request.copy(currency = "cny").isValid())
     }
 

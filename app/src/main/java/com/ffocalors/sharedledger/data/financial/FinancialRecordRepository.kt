@@ -4,6 +4,7 @@ import com.ffocalors.sharedledger.domain.financial.FundRecord
 import com.ffocalors.sharedledger.domain.financial.FundRecordType
 import com.ffocalors.sharedledger.domain.financial.RecorderInfo
 import com.ffocalors.sharedledger.domain.financial.TransferDispute
+import java.math.BigDecimal
 
 sealed interface FinancialReadResult<out T> {
     data class Success<T>(val value: T) : FinancialReadResult<T>
@@ -25,30 +26,82 @@ data class FinancialWriteResult<out T>(
     }
 }
 
+data class PrepaymentAccount(
+    val accountId: String,
+    val owner: com.ffocalors.sharedledger.domain.financial.ParticipantInfo,
+    val custodian: com.ffocalors.sharedledger.domain.financial.ParticipantInfo,
+    val balance: BigDecimal,
+    /** Amount already consumed by expense debts from this account. */
+    val usedAmount: BigDecimal = BigDecimal.ZERO,
+)
+
+data class FinancialContext(
+    val activityId: String,
+    val currency: String,
+    val participants: List<com.ffocalors.sharedledger.domain.financial.ParticipantInfo>,
+    val currentParticipantId: String?,
+    val accounts: List<PrepaymentAccount>,
+)
+
+data class FinalSettlementSuggestion(
+    val id: String,
+    val activityId: String,
+    val from: com.ffocalors.sharedledger.domain.financial.ParticipantInfo,
+    val to: com.ffocalors.sharedledger.domain.financial.ParticipantInfo,
+    val amount: BigDecimal,
+    val ordinaryAmount: BigDecimal,
+    val prepaymentReturnAmount: BigDecimal,
+    val currency: String,
+    val sourceFinancialVersion: Long,
+)
+
+data class PrepaymentInput(
+    val activityId: String,
+    val ownerParticipantId: String,
+    val custodianParticipantId: String,
+    val amount: BigDecimal,
+    val occurredAt: String,
+)
+
 interface FinancialRecordRepository {
     /**
      * Creation boundary for the future RPC adapter. The caller supplies the complete domain
      * record; a real implementation can replace this with the RPC response/returned transferId.
      */
-    fun create(record: FundRecord): FinancialWriteResult<FundRecord>
+    suspend fun create(record: FundRecord): FinancialWriteResult<FundRecord>
 
-    fun list(activityId: String, type: FundRecordType? = null): FinancialReadResult<List<FundRecord>>
-    fun get(activityId: String, transferId: String): FinancialReadResult<FundRecord>
-    fun void(
+    suspend fun list(activityId: String, type: FundRecordType? = null): FinancialReadResult<List<FundRecord>>
+    suspend fun get(activityId: String, transferId: String): FinancialReadResult<FundRecord>
+    suspend fun void(
         activityId: String,
         transferId: String,
         reason: String,
     ): FinancialWriteResult<FundRecord>
 
-    fun addDispute(
+    suspend fun addDispute(
         activityId: String,
         transferId: String,
         participantId: String,
         note: String,
     ): FinancialWriteResult<TransferDispute>
 
-    fun resolveDispute(
+    suspend fun resolveDispute(
         activityId: String,
         disputeId: String,
     ): FinancialWriteResult<TransferDispute>
+
+    suspend fun loadPrepaymentContext(activityId: String): FinancialReadResult<FinancialContext>
+
+    suspend fun currentParticipantId(activityId: String): FinancialReadResult<String?>
+
+    suspend fun createPrepayment(input: PrepaymentInput): FinancialWriteResult<FundRecord>
+
+    suspend fun createPrepaymentReturn(input: PrepaymentInput): FinancialWriteResult<FundRecord>
+
+    suspend fun previewFinalSettlement(activityId: String): FinancialReadResult<List<FinalSettlementSuggestion>>
+
+    suspend fun executeFinalSettlement(
+        request: FinalSettlementSuggestion,
+        occurredAt: String,
+    ): FinancialWriteResult<FundRecord>
 }

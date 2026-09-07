@@ -57,6 +57,16 @@ data class ExpenseParticipant(
     val order: Int,
 )
 
+data class ExpenseDebtSettlement(
+    val debtId: String,
+    val debtorParticipantId: String,
+    val amount: BigDecimal,
+    val settledAmount: BigDecimal,
+) {
+    val remainingAmount: BigDecimal
+        get() = (amount - settledAmount).max(BigDecimal.ZERO)
+}
+
 data class ExpenseDetail(
     val expense: Expense,
     val ledgerUnit: ExpenseLedgerUnit,
@@ -64,6 +74,7 @@ data class ExpenseDetail(
     val payments: List<Payment>,
     val splits: List<Split>,
     val participants: List<ExpenseParticipant>,
+    val debtSettlements: List<ExpenseDebtSettlement> = emptyList(),
 )
 
 data class PaymentInput(

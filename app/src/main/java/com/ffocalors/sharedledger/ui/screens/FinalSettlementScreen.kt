@@ -34,6 +34,8 @@ import com.ffocalors.sharedledger.ui.components.AmountSize
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
+import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.components.WarningCard
 import com.ffocalors.sharedledger.ui.theme.IconContainerOrange
 import com.ffocalors.sharedledger.ui.theme.IconContainerSage
@@ -74,9 +76,9 @@ fun FinalSettlementRequest.isValid(): Boolean =
         ordinaryAmount >= BigDecimal.ZERO &&
         prepaymentReturnAmount >= BigDecimal.ZERO &&
         ordinaryAmount + prepaymentReturnAmount == amount &&
-        sourceFinancialVersion >= 1L
+        sourceFinancialVersion >= 0L
 
-private data class SettlementSuggestion(
+data class FinalSettlementSuggestionUi(
     val id: String,
     val fromParticipantId: String,
     val toParticipantId: String,
@@ -89,7 +91,7 @@ private data class SettlementSuggestion(
     val sourceFinancialVersion: Long,
 )
 
-private fun SettlementSuggestion.toRequest(activityId: String): FinalSettlementRequest =
+private fun FinalSettlementSuggestionUi.toRequest(activityId: String): FinalSettlementRequest =
     FinalSettlementRequest(
         activityId = activityId,
         previewItemId = id,
@@ -103,7 +105,7 @@ private fun SettlementSuggestion.toRequest(activityId: String): FinalSettlementR
     )
 
 private val SettlementSuggestions = listOf(
-    SettlementSuggestion(
+    FinalSettlementSuggestionUi(
         id = "zhang-san-wang-wu",
         fromParticipantId = "fake-alice",
         toParticipantId = "fake-bob",
@@ -115,7 +117,7 @@ private val SettlementSuggestions = listOf(
         prepaymentReturnAmount = BigDecimal.ZERO,
         sourceFinancialVersion = 12L,
     ),
-    SettlementSuggestion(
+    FinalSettlementSuggestionUi(
         id = "li-si-zhao-liu",
         fromParticipantId = "fake-bob",
         toParticipantId = "fake-carol",
@@ -127,7 +129,7 @@ private val SettlementSuggestions = listOf(
         prepaymentReturnAmount = BigDecimal.ZERO,
         sourceFinancialVersion = 12L,
     ),
-    SettlementSuggestion(
+    FinalSettlementSuggestionUi(
         id = "wang-wu-zhang-san",
         fromParticipantId = "fake-carol",
         toParticipantId = "fake-alice",
@@ -141,7 +143,7 @@ private val SettlementSuggestions = listOf(
     ),
 )
 
-private val DepositReturn = SettlementSuggestion(
+private val DepositReturn = FinalSettlementSuggestionUi(
     id = "zhang-san-li-si-return",
     fromParticipantId = "fake-alice",
     toParticipantId = "fake-bob",
@@ -164,6 +166,10 @@ fun FinalSettlementScreen(
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
     onFinalize: ((FinalSettlementRequest) -> Unit)? = null,
+    suggestions: List<FinalSettlementSuggestionUi> = SettlementSuggestions + DepositReturn,
+    isLoading: Boolean = false,
+    errorMessage: String? = null,
+    onRetry: (() -> Unit)? = null,
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -211,47 +217,21 @@ fun FinalSettlementScreen(
                         )
                     }
                 }
-                item(key = "warning") {
-                    WarningCard(
-                        title = "请仔细核对",
-                        text = "当前存在 1 条有争议的转账记录，请在结算前仔细核对。",
-                    )
-                }
-                item(key = "demo-boundary") {
-                    Text(
-                        text = "演示 · 活动：$activityId",
-                        style = SharedLedgerTextStyles.Label,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                item(key = "suggested-header") {
-                    SettlementSectionHeader(
-                        title = "建议转账 (3笔)",
-                        status = "待处理",
-                    )
-                }
-                items(
-                    items = SettlementSuggestions,
-                    key = { it.id },
-                ) { suggestion ->
-                    SettlementSuggestionCard(
-                        suggestion = suggestion,
-                        onExecute = onFinalize?.let { callback -> { callback(suggestion.toRequest(activityId)) } },
-                    )
-                }
-                item(key = "returns-header") {
-                    Text(
-                        text = "预存返还",
-                        style = SharedLedgerTextStyles.CardTitle,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
-                    )
-                }
-                item(key = DepositReturn.id) {
-                    SettlementSuggestionCard(
-                        suggestion = DepositReturn,
-                        onExecute = onFinalize?.let { callback -> { callback(DepositReturn.toRequest(activityId)) } },
-                    )
+                when {
+                    isLoading -> item(key = "loading") { Text("正在读取最新结算方案…", style = SharedLedgerTextStyles.BodySecondary) }
+                    errorMessage != null -> item(key = "error") {
+                        Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
+                            Text(errorMessage, color = MaterialTheme.colorScheme.error)
+                            onRetry?.let { SharedLedgerButton("重新读取方案", it, tone = SharedLedgerButtonTone.SoftPrimary) }
+                        }
+                    }
+                    suggestions.isEmpty() -> item(key = "empty") { Text("当前没有待执行的结算项", style = SharedLedgerTextStyles.BodySecondary) }
+                    else -> {
+                        item(key = "suggested-header") { SettlementSectionHeader("建议转账 (${suggestions.size}笔)", "待处理") }
+                        items(suggestions, key = { it.id }) { suggestion ->
+                            SettlementSuggestionCard(suggestion, onFinalize?.let { callback -> { callback(suggestion.toRequest(activityId)) } })
+                        }
+                    }
                 }
             }
         }
@@ -293,7 +273,7 @@ private fun SettlementSectionHeader(
 
 @Composable
 private fun SettlementSuggestionCard(
-    suggestion: SettlementSuggestion,
+    suggestion: FinalSettlementSuggestionUi,
     onExecute: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
@@ -333,16 +313,21 @@ private fun SettlementSuggestionCard(
                     backgroundColor = SurfaceWarmHigh,
                     size = SharedLedgerDimens.AvatarMedium,
                 )
-                AmountDisplay(
-                    amount = suggestion.amount,
-                    currencyCode = "CNY",
-                    fractionDigitsOverride = 1,
-                    size = AmountSize.Small,
+                Column(
+                    horizontalAlignment = Alignment.End,
                     modifier = Modifier.padding(start = SharedLedgerSpacing.XSmall),
-                )
+                ) {
+                    AmountDisplay(
+                        amount = suggestion.amount,
+                        currencyCode = suggestion.currency,
+                        fractionDigitsOverride = 1,
+                        size = AmountSize.Small,
+                    )
+                    Text("账务版本 v${suggestion.sourceFinancialVersion}", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
             if (onExecute == null) {
-                SuggestionBadge("演示建议")
+                SuggestionBadge("只读方案 · v${suggestion.sourceFinancialVersion}")
             } else {
                 TextButton(onClick = onExecute) { Text("执行") }
             }

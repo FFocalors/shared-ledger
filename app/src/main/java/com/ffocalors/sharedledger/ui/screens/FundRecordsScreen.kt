@@ -58,9 +58,9 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ffocalors.sharedledger.data.financial.FakeFinancialRecordRepository
 import com.ffocalors.sharedledger.data.financial.FinancialReadResult
 import com.ffocalors.sharedledger.data.financial.FinancialRecordRepository
+import com.ffocalors.sharedledger.data.financial.FinancialRecordRepositoryFactory
 import com.ffocalors.sharedledger.domain.financial.FundRecord
 import com.ffocalors.sharedledger.domain.financial.FundRecordComponentType
 import com.ffocalors.sharedledger.domain.financial.FundRecordType
@@ -87,6 +87,7 @@ import com.ffocalors.sharedledger.ui.theme.SurfaceWarmContainer
 import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLowest
 import com.ffocalors.sharedledger.ui.theme.TextSecondary
 import com.ffocalors.sharedledger.ui.theme.WarmBrown
+import com.ffocalors.sharedledger.ui.util.UiDateTimeFormatter
 import java.math.BigDecimal
 
 enum class FundRecordFilter(val label: String, val type: FundRecordType?) {
@@ -95,6 +96,7 @@ enum class FundRecordFilter(val label: String, val type: FundRecordType?) {
     PREPAYMENT("预存资金", FundRecordType.PREPAYMENT),
     PREPAYMENT_RETURN("预存退回", FundRecordType.PREPAYMENT_RETURN),
     FINAL_SETTLEMENT("最终清算", FundRecordType.FINAL_SETTLEMENT),
+    AUTO_PREPAYMENT_USAGE("自动抵扣", FundRecordType.AUTO_PREPAYMENT_USAGE),
 }
 
 @Immutable
@@ -109,10 +111,12 @@ sealed interface FundRecordsUiState {
 fun FundRecordsScreen(
     activityId: String = "fake-preview-activity",
     ledgerUnitId: String? = null,
-    repository: FinancialRecordRepository = remember { FakeFinancialRecordRepository() },
+    repository: FinancialRecordRepository = remember { FinancialRecordRepositoryFactory.create() },
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
     onRecordClick: ((transferId: String) -> Unit)? = null,
+    onPrepayment: (() -> Unit)? = null,
+    onPrepaymentReturn: (() -> Unit)? = null,
 ) {
     var selectedFilter by remember { mutableStateOf(FundRecordFilter.ALL) }
     var uiState by remember { mutableStateOf<FundRecordsUiState>(FundRecordsUiState.Loading) }
@@ -129,12 +133,14 @@ fun FundRecordsScreen(
         uiState = uiState,
         selectedFilter = selectedFilter,
         modifier = modifier,
-        dataSourceLabel = if (repository is FakeFinancialRecordRepository) "演示数据" else ledgerUnitId,
+        dataSourceLabel = ledgerUnitId,
         onBack = onBack,
         onFilterSelected = { selectedFilter = it },
         onRetry = { refreshToken++ },
         onRefresh = { refreshToken++ },
         onRecordClick = onRecordClick,
+        onPrepayment = onPrepayment,
+        onPrepaymentReturn = onPrepaymentReturn,
     )
 }
 
@@ -149,6 +155,8 @@ fun FundRecordsScreen(
     onRetry: (() -> Unit)? = null,
     onRefresh: (() -> Unit)? = null,
     onRecordClick: ((transferId: String) -> Unit)? = null,
+    onPrepayment: (() -> Unit)? = null,
+    onPrepaymentReturn: (() -> Unit)? = null,
 ) {
     Scaffold(modifier = modifier.fillMaxSize(), containerColor = AppBackground) { paddingValues ->
         Column(
@@ -161,6 +169,18 @@ fun FundRecordsScreen(
                 verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
             ) {
                 item(key = "filters") { FilterSection(selectedFilter, onFilterSelected) }
+                if (onPrepayment != null || onPrepaymentReturn != null) {
+                    item(key = "prepayment-actions") {
+                        Row(horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
+                            onPrepayment?.let { callback ->
+                                SharedLedgerButton("新增预存", callback, modifier = Modifier.weight(1f), tone = SharedLedgerButtonTone.WarmSecondary, icon = Icons.Rounded.AccountBalanceWallet)
+                            }
+                            onPrepaymentReturn?.let { callback ->
+                                SharedLedgerButton("返还预存", callback, modifier = Modifier.weight(1f), tone = SharedLedgerButtonTone.Neutral, icon = Icons.Rounded.ArrowForward)
+                            }
+                        }
+                    }
+                }
                 // Kept for the repository/ViewModel contract; the Stitch surface does not expose a source label.
                 dataSourceLabel?.let { _ -> }
                 when (uiState) {
@@ -206,7 +226,7 @@ private fun FilterSection(selected: FundRecordFilter, onSelected: ((FundRecordFi
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Row(modifier = Modifier.weight(1f).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
-                listOf(FundRecordFilter.PREPAYMENT_RETURN, FundRecordFilter.FINAL_SETTLEMENT).forEach { filter ->
+                listOf(FundRecordFilter.PREPAYMENT_RETURN, FundRecordFilter.FINAL_SETTLEMENT, FundRecordFilter.AUTO_PREPAYMENT_USAGE).forEach { filter ->
                     FilterPill(filter, selected == filter, onSelected)
                 }
             }
@@ -253,9 +273,9 @@ private fun RecordCard(record: FundRecord, onRecordClick: ((String) -> Unit)?) {
                 Text(record.to.displayName, style = SharedLedgerTextStyles.CardTitle.copy(textDecoration = if (voided) TextDecoration.LineThrough else TextDecoration.None), color = if (voided) TextSecondary.copy(alpha = 0.5f) else DeepCharcoal)
             }
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
-                Text(record.occurredAt, style = SmallMetaStyle, color = TextSecondary)
+                Text(UiDateTimeFormatter.format(record.occurredAt), style = SmallMetaStyle, color = TextSecondary)
                 Spacer(Modifier.weight(1f))
-                AmountDisplay(record.amount, currencyCode = record.currency, size = AmountSize.Small, emphasis = if (voided) AmountEmphasis.Muted else if (record.type == FundRecordType.PREPAYMENT) AmountEmphasis.Warning else AmountEmphasis.Primary, fractionDigitsOverride = 2)
+                AmountDisplay(record.amount, currencyCode = record.currency, size = AmountSize.Small, emphasis = if (voided) AmountEmphasis.Muted else if (record.type == FundRecordType.PREPAYMENT) AmountEmphasis.Warning else AmountEmphasis.Primary)
             }
             Text(componentSummary(record), style = SmallMetaStyle, color = TextSecondary.copy(alpha = 0.7f), modifier = Modifier.fillMaxWidth().padding(top = 2.dp))
             HorizontalDivider(color = AppOutlineVariant.copy(alpha = 0.2f))
@@ -275,6 +295,7 @@ private val SmallMetaStyle = TextStyle(fontSize = 13.sp, lineHeight = 20.sp, fon
 private fun typeColor(type: FundRecordType, voided: Boolean): Color = when {
     voided -> MaterialThemeColor.outline
     type == FundRecordType.PREPAYMENT || type == FundRecordType.PREPAYMENT_RETURN -> WarmBrown
+    type == FundRecordType.AUTO_PREPAYMENT_USAGE -> SageGreen
     else -> SageGreen
 }
 
@@ -294,9 +315,10 @@ private fun StatusPill(record: FundRecord, disputed: Boolean) {
 }
 
 private fun componentSummary(record: FundRecord): String = when {
+    record.type == FundRecordType.AUTO_PREPAYMENT_USAGE -> "自动支付 · 来源账单：${record.sourceExpenseTitle ?: record.sourceExpenseId ?: "未知账单"}"
     record.isVoided -> record.voidMetadata?.let { "作废原因：${it.reason}" } ?: "已作废"
     record.components.isEmpty() -> "暂无资金构成"
-    else -> record.components.joinToString(" + ") { component -> "${component.type.displayName} ¥${component.amount.setScale(2).toPlainString()}" }
+    else -> record.components.joinToString(" + ") { component -> "${component.type.displayName} ${com.ffocalors.sharedledger.ui.util.MoneyFormatter.format(component.amount, record.currency)}" }
 }
 
 @Composable

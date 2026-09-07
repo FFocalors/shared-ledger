@@ -1,0 +1,260 @@
+package com.ffocalors.sharedledger.ui.screens
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.AccountBalanceWallet
+import androidx.compose.material.icons.rounded.ArrowForward
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.ffocalors.sharedledger.data.financial.FinancialContext
+import com.ffocalors.sharedledger.data.financial.PrepaymentAccount
+import com.ffocalors.sharedledger.domain.financial.ParticipantInfo
+import com.ffocalors.sharedledger.ui.components.AmountDisplay
+import com.ffocalors.sharedledger.ui.components.AmountSize
+import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
+import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
+import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
+import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
+import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
+import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
+import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
+import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
+import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLowest
+import java.math.BigDecimal
+
+enum class PrepaymentMode { FUND, RETURN }
+
+@Composable
+fun PrepaymentScreen(
+    mode: PrepaymentMode,
+    context: FinancialContext?,
+    isLoading: Boolean,
+    isSubmitting: Boolean,
+    errorMessage: String?,
+    onRetry: () -> Unit,
+    onBack: () -> Unit,
+    onSubmit: (ownerId: String, custodianId: String, amount: BigDecimal) -> Unit,
+) {
+    var selectedId by remember(context, mode) { mutableStateOf<String?>(null) }
+    var amountText by remember(context, mode) { mutableStateOf("") }
+    val currentId = context?.currentParticipantId
+    val candidates = when {
+        context == null || currentId == null -> emptyList()
+        mode == PrepaymentMode.FUND -> context.participants.filter { it.participantId != currentId }
+            .map { target ->
+                buildPrepaymentCandidate(
+                    mode = mode,
+                    currentParticipantId = currentId,
+                    targetParticipant = target,
+                    account = context.accounts.firstOrNull {
+                        it.owner.participantId == currentId && it.custodian.participantId == target.participantId
+                    },
+                )
+            }
+        else -> context.accounts.filter { it.custodian.participantId == currentId }
+            .map { buildPrepaymentCandidate(mode, currentId, it.owner, it) }
+    }
+    val selected = candidates.firstOrNull { it.key == selectedId } ?: candidates.firstOrNull()
+    val max = prepaymentAmountLimit(mode, selected)
+    val amount = amountText.toBigDecimalOrNull()
+    val directionValid = selected?.let(::isValidPrepaymentDirection) == true
+    val valid = directionValid && amount != null && amount > BigDecimal.ZERO && (max == null || amount <= max)
+
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
+            SharedLedgerTopBar(
+                title = if (mode == PrepaymentMode.FUND) "新增预存" else "返还预存",
+                showBackButton = true,
+                onBackClick = onBack,
+            )
+        },
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(padding).widthIn(max = SharedLedgerDimens.ContentMaxWidth),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                horizontal = SharedLedgerDimens.PageHorizontalPadding,
+                vertical = SharedLedgerSpacing.Large,
+            ),
+            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+        ) {
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
+                    Text(if (mode == PrepaymentMode.FUND) "预存一笔活动资金" else "选择要返还的预存", style = SharedLedgerTextStyles.PageTitle)
+                    Text(
+                        if (mode == PrepaymentMode.FUND) "预存会先抵扣当前已有债务，剩余部分进入预存余额。" else "返还金额不能超过服务端记录的可用余额。",
+                        style = SharedLedgerTextStyles.BodySecondary,
+                    )
+                }
+            }
+            if (isLoading) {
+                item { Text("正在读取预存余额…", style = SharedLedgerTextStyles.BodySecondary) }
+            } else if (errorMessage != null) {
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
+                        Text(errorMessage, color = MaterialTheme.colorScheme.error)
+                        SharedLedgerButton("重试", onRetry, tone = SharedLedgerButtonTone.SoftPrimary)
+                    }
+                }
+            } else if (candidates.isEmpty()) {
+                item { Text(if (mode == PrepaymentMode.RETURN) "暂无可返还的预存余额" else "当前账号尚未绑定参与人", style = SharedLedgerTextStyles.BodySecondary) }
+            } else {
+                item { Text(if (mode == PrepaymentMode.FUND) "预存给" else "预存来源", style = SharedLedgerTextStyles.SectionTitle) }
+                items(candidates, key = { it.key }) { candidate ->
+                    val selectedNow = candidate.key == selected?.key
+                    Surface(
+                        modifier = Modifier.fillMaxWidth().clickable {
+                            selectedId = candidate.key
+                            amountText = if (mode == PrepaymentMode.RETURN) {
+                                candidate.account?.balance?.toPlainString().orEmpty()
+                            } else {
+                                ""
+                            }
+                        },
+                        shape = RoundedCornerShape(18.dp),
+                        color = if (selectedNow) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmLowest,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                        shadowElevation = if (selectedNow) SharedLedgerElevation.Card else 0.dp,
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(SharedLedgerSpacing.Medium),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+                        ) {
+                            Icon(Icons.Rounded.AccountBalanceWallet, contentDescription = null)
+                            Column(Modifier.weight(1f)) {
+                                Text(candidate.person.displayName, style = SharedLedgerTextStyles.CardTitle)
+                                when {
+                                    mode == PrepaymentMode.RETURN && candidate.account != null ->
+                                        Text("可返还", style = SharedLedgerTextStyles.Label)
+                                    mode == PrepaymentMode.FUND && candidate.account != null ->
+                                        Text("已有预存，可继续新增", style = SharedLedgerTextStyles.Label)
+                                    mode == PrepaymentMode.FUND ->
+                                        Text("暂无预存", style = SharedLedgerTextStyles.Label)
+                                }
+                            }
+                            PrepaymentBalanceSummary(
+                                account = candidate.account,
+                                currency = context?.currency ?: "CNY",
+                            )
+                        }
+                    }
+                }
+                selected?.let { choice ->
+                    item {
+                        Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
+                            SharedLedgerTextField(
+                                value = amountText,
+                                onValueChange = { value -> amountText = value.filter { it.isDigit() || it == '.' }.take(12) },
+                                label = "金额（${context?.currency ?: "CNY"}）",
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                            max?.let { Text("最多可返还 ${it.toPlainString()}", style = SharedLedgerTextStyles.Label) }
+                            if (amountText.isNotBlank() && !valid) Text("请输入有效金额${max?.let { "，且不超过 ${it.toPlainString()}" } ?: ""}", color = MaterialTheme.colorScheme.error, style = SharedLedgerTextStyles.Label)
+                            if (!directionValid) {
+                                Text(
+                                    "预存所有者和保管人不能是同一位参与人",
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = SharedLedgerTextStyles.Label,
+                                )
+                            }
+                            SharedLedgerButton(
+                                text = if (mode == PrepaymentMode.FUND) "确认新增预存" else "确认返还预存",
+                                onClick = {
+                                    if (isValidPrepaymentDirection(choice)) {
+                                        onSubmit(choice.ownerId, choice.custodianId, amount ?: BigDecimal.ZERO)
+                                    }
+                                },
+                                enabled = valid && !isSubmitting,
+                                loading = isSubmitting,
+                                loadingText = "提交中…",
+                                tone = if (mode == PrepaymentMode.FUND) SharedLedgerButtonTone.WarmSecondary else SharedLedgerButtonTone.SoftPrimary,
+                                icon = Icons.Rounded.ArrowForward,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+internal data class PrepaymentCandidate(
+    val ownerId: String,
+    val custodianId: String,
+    val person: ParticipantInfo,
+    val account: PrepaymentAccount?,
+) {
+    val key: String get() = "${ownerId}:${custodianId}"
+}
+
+internal fun buildPrepaymentCandidate(
+    mode: PrepaymentMode,
+    currentParticipantId: String,
+    targetParticipant: ParticipantInfo,
+    account: PrepaymentAccount? = null,
+): PrepaymentCandidate = when (mode) {
+    PrepaymentMode.FUND -> PrepaymentCandidate(
+        ownerId = currentParticipantId,
+        custodianId = targetParticipant.participantId,
+        person = targetParticipant,
+        account = account,
+    )
+    PrepaymentMode.RETURN -> PrepaymentCandidate(
+        ownerId = account?.owner?.participantId ?: targetParticipant.participantId,
+        custodianId = currentParticipantId,
+        person = account?.owner ?: targetParticipant,
+        account = account,
+    )
+}
+
+internal fun isValidPrepaymentDirection(candidate: PrepaymentCandidate): Boolean =
+    candidate.ownerId.isNotBlank() &&
+        candidate.custodianId.isNotBlank() &&
+        candidate.ownerId != candidate.custodianId
+
+internal fun prepaymentAmountLimit(
+    mode: PrepaymentMode,
+    candidate: PrepaymentCandidate?,
+): BigDecimal? = candidate?.account?.balance?.takeIf { mode == PrepaymentMode.RETURN }
+
+@Composable
+private fun PrepaymentBalanceSummary(
+    account: PrepaymentAccount?,
+    currency: String,
+) {
+    Column(horizontalAlignment = Alignment.End) {
+        Text("当前余额", style = SharedLedgerTextStyles.Label)
+        if (account == null) {
+            Text("暂无预存", style = SharedLedgerTextStyles.Label)
+        } else {
+            AmountDisplay(account.balance, currencyCode = currency, size = AmountSize.Small)
+            Text("已抵扣", style = SharedLedgerTextStyles.Label)
+            AmountDisplay(account.usedAmount, currencyCode = currency, size = AmountSize.Small)
+        }
+    }
+}

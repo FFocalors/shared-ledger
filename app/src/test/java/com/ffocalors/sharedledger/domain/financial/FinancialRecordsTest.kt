@@ -10,19 +10,20 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlinx.coroutines.runBlocking
 
 class FinancialRecordsTest {
     @Test
-    fun databaseTypeMappingCoversExactlyTheFourTransferTypes() {
+    fun databaseTypeMappingCoversTransferTypesAndProjectionType() = runBlocking {
         assertEquals(FundRecordType.SETTLEMENT, FundRecordType.fromDatabaseValue("settlement"))
         assertEquals(FundRecordType.PREPAYMENT, FundRecordType.fromDatabaseValue("prepayment"))
         assertEquals(FundRecordType.PREPAYMENT_RETURN, FundRecordType.fromDatabaseValue("prepayment_return"))
         assertEquals(FundRecordType.FINAL_SETTLEMENT, FundRecordType.fromDatabaseValue("final_settlement"))
-        assertEquals(4, FundRecordType.entries.size)
+        assertEquals(5, FundRecordType.entries.size)
     }
 
     @Test
-    fun componentRulesMatchSettlementPrepaymentReturnAndFinalSettlementContracts() {
+    fun componentRulesMatchSettlementPrepaymentReturnAndFinalSettlementContracts() = runBlocking {
         fun component(type: FundRecordComponentType, amount: String) =
             FundRecordComponent(type.databaseValue, type, BigDecimal(amount))
 
@@ -38,10 +39,11 @@ class FinancialRecordsTest {
         )))
         assertFalse(isValidComponentSet(FundRecordType.SETTLEMENT, listOf(component(FundRecordComponentType.PREPAYMENT, "10"))))
         assertFalse(isValidComponentSet(FundRecordType.PREPAYMENT_RETURN, listOf(component(FundRecordComponentType.SETTLEMENT, "10"))))
+        assertTrue(isValidComponentSet(FundRecordType.AUTO_PREPAYMENT_USAGE, emptyList()))
     }
 
     @Test
-    fun pathSummaryUsesTransferEndpointAmountInsteadOfSummingRepeatedHops() {
+    fun pathSummaryUsesTransferEndpointAmountInsteadOfSummingRepeatedHops() = runBlocking {
         val alice = ParticipantInfo("a", "Alice")
         val bob = ParticipantInfo("b", "Bob")
         val carol = ParticipantInfo("c", "Carol")
@@ -60,7 +62,7 @@ class FinancialRecordsTest {
     }
 
     @Test
-    fun voidRequiresReasonAndStoresVoidMetadataWithoutRestoreApi() {
+    fun voidRequiresReasonAndStoresVoidMetadataWithoutRestoreApi() = runBlocking {
         val actor = RecorderInfo("u", "测试记录人")
         val repository = FakeFinancialRecordRepository(actorContext = FakeActorContext(actor = actor, participantIds = setOf("fake-alice")))
         val blank = repository.void("fake-preview-activity", "fake-settlement-001", " ")
@@ -74,7 +76,7 @@ class FinancialRecordsTest {
     }
 
     @Test
-    fun disputesAreDerivedFromUnresolvedRowsAndResolveByDisputeId() {
+    fun disputesAreDerivedFromUnresolvedRowsAndResolveByDisputeId() = runBlocking {
         val actor = RecorderInfo("u", "测试记录人")
         val repository = FakeFinancialRecordRepository(actorContext = FakeActorContext(actor = actor, participantIds = setOf("fake-alice")))
         val added = repository.addDispute("fake-preview-activity", "fake-settlement-001", "fake-alice", "金额需要核对")
@@ -91,7 +93,7 @@ class FinancialRecordsTest {
     }
 
     @Test
-    fun fakeRepositoryListsAndGetsFourClearlyFakeSamples() {
+    fun fakeRepositoryListsAndGetsFourClearlyFakeSamples() = runBlocking {
         val repository = FakeFinancialRecordRepository()
         val all = repository.list("fake-preview-activity") as FinancialReadResult.Success
         assertEquals(4, all.value.size)
@@ -102,7 +104,30 @@ class FinancialRecordsTest {
     }
 
     @Test
-    fun createStoresReturnedTransferWithoutLedgerUnitBackendField() {
+    fun automaticPrepaymentUsageIsReadOnlyAndHasNoTransferComponents() {
+        val record = FundRecord(
+            transferId = "usage:usage-1",
+            activityId = "activity",
+            from = ParticipantInfo("owner", "Owner"),
+            to = ParticipantInfo("custodian", "Custodian"),
+            type = FundRecordType.AUTO_PREPAYMENT_USAGE,
+            amount = BigDecimal("50"),
+            currency = "CNY",
+            occurredAt = "2026-09-07T04:00:00Z",
+            recordedAt = "2026-09-07T04:00:01Z",
+            recordedBy = RecorderInfo("system:prepayment", "系统自动支付"),
+            source = FundRecordSource.PREPAYMENT_USAGE,
+            sourceExpenseId = "expense-1",
+            sourceExpenseTitle = "午餐",
+        )
+
+        assertTrue(record.isReadOnly)
+        assertTrue(record.hasValidComponentSet())
+        assertTrue(record.components.isEmpty())
+    }
+
+    @Test
+    fun createStoresReturnedTransferWithoutLedgerUnitBackendField() = runBlocking {
         val repository = FakeFinancialRecordRepository()
         val record = FundRecord(
             transferId = "created-transfer",
@@ -126,7 +151,7 @@ class FinancialRecordsTest {
     }
 
     @Test
-    fun fakeCreateRejectsNonPositiveAmountAndInvalidComponents() {
+    fun fakeCreateRejectsNonPositiveAmountAndInvalidComponents() = runBlocking {
         val repository = FakeFinancialRecordRepository(initialRecords = emptyList())
         val base = FundRecord(
             transferId = "boundary-transfer",
@@ -147,7 +172,7 @@ class FinancialRecordsTest {
     }
 
     @Test
-    fun fakePermissionsComeFromInjectedActorContextAndDisputesKeepAuditActor() {
+    fun fakePermissionsComeFromInjectedActorContextAndDisputesKeepAuditActor() = runBlocking {
         val actor = RecorderInfo("member", "普通成员")
         val memberRepository = FakeFinancialRecordRepository(
             actorContext = FakeActorContext(actor = actor, role = FakeActorRole.MEMBER, participantIds = setOf("fake-alice")),
@@ -167,7 +192,7 @@ class FinancialRecordsTest {
     }
 
     @Test
-    fun recipientCanOpenDisputeAndAuditParticipantIsNotForcedToFromSide() {
+    fun recipientCanOpenDisputeAndAuditParticipantIsNotForcedToFromSide() = runBlocking {
         val actor = RecorderInfo("recipient", "收款方成员")
         val repository = FakeFinancialRecordRepository(
             actorContext = FakeActorContext(
@@ -190,7 +215,7 @@ class FinancialRecordsTest {
     }
 
     @Test
-    fun memberMayVoidOnlyWhenInjectedActorIsTheRecorder() {
+    fun memberMayVoidOnlyWhenInjectedActorIsTheRecorder() = runBlocking {
         val actor = RecorderInfo("fake-user", "原记录人")
         val repository = FakeFinancialRecordRepository(
             actorContext = FakeActorContext(

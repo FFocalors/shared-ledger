@@ -39,6 +39,25 @@ internal object ExpenseDtoMappers {
 
     fun participant(dto: ExpenseParticipantRowDto) = ExpenseParticipant(dto.id, dto.activityId, dto.name, dto.participantOrder)
 
+    fun debtSettlements(
+        debts: List<ExpenseDebtRowDto>,
+        allocations: List<TransferAllocationRowDto>,
+        usages: List<PrepaymentUsageRowDto>,
+    ): List<ExpenseDebtSettlement> {
+        val allocatedByDebt = allocations.groupingBy { it.expenseDebtId }
+            .fold(BigDecimal.ZERO) { total, row -> total + row.amount.decimalRequired("transfer_allocations.amount") }
+        val usedByDebt = usages.groupingBy { it.expenseDebtId }
+            .fold(BigDecimal.ZERO) { total, row -> total + row.amount.decimalRequired("prepayment_usages.amount") }
+        return debts.map { debt ->
+            ExpenseDebtSettlement(
+                debtId = debt.id,
+                debtorParticipantId = debt.debtorParticipantId,
+                amount = debt.amount.decimalRequired("expense_debts.amount"),
+                settledAmount = (allocatedByDebt[debt.id] ?: BigDecimal.ZERO) + (usedByDebt[debt.id] ?: BigDecimal.ZERO),
+            )
+        }
+    }
+
     fun decimalOrNull(value: JsonElement?): BigDecimal? = when (value) {
         null, JsonNull -> null
         is JsonPrimitive -> value.content.toBigDecimalOrNull()

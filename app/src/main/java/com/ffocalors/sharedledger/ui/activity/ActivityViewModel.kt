@@ -21,6 +21,7 @@ import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.SubActivityUiModel
 import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
+import com.ffocalors.sharedledger.ui.util.UiDateTimeFormatter
 import com.ffocalors.sharedledger.ui.screens.JoinActivityParticipant
 import com.ffocalors.sharedledger.ui.screens.JoinActivityPreview
 import com.ffocalors.sharedledger.ui.screens.JoinActivityStatus
@@ -326,7 +327,7 @@ class ActivityViewModel(
         status = if (summary.archivedAt != null) ActivityStatus.Archived else if (summary.status == com.ffocalors.sharedledger.data.activity.ActivityFinancialStatus.Completed) ActivityStatus.Settled else ActivityStatus.InProgress,
         totalAmount = shares?.activityTotalBaseAmount,
         currencyCode = summary.baseCurrency,
-        updatedAt = summary.archivedAt?.take(10) ?: "刚刚更新",
+        updatedAt = summary.archivedAt?.let(UiDateTimeFormatter::format) ?: "刚刚更新",
         participants = summary.participantNames.mapIndexed { index, name -> ParticipantUiModel(name, if (index % 2 == 0) IconContainerSage else WarmOrangeContainer) },
         activityId = summary.id,
         amountAvailable = shares?.isBound == true,

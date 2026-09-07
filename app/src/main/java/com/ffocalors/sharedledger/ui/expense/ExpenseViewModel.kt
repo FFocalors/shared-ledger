@@ -23,6 +23,7 @@ import com.ffocalors.sharedledger.ui.screens.ExpenseDetailStatus
 import com.ffocalors.sharedledger.ui.screens.ExpenseDetailUiState
 import com.ffocalors.sharedledger.ui.screens.ExpenseSettlement
 import com.ffocalors.sharedledger.ui.screens.ExpenseSplitUiState
+import com.ffocalors.sharedledger.ui.util.UiDateTimeFormatter
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -398,7 +399,7 @@ internal fun Expense.toExpenseCardUiModel(
     currencyCode = currencyCode,
     payerName = "已记录付款",
     participantCount = 0,
-    time = occurredAt.take(10),
+    time = UiDateTimeFormatter.format(occurredAt),
     expenseId = id,
     amountAvailable = amountAvailable,
 )
@@ -414,16 +415,19 @@ fun ExpenseDetail.toUiState(): ExpenseDetailUiState {
         currencyCode = baseCurrency,
         originalAmount = expense.originalAmount.abs().toPlainString(),
         originalCurrencyCode = expense.originalCurrency,
-        occurredAt = expense.occurredAt,
+        occurredAt = UiDateTimeFormatter.format(expense.occurredAt),
         ledgerUnit = ledgerUnit.name,
         note = expense.note.orEmpty(),
         payer = payerNames.ifEmpty { listOf("未知付款人") }.joinToString("、"),
         payerIsCurrentUser = false,
         splits = splits.map { split ->
+            val remainingDebt = debtSettlements
+                .filter { it.debtorParticipantId == split.participantId }
+                .fold(BigDecimal.ZERO) { total, debt -> total + debt.remainingAmount }
             ExpenseSplitUiState(
                 participant = names[split.participantId]?.name ?: split.participantId,
                 owedAmount = split.amount.abs().toPlainString(),
-                settlement = ExpenseSettlement.Pending,
+                settlement = if (remainingDebt <= BigDecimal.ZERO) ExpenseSettlement.Paid else ExpenseSettlement.Pending,
                 paidAmount = null,
                 netAdvance = null,
                 isPayer = payments.any { it.participantId == split.participantId },

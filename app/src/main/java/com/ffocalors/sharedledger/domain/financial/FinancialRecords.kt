@@ -11,6 +11,7 @@ enum class FundRecordType(
     PREPAYMENT("prepayment", "预存"),
     PREPAYMENT_RETURN("prepayment_return", "预存返还"),
     FINAL_SETTLEMENT("final_settlement", "最终结算"),
+    AUTO_PREPAYMENT_USAGE("auto_prepayment_usage", "预存自动抵扣"),
     ;
 
     companion object {
@@ -117,8 +118,12 @@ data class FundRecord(
     val voidMetadata: VoidMetadata? = null,
     val disputes: List<TransferDispute> = emptyList(),
     val finalSettlementPaths: List<FinalSettlementPath> = emptyList(),
+    val source: FundRecordSource = FundRecordSource.TRANSFER,
+    val sourceExpenseId: String? = null,
+    val sourceExpenseTitle: String? = null,
 ) {
     val isVoided: Boolean get() = voidMetadata != null
+    val isReadOnly: Boolean get() = source == FundRecordSource.PREPAYMENT_USAGE
     val unresolvedDisputes: List<TransferDispute> get() = disputes.filterNot { it.isResolved }
     val hasUnresolvedDispute: Boolean get() = unresolvedDisputes.isNotEmpty()
 
@@ -142,8 +147,14 @@ data class FundRecord(
             }
 }
 
+enum class FundRecordSource {
+    TRANSFER,
+    PREPAYMENT_USAGE,
+}
+
 /** Encodes the component rules enforced by private.assert_component_total and its RPC callers. */
 fun isValidComponentSet(recordType: FundRecordType, components: List<FundRecordComponent>): Boolean {
+    if (recordType == FundRecordType.AUTO_PREPAYMENT_USAGE) return components.isEmpty()
     if (components.isEmpty() || components.map { it.type }.distinct().size != components.size) return false
     if (components.any { it.amount <= BigDecimal.ZERO }) return false
     if (components.sumOf { it.amount } <= BigDecimal.ZERO) return false
@@ -163,11 +174,13 @@ fun isValidComponentSet(recordType: FundRecordType, components: List<FundRecordC
 }
 
 fun FundRecord.hasValidComponentSet(): Boolean =
-    components.sumOf { it.amount }.compareTo(amount) == 0 && isValidComponentSet(type, components)
+    if (type == FundRecordType.AUTO_PREPAYMENT_USAGE) amount > BigDecimal.ZERO && components.isEmpty()
+    else components.sumOf { it.amount }.compareTo(amount) == 0 && isValidComponentSet(type, components)
 
 fun FundRecordType.componentTypesAllowed(): Set<FundRecordComponentType> = when (this) {
     FundRecordType.SETTLEMENT -> setOf(FundRecordComponentType.SETTLEMENT)
     FundRecordType.PREPAYMENT -> setOf(FundRecordComponentType.SETTLEMENT, FundRecordComponentType.PREPAYMENT)
     FundRecordType.PREPAYMENT_RETURN -> setOf(FundRecordComponentType.PREPAYMENT_RETURN)
     FundRecordType.FINAL_SETTLEMENT -> setOf(FundRecordComponentType.SETTLEMENT, FundRecordComponentType.PREPAYMENT_RETURN)
+    FundRecordType.AUTO_PREPAYMENT_USAGE -> emptySet()
 }

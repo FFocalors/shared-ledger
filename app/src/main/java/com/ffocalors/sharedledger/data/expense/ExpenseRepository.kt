@@ -55,6 +55,16 @@ class SupabaseExpenseRepository(private val client: SupabaseClient) : ExpenseRep
         val splits = client.from("splits").select {
             filter { eq("expense_id", expenseId) }
         }.decodeList<SplitRowDto>().map { ExpenseDtoMappers.split(it) }
+        val debtRows = client.from("expense_debts").select {
+            filter { eq("expense_id", expenseId) }
+        }.decodeList<ExpenseDebtRowDto>()
+        val debtIds = debtRows.map { it.id }
+        val allocations = if (debtIds.isEmpty()) emptyList() else client.from("transfer_allocations").select {
+            filter { isIn("expense_debt_id", debtIds) }
+        }.decodeList<TransferAllocationRowDto>()
+        val usages = if (debtIds.isEmpty()) emptyList() else client.from("prepayment_usages").select {
+            filter { isIn("expense_debt_id", debtIds) }
+        }.decodeList<PrepaymentUsageRowDto>()
         val participantIds = (payments.map(Payment::participantId) + splits.map(Split::participantId)).distinct()
         val participants = if (participantIds.isEmpty()) {
             emptyList()
@@ -70,6 +80,7 @@ class SupabaseExpenseRepository(private val client: SupabaseClient) : ExpenseRep
             payments = payments,
             splits = splits,
             participants = participants.sortedBy { it.order },
+            debtSettlements = ExpenseDtoMappers.debtSettlements(debtRows, allocations, usages),
         )
     }.mapFailure()
 

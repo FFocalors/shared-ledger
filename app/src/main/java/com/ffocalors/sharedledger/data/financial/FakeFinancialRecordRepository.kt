@@ -37,7 +37,7 @@ class FakeFinancialRecordRepository(
 ) : FinancialRecordRepository {
     private val records = initialRecords.toMutableList()
 
-    override fun create(record: FundRecord): FinancialWriteResult<FundRecord> {
+    override suspend fun create(record: FundRecord): FinancialWriteResult<FundRecord> {
         if (record.activityId.isBlank() || record.transferId.isBlank()) {
             return FinancialWriteResult.failure("资金记录缺少 activityId 或 transferId")
         }
@@ -57,18 +57,18 @@ class FakeFinancialRecordRepository(
         return FinancialWriteResult.success(record)
     }
 
-    override fun list(activityId: String, type: FundRecordType?): FinancialReadResult<List<FundRecord>> =
+    override suspend fun list(activityId: String, type: FundRecordType?): FinancialReadResult<List<FundRecord>> =
         FinancialReadResult.Success(
             records.filter { it.activityId == activityId && (type == null || it.type == type) }
                 .sortedByDescending { it.occurredAt },
         )
 
-    override fun get(activityId: String, transferId: String): FinancialReadResult<FundRecord> =
+    override suspend fun get(activityId: String, transferId: String): FinancialReadResult<FundRecord> =
         records.firstOrNull { it.activityId == activityId && it.transferId == transferId }
             ?.let { FinancialReadResult.Success(it) }
             ?: FinancialReadResult.Failure("未找到资金记录")
 
-    override fun void(
+    override suspend fun void(
         activityId: String,
         transferId: String,
         reason: String,
@@ -84,7 +84,7 @@ class FakeFinancialRecordRepository(
         return FinancialWriteResult.success(updated)
     }
 
-    override fun addDispute(
+    override suspend fun addDispute(
         activityId: String,
         transferId: String,
         participantId: String,
@@ -109,7 +109,7 @@ class FakeFinancialRecordRepository(
         return FinancialWriteResult.success(dispute)
     }
 
-    override fun resolveDispute(
+    override suspend fun resolveDispute(
         activityId: String,
         disputeId: String,
     ): FinancialWriteResult<TransferDispute> {
@@ -122,6 +122,26 @@ class FakeFinancialRecordRepository(
         replace(record.copy(disputes = record.disputes.map { if (it.disputeId == disputeId) resolved else it }))
         return FinancialWriteResult.success(resolved)
     }
+
+    override suspend fun loadPrepaymentContext(activityId: String): FinancialReadResult<FinancialContext> =
+        FinancialReadResult.Failure("演示数据不包含预存余额")
+
+    override suspend fun currentParticipantId(activityId: String): FinancialReadResult<String?> =
+        FinancialReadResult.Success(actorContext.participantIds.firstOrNull())
+
+    override suspend fun createPrepayment(input: PrepaymentInput): FinancialWriteResult<FundRecord> =
+        FinancialWriteResult.failure("演示数据不支持预存操作")
+
+    override suspend fun createPrepaymentReturn(input: PrepaymentInput): FinancialWriteResult<FundRecord> =
+        FinancialWriteResult.failure("演示数据不支持预存返还")
+
+    override suspend fun previewFinalSettlement(activityId: String): FinancialReadResult<List<FinalSettlementSuggestion>> =
+        FinancialReadResult.Failure("演示数据不包含实时结算方案")
+
+    override suspend fun executeFinalSettlement(
+        request: FinalSettlementSuggestion,
+        occurredAt: String,
+    ): FinancialWriteResult<FundRecord> = FinancialWriteResult.failure("演示数据不支持最终结算")
 
     private fun find(activityId: String, transferId: String): FundRecord? =
         records.firstOrNull { it.activityId == activityId && it.transferId == transferId }

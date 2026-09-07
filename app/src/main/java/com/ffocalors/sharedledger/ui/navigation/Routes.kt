@@ -15,6 +15,7 @@ object SharedLedgerRoutes {
     const val TRANSFER_PATTERN = "transfer/{activityId}?mode={mode}&ledgerUnitId={ledgerUnitId}"
     const val FUND_RECORDS_PATTERN = "fund-records/{activityId}?ledgerUnitId={ledgerUnitId}"
     const val FINAL_SETTLEMENT_PATTERN = "final-settlement/{activityId}"
+    const val PREPAYMENT_PATTERN = "prepayment/{activityId}?mode={mode}"
     const val ACTIVITY_MANAGEMENT_PATTERN = "activity-management/{activityId}"
     const val EXPENSE_DETAIL_PATTERN = "expense-detail/{expenseId}?activityId={activityId}&ledgerUnitId={ledgerUnitId}"
     const val TRANSFER_DETAIL_PATTERN = "transfer-detail/{activityId}/{transferId}?ledgerUnitId={ledgerUnitId}"
@@ -63,6 +64,7 @@ object SharedLedgerRoutes {
         else "$route?ledgerUnitId=${routeSegment(ledgerUnitId.orEmpty(), "ledgerUnitId")}"
     }
     fun finalSettlement(activityId: String) = createRoute("final-settlement", activityId)
+    fun prepayment(activityId: String, mode: String) = "${createRoute("prepayment", activityId)}?mode=$mode"
     fun activityManagement(activityId: String) = createRoute("activity-management", activityId)
     fun expenseDetail(expenseId: String) = createRoute("expense-detail", expenseId)
     fun expenseDetail(activityId: String, expenseId: String, ledgerUnitId: String? = null): String {

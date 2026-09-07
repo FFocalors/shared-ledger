@@ -246,7 +246,7 @@ fun ExpenseDetailScreen(
                 }
                 item(key = "split") {
                     ExpenseSection(title = "分摊详情", icon = Icons.Rounded.PieChart) {
-                        SplitCard(splits = uiState.splits)
+                        SplitCard(splits = uiState.splits, currencyCode = uiState.currencyCode)
                     }
                 }
                 item(key = "attachments") {
@@ -340,7 +340,7 @@ private fun ExpenseHeroCard(uiState: ExpenseDetailUiState) {
                 color = MaterialTheme.colorScheme.primary,
             )
             Text(
-                text = "基础币: ${uiState.amount} ${uiState.currencyCode} | 原币: ${uiState.originalAmount} ${uiState.originalCurrencyCode}",
+                text = "基础币: ${formatExpenseDetailAmount(uiState.amount, uiState.currencyCode)} | 原币: ${formatExpenseDetailAmount(uiState.originalAmount, uiState.originalCurrencyCode)}",
                 style = SharedLedgerTextStyles.BodySecondary,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -437,19 +437,19 @@ internal fun formatExpenseDetailAmount(amount: String, currencyCode: String): St
 }
 
 @Composable
-private fun SplitCard(splits: List<ExpenseSplitUiState>) {
+private fun SplitCard(splits: List<ExpenseSplitUiState>, currencyCode: String) {
     DetailCard {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             splits.forEachIndexed { index, split ->
                 if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                SplitRow(split)
+                SplitRow(split, currencyCode)
             }
         }
     }
 }
 
 @Composable
-private fun SplitRow(split: ExpenseSplitUiState) {
+private fun SplitRow(split: ExpenseSplitUiState, currencyCode: String) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             ParticipantAvatar(
@@ -476,9 +476,9 @@ private fun SplitRow(split: ExpenseSplitUiState) {
         }
         val statusColor = if (split.settlement == ExpenseSettlement.Pending) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
         val detail = buildAnnotatedString {
-            append("应承担 ¥${split.owedAmount}")
-            if (split.paidAmount != null) append("，实际支付 ¥${split.paidAmount}")
-            if (split.netAdvance != null) append("，净垫付 ¥${split.netAdvance}")
+            append("应承担 ${formatExpenseDetailAmount(split.owedAmount, currencyCode)}")
+            if (split.paidAmount != null) append("，实际支付 ${formatExpenseDetailAmount(split.paidAmount, currencyCode)}")
+            if (split.netAdvance != null) append("，净垫付 ${formatExpenseDetailAmount(split.netAdvance, currencyCode)}")
             append("，")
             pushStyle(SpanStyle(color = statusColor, fontWeight = FontWeight.Medium))
             append(statusText)

@@ -10,7 +10,7 @@
 
 唯一有效的后端契约由以下内容共同定义，优先级从高到低：
 
-1. `supabase/migrations/` 中当前 16 条 migration；
+1. `supabase/migrations/` 中当前 17 条 migration；
 2. [BACKEND_INTEGRATION_READINESS.md](./BACKEND_INTEGRATION_READINESS.md) 中冻结的公开 RPC、读取、错误、Realtime 与 Storage 契约；
 3. 对应数据库测试和 [BUSINESS_LOGIC.md](./BUSINESS_LOGIC.md) 中不与 migration 冲突的业务规则。
 
@@ -40,11 +40,11 @@ Supabase Auth / PostgREST / RPC / Storage / Realtime
 
 ## 3. 开始联调前的准备
 
-- [x] 确认 [BACKEND_INTEGRATION_READINESS.md](./BACKEND_INTEGRATION_READINESS.md) 与 16 条 migration 为唯一后端契约。
+- [x] 确认 [BACKEND_INTEGRATION_READINESS.md](./BACKEND_INTEGRATION_READINESS.md) 与 17 条 migration 为唯一后端契约。
 - [x] 将旧 [api-contracts.md](./api-contracts.md) 标记为废弃。
 - [x] 将本机 `JAVA_HOME` 修正为 JDK 根目录，而不是 `bin` 目录（当前用户环境为 `D:\project\JDK`）。
 - [x] 安装 Supabase CLI，并通过 `supabase --help`、`supabase --version` 和项目状态检查验证环境（CLI 2.116.0；Docker Engine 29.7.2）。
-- [x] 在空本地数据库重新应用全部 16 条 migration；本次未修改 migration。`supabase test db --local` 已执行：7 个脚本的 78 项断言通过，另有 5 个历史脚本因缺少 TAP plan 被 pg_prove 判为解析失败，详见 Phase 1 实测记录。
+- [x] 在空本地数据库重新应用全部 17 条 migration；本次 Phase 4 未修改 migration。`supabase test db --local` 已执行：7 个脚本的 78 项断言通过，另有 5 个历史脚本因缺少 TAP plan 被 pg_prove 判为解析失败，详见 Phase 1 实测记录。
 - [x] 确认 `main` clean 后创建 integration feature 分支：`codex/integration-phase-1-auth`。
 - [x] 确认 Android 环境配置不会把本地或生产密钥提交到 Git。
 
@@ -73,7 +73,7 @@ Supabase Auth / PostgREST / RPC / Storage / Realtime
 - [x] 已加入 INTERNET 权限和 fail-safe BuildConfig 配置读取；Debug 仅允许
   `10.0.2.2`、`127.0.0.1`、`localhost` 使用本地 HTTP，Release 仍要求 HTTPS。
 - [x] Docker Desktop 重装后 Engine 29.7.2 正常；Supabase 本地最小栈已启动。
-- [x] 空库顺序应用 16 条 migration 并完成 seed；migration history 全部匹配，
+- [x] 空库顺序应用 17 条 migration 并完成 seed；migration history 全部匹配，
   本次验证未产生 migration 文件变化。
 - [x] 本地 API URL 与 publishable key 已写入 Git 忽略的 `local.properties`；
   Android Emulator 使用 `10.0.2.2:54321`，未写入 service role/secret key。
@@ -123,7 +123,7 @@ Home
 
 ### Phase 2 后端契约摘要（2026-09-05）
 
-本阶段以 `BACKEND_INTEGRATION_READINESS.md` 和当前 16 条 migration 为准，已逐条核对 migration 中的表、RLS、公开 RPC 和返回列；`api-contracts.md` 继续保持废弃状态。
+本阶段以 `BACKEND_INTEGRATION_READINESS.md` 和当前 17 条 migration 为准，已逐条核对 migration 中的表、RLS、公开 RPC 和返回列；`api-contracts.md` 继续保持废弃状态。
 
 活动与身份主链使用以下公开表和字段：
 
@@ -179,7 +179,7 @@ B 通过 Data API 读取                    PASS
 A/B 数据快照一致                        PASS
 ```
 
-两端最终读取结果均为 `1 activity / 2 activity_members / 1 participant / 2 ledger_units / 1 participant_claim`，包含大型活动的 root unit 和新建 sub-activity unit。A/B 读取均经过各自认证会话和 RLS；没有使用 service role 模拟客户端授权。16 条 migration 的本地 history 全部匹配，`supabase/migrations/` 零改动。
+两端最终读取结果均为 `1 activity / 2 activity_members / 1 participant / 2 ledger_units / 1 participant_claim`，包含大型活动的 root unit 和新建 sub-activity unit。A/B 读取均经过各自认证会话和 RLS；没有使用 service role 模拟客户端授权。17 条 migration 的本地 history 全部匹配，`supabase/migrations/` 零改动。
 
 本次链路未发现 Backend Contract 问题，也未发现种子/测试数据导致的失败。此前一次数量断言失败是测试脚本对 PowerShell 嵌套 JSON 数组的处理问题，使用保留原始数组的验收脚本复核后已通过，不属于后端或 Android 客户端缺陷。
 
@@ -326,6 +326,16 @@ Final Settlement 必须遵循：
 若账务已变化，客户端停止旧方案执行并提示：
 
 > 当前结算方案已发生变化，请重新查看最新方案。
+
+### Phase 4 Android 实际进展（2026-09-06，代码接线完成，待用户验收）
+
+- [x] 新增异步 Financial Remote DataSource、DTO/mapper 和 Supabase Repository；资金记录按 RLS 读取 `transfers`，并补齐 Participant、Profile、`transfer_components`、作废元数据、`transfer_disputes` 和 `final_settlement_paths`。
+- [x] 统一资金记录列表和资金详情已移除运行时 `FakeFinancialRecordRepository`，支持 settlement、prepayment、prepayment_return、final_settlement 四类记录；作废、争议和最终结算路径均在成功写入后重新读取服务端。
+- [x] 已接入预存、预存返还、两类资金转账作废、添加/取消争议，以及 `preview_activity_settlement` 与 `execute_final_settlement_item`；结算方案携带 `source_financial_version`，服务端版本冲突统一映射为重新查看最新方案。
+- [x] 预存入口读取服务端 `prepayment_accounts` 余额并限制返还上限；普通/部分 settlement 继续复用已验收的真实 TransferRepository。
+- [x] 运行时不再从导航装配 Fake 金融仓库；Fake/Sample 仅保留给 Preview 和单元测试。
+- [x] 已增加 DTO/mapper、四类记录、预存输入、作废/争议和最终结算请求的高价值测试覆盖。
+- [ ] 尚未执行真机验收；大型活动预览、预存抵扣/返还、作废争议和最终结算刷新仍需用户按本阶段验收门槛验证。
 
 ### 验收门槛
 

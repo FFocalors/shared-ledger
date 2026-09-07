@@ -60,6 +60,7 @@ import com.ffocalors.sharedledger.ui.theme.SubActivityBreakfastContainer
 import com.ffocalors.sharedledger.ui.theme.WarmBrown
 import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
 import com.ffocalors.sharedledger.ui.util.MoneyFormatter
+import com.ffocalors.sharedledger.ui.util.UiDateTimeFormatter
 import java.math.BigDecimal
 
 private const val BreakfastId = "demo-breakfast"
@@ -153,7 +154,7 @@ fun LargeActivityScreen(
             name = ledgerUnit.name,
             amount = ledgerUnitAmounts[ledgerUnit.id] ?: BigDecimal.ZERO,
             participantCount = displayParticipants.size,
-            updatedAt = ledgerUnit.createdAt?.take(10) ?: "已创建",
+            updatedAt = ledgerUnit.createdAt?.let(UiDateTimeFormatter::format) ?: "已创建",
             icon = icon,
             currencyCode = displayCurrency,
             iconContainerColor = if (index % 2 == 0) IconContainerSage else IconContainerTertiary,
@@ -199,6 +200,7 @@ fun LargeActivityScreen(
                 SharedLedgerBottomActionBar(
                     actions = listOf(
                         BottomActionItem("转账", Icons.Rounded.SwapHoriz, onTransfer),
+                        BottomActionItem("预存", Icons.Rounded.AccountBalanceWallet, onShowPrepayment ?: {}),
                         BottomActionItem("收款", Icons.Rounded.RequestQuote, onReceive),
                     ),
                 )

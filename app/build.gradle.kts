@@ -6,9 +6,19 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
-val supabaseEnvironment = providers.gradleProperty("supabaseEnvironment")
-    .orElse("local")
-    .get()
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.isFile) {
+        localPropertiesFile.inputStream().use(::load)
+    }
+}
+
+val supabaseEnvironment = (
+    providers.gradleProperty("supabaseEnvironment").orNull
+        ?: providers.environmentVariable("SUPABASE_ENVIRONMENT").orNull
+        ?: localProperties.getProperty("supabase.environment")
+        ?: "local"
+    )
     .trim()
     .lowercase()
 if (supabaseEnvironment != "local" && supabaseEnvironment != "hosted") {

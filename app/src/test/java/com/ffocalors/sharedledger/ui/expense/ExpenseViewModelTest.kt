@@ -55,7 +55,7 @@ class ExpenseViewModelTest {
         advanceUntilIdle()
         val uiState = viewModel.detailState("expense-real").value.detail!!.toUiState()
         assertEquals("Alice、Bob", uiState.payer)
-        assertTrue(uiState.splits.all { it.settlement.name == "Pending" })
+        assertTrue(uiState.splits.all { it.settlement.name == "Paid" })
         assertTrue(uiState.attachments.isEmpty())
     }
 

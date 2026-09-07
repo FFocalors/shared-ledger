@@ -44,6 +44,25 @@ data class SplitRowDto(
 )
 
 @Serializable
+data class ExpenseDebtRowDto(
+    val id: String,
+    @SerialName("debtor_participant_id") val debtorParticipantId: String,
+    val amount: JsonElement,
+)
+
+@Serializable
+data class TransferAllocationRowDto(
+    @SerialName("expense_debt_id") val expenseDebtId: String,
+    val amount: JsonElement,
+)
+
+@Serializable
+data class PrepaymentUsageRowDto(
+    @SerialName("expense_debt_id") val expenseDebtId: String,
+    val amount: JsonElement,
+)
+
+@Serializable
 data class ExpenseLedgerUnitRowDto(
     val id: String,
     @SerialName("activity_id") val activityId: String,

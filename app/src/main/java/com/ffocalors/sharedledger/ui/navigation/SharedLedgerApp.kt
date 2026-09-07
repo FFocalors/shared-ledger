@@ -34,10 +34,12 @@ import com.ffocalors.sharedledger.ui.expense.ExpenseViewModel
 import com.ffocalors.sharedledger.ui.expense.toFormDraft
 import com.ffocalors.sharedledger.ui.expense.toUiState
 import com.ffocalors.sharedledger.data.activity.ActivityType
-import com.ffocalors.sharedledger.data.financial.FakeActorContext
-import com.ffocalors.sharedledger.data.financial.FakeFinancialRecordRepository
 import com.ffocalors.sharedledger.data.financial.FinancialReadResult
 import com.ffocalors.sharedledger.data.financial.FinancialRecordRepository
+import com.ffocalors.sharedledger.data.financial.FinancialRecordRepositoryFactory
+import com.ffocalors.sharedledger.data.financial.FinancialContext
+import com.ffocalors.sharedledger.data.financial.FinalSettlementSuggestion
+import com.ffocalors.sharedledger.data.financial.PrepaymentInput
 import com.ffocalors.sharedledger.domain.financial.FinalSettlementPath
 import com.ffocalors.sharedledger.domain.financial.FundRecord
 import com.ffocalors.sharedledger.domain.financial.FundRecordComponent
@@ -70,11 +72,16 @@ import com.ffocalors.sharedledger.ui.screens.NewExpenseScreen
 import com.ffocalors.sharedledger.ui.screens.NormalActivityScreen
 import com.ffocalors.sharedledger.ui.screens.TransferMode
 import com.ffocalors.sharedledger.ui.screens.TransferScreen
+import com.ffocalors.sharedledger.ui.screens.PrepaymentMode
+import com.ffocalors.sharedledger.ui.screens.PrepaymentScreen
+import com.ffocalors.sharedledger.ui.screens.FinalSettlementSuggestionUi
 import com.ffocalors.sharedledger.data.transfer.SettlementDirection
 import com.ffocalors.sharedledger.ui.transfer.TransferViewModel
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import java.math.BigDecimal
+import java.time.Instant
+import kotlinx.coroutines.launch
 
 @Composable
 fun SharedLedgerApp(modifier: Modifier = Modifier) {
@@ -158,16 +165,7 @@ private fun AuthenticatedNavHost(
     val viewModelJoinState by activityViewModel.join.collectAsState()
     var joinInviteCode by rememberSaveable { mutableStateOf("") }
     var selectedJoinParticipantId by rememberSaveable { mutableStateOf<String?>(null) }
-    val demoActorContext = remember {
-        FakeActorContext(
-            actor = RecorderInfo("fake-app-user", "Fake Demo 管理员"),
-            participantIds = setOf("fake-current-user", "fake-carol"),
-        )
-    }
-    val financialRepository = remember(demoActorContext) {
-        FakeFinancialRecordRepository(actorContext = demoActorContext)
-    }
-    val demoActor = demoActorContext.actor
+    val financialRepository = remember { FinancialRecordRepositoryFactory.create() }
     fun requireParticipantBinding(activityId: String, action: () -> Unit) {
         val detail = activityViewModel.detail(activityId).value.detail
         if (canPerformFinancialAction(detail, currentUserId)) {
@@ -402,6 +400,11 @@ private fun AuthenticatedNavHost(
                 onReceive = {
                     requireParticipantBinding(activityId) {
                         navController.navigate(SharedLedgerRoutes.transfer(activityId, TransferRouteMode.RECEIVE))
+                    }
+                },
+                onShowPrepayment = {
+                    requireParticipantBinding(activityId) {
+                        navController.navigate(SharedLedgerRoutes.prepayment(activityId, "fund"))
                     }
                 },
                 onFundRecords = {
@@ -662,6 +665,8 @@ private fun AuthenticatedNavHost(
                         launchSingleTop = true
                     }
                 },
+                onPrepayment = { navController.navigate(SharedLedgerRoutes.prepayment(activityId, "fund")) },
+                onPrepaymentReturn = { navController.navigate(SharedLedgerRoutes.prepayment(activityId, "return")) },
             )
         }
         composable(
@@ -793,10 +798,65 @@ private fun AuthenticatedNavHost(
                 transferId = transferId,
                 ledgerUnitId = ledgerUnitId,
                 repository = financialRepository,
-                actorContext = demoActorContext,
+                currentUserId = currentUserId,
                 onBack = { navController.navigateUp() },
                 onRecreateCorrectRecord = {
                     navController.navigate(SharedLedgerRoutes.transfer(activityId, TransferRouteMode.TRANSFER, ledgerUnitId))
+                },
+            )
+        }
+        composable(
+            route = SharedLedgerRoutes.PREPAYMENT_PATTERN,
+            arguments = listOf(
+                navArgument("activityId") { type = NavType.StringType },
+                navArgument("mode") { type = NavType.StringType; defaultValue = "fund" },
+            ),
+        ) { backStackEntry ->
+            val activityId = backStackEntry.arguments?.getString("activityId").orEmpty()
+            val mode = if (backStackEntry.arguments?.getString("mode") == "return") PrepaymentMode.RETURN else PrepaymentMode.FUND
+            var context by remember(activityId) { mutableStateOf<FinancialContext?>(null) }
+            var loading by remember(activityId) { mutableStateOf(true) }
+            var submitting by remember(activityId) { mutableStateOf(false) }
+            var error by remember(activityId) { mutableStateOf<String?>(null) }
+            var reload by remember(activityId) { mutableStateOf(0) }
+            val scope = androidx.compose.runtime.rememberCoroutineScope()
+            RefreshActivityOnResume(backStackEntry) { reload++ }
+            androidx.compose.runtime.LaunchedEffect(activityId, reload) {
+                loading = true
+                error = null
+                when (val result = financialRepository.loadPrepaymentContext(activityId)) {
+                    is FinancialReadResult.Success -> context = result.value
+                    is FinancialReadResult.Failure -> error = result.message
+                }
+                loading = false
+            }
+            PrepaymentScreen(
+                mode = mode,
+                context = context,
+                isLoading = loading,
+                isSubmitting = submitting,
+                errorMessage = error,
+                onRetry = { reload++ },
+                onBack = { navController.navigateUp() },
+                onSubmit = { ownerId, custodianId, amount ->
+                    if (ownerId == custodianId) {
+                        error = "预存所有者和保管人不能是同一位参与人"
+                    } else if (!submitting) {
+                        submitting = true
+                        error = null
+                        val input = PrepaymentInput(activityId, ownerId, custodianId, amount, Instant.now().toString())
+                        scope.launch {
+                            val result = if (mode == PrepaymentMode.FUND) financialRepository.createPrepayment(input) else financialRepository.createPrepaymentReturn(input)
+                            submitting = false
+                            if (result.isSuccess) {
+                                activityViewModel.loadDetail(activityId, force = true)
+                                activityViewModel.refreshHome()
+                                navController.navigate(SharedLedgerRoutes.transferDetail(activityId, result.value!!.transferId)) {
+                                    popUpTo(SharedLedgerRoutes.PREPAYMENT_PATTERN) { inclusive = true }
+                                }
+                            } else error = result.errorMessage
+                        }
+                    }
                 },
             )
         }
@@ -806,21 +866,75 @@ private fun AuthenticatedNavHost(
         ) { backStackEntry ->
             val activityId = backStackEntry.arguments?.getString("activityId")
                 ?: DemoRouteIds.LARGE_ACTIVITY
+            var suggestions by remember(activityId) { mutableStateOf<List<FinalSettlementSuggestionUi>>(emptyList()) }
+            var loading by remember(activityId) { mutableStateOf(true) }
+            var error by remember(activityId) { mutableStateOf<String?>(null) }
+            var submitting by remember(activityId) { mutableStateOf(false) }
+            var refreshToken by remember(activityId) { mutableStateOf(0) }
+            val scope = androidx.compose.runtime.rememberCoroutineScope()
+            androidx.compose.runtime.LaunchedEffect(activityId, refreshToken) {
+                loading = true
+                error = null
+                when (val result = financialRepository.previewFinalSettlement(activityId)) {
+                    is FinancialReadResult.Success -> suggestions = result.value.map { item ->
+                        FinalSettlementSuggestionUi(
+                            id = item.id,
+                            fromParticipantId = item.from.participantId,
+                            toParticipantId = item.to.participantId,
+                            from = com.ffocalors.sharedledger.ui.components.ParticipantUiModel(item.from.displayName),
+                            to = com.ffocalors.sharedledger.ui.components.ParticipantUiModel(item.to.displayName),
+                            amount = item.amount,
+                            currency = item.currency,
+                            ordinaryAmount = item.ordinaryAmount,
+                            prepaymentReturnAmount = item.prepaymentReturnAmount,
+                            sourceFinancialVersion = item.sourceFinancialVersion,
+                        )
+                    }
+                    is FinancialReadResult.Failure -> error = result.message
+                }
+                loading = false
+            }
             FinalSettlementScreen(
                 activityId = activityId,
                 onBack = { navController.navigateUp() },
+                suggestions = suggestions,
+                isLoading = loading || submitting,
+                errorMessage = error,
+                onRetry = { refreshToken++ },
                 onFinalize = { request ->
-                    val transferId = DemoRouteIds.finalSettlementTransfer(activityId) +
-                        "-${request.previewItemId}-${request.fromParticipantId}-${request.toParticipantId}"
-                    val written = if (request.isValid()) {
-                        financialRepository.create(demoFinalSettlementRecord(request, transferId, demoActor))
-                    } else {
-                        com.ffocalors.sharedledger.data.financial.FinancialWriteResult.failure("最终结算建议已过期，请重新预览")
-                    }
-                    if (written.isSuccess) {
-                        navController.navigate(SharedLedgerRoutes.transferDetail(activityId, transferId)) {
-                            popUpTo(SharedLedgerRoutes.FINAL_SETTLEMENT_PATTERN) { inclusive = true }
-                            launchSingleTop = true
+                    if (!submitting) {
+                        val item = suggestions.firstOrNull { it.id == request.previewItemId }
+                        if (item == null || !request.isValid()) {
+                            error = "当前结算方案已发生变化，请重新查看最新方案。"
+                            refreshToken++
+                        } else {
+                            submitting = true
+                            scope.launch {
+                                val remoteItem = FinalSettlementSuggestion(
+                                    id = item.id,
+                                    activityId = activityId,
+                                    from = com.ffocalors.sharedledger.domain.financial.ParticipantInfo(item.fromParticipantId, item.from.name),
+                                    to = com.ffocalors.sharedledger.domain.financial.ParticipantInfo(item.toParticipantId, item.to.name),
+                                    amount = item.amount,
+                                    ordinaryAmount = item.ordinaryAmount,
+                                    prepaymentReturnAmount = item.prepaymentReturnAmount,
+                                    currency = item.currency,
+                                    sourceFinancialVersion = item.sourceFinancialVersion,
+                                )
+                                val written = financialRepository.executeFinalSettlement(remoteItem, Instant.now().toString())
+                                submitting = false
+                                if (written.isSuccess) {
+                                    activityViewModel.loadDetail(activityId, force = true)
+                                    activityViewModel.refreshHome()
+                                    navController.navigate(SharedLedgerRoutes.transferDetail(activityId, written.value!!.transferId)) {
+                                        popUpTo(SharedLedgerRoutes.FINAL_SETTLEMENT_PATTERN) { inclusive = true }
+                                        launchSingleTop = true
+                                    }
+                                } else {
+                                    error = written.errorMessage
+                                    refreshToken++
+                                }
+                            }
                         }
                     }
                 },
@@ -854,7 +968,7 @@ private fun FinancialRecordDetailRoute(
     transferId: String,
     ledgerUnitId: String?,
     repository: FinancialRecordRepository,
-    actorContext: FakeActorContext,
+    currentUserId: String,
     onBack: () -> Unit,
     onRecreateCorrectRecord: () -> Unit,
 ) {
@@ -863,12 +977,19 @@ private fun FinancialRecordDetailRoute(
     }
     var actionError by remember(activityId, transferId) { mutableStateOf<String?>(null) }
     var refreshToken by remember(activityId, transferId) { mutableStateOf(0) }
+    var isSubmitting by remember(activityId, transferId) { mutableStateOf(false) }
+    var currentParticipantId by remember(activityId, transferId) { mutableStateOf<String?>(null) }
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
 
     androidx.compose.runtime.LaunchedEffect(activityId, transferId, repository, refreshToken) {
         state = FinancialDetailRouteState.Loading
         state = when (val result = repository.get(activityId, transferId)) {
             is FinancialReadResult.Success -> FinancialDetailRouteState.Content(result.value)
             is FinancialReadResult.Failure -> FinancialDetailRouteState.Error(result.message)
+        }
+        currentParticipantId = when (val result = repository.currentParticipantId(activityId)) {
+            is FinancialReadResult.Success -> result.value
+            is FinancialReadResult.Failure -> null
         }
     }
 
@@ -884,40 +1005,42 @@ private fun FinancialRecordDetailRoute(
                     transferId = transferId,
                     ledgerUnitId = ledgerUnitId,
                     errorMessage = actionError,
-                    currentParticipantId = actorContext.currentParticipant(record)?.participantId,
-                    currentParticipantName = actorContext.currentParticipant(record)?.displayName,
+                    currentParticipantId = currentParticipantId,
+                    currentParticipantName = currentParticipantId?.let { participantId ->
+                        listOf(record.from, record.to).firstOrNull { it.participantId == participantId }?.displayName
+                    },
                 ),
                 onBack = onBack,
                 onAddDispute = { _, note ->
-                    val currentParticipant = actorContext.currentParticipant(record)
-                    if (currentParticipant == null) {
+                    if (currentParticipantId == null) {
                         actionError = "当前用户不是这笔记录的交易双方"
-                    } else {
-                        val result = repository.addDispute(activityId, transferId, currentParticipant.participantId, note)
-                        if (result.isSuccess) {
-                            actionError = null
-                            refreshToken++
-                        } else {
-                            actionError = result.errorMessage
+                    } else if (!isSubmitting) {
+                        isSubmitting = true
+                        scope.launch {
+                            val result = repository.addDispute(activityId, transferId, currentParticipantId!!, note)
+                            isSubmitting = false
+                            if (result.isSuccess) { actionError = null; refreshToken++ } else actionError = result.errorMessage
                         }
                     }
                 },
                 onResolveDispute = { disputeId ->
-                    val result = repository.resolveDispute(activityId, disputeId)
-                    if (result.isSuccess) {
-                        actionError = null
-                        refreshToken++
-                    } else {
-                        actionError = result.errorMessage
+                    if (!isSubmitting) {
+                        isSubmitting = true
+                        scope.launch {
+                            val result = repository.resolveDispute(activityId, disputeId)
+                            isSubmitting = false
+                            if (result.isSuccess) { actionError = null; refreshToken++ } else actionError = result.errorMessage
+                        }
                     }
                 },
                 onVoid = { _, reason ->
-                    val result = repository.void(activityId, transferId, reason)
-                    if (result.isSuccess) {
-                        actionError = null
-                        refreshToken++
-                    } else {
-                        actionError = result.errorMessage
+                    if (!isSubmitting) {
+                        isSubmitting = true
+                        scope.launch {
+                            val result = repository.void(activityId, transferId, reason)
+                            isSubmitting = false
+                            if (result.isSuccess) { actionError = null; refreshToken++ } else actionError = result.errorMessage
+                        }
                     }
                 },
                 onRecreateCorrectRecord = { onRecreateCorrectRecord() },

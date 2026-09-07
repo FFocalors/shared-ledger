@@ -48,8 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.ffocalors.sharedledger.data.financial.FakeFinancialRecordRepository
-import com.ffocalors.sharedledger.data.financial.FinancialReadResult
+import com.ffocalors.sharedledger.data.financial.fakeFinancialRecordSamples
 import com.ffocalors.sharedledger.domain.financial.FundRecord
 import com.ffocalors.sharedledger.domain.financial.FundRecordComponent
 import com.ffocalors.sharedledger.domain.financial.FundRecordComponentType
@@ -76,6 +75,7 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
 import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLowest
+import com.ffocalors.sharedledger.ui.util.UiDateTimeFormatter
 import java.math.BigDecimal
 
 enum class TransferDetailDirection { TRANSFER, RECEIVE }
@@ -125,6 +125,7 @@ private fun TransferDetailUiState.toFundRecord(): FundRecord = record ?: run {
             debtRepayment.takeIf { it > BigDecimal.ZERO }?.let { FundRecordComponent("legacy-final-settlement", FundRecordComponentType.SETTLEMENT, it) },
             newPrepayment.takeIf { it > BigDecimal.ZERO }?.let { FundRecordComponent("legacy-final-return", FundRecordComponentType.PREPAYMENT_RETURN, it) },
         )
+        FundRecordType.AUTO_PREPAYMENT_USAGE -> emptyList()
     }
     FundRecord(
         transferId = transferId, activityId = activityId, from = from, to = to, type = legacyType,
@@ -161,7 +162,7 @@ fun TransferDetailScreen(
                 onMoreClick = { onMore?.invoke(record.transferId) },
                 // The Stitch detail prototype keeps the overflow affordance visible;
                 // the host may attach the real action when that menu is wired.
-                showMoreButton = true,
+                showMoreButton = !record.isReadOnly,
                 containerColor = Cream,
                 titleStyle = SharedLedgerTextStyles.PageTitle,
                 titleColor = MaterialTheme.colorScheme.primary,
@@ -195,6 +196,12 @@ fun TransferDetailScreen(
                 DisputeBanner(dispute, onResolveDispute)
             }
             RecordHero(record)
+            if (record.isReadOnly) {
+                DetailSection("来源账单") {
+                    DetailRow("账单", record.sourceExpenseTitle ?: record.sourceExpenseId ?: "未知账单")
+                Text("该记录由预存自动抵扣生成，仅供查看。", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
             ComponentsSection(record.components, record.currency)
             RecorderSection(record)
             record.voidMetadata?.let { VoidSection(it) }
@@ -242,6 +249,7 @@ private fun DisputeBanner(dispute: TransferDispute, onResolve: ((String) -> Unit
                 Text("该记录存在争议", style = SharedLedgerTextStyles.Label.copy(fontWeight = FontWeight.Bold))
                 Text("争议仅用于提醒双方核对，不会改变当前账务结果", style = SharedLedgerTextStyles.BodySecondary)
                 Text("说明：${dispute.note}", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f))
+                Text("提交时间：${UiDateTimeFormatter.format(dispute.createdAt)}", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.7f))
             }
             if (onResolve != null) {
                 Surface(
@@ -291,7 +299,6 @@ private fun RecordHero(record: FundRecord) {
                 currencyCode = record.currency,
                 size = AmountSize.Large,
                 emphasis = if (record.isVoided) AmountEmphasis.Muted else AmountEmphasis.Standard,
-                fractionDigitsOverride = 2,
             )
         }
         HorizontalDivider(modifier = Modifier.padding(top = SharedLedgerSpacing.Medium), color = MaterialTheme.colorScheme.surfaceVariant)
@@ -301,7 +308,7 @@ private fun RecordHero(record: FundRecord) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(Icons.Rounded.Schedule, contentDescription = "发生时间", tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(16.dp))
-            Text(record.occurredAt, style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(start = SharedLedgerSpacing.Small))
+            Text(UiDateTimeFormatter.format(record.occurredAt), style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(start = SharedLedgerSpacing.Small))
         }
     }
 }
@@ -346,7 +353,7 @@ private fun ComponentsSection(components: List<FundRecordComponent>, currency: S
                     )
                 }
                 Text(component.type.displayName, style = SharedLedgerTextStyles.Body, modifier = Modifier.weight(1f).padding(start = SharedLedgerSpacing.Small))
-                AmountDisplay(component.amount, currencyCode = currency, size = AmountSize.Small, fractionDigitsOverride = 2)
+                AmountDisplay(component.amount, currencyCode = currency, size = AmountSize.Small)
             }
         }
     }
@@ -358,7 +365,7 @@ private fun RecorderSection(record: FundRecord) {
         DetailRow("记录人", record.recordedBy.displayName)
         record.onBehalfOf?.let { DetailRow("代记对象", it.displayName) }
         DetailRow("记录方式", if (record.onBehalfOf == null) "本人记录" else "代他人记录")
-        DetailRow("创建时间", record.recordedAt)
+        DetailRow("创建时间", UiDateTimeFormatter.format(record.recordedAt))
     }
 }
 
@@ -366,7 +373,7 @@ private fun RecorderSection(record: FundRecord) {
 private fun VoidSection(metadata: VoidMetadata) {
     DetailSection("作废详情") {
         DetailRow("作废人", metadata.voidedBy.displayName)
-        DetailRow("作废时间", metadata.voidedAt)
+        DetailRow("作废时间", UiDateTimeFormatter.format(metadata.voidedAt))
         DetailRow("原因", metadata.reason)
         Text("作废记录仍保留历史，但不参与当前余额。", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.error)
     }
@@ -382,6 +389,7 @@ private fun ResolvedDisputesSection(disputes: List<TransferDispute>) {
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall)) {
                     Text("已解决 · ${dispute.participant.displayName}", style = SharedLedgerTextStyles.Body)
                     Text(dispute.note, style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("提交：${UiDateTimeFormatter.format(dispute.createdAt)} · 解决：${dispute.resolvedAt?.let(UiDateTimeFormatter::format) ?: "未解决"}", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     dispute.resolvedBy?.let { Text("解决人：${it.displayName}", style = SharedLedgerTextStyles.Label) }
                 }
             }
@@ -399,7 +407,7 @@ private fun PathsSection(record: FundRecord) {
                     Text("路径 ${path.pathNo}：${path.from.displayName} → ${path.to.displayName}", style = SharedLedgerTextStyles.Body)
                     Text("${path.hopCount} 跳 · ${path.componentType.displayName}", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                AmountDisplay(path.endpointAmount, currencyCode = record.currency, size = AmountSize.Small, fractionDigitsOverride = 2)
+                AmountDisplay(path.endpointAmount, currencyCode = record.currency, size = AmountSize.Small)
             }
         }
         Text("路径明细用于解释结算来源，不会重复计入总金额。", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -419,7 +427,9 @@ private fun DetailActions(
         modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = SharedLedgerDimens.PageHorizontalPadding, vertical = SharedLedgerSpacing.Small),
         verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
     ) {
-        if (record.isVoided) {
+        if (record.isReadOnly) {
+            Text("自动抵扣记录仅供查看", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        } else if (record.isVoided) {
             onRecreate?.let { SharedLedgerButton("重新创建正确记录", it, tone = SharedLedgerButtonTone.SoftPrimary, icon = Icons.Rounded.Refresh) }
         } else if (record.hasUnresolvedDispute) {
             val dispute = record.unresolvedDisputes.first()
@@ -497,9 +507,6 @@ private fun StatusBadge(label: String, color: Color) {
 @Preview(name = "资金详情 - Fake", showBackground = true, widthDp = 390, heightDp = 844)
 @Composable
 private fun TransferDetailPreview() {
-    val fakeRecord = when (val result = FakeFinancialRecordRepository().get("fake-preview-activity", "fake-final-001")) {
-        is FinancialReadResult.Success -> result.value
-        is FinancialReadResult.Failure -> error(result.message)
-    }
+    val fakeRecord = fakeFinancialRecordSamples().first { it.transferId == "fake-final-001" }
     SharedLedgerTheme { TransferDetailScreen(TransferDetailUiState(record = fakeRecord)) }
 }
