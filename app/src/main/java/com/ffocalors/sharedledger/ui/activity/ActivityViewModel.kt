@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.ffocalors.sharedledger.data.activity.ActivityDetail
 import com.ffocalors.sharedledger.data.activity.ActivityErrorMapper
 import com.ffocalors.sharedledger.data.activity.ActivityOperationException
+import com.ffocalors.sharedledger.data.activity.ActivityFailureKind
 import com.ffocalors.sharedledger.data.activity.ActivityRepository
 import com.ffocalors.sharedledger.data.activity.ActivityRepositoryFactory
 import com.ffocalors.sharedledger.data.activity.ActivitySummary
@@ -96,6 +97,11 @@ class ActivityViewModel(
             val currentUser = detail.members.firstOrNull { it.userId == currentUserId }
             val currentClaim = currentUser?.claimedParticipantId
                 ?.let { claimedId -> detail.participants.firstOrNull { it.id == claimedId } }
+            val isArchived = detail.summary.archivedAt != null
+            val canManageParticipants = detail.permissions.canManageParticipants && !isArchived
+            val canManageMembers = detail.permissions.canManageMembers && !isArchived
+            val canEditSettings = detail.permissions.canEditSettings && !isArchived
+            val canArchive = detail.permissions.canArchive && !isArchived
             ActivityManagementUiState(
                 activityName = detail.summary.name,
                 activityType = if (detail.summary.type == ActivityType.Large) "大型活动" else "普通活动",
@@ -130,14 +136,27 @@ class ActivityViewModel(
                     else -> ActivityManagementStatus.InProgress
                 },
                 outstandingDebt = "${detail.summary.baseCurrency} ${detail.summary.totalDebt}",
+                hasOutstandingDebt = detail.summary.totalDebt.toBigDecimalOrNull()?.signum() == 1,
                 remainingPrepayment = "${detail.summary.baseCurrency} ${detail.summary.totalPrepayment}",
-                showSettings = detail.summary.createdBy == currentUserId,
-                showLeaveAction = detail.summary.createdBy != currentUserId,
-                showTransferOwnershipAction = detail.summary.createdBy == currentUserId,
+                participantListLocked = detail.summary.participantsLockedAt != null,
+                participantListLockMessage = if (detail.summary.participantsLockedAt != null) {
+                    "参与人名单已锁定，不能新增或删除参与人；仍可绑定或解除绑定。"
+                } else {
+                    ""
+                },
+                showSettings = canEditSettings,
+                showLeaveAction = detail.summary.createdBy != currentUserId && !isArchived,
+                showDeleteAction = detail.permissions.canDelete && !isArchived,
+                showTransferOwnershipAction = detail.summary.createdBy == currentUserId && canManageMembers,
                 currentUserName = currentUser?.displayName.orEmpty(),
                 currentUserParticipantId = currentClaim?.id,
                 currentUserParticipantName = currentClaim?.name,
-                canBindParticipant = currentUser != null && currentClaim == null,
+                canManageParticipants = canManageParticipants,
+                canManageMembers = canManageMembers,
+                canArchiveActivity = canArchive,
+                canUnarchiveActivity = detail.permissions.canArchive && isArchived,
+                canBindParticipant = currentUser != null && currentClaim == null && !isArchived,
+                canUnbindParticipant = currentUser != null && currentClaim != null && !isArchived,
             )
         }
 
@@ -181,7 +200,16 @@ class ActivityViewModel(
             state.value = ActivityDetailUiState(isLoading = true, detail = state.value.detail)
             repository.getActivity(activityId).fold(
                 onSuccess = { state.value = ActivityDetailUiState(false, it) },
-                onFailure = { state.value = ActivityDetailUiState(false, state.value.detail, messageFor(it)) },
+                onFailure = { error ->
+                    val kind = (error as? ActivityOperationException)?.kind
+                    val keepCachedDetail = kind != ActivityFailureKind.PermissionDenied &&
+                        kind != ActivityFailureKind.NotFound
+                    state.value = ActivityDetailUiState(
+                        isLoading = false,
+                        detail = state.value.detail.takeIf { keepCachedDetail },
+                        errorMessage = messageFor(error),
+                    )
+                },
             )
         }
     }
@@ -267,11 +295,29 @@ class ActivityViewModel(
         detail?.members?.any { it.userId == currentUserId && it.claimedParticipantId != null } == true
 
     fun deleteParticipant(participantId: String, activityId: String) = lifecycleAction(activityId) {
+        if (isActivityArchived(activityId)) {
+            _message.value = "活动已归档，当前为只读状态"
+            return@lifecycleAction Result.failure(ActivityOperationException("活动已归档，当前为只读状态"))
+        }
+        if (isParticipantListLocked(activityId)) {
+            _message.value = "参与人名单已锁定，不能删除参与人"
+            return@lifecycleAction Result.failure(ActivityOperationException("参与人名单已锁定，不能删除参与人"))
+        }
+        val participant = detailStates[activityId]?.value?.detail?.participants
+            ?.firstOrNull { it.id == participantId }
+        if (participant?.claimedUserId != null) {
+            _message.value = "已绑定参与人不能删除，请先解除绑定"
+            return@lifecycleAction Result.failure(ActivityOperationException("已绑定参与人不能删除，请先解除绑定"))
+        }
         repository.deleteParticipant(participantId)
     }
 
     fun createParticipant(activityId: String, name: String) {
         if (name.isBlank() || _actionLoading.value) return
+        if (isParticipantListLocked(activityId)) {
+            _message.value = "参与人名单已锁定，不能新增参与人"
+            return
+        }
         viewModelScope.launch {
             _actionLoading.value = true
             repository.createParticipant(activityId, name).fold({ loadDetail(activityId, true); _message.value = "参与人已添加" }, { _message.value = messageFor(it) })
@@ -281,6 +327,10 @@ class ActivityViewModel(
 
     fun createSubActivity(activityId: String, name: String, onSuccess: () -> Unit = {}) {
         if (name.isBlank() || _actionLoading.value) return
+        if (isActivityArchived(activityId)) {
+            _message.value = "活动已归档，当前为只读状态"
+            return
+        }
         viewModelScope.launch {
             _actionLoading.value = true
             repository.createSubActivity(activityId, name).fold({ loadDetail(activityId, true); _message.value = "子活动已创建"; onSuccess() }, { _message.value = messageFor(it) })
@@ -289,7 +339,12 @@ class ActivityViewModel(
     }
 
     fun updateSettings(activityId: String, name: String, multiCurrency: Boolean) {
-        updateSettings(activityId, name, "CNY", multiCurrency)
+        val baseCurrency = detailStates[activityId]?.value?.detail?.summary?.baseCurrency
+        if (baseCurrency.isNullOrBlank()) {
+            _message.value = "活动基础币种尚未加载，请刷新后重试"
+            return
+        }
+        updateSettings(activityId, name, baseCurrency, multiCurrency)
     }
 
     fun updateSettings(activityId: String, name: String, baseCurrency: String, multiCurrency: Boolean) {
@@ -310,6 +365,12 @@ class ActivityViewModel(
     fun archiveActivity(activityId: String, onSuccess: () -> Unit = {}) = lifecycleAction(activityId, onSuccess) { repository.archiveActivity(activityId) }
     fun deleteActivity(activityId: String, onSuccess: () -> Unit = {}) = lifecycleAction(activityId, onSuccess) { repository.deleteActivity(activityId) }
     fun removeMember(activityId: String, userId: String) = lifecycleAction(activityId) { repository.removeMember(activityId, userId) }
+
+    private fun isParticipantListLocked(activityId: String): Boolean =
+        detailStates[activityId]?.value?.detail?.summary?.participantsLockedAt != null
+
+    private fun isActivityArchived(activityId: String): Boolean =
+        detailStates[activityId]?.value?.detail?.summary?.archivedAt != null
 
     private fun lifecycleAction(activityId: String, onSuccess: () -> Unit = {}, block: suspend () -> Result<Unit>) {
         if (_actionLoading.value) return

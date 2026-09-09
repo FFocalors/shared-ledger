@@ -5,6 +5,8 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.postgrest.Postgrest
+import io.github.jan.supabase.realtime.Realtime
+import io.github.jan.supabase.storage.Storage
 import java.net.URI
 
 data class SupabaseConfig(
@@ -32,20 +34,64 @@ data class SupabaseConfig(
 }
 
 object SupabaseClientProvider {
+    private data class ClientCacheEntry(
+        val config: SupabaseConfig,
+        val client: SupabaseClient,
+    )
+
+    private var cachedClient: ClientCacheEntry? = null
+    private var clientFactoryForTests: ((SupabaseConfig) -> SupabaseClient)? = null
+
     fun config(): SupabaseConfig = SupabaseConfig(
         url = BuildConfig.SUPABASE_URL.trim(),
         publishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY.trim(),
         allowLocalHttp = BuildConfig.DEBUG,
     )
 
+    @Synchronized
     fun createOrNull(config: SupabaseConfig = config()): SupabaseClient? {
-        if (!config.isUsable) return null
-        return createSupabaseClient(
-            supabaseUrl = config.url,
-            supabaseKey = config.publishableKey,
-        ) {
-            install(Auth)
-            install(Postgrest)
+        val normalizedConfig = config.copy(
+            url = config.url.trim(),
+            publishableKey = config.publishableKey.trim(),
+        )
+        if (!normalizedConfig.isUsable) return null
+
+        cachedClient?.takeIf { it.config == normalizedConfig }?.let { entry ->
+            return entry.client
+        }
+
+        val client = (clientFactoryForTests ?: ::createClient)(normalizedConfig)
+        cachedClient = ClientCacheEntry(normalizedConfig, client)
+        return client
+    }
+
+    private fun createClient(config: SupabaseConfig): SupabaseClient = createSupabaseClient(
+        supabaseUrl = config.url,
+        supabaseKey = config.publishableKey,
+    ) {
+        install(Auth) {
+            // Must match the Android intent filter used by Supabase recovery links.
+            scheme = "sharedledger"
+            host = "auth"
+        }
+        install(Postgrest)
+        install(Storage)
+        install(Realtime)
+    }
+
+    /** Installs a deterministic client factory for JVM tests; app callers should not use this. */
+    internal fun setClientFactoryForTests(factory: ((SupabaseConfig) -> SupabaseClient)?) {
+        synchronized(this) {
+            cachedClient = null
+            clientFactoryForTests = factory
+        }
+    }
+
+    /** Clears process-level state between tests without exposing reset semantics to app callers. */
+    internal fun resetForTests() {
+        synchronized(this) {
+            cachedClient = null
+            clientFactoryForTests = null
         }
     }
 }

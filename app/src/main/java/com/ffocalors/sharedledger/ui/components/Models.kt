@@ -87,6 +87,7 @@ data class ExpenseCardUiModel(
     val participants: List<ParticipantUiModel> = emptyList(),
     val expenseId: String = "",
     val amountAvailable: Boolean = true,
+    val isDeleted: Boolean = false,
 )
 
 @Immutable

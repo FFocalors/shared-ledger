@@ -15,8 +15,9 @@ object TransferErrorMapper {
             "P0002" -> "活动或参与人不存在"
             "22023" -> "转账金额或参与人信息不符合规则"
             "23514" -> "转账金额不能超过当前债务"
+            "40001", "40P01" -> "数据刚刚发生变化，请刷新债务后重试"
             "55000" -> "当前活动状态不允许转账"
-            else -> if (isNetworkFailure(error)) {
+            else -> if (isTransferNetworkFailure(error)) {
                 "网络连接失败，请检查网络后重试"
             } else {
                 "转账失败，请稍后重试"
@@ -36,7 +37,7 @@ object TransferErrorMapper {
         return null
     }
 
-    private fun isNetworkFailure(error: Throwable): Boolean {
+    internal fun isTransferNetworkFailure(error: Throwable): Boolean {
         var current: Throwable? = error
         while (current != null) {
             if (current is IOException || current is SocketException || current is UnknownHostException) return true
@@ -51,4 +52,3 @@ object TransferErrorMapper {
 }
 
 class TransferOperationException(val userMessage: String, cause: Throwable? = null) : RuntimeException(userMessage, cause)
-

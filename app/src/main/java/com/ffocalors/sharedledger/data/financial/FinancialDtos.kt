@@ -100,19 +100,51 @@ internal data class FinancialExpenseTimelineRowDto(
 )
 
 @Serializable
+internal data class FinancialRefundExpenseRowDto(
+    val id: String,
+    @SerialName("ledger_unit_id") val ledgerUnitId: String,
+    val title: String,
+    @SerialName("original_amount") val originalAmount: JsonElement? = null,
+    @SerialName("original_currency") val originalCurrency: String,
+    @SerialName("original_expense_id") val originalExpenseId: String? = null,
+    @SerialName("occurred_at") val occurredAt: String,
+    @SerialName("created_by") val createdBy: String,
+    @SerialName("created_at") val createdAt: String,
+    @SerialName("is_deleted") val isDeleted: Boolean = false,
+    @SerialName("deleted_at") val deletedAt: String? = null,
+    @SerialName("deleted_by") val deletedBy: String? = null,
+)
+
+@Serializable
+internal data class FinancialExpensePartyRowDto(
+    @SerialName("expense_id") val expenseId: String,
+    @SerialName("participant_id") val participantId: String,
+    val amount: JsonElement? = null,
+)
+
+@Serializable
 internal data class FinancialActivityRowDto(
     @SerialName("base_currency") val baseCurrency: String,
+    @SerialName("created_by") val createdBy: String? = null,
 )
 
 @Serializable
 internal data class FinancialClaimRowDto(
     @SerialName("participant_id") val participantId: String,
+    @SerialName("user_id") val userId: String? = null,
 )
 
 @Serializable
 internal data class FinancialVoidRpcDto(
     @SerialName("transfer_id") val transferId: String,
     val voided: Boolean,
+    @SerialName("financial_version") val financialVersion: Long,
+)
+
+@Serializable
+internal data class FinancialRestoreRpcDto(
+    @SerialName("transfer_id") val transferId: String,
+    val restored: Boolean,
     @SerialName("financial_version") val financialVersion: Long,
 )
 

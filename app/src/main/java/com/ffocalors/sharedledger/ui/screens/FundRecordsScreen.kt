@@ -52,6 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -89,6 +90,29 @@ import com.ffocalors.sharedledger.ui.theme.TextSecondary
 import com.ffocalors.sharedledger.ui.theme.WarmBrown
 import com.ffocalors.sharedledger.ui.util.UiDateTimeFormatter
 import java.math.BigDecimal
+import java.time.Instant
+
+enum class FundRecordSortOrder(val label: String, val nextActionLabel: String) {
+    NEWEST_FIRST("时间：新到旧", "切换为时间从旧到新"),
+    OLDEST_FIRST("时间：旧到新", "切换为时间从新到旧"),
+    ;
+
+    fun toggled(): FundRecordSortOrder = when (this) {
+        NEWEST_FIRST -> OLDEST_FIRST
+        OLDEST_FIRST -> NEWEST_FIRST
+    }
+}
+
+internal fun sortFundRecords(records: List<FundRecord>, order: FundRecordSortOrder): List<FundRecord> {
+    val parsed = records.map { record -> record to runCatching { Instant.parse(record.occurredAt) }.getOrNull() }
+    return if (parsed.all { it.second != null }) {
+        val comparator = compareBy<Pair<FundRecord, Instant?>> { it.second }.thenBy { it.first.transferId }
+        parsed.sortedWith(if (order == FundRecordSortOrder.NEWEST_FIRST) comparator.reversed() else comparator).map { it.first }
+    } else {
+        val comparator = compareBy<FundRecord> { it.occurredAt }.thenBy { it.transferId }
+        if (order == FundRecordSortOrder.NEWEST_FIRST) records.sortedWith(comparator.reversed()) else records.sortedWith(comparator)
+    }
+}
 
 enum class FundRecordFilter(val label: String, val type: FundRecordType?) {
     ALL("全部记录", null),
@@ -96,7 +120,8 @@ enum class FundRecordFilter(val label: String, val type: FundRecordType?) {
     PREPAYMENT("预存资金", FundRecordType.PREPAYMENT),
     PREPAYMENT_RETURN("预存退回", FundRecordType.PREPAYMENT_RETURN),
     FINAL_SETTLEMENT("最终清算", FundRecordType.FINAL_SETTLEMENT),
-    AUTO_PREPAYMENT_USAGE("自动抵扣", FundRecordType.AUTO_PREPAYMENT_USAGE),
+    AUTO_PREPAYMENT_USAGE("预存自动扣款", FundRecordType.AUTO_PREPAYMENT_USAGE),
+    REFUND("退款", FundRecordType.REFUND),
 }
 
 @Immutable
@@ -109,19 +134,21 @@ sealed interface FundRecordsUiState {
 
 @Composable
 fun FundRecordsScreen(
-    activityId: String = "fake-preview-activity",
+    activityId: String = "",
     ledgerUnitId: String? = null,
+    externalRefreshToken: Long = 0L,
     repository: FinancialRecordRepository = remember { FinancialRecordRepositoryFactory.create() },
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
-    onRecordClick: ((transferId: String) -> Unit)? = null,
+    onRecordClick: ((record: FundRecord) -> Unit)? = null,
     onPrepayment: (() -> Unit)? = null,
     onPrepaymentReturn: (() -> Unit)? = null,
 ) {
     var selectedFilter by remember { mutableStateOf(FundRecordFilter.ALL) }
+    var sortOrder by remember(activityId) { mutableStateOf(FundRecordSortOrder.NEWEST_FIRST) }
     var uiState by remember { mutableStateOf<FundRecordsUiState>(FundRecordsUiState.Loading) }
     var refreshToken by remember { mutableIntStateOf(0) }
-    LaunchedEffect(activityId, repository, selectedFilter, refreshToken) {
+    LaunchedEffect(activityId, repository, selectedFilter, refreshToken, externalRefreshToken) {
         uiState = FundRecordsUiState.Loading
         uiState = when (val result = repository.list(activityId, selectedFilter.type)) {
             is FinancialReadResult.Success -> result.value.takeIf { it.isNotEmpty() }?.let(FundRecordsUiState::Content)
@@ -132,10 +159,12 @@ fun FundRecordsScreen(
     FundRecordsScreen(
         uiState = uiState,
         selectedFilter = selectedFilter,
+        sortOrder = sortOrder,
         modifier = modifier,
         dataSourceLabel = ledgerUnitId,
         onBack = onBack,
         onFilterSelected = { selectedFilter = it },
+        onSortOrderChanged = { sortOrder = it },
         onRetry = { refreshToken++ },
         onRefresh = { refreshToken++ },
         onRecordClick = onRecordClick,
@@ -148,13 +177,15 @@ fun FundRecordsScreen(
 fun FundRecordsScreen(
     uiState: FundRecordsUiState,
     selectedFilter: FundRecordFilter = FundRecordFilter.ALL,
+    sortOrder: FundRecordSortOrder = FundRecordSortOrder.NEWEST_FIRST,
     modifier: Modifier = Modifier,
     dataSourceLabel: String? = null,
     onBack: (() -> Unit)? = null,
     onFilterSelected: ((FundRecordFilter) -> Unit)? = null,
+    onSortOrderChanged: ((FundRecordSortOrder) -> Unit)? = null,
     onRetry: (() -> Unit)? = null,
     onRefresh: (() -> Unit)? = null,
-    onRecordClick: ((transferId: String) -> Unit)? = null,
+    onRecordClick: ((record: FundRecord) -> Unit)? = null,
     onPrepayment: (() -> Unit)? = null,
     onPrepaymentReturn: (() -> Unit)? = null,
 ) {
@@ -168,7 +199,9 @@ fun FundRecordsScreen(
                 contentPadding = PaddingValues(bottom = SharedLedgerSpacing.Large),
                 verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
             ) {
-                item(key = "filters") { FilterSection(selectedFilter, onFilterSelected) }
+                item(key = "filters") {
+                    FilterSection(selectedFilter, onFilterSelected, sortOrder, onSortOrderChanged)
+                }
                 if (onPrepayment != null || onPrepaymentReturn != null) {
                     item(key = "prepayment-actions") {
                         Row(horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
@@ -185,7 +218,10 @@ fun FundRecordsScreen(
                 dataSourceLabel?.let { _ -> }
                 when (uiState) {
                     FundRecordsUiState.Loading -> item(key = "loading") { LoadingState() }
-                    is FundRecordsUiState.Content -> items(uiState.records, key = { it.transferId }) { RecordCard(it, onRecordClick) }
+                    is FundRecordsUiState.Content -> items(
+                        sortFundRecords(uiState.records, sortOrder),
+                        key = { it.transferId },
+                    ) { RecordCard(it, onRecordClick) }
                     FundRecordsUiState.Empty -> item(key = "empty") { StateMessage(Icons.Rounded.AccountBalanceWallet, "暂无资金记录", "切换筛选条件，或刷新查看最新记录。", "刷新", onRefresh) }
                     is FundRecordsUiState.Error -> item(key = "error") { StateMessage(Icons.Rounded.ErrorOutline, "加载失败", uiState.message, "重试", onRetry) }
                 }
@@ -214,7 +250,12 @@ private fun UnifiedTopBar(onBack: (() -> Unit)?, onMore: (() -> Unit)?) {
 }
 
 @Composable
-private fun FilterSection(selected: FundRecordFilter, onSelected: ((FundRecordFilter) -> Unit)?) {
+private fun FilterSection(
+    selected: FundRecordFilter,
+    onSelected: ((FundRecordFilter) -> Unit)?,
+    sortOrder: FundRecordSortOrder,
+    onSortOrderChanged: ((FundRecordSortOrder) -> Unit)?,
+) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(top = SharedLedgerSpacing.Small, bottom = SharedLedgerSpacing.Large),
         verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
@@ -226,11 +267,23 @@ private fun FilterSection(selected: FundRecordFilter, onSelected: ((FundRecordFi
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Row(modifier = Modifier.weight(1f).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
-                listOf(FundRecordFilter.PREPAYMENT_RETURN, FundRecordFilter.FINAL_SETTLEMENT, FundRecordFilter.AUTO_PREPAYMENT_USAGE).forEach { filter ->
+                listOf(FundRecordFilter.PREPAYMENT_RETURN, FundRecordFilter.FINAL_SETTLEMENT, FundRecordFilter.AUTO_PREPAYMENT_USAGE, FundRecordFilter.REFUND).forEach { filter ->
                     FilterPill(filter, selected == filter, onSelected)
                 }
             }
-            IconButton(onClick = {}) { Icon(Icons.Rounded.Sort, contentDescription = "排序", tint = TextSecondary, modifier = Modifier.size(18.dp)) }
+            Text(sortOrder.label, style = SharedLedgerTextStyles.Label, color = TextSecondary)
+            IconButton(
+                onClick = { onSortOrderChanged?.invoke(sortOrder.toggled()) },
+                enabled = onSortOrderChanged != null,
+                modifier = Modifier.semantics { stateDescription = sortOrder.label },
+            ) {
+                Icon(
+                    Icons.Rounded.Sort,
+                    contentDescription = "${sortOrder.label}，${sortOrder.nextActionLabel}",
+                    tint = TextSecondary,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
         }
     }
 }
@@ -248,10 +301,10 @@ private fun FilterPill(filter: FundRecordFilter, selected: Boolean, onSelected: 
 }
 
 @Composable
-private fun RecordCard(record: FundRecord, onRecordClick: ((String) -> Unit)?) {
+private fun RecordCard(record: FundRecord, onRecordClick: ((FundRecord) -> Unit)?) {
     val voided = record.isVoided
     val disputed = record.hasUnresolvedDispute
-    val interaction = onRecordClick?.let { callback -> Modifier.clickable(role = Role.Button) { callback(record.transferId) }.semantics { role = Role.Button } } ?: Modifier
+    val interaction = onRecordClick?.let { callback -> Modifier.clickable(role = Role.Button) { callback(record) }.semantics { role = Role.Button } } ?: Modifier
     Surface(
         modifier = Modifier.fillMaxWidth().then(interaction),
         shape = RoundedCornerShape(16.dp),
@@ -284,7 +337,10 @@ private fun RecordCard(record: FundRecord, onRecordClick: ((String) -> Unit)?) {
                 if (!voided && onRecordClick != null) Icon(Icons.Rounded.ChevronRight, contentDescription = "查看详情", tint = TextSecondary.copy(alpha = 0.5f), modifier = Modifier.size(16.dp))
             }
             if (voided) {
-                record.voidMetadata?.let { Text("作废原因：${it.reason}", style = SmallMetaStyle, color = TextSecondary.copy(alpha = 0.5f)) }
+                record.voidMetadata?.let {
+                    val prefix = if (record.source == com.ffocalors.sharedledger.domain.financial.FundRecordSource.REFUND_EXPENSE) "删除状态" else "作废原因"
+                    Text("$prefix：${it.reason}", style = SmallMetaStyle, color = TextSecondary.copy(alpha = 0.5f))
+                }
             }
         }
     }
@@ -305,7 +361,7 @@ private object MaterialThemeColor { val outline = Color(0xFF75786E) }
 @Composable
 private fun StatusPill(record: FundRecord, disputed: Boolean) {
     val (label, background, foreground) = when {
-        record.isVoided -> Triple("已作废", MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
+        record.isVoided -> Triple(if (record.source == com.ffocalors.sharedledger.domain.financial.FundRecordSource.REFUND_EXPENSE) "已删除" else "已作废", MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
         disputed -> Triple("存在争议", ErrorContainer.copy(alpha = 0.5f), ErrorRed)
         else -> Triple("有效", MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f), MaterialTheme.colorScheme.onPrimaryContainer)
     }
@@ -315,7 +371,8 @@ private fun StatusPill(record: FundRecord, disputed: Boolean) {
 }
 
 private fun componentSummary(record: FundRecord): String = when {
-    record.type == FundRecordType.AUTO_PREPAYMENT_USAGE -> "自动支付 · 来源账单：${record.sourceExpenseTitle ?: record.sourceExpenseId ?: "未知账单"}"
+    record.type == FundRecordType.AUTO_PREPAYMENT_USAGE -> "预存自动扣款 · 来源账单：${record.sourceExpenseTitle ?: record.sourceExpenseId ?: "未知账单"}"
+    record.type == FundRecordType.REFUND -> record.sourceExpenseTitle?.let { "原账单：$it" } ?: "独立退款"
     record.isVoided -> record.voidMetadata?.let { "作废原因：${it.reason}" } ?: "已作废"
     record.components.isEmpty() -> "暂无资金构成"
     else -> record.components.joinToString(" + ") { component -> "${component.type.displayName} ${com.ffocalors.sharedledger.ui.util.MoneyFormatter.format(component.amount, record.currency)}" }

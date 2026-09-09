@@ -18,7 +18,7 @@ object ExpenseErrorMapper {
             "55000" -> "当前活动状态不允许此操作"
             "40001" -> "数据刚刚发生变化，请刷新后重试"
             "54000" -> "附件数量已达到上限"
-            else -> if (isNetworkFailure(error)) {
+            else -> if (isExpenseNetworkFailure(error)) {
                 "网络连接失败，请检查网络后重试"
             } else {
                 "操作失败，请稍后重试"
@@ -38,7 +38,7 @@ object ExpenseErrorMapper {
         return null
     }
 
-    private fun isNetworkFailure(error: Throwable): Boolean {
+    internal fun isExpenseNetworkFailure(error: Throwable): Boolean {
         var current: Throwable? = error
         while (current != null) {
             if (current is IOException || current is SocketException || current is UnknownHostException) return true

@@ -28,6 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.shape.CircleShape
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
@@ -51,6 +53,7 @@ fun SharedLedgerTopBar(
     containerColor: Color = MaterialTheme.colorScheme.background,
     showBackButton: Boolean = false,
     avatarName: String = "我",
+    onAvatarClick: (() -> Unit)? = null,
     onBackClick: (() -> Unit)? = null,
     onMoreClick: (() -> Unit)? = null,
     actionIcon: ImageVector? = null,
@@ -96,8 +99,16 @@ fun SharedLedgerTopBar(
                         )
                     }
                 } else {
+                    val avatarModifier = if (onAvatarClick != null) {
+                        Modifier
+                            .clickable(onClick = onAvatarClick)
+                            .semantics { contentDescription = "打开个人信息" }
+                    } else {
+                        Modifier
+                    }
                     ParticipantAvatar(
                         name = avatarName,
+                        modifier = avatarModifier,
                         size = SharedLedgerDimens.AvatarMedium,
                     )
                 }
@@ -152,7 +163,7 @@ fun SharedLedgerBottomActionBar(
     modifier: Modifier = Modifier,
     emphasizedIndex: Int = 1,
 ) {
-    require(actions.isNotEmpty()) { "底部操作栏至少需要一个操作" }
+    if (actions.isEmpty()) return
     Box(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center,

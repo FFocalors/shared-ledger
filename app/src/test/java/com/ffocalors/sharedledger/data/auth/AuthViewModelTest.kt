@@ -118,7 +118,7 @@ class AuthViewModelTest {
     }
 
     @Test
-    fun sessionExpiryReturnsToErrorAuthState() = runTest(dispatcher) {
+    fun sessionExpiryReturnsToUnauthenticatedAuthState() = runTest(dispatcher) {
         Dispatchers.setMain(dispatcher)
         val repository = FakeAuthRepository(
             AuthState.Authenticated(AuthUser("user-1", "test@example.com", "测试用户")),
@@ -128,8 +128,8 @@ class AuthViewModelTest {
 
         repository.expireSession()
         advanceUntilIdle()
+        assertEquals(AuthState.Unauthenticated, viewModel.uiState.value.authState)
         assertEquals("登录状态已失效，请重新登录", viewModel.uiState.value.message)
-        assertTrue(viewModel.uiState.value.authState is AuthState.Error)
     }
 
     @Test
@@ -160,6 +160,53 @@ class AuthViewModelTest {
         assertEquals("该邮箱已注册，请直接登录", AuthErrorMapper.toUserMessage(Exception("User already registered")))
         assertEquals("网络连接失败，请检查网络后重试", AuthErrorMapper.toUserMessage(IOException("connection reset")))
         assertEquals("请求失败，请稍后重试", AuthErrorMapper.toUserMessage(Exception("postgresql detail with secret")))
+        assertEquals("登录状态已失效，请重新登录", AuthErrorMapper.toUserMessage(Exception("JWT expired")))
+        assertEquals(
+            AuthErrorMapper.PASSWORD_RESET_SENT_MESSAGE,
+            AuthErrorMapper.toPasswordResetMessage(Exception("user not found")),
+        )
+        assertEquals(
+            "网络连接失败，请检查网络后重试",
+            AuthErrorMapper.toPasswordResetMessage(IOException("connection reset")),
+        )
+    }
+
+    @Test
+    fun passwordResetUsesGenericSuccessMessage() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeAuthRepository(AuthState.Unauthenticated)
+        val viewModel = AuthViewModel(repository)
+        advanceUntilIdle()
+
+        viewModel.requestPasswordReset("test@example.com")
+        advanceUntilIdle()
+
+        assertEquals(AuthErrorMapper.PASSWORD_RESET_SENT_MESSAGE, viewModel.uiState.value.message)
+        assertEquals("test@example.com", repository.resetEmail)
+        assertEquals(AuthRedirects.PASSWORD_RESET, repository.resetRedirect)
+    }
+
+    @Test
+    fun recoverySessionCanSetPasswordAndRequiresFreshLogin() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeAuthRepository(AuthState.Unauthenticated).apply {
+            nextRecovery = AuthResult.Success
+            nextPasswordUpdate = AuthResult.Success
+        }
+        val viewModel = AuthViewModel(repository)
+        advanceUntilIdle()
+
+        viewModel.handlePasswordRecoveryLink(AuthRedirects.PASSWORD_RESET)
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.isPasswordRecovery)
+
+        viewModel.updatePassword("new-password")
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.isPasswordRecovery)
+        assertEquals(AuthState.Unauthenticated, viewModel.uiState.value.authState)
+        assertEquals("密码已更新，请使用新密码登录", viewModel.uiState.value.message)
+        assertEquals("new-password", repository.updatedPassword)
     }
 
     private class FakeAuthRepository(initialState: AuthState) : AuthRepository {
@@ -169,6 +216,11 @@ class AuthViewModelTest {
         var nextSignUp: AuthResult = AuthResult.Success
         var signInGate: CompletableDeferred<AuthResult>? = null
         var signInCalls = 0
+        var nextRecovery: AuthResult = AuthResult.Failure("重置链接无效或已过期")
+        var nextPasswordUpdate: AuthResult = AuthResult.Failure("密码更新失败")
+        var resetEmail: String? = null
+        var resetRedirect: String? = null
+        var updatedPassword: String? = null
 
         override suspend fun initialize() {
             if (mutableState.value == AuthState.Loading) mutableState.value = AuthState.Unauthenticated
@@ -197,8 +249,26 @@ class AuthViewModelTest {
             return AuthResult.Success
         }
 
+        override suspend fun requestPasswordReset(email: String, redirectUrl: String): AuthResult {
+            resetEmail = email
+            resetRedirect = redirectUrl
+            return AuthResult.Success
+        }
+
+        override suspend fun handlePasswordRecovery(deepLink: String): AuthResult {
+            if (nextRecovery == AuthResult.Success) {
+                mutableState.value = AuthState.Authenticated(AuthUser("user-1", "test@example.com", "测试用户"))
+            }
+            return nextRecovery
+        }
+
+        override suspend fun updatePassword(newPassword: String): AuthResult {
+            updatedPassword = newPassword
+            return nextPasswordUpdate
+        }
+
         fun expireSession() {
-            mutableState.value = AuthState.Error("登录状态已失效，请重新登录")
+            mutableState.value = AuthState.Unauthenticated
         }
     }
 }

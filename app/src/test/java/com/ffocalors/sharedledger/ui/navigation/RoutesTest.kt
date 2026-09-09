@@ -15,6 +15,7 @@ class RoutesTest {
         assertEquals("auth", SharedLedgerRoutes.AUTH)
         assertEquals(SharedLedgerRoutes.AUTH, SharedLedgerRoutes.START_DESTINATION)
         assertEquals("home", SharedLedgerRoutes.HOME)
+        assertEquals("personal-info", SharedLedgerRoutes.PERSONAL_INFO)
         assertEquals("join-activity", SharedLedgerRoutes.JOIN_ACTIVITY)
         assertEquals("create-activity", SharedLedgerRoutes.CREATE_ACTIVITY)
         assertEquals("normal-activity/demo-normal", SharedLedgerRoutes.normalActivity(DemoRouteIds.NORMAL_ACTIVITY))
@@ -203,7 +204,7 @@ class RoutesTest {
     }
 
     @Test
-    fun financialActionGateRequiresCurrentUserParticipantBinding() {
+    fun financialActionGateAllowsBoundMembersAndUnclaimedCreatorsButNotArchivedActivities() {
         val role = com.ffocalors.sharedledger.data.activity.ActivityRole.Member
         val detail = com.ffocalors.sharedledger.data.activity.ActivityDetail(
             summary = com.ffocalors.sharedledger.data.activity.ActivitySummary(
@@ -244,5 +245,49 @@ class RoutesTest {
                 "user-real",
             ),
         )
+        val creatorDetail = detail.copy(
+            summary = detail.summary.copy(createdBy = "creator"),
+            members = listOf(
+                detail.members.single().copy(userId = "creator", isCreator = true, claimedParticipantId = null),
+            ),
+        )
+        assertTrue(canPerformFinancialAction(creatorDetail, "creator"))
+        assertEquals(
+            false,
+            canPerformFinancialAction(
+                creatorDetail.copy(summary = creatorDetail.summary.copy(archivedAt = "2026-09-07T00:00:00Z")),
+                "creator",
+            ),
+        )
+    }
+
+    @Test
+    fun archivedActivityDisablesWriteRouteCallbacks() {
+        val role = com.ffocalors.sharedledger.data.activity.ActivityRole.Member
+        val detail = com.ffocalors.sharedledger.data.activity.ActivityDetail(
+            summary = com.ffocalors.sharedledger.data.activity.ActivitySummary(
+                id = "activity-archive-gate",
+                name = "已归档活动",
+                type = com.ffocalors.sharedledger.data.activity.ActivityType.Normal,
+                joinCode = "ARCHIVE1",
+                baseCurrency = "CNY",
+                multiCurrencyEnabled = false,
+                createdBy = "creator",
+                archivedAt = null,
+                participantCount = 0,
+                status = com.ffocalors.sharedledger.data.activity.ActivityFinancialStatus.Active,
+                totalDebt = "0",
+                totalPrepayment = "0",
+            ),
+            members = emptyList(),
+            participants = emptyList(),
+            ledgerUnits = emptyList(),
+            currentUserRole = role,
+            permissions = com.ffocalors.sharedledger.data.activity.ActivityPermissions.forRole(role),
+        )
+
+        assertEquals(true, isActivityWritable(detail))
+        assertEquals(false, isActivityWritable(detail.copy(summary = detail.summary.copy(archivedAt = "2026-09-07T00:00:00Z"))))
+        assertEquals(false, isActivityWritable(null))
     }
 }

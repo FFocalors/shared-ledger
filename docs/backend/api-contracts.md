@@ -2,7 +2,7 @@
 
 > 状态：`废弃`。本文保留用于追溯早期设计，不得作为 Android 联调、RPC 命名、表名或 DTO 实现依据。
 >
-> 当前唯一真实契约是 [BACKEND_INTEGRATION_READINESS.md](./BACKEND_INTEGRATION_READINESS.md) 与 `supabase/migrations/` 中当前 16 条 migration；实施顺序见 [ANDROID_SUPABASE_INTEGRATION_PLAN.md](./ANDROID_SUPABASE_INTEGRATION_PLAN.md)。本文中的 `create_activity_with_owner`、`join_activity_by_invite`、`create_expense_with_allocations`、`money_transfers` 等名称可能与已冻结数据库不一致。
+> 当前唯一真实契约是 [BACKEND_INTEGRATION_READINESS.md](./BACKEND_INTEGRATION_READINESS.md) 与 `supabase/migrations/` 中当前 18 条 migration；实施顺序见 [ANDROID_SUPABASE_INTEGRATION_PLAN.md](./ANDROID_SUPABASE_INTEGRATION_PLAN.md)。本文中的 `create_activity_with_owner`、`join_activity_by_invite`、`create_expense_with_allocations`、`money_transfers` 等名称可能与已冻结数据库不一致。
 >
 > 设计边界：V0.1 只覆盖活动、参与者、分账、转账和结算的最小闭环。简单读取使用 Supabase Data API；涉及多个表的写入使用数据库函数 RPC，以保证事务和权限检查集中在数据库侧。
 
@@ -288,6 +288,15 @@ RPC 通过 `POST /rest/v1/rpc/<function_name>` 调用。客户端可调用的 RP
 修改请求包含完整的 payer/split 集合和 `expected_version`，服务端以事务方式替换子项。作废采用软删除并保留审计信息；已 finalized settlement 引用的消费默认不可编辑。
 
 ### 3.6 Transfers / Prepayments / Disputes
+
+> 后续真实契约已增加
+> `restore_transfer(transfer_id uuid, restore_reason text)`，返回
+> `transfer_id, restored, financial_version`。恢复沿用原 Transfer、组件、时间、
+> Final Settlement 路径和争议；只允许当前成员中的活动创建者或原记录人操作。
+> 普通结算按当前同向债务校验，预存返还按当前余额校验，Final Settlement
+> 必须与当前方案及原路径完全一致。成功后原子重建投影并只递增一次版本；
+> 冲突时保留作废状态，要求重新记录或重新执行最终结算。此说明只用于纠正
+> 本历史文档，完整规则仍以真实契约文档和 migration 为准。
 
 统一资金流表建议使用 `money_transfers`，通过 `transfer_type` 区分 `transfer`、`prepayment`、`prepayment_refund`。`receive` 只是 UI 操作方向，不是资金流类型。预存余额和待结算金额由安全视图计算，不在客户端自行累加。
 

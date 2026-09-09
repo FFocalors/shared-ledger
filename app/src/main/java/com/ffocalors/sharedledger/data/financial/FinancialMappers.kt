@@ -109,9 +109,47 @@ internal fun mapPrepaymentUsageRecord(
         currency = currency,
         occurredAt = expense.occurredAt,
         recordedAt = usage.createdAt ?: expense.occurredAt,
-        recordedBy = RecorderInfo("system:prepayment", "系统自动支付"),
+        recordedBy = RecorderInfo("system:prepayment", "预存自动扣款"),
         source = FundRecordSource.PREPAYMENT_USAGE,
         sourceExpenseId = debt.expenseId,
         sourceExpenseTitle = expense.title,
+    )
+}
+
+internal fun mapRefundRecord(
+    activityId: String,
+    expense: FinancialRefundExpenseRowDto,
+    payments: List<FinancialExpensePartyRowDto>,
+    participants: Map<String, ParticipantInfo>,
+    profiles: Map<String, RecorderInfo>,
+    originalExpenseTitle: String?,
+): FundRecord {
+    val receiverIds = payments.map(FinancialExpensePartyRowDto::participantId).distinct()
+    val receiver = when (receiverIds.size) {
+        0 -> ParticipantInfo("refund:unknown", "未识别收款人")
+        1 -> participants[receiverIds.single()] ?: ParticipantInfo(receiverIds.single(), "未命名参与人")
+        else -> ParticipantInfo(
+            participantId = "refund:receivers:${expense.id}",
+            displayName = "${receiverIds.mapNotNull(participants::get).firstOrNull()?.displayName ?: "多人"}等 ${receiverIds.size} 人",
+        )
+    }
+    fun recorder(userId: String?): RecorderInfo = userId?.let(profiles::get) ?: RecorderInfo("unknown", "未知用户")
+    return FundRecord(
+        transferId = "refund:${expense.id}",
+        activityId = activityId,
+        from = ParticipantInfo("refund:external", "退款方"),
+        to = receiver,
+        type = FundRecordType.REFUND,
+        amount = expense.originalAmount.toFinancialBigDecimal().abs(),
+        currency = expense.originalCurrency.trim().uppercase(),
+        occurredAt = expense.occurredAt,
+        recordedAt = expense.createdAt,
+        recordedBy = recorder(expense.createdBy),
+        voidMetadata = if (expense.isDeleted) {
+            VoidMetadata(expense.deletedAt.orEmpty(), recorder(expense.deletedBy), "账单已删除")
+        } else null,
+        source = FundRecordSource.REFUND_EXPENSE,
+        sourceExpenseId = expense.id,
+        sourceExpenseTitle = originalExpenseTitle,
     )
 }

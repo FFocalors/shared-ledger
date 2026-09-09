@@ -97,6 +97,8 @@ fun AuthScreen(
     onLogin: ((email: String, password: String) -> Unit)? = null,
     onRegister: ((nickname: String, email: String, password: String) -> Unit)? = null,
     onForgotPassword: ((email: String) -> Unit)? = null,
+    isPasswordRecovery: Boolean = false,
+    onSetNewPassword: ((password: String) -> Unit)? = null,
 ) {
     var isRegisterMode by rememberSaveable {
         mutableStateOf(initialMode == AuthMode.Register)
@@ -110,6 +112,8 @@ fun AuthScreen(
     var loginPasswordVisible by rememberSaveable { mutableStateOf(false) }
     var registerPasswordVisible by rememberSaveable { mutableStateOf(false) }
     var registerConfirmPasswordVisible by rememberSaveable { mutableStateOf(false) }
+    var recoveryPassword by rememberSaveable { mutableStateOf("") }
+    var recoveryConfirmPassword by rememberSaveable { mutableStateOf("") }
 
     var localErrorMessage by rememberSaveable { mutableStateOf<String?>(null) }
     var loginEmailError by rememberSaveable { mutableStateOf<String?>(null) }
@@ -118,6 +122,8 @@ fun AuthScreen(
     var registerEmailError by rememberSaveable { mutableStateOf<String?>(null) }
     var registerPasswordError by rememberSaveable { mutableStateOf<String?>(null) }
     var registerConfirmPasswordError by rememberSaveable { mutableStateOf<String?>(null) }
+    var recoveryPasswordError by rememberSaveable { mutableStateOf<String?>(null) }
+    var recoveryConfirmPasswordError by rememberSaveable { mutableStateOf<String?>(null) }
 
     fun clearValidationErrors() {
         localErrorMessage = null
@@ -127,6 +133,8 @@ fun AuthScreen(
         registerEmailError = null
         registerPasswordError = null
         registerConfirmPasswordError = null
+        recoveryPasswordError = null
+        recoveryConfirmPasswordError = null
     }
 
     val mode = if (isRegisterMode) AuthMode.Register else AuthMode.Login
@@ -176,35 +184,77 @@ fun AuthScreen(
                 )
             }
 
-            AuthModeSelector(
-                mode = mode,
-                enabled = !isLoading,
-                onModeSelected = { selectedMode ->
-                    val nextIsRegister = selectedMode == AuthMode.Register
-                    if (nextIsRegister != isRegisterMode) {
-                        isRegisterMode = nextIsRegister
-                        clearValidationErrors()
-                    }
-                },
-            )
+            if (isPasswordRecovery) {
+                PasswordRecoveryForm(
+                    password = recoveryPassword,
+                    confirmPassword = recoveryConfirmPassword,
+                    passwordError = recoveryPasswordError,
+                    confirmPasswordError = recoveryConfirmPasswordError,
+                    formError = formError,
+                    isLoading = isLoading,
+                    onPasswordChange = {
+                        recoveryPassword = it
+                        recoveryPasswordError = null
+                        localErrorMessage = null
+                    },
+                    onConfirmPasswordChange = {
+                        recoveryConfirmPassword = it
+                        recoveryConfirmPasswordError = null
+                        localErrorMessage = null
+                    },
+                    onSubmit = {
+                        val passwordProblem = when {
+                            recoveryPassword.isBlank() -> "请输入新密码"
+                            recoveryPassword.length < 6 -> "密码至少 6 位"
+                            else -> null
+                        }
+                        val confirmProblem = when {
+                            recoveryConfirmPassword.isBlank() -> "请确认新密码"
+                            recoveryConfirmPassword != recoveryPassword -> "两次输入的密码不一致"
+                            else -> null
+                        }
+                        recoveryPasswordError = passwordProblem
+                        recoveryConfirmPasswordError = confirmProblem
+                        localErrorMessage = if (passwordProblem == null && confirmProblem == null) {
+                            null
+                        } else {
+                            "请检查您的输入信息"
+                        }
+                        if (passwordProblem == null && confirmProblem == null) {
+                            onSetNewPassword?.invoke(recoveryPassword)
+                        }
+                    },
+                )
+            } else {
+                AuthModeSelector(
+                    mode = mode,
+                    enabled = !isLoading,
+                    onModeSelected = { selectedMode ->
+                        val nextIsRegister = selectedMode == AuthMode.Register
+                        if (nextIsRegister != isRegisterMode) {
+                            isRegisterMode = nextIsRegister
+                            clearValidationErrors()
+                        }
+                    },
+                )
 
-            AnimatedContent(
-                targetState = mode,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = if (mode == AuthMode.Login) 380.dp else 460.dp),
-                transitionSpec = {
-                    if (targetState == AuthMode.Register) {
-                        (slideInHorizontally { it } + fadeIn()) togetherWith
-                            (slideOutHorizontally { -it } + fadeOut())
-                    } else {
-                        (slideInHorizontally { -it } + fadeIn()) togetherWith
-                            (slideOutHorizontally { it } + fadeOut())
-                    }
-                },
-                label = "authentication form transition",
-            ) { displayedMode ->
-                when (displayedMode) {
+                AnimatedContent(
+                    targetState = mode,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = if (mode == AuthMode.Login) 380.dp else 460.dp),
+                    transitionSpec = {
+                        if (targetState == AuthMode.Register) {
+                            (slideInHorizontally { it } + fadeIn()) togetherWith
+                                (slideOutHorizontally { -it } + fadeOut())
+                        } else {
+                            (slideInHorizontally { -it } + fadeIn()) togetherWith
+                                (slideOutHorizontally { it } + fadeOut())
+                        }
+                    },
+                    label = "authentication form transition",
+                ) { displayedMode ->
+                    when (displayedMode) {
                     AuthMode.Login -> LoginForm(
                         email = loginEmail,
                         password = loginPassword,
@@ -339,6 +389,7 @@ fun AuthScreen(
                             }
                         },
                     )
+                    }
                 }
             }
         }
@@ -404,6 +455,63 @@ private fun AuthModeTab(
                 color = if (selected) SoftPrimaryContent else NeutralContent,
             )
         }
+    }
+}
+
+@Composable
+private fun PasswordRecoveryForm(
+    password: String,
+    confirmPassword: String,
+    passwordError: String?,
+    confirmPasswordError: String?,
+    formError: String?,
+    isLoading: Boolean,
+    onPasswordChange: (String) -> Unit,
+    onConfirmPasswordChange: (String) -> Unit,
+    onSubmit: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text(
+            text = "设置新密码",
+            style = SharedLedgerTextStyles.CardTitle,
+            color = SoftCharcoal,
+        )
+        Text(
+            text = "请设置一个至少 6 位的新密码，完成后使用新密码重新登录。",
+            style = SharedLedgerTextStyles.BodySecondary,
+            color = SoftCharcoal,
+        )
+        AuthFormError(message = formError)
+        AuthPasswordField(
+            value = password,
+            onValueChange = onPasswordChange,
+            placeholder = "新密码",
+            fieldDescription = "新密码输入框",
+            passwordVisible = false,
+            errorText = passwordError,
+            onToggleVisibility = {},
+            enabled = !isLoading,
+        )
+        AuthPasswordField(
+            value = confirmPassword,
+            onValueChange = onConfirmPasswordChange,
+            placeholder = "确认新密码",
+            fieldDescription = "确认新密码输入框",
+            passwordVisible = false,
+            errorText = confirmPasswordError,
+            onToggleVisibility = {},
+            enabled = !isLoading,
+        )
+        AuthSubmitButton(
+            text = "更新密码",
+            loadingText = "更新中…",
+            tone = SharedLedgerButtonTone.SoftPrimary,
+            isLoading = isLoading,
+            onClick = onSubmit,
+        )
     }
 }
 

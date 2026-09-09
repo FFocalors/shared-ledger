@@ -1,0 +1,364 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>SharedLedger - 个人信息</title>
+<!-- Tailwind CSS v3 with Forms & Container Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Material Symbols (Outlined) -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<!-- Tailwind Configuration for SharedLedger Palette -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            app: {
+              bg: '#f8f6f5',
+              surface: '#ffffff',
+              primary: '#3e4a36',
+              primaryDark: '#2c3626',
+              primaryLight: '#e4ebda',
+              sage: '#bdcfa2',
+              sageTag: '#eaf1e1',
+              sageText: '#3d5229',
+              muted: '#787774',
+              border: '#eeece9',
+              danger: '#ba1a1a',
+              dangerBg: '#fff0ef',
+              dangerBorder: '#fbc9c6'
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"PingFang SC"', '"Hiragino Sans GB"', '"Microsoft YaHei"', 'sans-serif']
+          },
+          boxShadow: {
+            'card': '0 2px 12px rgba(0, 0, 0, 0.03)',
+            'float': '0 4px 20px rgba(0, 0, 0, 0.06)'
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Styles: Material Symbols & Mobile Tweaks -->
+<style data-purpose="custom-layout">
+    body {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 22;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .material-symbols-outlined.fill-icon {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 22;
+    }
+    /* Hide scrollbar for neat viewports */
+    ::-webkit-scrollbar {
+      width: 0px;
+      background: transparent;
+    }
+  </style>
+</head>
+<body class="bg-app-bg text-[#1f231b] antialiased min-h-screen flex justify-center selection:bg-app-sage selection:text-app-primary">
+<!-- Mobile Viewport Container (Android Device Shell: Max 430px) -->
+<div class="w-full max-w-[430px] min-h-screen bg-app-bg flex flex-col pb-12 relative overflow-x-hidden">
+<!-- BEGIN: TopBar -->
+<header class="sticky top-0 z-30 bg-app-bg/95 backdrop-blur-md px-4 pt-3 pb-3 flex items-center justify-between border-b border-transparent transition-colors">
+<!-- Back Navigation Button -->
+<button aria-label="返回" class="w-10 h-10 rounded-full flex items-center justify-center text-[#1f231b] hover:bg-[#eceae8] active:scale-95 transition" type="button">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<!-- Centered/Contextual Brand Header -->
+<div class="flex items-center space-x-1">
+<h1 class="text-[17px] font-semibold tracking-wide text-[#1f231b]">个人信息</h1>
+</div>
+<!-- Action: Settings/More -->
+<button aria-label="更多设置" class="w-10 h-10 rounded-full flex items-center justify-center text-[#1f231b] hover:bg-[#eceae8] active:scale-95 transition" type="button">
+
+</button>
+</header>
+<!-- END: TopBar -->
+<!-- Scrollable Main Content -->
+<main class="flex-1 px-4 space-y-4 pt-1">
+<!-- BEGIN: HeroProfileCard -->
+<!-- Profile Header & User Credentials -->
+<section class="bg-white rounded-[24px] p-5 border border-app-border/80 shadow-card relative overflow-hidden" data-purpose="user-hero-card">
+<!-- Background subtle decorative accent -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-app-sage/20 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex items-start gap-4">
+<!-- Avatar with Online / Active Badge -->
+<div class="relative flex-shrink-0">
+<div class="w-16 h-16 rounded-full bg-[#f6ad55] text-white flex items-center justify-center text-2xl font-semibold shadow-inner">
+              A
+            </div>
+<!-- Account Verified Indicator -->
+<span class="absolute bottom-0 right-0 w-4 h-4 bg-[#4b553d] border-2 border-white rounded-full flex items-center justify-center">
+<span class="w-1.5 h-1.5 bg-white rounded-full"></span>
+</span>
+</div>
+<!-- User Info Details -->
+<div class="flex-1 min-w-0 pt-0.5">
+<div class="flex items-center gap-2">
+<h2 class="text-xl font-bold text-[#1f231b] truncate">Alice</h2>
+<span class="text-xs px-2 py-0.5 rounded-full bg-app-sageTag text-app-sageText font-medium">我 (创建者)</span>
+</div>
+<p class="text-xs text-app-muted mt-1 truncate">alice.design@example.com</p>
+<div class="mt-2.5 flex items-center gap-2">
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-app-primary bg-app-primaryLight/50 px-2.5 py-1 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-app-primary animate-pulse"></span>
+                已登录 · 账号正常
+              </span>
+</div>
+</div>
+</div>
+<!-- Horizontal Divider -->
+<hr class="my-4 border-dashed border-[#eceae8]">
+<!-- Quick Info Footer / Motto -->
+<div class="flex items-center justify-between text-xs text-app-muted">
+<span class="">协作状态: 良好 · 已绑定 3 个群组</span>
+<button class="text-app-primary font-medium flex items-center gap-0.5 hover:opacity-80 active:opacity-60 transition" type="button">
+            编辑资料
+            <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</section>
+<!-- END: HeroProfileCard -->
+<!-- BEGIN: StatGridSection -->
+<!-- User Engagement / Overview Stat Blocks -->
+<section class="grid grid-cols-2 gap-2.5" data-purpose="user-statistics">
+<!-- Stat Item 1: 我创建的 -->
+<div class="bg-white rounded-[20px] p-3.5 border border-app-border/70 shadow-card flex items-center gap-3">
+<div class="w-10 h-10 rounded-2xl bg-app-primaryLight/70 text-app-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">flag</span>
+</div>
+<div>
+<div class="text-[11px] text-app-muted font-normal">我发起的</div>
+<div class="text-base font-bold text-[#1f231b] mt-0.5">2 <span class="text-xs font-normal text-app-muted">个活动</span></div>
+</div>
+</div>
+<!-- Stat Item 2: 我参与的 -->
+<div class="bg-white rounded-[20px] p-3.5 border border-app-border/70 shadow-card flex items-center gap-3">
+<div class="w-10 h-10 rounded-2xl bg-[#eaf1e1] text-[#3d5229] flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+</div>
+<div>
+<div class="text-[11px] text-app-muted font-normal">我参与的</div>
+<div class="text-base font-bold text-[#1f231b] mt-0.5">5 <span class="text-xs font-normal text-app-muted">个活动</span></div>
+</div>
+</div>
+<!-- Stat Item 3: 认领身份 -->
+<div class="bg-white rounded-[20px] p-3.5 border border-app-border/70 shadow-card flex items-center gap-3">
+<div class="w-10 h-10 rounded-2xl bg-[#fdf3e7] text-[#c05621] flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+</div>
+<div>
+<div class="text-[11px] text-app-muted font-normal">认领身份</div>
+<div class="text-base font-bold text-[#1f231b] mt-0.5">4 <span class="text-xs font-normal text-app-muted">个角色</span></div>
+</div>
+</div>
+<!-- Stat Item 4: 进行中账本 -->
+<div class="bg-white rounded-[20px] p-3.5 border border-app-border/70 shadow-card flex items-center gap-3">
+<div class="w-10 h-10 rounded-2xl bg-[#f0f4f8] text-[#2b6cb0] flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">pending_actions</span>
+</div>
+<div>
+<div class="text-[11px] text-app-muted font-normal">进行中活动</div>
+<div class="text-base font-bold text-[#1f231b] mt-0.5">3 <span class="text-xs font-normal text-app-muted">个活跃</span></div>
+</div>
+</div>
+</section>
+<!-- END: StatGridSection -->
+<!-- BEGIN: CollaborationIdentities -->
+<!-- The distinct SharedLedger concept: Linking Accounts to Activity Participants -->
+<section class="bg-white rounded-[24px] p-5 border border-app-border/80 shadow-card space-y-3.5" data-purpose="collaboration-identities">
+<!-- Section Title & Subtitle -->
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-app-primary text-[20px]">diversity_3</span>
+<h3 class="font-bold text-base text-[#1f231b]">我的协作身份</h3>
+</div>
+<p class="text-xs text-app-muted mt-1 leading-relaxed">
+            你在多人账本中认领的记账参与人。账目收支将直接计入你所绑定的角色名下。
+          </p>
+</div>
+<!-- Explanatory Toast / Prompt Card -->
+<div class="bg-[#f7f8f5] rounded-xl p-3 flex items-start gap-2.5 text-xs text-[#52574d] border border-[#eceee9]">
+<span class="material-symbols-outlined text-[18px] text-app-primary flex-shrink-0 mt-0.5">info</span>
+<span class="">在 SharedLedger 中，创建者也可以为自己或未注册的好友认领不同的账单记账席位。</span>
+</div>
+<!-- Identities List -->
+<div class="divide-y divide-[#f2f1ef] pt-1">
+<!-- Identity Row 1 -->
+<div class="py-3 flex items-center justify-between group active:bg-[#fbfaf9] -mx-2 px-2 rounded-xl transition">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-full bg-[#f6ad55]/20 text-[#c05621] font-semibold text-xs flex items-center justify-center flex-shrink-0">
+                A
+              </div>
+<div class="min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-medium text-sm text-[#1f231b] truncate">周末露营计划</span>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-app-sageTag text-app-sageText font-medium">创建者</span>
+</div>
+<div class="text-xs text-app-muted mt-0.5 truncate">
+                  认领身份: <span class="text-[#2b3524] font-medium">Participant 1 (Alice)</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 text-app-muted">
+<span class="text-xs text-[#4b553d] font-medium bg-[#f0f4ec] px-2 py-0.5 rounded-full">已绑定</span>
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</div>
+</div>
+<!-- Identity Row 2 -->
+<div class="py-3 flex items-center justify-between group active:bg-[#fbfaf9] -mx-2 px-2 rounded-xl transition">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-full bg-[#cbd5e1] text-[#475569] font-semibold text-xs flex items-center justify-center flex-shrink-0">
+                爱
+              </div>
+<div class="min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-medium text-sm text-[#1f231b] truncate">川西自驾大环线</span>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-[#f1f4f9] text-[#334155] font-medium">活动成员</span>
+</div>
+<div class="text-xs text-app-muted mt-0.5 truncate">
+                  认领身份: <span class="text-[#2b3524] font-medium">小爱</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 text-app-muted">
+<span class="text-xs text-[#4b553d] font-medium bg-[#f0f4ec] px-2 py-0.5 rounded-full">已绑定</span>
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</div>
+</div>
+<!-- Identity Row 3 -->
+<div class="py-3 flex items-center justify-between group active:bg-[#fbfaf9] -mx-2 px-2 rounded-xl transition">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-full bg-[#e2e8f0] text-[#64748b] font-semibold text-xs flex items-center justify-center flex-shrink-0">
+                聚
+              </div>
+<div class="min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-medium text-sm text-[#787774] truncate line-through">周五剧本杀聚餐</span>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-[#f0ede9] text-[#787774] font-medium">已归档</span>
+</div>
+<div class="text-xs text-[#9a9996] mt-0.5 truncate">
+                  认领身份: <span class="">Alice (已结清)</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 text-[#9a9996]">
+<span class="text-xs bg-[#f4f2f0] px-2 py-0.5 rounded-full">只读</span>
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</div>
+</div>
+</div>
+</section>
+<!-- END: CollaborationIdentities -->
+<!-- BEGIN: AccountSettingsCard -->
+<!-- Personal Account Credentials and Configurations -->
+<section class="bg-white rounded-[24px] p-5 border border-app-border/80 shadow-card space-y-4" data-purpose="account-credentials">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-app-primary text-[20px]">manage_accounts</span>
+<h3 class="font-bold text-base text-[#1f231b]">账号设置</h3>
+</div>
+<div class="space-y-3 text-sm">
+<!-- Row 1: 昵称 -->
+<div class="flex items-center justify-between py-1.5">
+<span class="text-app-muted">用户昵称</span>
+<div class="flex items-center gap-1 font-medium text-[#1f231b]">
+<span class="">Alice</span>
+<button aria-label="修改昵称" class="text-app-primary p-1 hover:bg-[#f2f1ee] rounded-full" type="button">
+<span class="material-symbols-outlined text-[17px]">edit</span>
+</button>
+</div>
+</div>
+<!-- Row 2: 绑定邮箱 -->
+<div class="flex items-center justify-between py-1.5">
+<span class="text-app-muted">绑定邮箱</span>
+<div class="flex items-center gap-1.5">
+<span class="font-medium text-[#1f231b]">alice.design@example.com</span>
+<span class="material-symbols-outlined text-green-700 text-[18px]">verified</span>
+</div>
+</div>
+<!-- Row 3: 登录凭据 -->
+<div class="flex items-center justify-between py-1.5">
+<span class="text-app-muted">登录方式</span>
+<span class="font-medium text-[#1f231b]">邮箱验证码 / 密码</span>
+</div>
+<!-- Row 4: 注册时间 -->
+<div class="flex items-center justify-between py-1.5">
+<span class="text-app-muted">加入时间</span>
+<span class="font-medium text-[#1f231b]">2023 年 08 月 15 日</span>
+</div>
+</div>
+<hr class="border-[#eceae8]">
+<!-- Sub-links: Security and Password -->
+<div class="space-y-1 pt-0.5">
+<button class="w-full flex items-center justify-between py-2 text-sm text-[#1f231b] hover:text-app-primary active:bg-gray-50 rounded-lg transition" type="button">
+<span class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[18px] text-app-muted">key</span>
+              修改登录密码
+            </span>
+<span class="material-symbols-outlined text-[18px] text-app-muted">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between py-2 text-sm text-[#1f231b] hover:text-app-primary active:bg-gray-50 rounded-lg transition" type="button">
+<span class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[18px] text-app-muted">shield</span>
+              安全与隐私说明
+            </span>
+<span class="material-symbols-outlined text-[18px] text-app-muted">chevron_right</span>
+</button>
+</div>
+</section>
+<!-- END: AccountSettingsCard -->
+<!-- BEGIN: AboutAppCard -->
+<!-- System / App Meta Info -->
+<section class="bg-white rounded-[24px] p-5 border border-app-border/80 shadow-card space-y-3" data-purpose="app-information">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-app-primary text-[20px]">info</span>
+<h3 class="font-bold text-base text-[#1f231b]">关于应用</h3>
+</div>
+<div class="space-y-2.5 text-sm pt-1">
+<div class="flex items-center justify-between">
+<span class="text-app-muted">软件版本</span>
+<span class="font-medium text-[#1f231b]">SharedLedger v1.2.0 (Android)</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-app-muted">服务协议</span>
+<button class="text-app-primary font-medium text-xs flex items-center" type="button">
+              查看协议
+              <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-app-muted">离线数据状态</span>
+<span class="text-xs bg-[#edf2e7] text-[#334621] px-2 py-0.5 rounded-full font-medium">已同步至最新</span>
+</div>
+</div>
+</section>
+<!-- END: AboutAppCard -->
+<!-- BEGIN: DangerousZoneLogout -->
+<!-- Safe, restrained logout trigger matching design language -->
+<section class="pt-2" data-purpose="account-logout-action">
+<div class="rounded-[24px] border border-red-200 bg-red-50/40 p-4 text-center">
+<button class="w-full bg-[#ba1a1a] active:bg-[#961212] text-white font-medium text-[15px] py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-sm transition" type="button">
+<span class="material-symbols-outlined text-[19px]">logout</span>
+<span class="">退出当前账号</span>
+</button>
+<p class="text-[12px] text-[#8e4542] mt-2.5">
+            退出后本地未同步的账目草稿将自动备份，再次登录即可恢复。
+          </p>
+</div>
+</section>
+<!-- END: DangerousZoneLogout -->
+<!-- Footer Copyright Note -->
+<footer class="pt-4 pb-2 text-center text-xs text-[#a09e9a]">
+<p class="">SharedLedger · 简洁高效的多人活动协同账本</p>
+</footer>
+</main>
+</div>
+
+
+</body></html>

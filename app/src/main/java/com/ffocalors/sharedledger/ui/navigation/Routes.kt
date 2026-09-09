@@ -1,10 +1,14 @@
 package com.ffocalors.sharedledger.ui.navigation
 
+import com.ffocalors.sharedledger.data.auth.AuthRedirects
+
 /** Central route contract for the static SharedLedger prototype. */
 object SharedLedgerRoutes {
     const val AUTH = "auth"
+    const val PASSWORD_RESET_REDIRECT_URL = AuthRedirects.PASSWORD_RESET
     const val START_DESTINATION = AUTH
     const val HOME = "home"
+    const val PERSONAL_INFO = "personal-info"
     const val JOIN_ACTIVITY = "join-activity"
     const val CREATE_ACTIVITY = "create-activity"
     const val NORMAL_ACTIVITY_PATTERN = "normal-activity/{activityId}"

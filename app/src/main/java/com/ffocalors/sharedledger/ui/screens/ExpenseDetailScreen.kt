@@ -1,5 +1,6 @@
 package com.ffocalors.sharedledger.ui.screens
 
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -54,6 +55,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -61,7 +63,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
@@ -74,7 +75,6 @@ import com.ffocalors.sharedledger.R
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
-import com.ffocalors.sharedledger.ui.demo.DemoRouteIds
 import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
@@ -91,22 +91,23 @@ import com.ffocalors.sharedledger.ui.util.MoneyFormatter
 /** The state needed to render one expense. [expenseId] is the stable identity used by callbacks. */
 @Immutable
 data class ExpenseDetailUiState(
-    val expenseId: String = "expense-demo-dinner-20231024",
-    val title: String = "晚餐",
-    val merchant: String = "新光天地",
-    val amount: String = "450.00",
-    val currencyCode: String = "CNY",
-    val originalAmount: String = "450.00",
-    val originalCurrencyCode: String = "CNY",
-    val occurredAt: String = "2023年10月24日 19:30",
-    val ledgerUnit: String = "周末聚餐",
-    val note: String = "庆祝项目上线聚餐",
-    val payer: String = "Alice",
-    val payerIsCurrentUser: Boolean = true,
-    val splits: List<ExpenseSplitUiState> = demoExpenseSplits(),
-    val attachments: List<ExpenseAttachmentUiState> = listOf(ExpenseAttachmentUiState()),
+    val expenseId: String = "",
+    val title: String = "",
+    val merchant: String = "",
+    val amount: String = "",
+    val currencyCode: String = "",
+    val originalAmount: String = "",
+    val originalCurrencyCode: String = "",
+    val occurredAt: String = "",
+    val ledgerUnit: String = "",
+    val note: String = "",
+    val payer: String = "",
+    val payerIsCurrentUser: Boolean = false,
+    val splits: List<ExpenseSplitUiState> = emptyList(),
+    val attachments: List<ExpenseAttachmentUiState> = emptyList(),
     val status: ExpenseDetailStatus = ExpenseDetailStatus.Deleted,
     val actionMessage: String? = null,
+    val attachmentMessage: String? = null,
 )
 
 @Immutable
@@ -121,9 +122,20 @@ data class ExpenseSplitUiState(
 
 @Immutable
 data class ExpenseAttachmentUiState(
-    val attachmentId: String = "receipt-1",
-    val label: String = "餐厅消费凭证",
+    val attachmentId: String,
+    val fileName: String,
+    val label: String = fileName,
+    val sizeLabel: String = "",
+    val status: ExpenseAttachmentStatus = ExpenseAttachmentStatus.Ready,
+    val errorMessage: String? = null,
+    val canDelete: Boolean = true,
 )
+
+enum class ExpenseAttachmentStatus {
+    Uploading,
+    Ready,
+    Failed,
+}
 
 enum class ExpenseDetailStatus {
     Active,
@@ -135,15 +147,7 @@ enum class ExpenseSettlement {
     Paid,
 }
 
-/** Route-level Demo loader: the ID selects the presentation state instead of forcing Deleted. */
-fun demoExpenseDetailUiState(expenseId: String): ExpenseDetailUiState =
-    if (expenseId == DemoRouteIds.DINNER_EXPENSE) {
-        DemoExpenseDetail.copy(expenseId = expenseId, status = ExpenseDetailStatus.Deleted)
-    } else {
-        DemoExpenseDetail.copy(expenseId = expenseId, status = ExpenseDetailStatus.Active)
-    }
-
-private fun demoExpenseSplits() = listOf(
+private fun previewExpenseSplits() = listOf(
     ExpenseSplitUiState(participant = "Bob", owedAmount = "150", settlement = ExpenseSettlement.Pending),
     ExpenseSplitUiState(participant = "Carol", owedAmount = "150", settlement = ExpenseSettlement.Paid),
     ExpenseSplitUiState(
@@ -155,7 +159,21 @@ private fun demoExpenseSplits() = listOf(
     ),
 )
 
-private val DemoExpenseDetail = ExpenseDetailUiState()
+private val PreviewExpenseDetail = ExpenseDetailUiState(
+    expenseId = "expense-demo-dinner-20231024",
+    title = "晚餐",
+    merchant = "新光天地",
+    amount = "450.00",
+    currencyCode = "CNY",
+    originalAmount = "450.00",
+    originalCurrencyCode = "CNY",
+    occurredAt = "2023年10月24日 19:30",
+    ledgerUnit = "周末聚餐",
+    note = "庆祝项目上线聚餐",
+    payer = "Alice",
+    payerIsCurrentUser = true,
+    splits = previewExpenseSplits(),
+)
 
 /**
  * 账单详情页。页面只拥有底部操作抽屉的展示状态，业务状态由 [uiState] 提供，
@@ -164,14 +182,16 @@ private val DemoExpenseDetail = ExpenseDetailUiState()
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpenseDetailScreen(
-    uiState: ExpenseDetailUiState = DemoExpenseDetail,
+    uiState: ExpenseDetailUiState,
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
     onEdit: ((expenseId: String) -> Unit)? = null,
     onVoid: ((expenseId: String) -> Unit)? = null,
     onRestore: ((expenseId: String) -> Unit)? = null,
     onAddRefund: ((expenseId: String) -> Unit)? = null,
+    onRefreshConfirmation: (() -> Unit)? = null,
     onAttachmentClick: ((expenseId: String, attachmentId: String) -> Unit)? = null,
+    onAttachmentDelete: ((expenseId: String, attachmentId: String) -> Unit)? = null,
 ) {
     var sheetVisible by rememberSaveable(uiState.expenseId) { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -236,6 +256,31 @@ fun ExpenseDetailScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XLarge),
             ) {
+                onRefreshConfirmation?.let { callback ->
+                    item(key = "refresh-confirmation") {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(SharedLedgerSpacing.Medium),
+                                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+                            ) {
+                                Text("账单写入状态待确认", style = SharedLedgerTextStyles.CardTitle)
+                                Text(
+                                    "请先刷新账单详情，确认后才能继续提交操作。",
+                                    style = SharedLedgerTextStyles.BodySecondary,
+                                )
+                                SharedLedgerButton(
+                                    "刷新确认",
+                                    callback,
+                                    tone = SharedLedgerButtonTone.SoftPrimary,
+                                    icon = Icons.Rounded.Refresh,
+                                )
+                            }
+                        }
+                    }
+                }
                 item(key = "hero") {
                     ExpenseHeroCard(uiState = uiState)
                 }
@@ -256,7 +301,13 @@ fun ExpenseDetailScreen(
                             onAttachmentClick = onAttachmentClick?.let { callback ->
                                 { attachmentId -> callback(uiState.expenseId, attachmentId) }
                             },
+                            onAttachmentDelete = onAttachmentDelete?.let { callback ->
+                                { attachmentId -> callback(uiState.expenseId, attachmentId) }
+                            },
                         )
+                        uiState.attachmentMessage?.let {
+                            Text(it, style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.error)
+                        }
                     }
                 }
             }
@@ -286,6 +337,7 @@ fun ExpenseDetailScreen(
             )
         }
     }
+
 }
 
 @Composable
@@ -498,31 +550,38 @@ private fun SplitRow(split: ExpenseSplitUiState, currencyCode: String) {
 private fun AttachmentsRow(
     attachments: List<ExpenseAttachmentUiState>,
     onAttachmentClick: ((attachmentId: String) -> Unit)?,
+    onAttachmentDelete: ((attachmentId: String) -> Unit)?,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(144.dp)
-            .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        attachments.forEach { attachment ->
-             ReceiptThumbnail(
-                 attachment,
-                 onClick = onAttachmentClick?.let { callback -> { callback(attachment.attachmentId) } },
-             )
+    if (attachments.isEmpty()) {
+        Text("暂无附件", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    } else {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            attachments.forEach { attachment ->
+                AttachmentCard(
+                    attachment = attachment,
+                    onClick = onAttachmentClick?.let { callback -> { callback(attachment.attachmentId) } },
+                    onDelete = onAttachmentDelete?.takeIf { attachment.canDelete }?.let { callback -> { callback(attachment.attachmentId) } },
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun ReceiptThumbnail(
+private fun AttachmentCard(
     attachment: ExpenseAttachmentUiState,
     onClick: (() -> Unit)?,
+    onDelete: (() -> Unit)?,
 ) {
     Surface(
         modifier = Modifier
-            .size(128.dp)
+            .width(180.dp)
+            .height(116.dp)
             .clip(SharedLedgerRadius.Medium)
             .then(onClick?.let { callback -> Modifier.clickable(onClick = callback) } ?: Modifier)
             .then(onClick?.let { Modifier.semantics { contentDescription = "查看${attachment.label}" } } ?: Modifier),
@@ -531,12 +590,27 @@ private fun ReceiptThumbnail(
         border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant),
         shadowElevation = SharedLedgerElevation.Card,
     ) {
-        androidx.compose.foundation.Image(
-            painter = painterResource(R.drawable.receipt_dinner),
-            contentDescription = attachment.label,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop,
-        )
+        Column(
+            modifier = Modifier.fillMaxSize().padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Rounded.Image, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Text(attachment.fileName, modifier = Modifier.weight(1f), maxLines = 1, style = SharedLedgerTextStyles.Label)
+                onDelete?.let { callback ->
+                    IconButton(onClick = callback, modifier = Modifier.size(32.dp)) {
+                        Icon(Icons.Rounded.Delete, contentDescription = "删除${attachment.fileName}", modifier = Modifier.size(18.dp))
+                    }
+                }
+            }
+            val statusText = when (attachment.status) {
+                ExpenseAttachmentStatus.Uploading -> "上传中…"
+                ExpenseAttachmentStatus.Ready -> attachment.sizeLabel.ifBlank { "已上传" }
+                ExpenseAttachmentStatus.Failed -> attachment.errorMessage ?: "加载失败"
+            }
+            Text(statusText, style = SharedLedgerTextStyles.Label, color = if (attachment.status == ExpenseAttachmentStatus.Failed) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("点击查看附件", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.primary)
+        }
     }
 }
 
@@ -659,7 +733,7 @@ private fun ActionSheetButton(
 @Composable
 private fun ExpenseDetailScreenPreview() {
     SharedLedgerTheme {
-        ExpenseDetailScreen()
+        ExpenseDetailScreen(uiState = PreviewExpenseDetail)
     }
 }
 
@@ -668,7 +742,7 @@ private fun ExpenseDetailScreenPreview() {
 private fun ActiveExpenseDetailScreenPreview() {
     SharedLedgerTheme {
         ExpenseDetailScreen(
-            uiState = DemoExpenseDetail.copy(status = ExpenseDetailStatus.Active),
+            uiState = PreviewExpenseDetail.copy(status = ExpenseDetailStatus.Active),
         )
     }
 }

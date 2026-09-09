@@ -6,6 +6,10 @@ import com.ffocalors.sharedledger.data.expense.ExpenseDetail
 import com.ffocalors.sharedledger.data.expense.ExpenseRepository
 import com.ffocalors.sharedledger.data.expense.ExpenseSplitMethod
 import com.ffocalors.sharedledger.data.expense.ExpenseMutationResult
+import com.ffocalors.sharedledger.data.expense.ExpenseOperationException
+import com.ffocalors.sharedledger.data.expense.ExpenseWriteState
+import com.ffocalors.sharedledger.data.expense.ExpenseWriteResult
+import com.ffocalors.sharedledger.data.expense.toExpenseWriteResult
 import com.ffocalors.sharedledger.data.expense.ManualSplitInput
 import com.ffocalors.sharedledger.data.expense.Payment
 import com.ffocalors.sharedledger.data.expense.PaymentInput
@@ -33,6 +37,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.math.BigDecimal
+import java.io.IOException
 import java.util.concurrent.atomic.AtomicInteger
 
 class ExpenseViewModelTest {
@@ -123,6 +128,48 @@ class ExpenseViewModelTest {
     }
 
     @Test
+    fun activityAndLedgerListsKeepDeletedExpenseVisibleWithoutCountingItInTotals() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeExpenseRepository()
+        val original = repository.listExpenses.single()
+        repository.listExpenses = listOf(
+            original.copy(id = "expense-active", baseAmount = BigDecimal("10")),
+            original.copy(
+                id = "expense-deleted",
+                baseAmount = BigDecimal("7"),
+                occurredAt = "2026-09-04T12:00:00Z",
+                isDeleted = true,
+            ),
+        )
+        val shares = FakeParticipantExpenseShareRepository(
+            ParticipantExpenseShareSnapshot(
+                isBound = true,
+                activityTotalBaseAmount = BigDecimal("10"),
+                ledgerUnitTotals = mapOf("ledger-real" to BigDecimal("10")),
+                expenseTotals = mapOf(
+                    "expense-active" to BigDecimal("10"),
+                    "expense-deleted" to BigDecimal("7"),
+                ),
+            ),
+        )
+        val viewModel = ExpenseViewModel(repository, "user-1", shares)
+
+        viewModel.loadByActivity("activity-real")
+        viewModel.loadByLedgerUnit("activity-real", "ledger-real")
+        advanceUntilIdle()
+
+        assertEquals(listOf(true), repository.activityIncludeDeleted)
+        assertEquals(listOf(true), repository.ledgerIncludeDeleted)
+        val activityState = viewModel.listState("activity:activity-real").value
+        val ledgerState = viewModel.listState("ledger:ledger-real").value
+        assertEquals(listOf("expense-active", "expense-deleted"), activityState.expenses.map { it.expenseId })
+        assertEquals(2, ledgerState.expenses.size)
+        assertEquals(BigDecimal("7"), activityState.expenses.single { it.isDeleted }.amount)
+        assertEquals(BigDecimal("10"), activityState.totalBaseAmount)
+        assertEquals(BigDecimal("10"), activityState.ledgerUnitTotals["ledger-real"])
+    }
+
+    @Test
     fun shareAggregatorKeepsEachClaimedUsersLedgerAndExpenseAmountsSeparate() {
         val expenses = listOf(
             ParticipantExpenseFact("expense-one", "ledger-one"),
@@ -164,6 +211,25 @@ class ExpenseViewModelTest {
         assertEquals(BigDecimal("210.0"), result.activityTotalBaseAmount)
         assertEquals(BigDecimal("-90.0"), result.expenseTotals["refund"])
         assertEquals(BigDecimal("210.0"), result.ledgerUnitTotals["ledger"])
+    }
+
+    @Test
+    fun shareAggregatorKeepsDeletedExpenseAmountForCardButExcludesItFromSummaries() {
+        val result = ParticipantExpenseShareAggregator.aggregate(
+            participantId = "participant-a",
+            expenses = listOf(
+                ParticipantExpenseFact("expense-active", "ledger", isDeleted = false),
+                ParticipantExpenseFact("expense-deleted", "ledger", isDeleted = true),
+            ),
+            splits = listOf(
+                ParticipantSplitFact("expense-active", "participant-a", BigDecimal("80")),
+                ParticipantSplitFact("expense-deleted", "participant-a", BigDecimal("35")),
+            ),
+        )
+
+        assertEquals(BigDecimal("80"), result.activityTotalBaseAmount)
+        assertEquals(BigDecimal("80"), result.ledgerUnitTotals["ledger"])
+        assertEquals(BigDecimal("35"), result.expenseTotals["expense-deleted"])
     }
 
     @Test
@@ -271,6 +337,70 @@ class ExpenseViewModelTest {
     }
 
     @Test
+    fun unknownCreateBlocksBlindResubmission() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val gate = CompletableDeferred<Result<ExpenseMutationResult>>()
+        val repository = FakeExpenseRepository().apply { createGate = gate }
+        val viewModel = ExpenseViewModel(repository, "user-1", fakeShareRepository(repository))
+        val draft = validDraft()
+
+        viewModel.submit(ExpenseFormMode.Create, null, "activity-real", draft)
+        advanceUntilIdle()
+        gate.complete(Result.failure(ExpenseOperationException("network", IOException("timeout"))))
+        advanceUntilIdle()
+
+        assertTrue(viewModel.form.value.submissionBlocked)
+        assertEquals(ExpenseWriteState.UNKNOWN, viewModel.form.value.writeState)
+        viewModel.submit(ExpenseFormMode.Create, null, "activity-real", draft)
+        advanceUntilIdle()
+        assertEquals(1, repository.createCalls.get())
+    }
+
+    @Test
+    fun unknownWriteConfirmationCallbackRunsOnlyAfterAuthoritativeRead() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val gate = CompletableDeferred<Result<ExpenseMutationResult>>()
+        val repository = FakeExpenseRepository().apply { createGate = gate }
+        val viewModel = ExpenseViewModel(repository, "user-1", fakeShareRepository(repository))
+
+        viewModel.submit(ExpenseFormMode.Create, null, "activity-real", validDraft())
+        advanceUntilIdle()
+        gate.complete(Result.failure(ExpenseOperationException("network", IOException("timeout"))))
+        advanceUntilIdle()
+
+        var confirmed = 0
+        viewModel.recoverFromUnknownWrite("activity-real", "ledger-real") { confirmed++ }
+        advanceUntilIdle()
+
+        assertEquals(1, confirmed)
+        assertFalse(viewModel.form.value.submissionBlocked)
+        assertNull(viewModel.form.value.errorMessage)
+    }
+
+    @Test
+    fun committedCreateKeepsReturnedIdAndContinuesSuccessFlow() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeExpenseRepository().apply {
+            createWriteResult = ExpenseWriteResult.committedRefreshFailure(
+                operationId = "expense-committed",
+                message = "账单已保存，但最新详情暂时无法刷新，请稍后刷新确认",
+                value = ExpenseMutationResult("expense-committed", BigDecimal.TEN, 2),
+            )
+        }
+        val viewModel = ExpenseViewModel(repository, "user-1", fakeShareRepository(repository))
+        var successId: String? = null
+
+        viewModel.submit(ExpenseFormMode.Create, null, "activity-real", validDraft()) { successId = it }
+        advanceUntilIdle()
+
+        assertEquals("expense-committed", successId)
+        assertEquals(false, viewModel.form.value.isSubmitting)
+        assertEquals(false, viewModel.form.value.submissionBlocked)
+        assertEquals(ExpenseWriteState.COMMITTED_REFRESH_FAILED, viewModel.form.value.writeState)
+        assertEquals("账单已保存，但最新详情暂时无法刷新，请稍后刷新确认", viewModel.form.value.errorMessage)
+    }
+
+    @Test
     fun updateDeleteRestoreAndRefundUseRepositoryOperations() = runTest(dispatcher) {
         Dispatchers.setMain(dispatcher)
         val repository = FakeExpenseRepository()
@@ -289,6 +419,55 @@ class ExpenseViewModelTest {
         assertEquals(1, repository.deleteCalls.get())
         assertEquals(1, repository.restoreCalls.get())
         assertEquals(1, repository.refundCalls.get())
+        assertEquals("expense-real", repository.lastRefund?.originalExpenseId)
+    }
+
+    @Test
+    fun restoreRefreshesBothListsAndReturnsDeletedCardToActiveTotals() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeExpenseRepository().apply {
+            listExpenses = listExpenses.map { it.copy(isDeleted = true) }
+        }
+        val viewModel = ExpenseViewModel(repository, "user-1", dynamicShareRepository(repository))
+
+        viewModel.loadByActivity("activity-real")
+        viewModel.loadByLedgerUnit("activity-real", "ledger-real")
+        viewModel.loadDetail("expense-real")
+        advanceUntilIdle()
+        assertTrue(viewModel.listState("activity:activity-real").value.expenses.single().isDeleted)
+        assertEquals(BigDecimal.ZERO, viewModel.listState("activity:activity-real").value.totalBaseAmount)
+
+        repository.activityIncludeDeleted.clear()
+        repository.ledgerIncludeDeleted.clear()
+        viewModel.restore("expense-real")
+        advanceUntilIdle()
+
+        assertEquals(listOf(true), repository.activityIncludeDeleted)
+        assertEquals(listOf(true), repository.ledgerIncludeDeleted)
+        val activityState = viewModel.listState("activity:activity-real").value
+        val ledgerState = viewModel.listState("ledger:ledger-real").value
+        assertFalse(activityState.expenses.single().isDeleted)
+        assertFalse(ledgerState.expenses.single().isDeleted)
+        assertEquals(BigDecimal("10"), activityState.totalBaseAmount)
+        assertEquals(BigDecimal("10"), ledgerState.ledgerUnitTotals["ledger-real"])
+    }
+
+    @Test
+    fun independentRefundDoesNotRequireOriginalExpense() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeExpenseRepository()
+        val viewModel = ExpenseViewModel(repository, "user-1", fakeShareRepository(repository))
+
+        viewModel.submit(
+            ExpenseFormMode.Refund,
+            null,
+            "activity-real",
+            validDraft().copy(originalExpenseId = null),
+        )
+        advanceUntilIdle()
+
+        assertEquals(1, repository.refundCalls.get())
+        assertEquals(null, repository.lastRefund?.originalExpenseId)
     }
 
     @Test
@@ -332,6 +511,28 @@ class ExpenseViewModelTest {
                 expenseTotals = repository.listExpenses.associate { it.id to it.baseAmount },
             ),
         )
+
+    private fun dynamicShareRepository(repository: FakeExpenseRepository) =
+        object : ParticipantExpenseShareRepository {
+            private fun snapshot() = ParticipantExpenseShareAggregator.aggregate(
+                participantId = "participant-a",
+                expenses = repository.listExpenses.map {
+                    ParticipantExpenseFact(it.id, it.ledgerUnitId, it.isDeleted)
+                },
+                splits = repository.listExpenses.map {
+                    ParticipantSplitFact(it.id, "participant-a", it.baseAmount)
+                },
+            )
+
+            override suspend fun getForActivity(activityId: String, currentUserId: String) =
+                Result.success(snapshot())
+
+            override suspend fun getForLedgerUnit(
+                activityId: String,
+                ledgerUnitId: String,
+                currentUserId: String,
+            ) = Result.success(snapshot())
+        }
 }
 
 private class FakeParticipantExpenseShareRepository(
@@ -355,15 +556,34 @@ private class FakeExpenseRepository : ExpenseRepository {
     var createGate: CompletableDeferred<Result<ExpenseMutationResult>>? = null
     var lastCreate: CreateExpenseInput? = null
     var lastUpdate: UpdateExpenseInput? = null
+    var lastRefund: RefundExpenseInput? = null
+    var createWriteResult: ExpenseWriteResult<ExpenseMutationResult>? = null
     var listExpenses: List<Expense> = listOf(expense)
+    val activityIncludeDeleted = mutableListOf<Boolean>()
+    val ledgerIncludeDeleted = mutableListOf<Boolean>()
 
-    override suspend fun listByActivity(activityId: String, includeDeleted: Boolean) = Result.success(listExpenses)
-    override suspend fun listByLedgerUnit(ledgerUnitId: String, includeDeleted: Boolean) = Result.success(listExpenses)
-    override suspend fun getDetail(expenseId: String) = Result.success(detail)
+    override suspend fun listByActivity(activityId: String, includeDeleted: Boolean): Result<List<Expense>> {
+        activityIncludeDeleted += includeDeleted
+        return Result.success(if (includeDeleted) listExpenses else listExpenses.filterNot { it.isDeleted })
+    }
+    override suspend fun listByLedgerUnit(ledgerUnitId: String, includeDeleted: Boolean): Result<List<Expense>> {
+        ledgerIncludeDeleted += includeDeleted
+        return Result.success(if (includeDeleted) listExpenses else listExpenses.filterNot { it.isDeleted })
+    }
+    override suspend fun getDetail(expenseId: String) = Result.success(
+        detail.copy(expense = listExpenses.firstOrNull { it.id == expenseId } ?: detail.expense),
+    )
     override suspend fun create(input: CreateExpenseInput): Result<ExpenseMutationResult> {
         createCalls.incrementAndGet()
         lastCreate = input
         return createGate?.await() ?: Result.success(ExpenseMutationResult("expense-new", BigDecimal.TEN, 1))
+    }
+    override suspend fun createWrite(input: CreateExpenseInput): ExpenseWriteResult<ExpenseMutationResult> {
+        createCalls.incrementAndGet()
+        lastCreate = input
+        return createWriteResult
+            ?: (createGate?.await() ?: Result.success(ExpenseMutationResult("expense-new", BigDecimal.TEN, 1)))
+                .toExpenseWriteResult()
     }
     override suspend fun update(input: UpdateExpenseInput): Result<ExpenseMutationResult> {
         updateCalls.incrementAndGet()
@@ -372,14 +592,17 @@ private class FakeExpenseRepository : ExpenseRepository {
     }
     override suspend fun delete(expenseId: String): Result<ExpenseMutationResult> {
         deleteCalls.incrementAndGet()
+        listExpenses = listExpenses.map { if (it.id == expenseId) it.copy(isDeleted = true) else it }
         return Result.success(ExpenseMutationResult(expenseId, null, 3, true))
     }
     override suspend fun restore(expenseId: String): Result<ExpenseMutationResult> {
         restoreCalls.incrementAndGet()
+        listExpenses = listExpenses.map { if (it.id == expenseId) it.copy(isDeleted = false) else it }
         return Result.success(ExpenseMutationResult(expenseId, null, 4, false))
     }
-    override suspend fun refund(input: RefundExpenseInput, originalExpenseId: String): Result<ExpenseMutationResult> {
+    override suspend fun refund(input: RefundExpenseInput): Result<ExpenseMutationResult> {
         refundCalls.incrementAndGet()
+        lastRefund = input
         return Result.success(ExpenseMutationResult("refund-real", BigDecimal.TEN.negate(), 5))
     }
 

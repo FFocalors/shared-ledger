@@ -16,7 +16,23 @@ interface ExpenseRepository {
     suspend fun update(input: UpdateExpenseInput): Result<ExpenseMutationResult>
     suspend fun delete(expenseId: String): Result<ExpenseMutationResult>
     suspend fun restore(expenseId: String): Result<ExpenseMutationResult>
-    suspend fun refund(input: RefundExpenseInput, originalExpenseId: String): Result<ExpenseMutationResult>
+    suspend fun refund(input: RefundExpenseInput): Result<ExpenseMutationResult>
+
+    /** Compatibility boundary for callers that need to distinguish an unknown write outcome. */
+    suspend fun createWrite(input: CreateExpenseInput): ExpenseWriteResult<ExpenseMutationResult> =
+        create(input).toExpenseWriteResult()
+
+    suspend fun updateWrite(input: UpdateExpenseInput): ExpenseWriteResult<ExpenseMutationResult> =
+        update(input).toExpenseWriteResult()
+
+    suspend fun deleteWrite(expenseId: String): ExpenseWriteResult<ExpenseMutationResult> =
+        delete(expenseId).toExpenseWriteResult()
+
+    suspend fun restoreWrite(expenseId: String): ExpenseWriteResult<ExpenseMutationResult> =
+        restore(expenseId).toExpenseWriteResult()
+
+    suspend fun refundWrite(input: RefundExpenseInput): ExpenseWriteResult<ExpenseMutationResult> =
+        refund(input).toExpenseWriteResult()
 }
 
 class SupabaseExpenseRepository(private val client: SupabaseClient) : ExpenseRepository {
@@ -108,8 +124,23 @@ class SupabaseExpenseRepository(private val client: SupabaseClient) : ExpenseRep
         ExpenseMutationResult(result.restoredExpenseId, null, result.version, result.restored)
     }.mapFailure()
 
-    override suspend fun refund(input: RefundExpenseInput, originalExpenseId: String): Result<ExpenseMutationResult> =
-        create(input.toCreateInput(originalExpenseId))
+    override suspend fun refund(input: RefundExpenseInput): Result<ExpenseMutationResult> =
+        create(input.toCreateInput())
+
+    override suspend fun createWrite(input: CreateExpenseInput): ExpenseWriteResult<ExpenseMutationResult> =
+        writeAndConfirm { create(input) }
+
+    override suspend fun updateWrite(input: UpdateExpenseInput): ExpenseWriteResult<ExpenseMutationResult> =
+        writeAndConfirm { update(input) }
+
+    override suspend fun deleteWrite(expenseId: String): ExpenseWriteResult<ExpenseMutationResult> =
+        writeAndConfirm { delete(expenseId) }
+
+    override suspend fun restoreWrite(expenseId: String): ExpenseWriteResult<ExpenseMutationResult> =
+        writeAndConfirm { restore(expenseId) }
+
+    override suspend fun refundWrite(input: RefundExpenseInput): ExpenseWriteResult<ExpenseMutationResult> =
+        writeAndConfirm { refund(input) }
 
     private suspend fun loadRowsForLedgerUnit(ledgerUnitId: String, includeDeleted: Boolean): List<ExpenseRowDto> =
         client.from("expenses").select {
@@ -123,7 +154,36 @@ class SupabaseExpenseRepository(private val client: SupabaseClient) : ExpenseRep
         onSuccess = { Result.success(it) },
         onFailure = { Result.failure(ExpenseOperationException(ExpenseErrorMapper.toUserMessage(it), it)) },
     )
+
+    private suspend fun writeAndConfirm(
+        block: suspend () -> Result<ExpenseMutationResult>,
+    ): ExpenseWriteResult<ExpenseMutationResult> {
+        val mutation = block().toExpenseWriteResult()
+        val value = mutation.value ?: return mutation
+        if (!mutation.isSuccess) return mutation
+        return getDetail(value.expenseId).fold(
+            onSuccess = { mutation },
+            onFailure = {
+                ExpenseWriteResult.committedRefreshFailure(
+                    operationId = value.expenseId,
+                    message = "账单已保存，但最新详情暂时无法刷新，请稍后刷新确认，勿重复提交",
+                    value = value,
+                )
+            },
+        )
+    }
 }
+
+internal fun <T> Result<T>.toExpenseWriteResult(): ExpenseWriteResult<T> = fold(
+    onSuccess = { ExpenseWriteResult.success(it) },
+    onFailure = {
+        if (ExpenseErrorMapper.isExpenseNetworkFailure(it)) {
+            ExpenseWriteResult.unknown("账单写入结果未知，请先刷新账单确认，勿重复提交")
+        } else {
+            ExpenseWriteResult.failure(ExpenseErrorMapper.toUserMessage(it))
+        }
+    },
+)
 
 object ExpenseRepositoryFactory {
     fun create(): ExpenseRepository = SupabaseClientProvider.createOrNull()?.let(::SupabaseExpenseRepository)
@@ -141,5 +201,5 @@ class UnavailableExpenseRepository(
     override suspend fun update(input: UpdateExpenseInput) = unavailable<ExpenseMutationResult>()
     override suspend fun delete(expenseId: String) = unavailable<ExpenseMutationResult>()
     override suspend fun restore(expenseId: String) = unavailable<ExpenseMutationResult>()
-    override suspend fun refund(input: RefundExpenseInput, originalExpenseId: String) = unavailable<ExpenseMutationResult>()
+    override suspend fun refund(input: RefundExpenseInput) = unavailable<ExpenseMutationResult>()
 }

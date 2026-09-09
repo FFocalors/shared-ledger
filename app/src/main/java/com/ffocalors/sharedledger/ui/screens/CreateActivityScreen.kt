@@ -62,8 +62,8 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
 import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
 
 /**
- * Static V0.1 create-activity form. The integration layer owns navigation and
- * receives the selected [ActivityKind] from [onCreate].
+ * Create-activity form. The host owns navigation and receives the selected
+ * [ActivityKind] from [onCreate].
  */
 @Composable
 fun CreateActivityScreen(

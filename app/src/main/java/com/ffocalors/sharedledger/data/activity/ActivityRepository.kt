@@ -205,6 +205,7 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
         multiCurrencyEnabled = activity.multiCurrencyEnabled,
         createdBy = activity.createdBy,
         archivedAt = activity.archivedAt,
+        participantsLockedAt = activity.participantsLockedAt,
         participantCount = participants.size,
         participantNames = participants.sortedBy { it.participantOrder }.map { it.name },
         status = if (status.completed) ActivityFinancialStatus.Completed else ActivityFinancialStatus.Active,
@@ -221,7 +222,15 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
 
     private fun <T> Result<T>.mapFailure(): Result<T> = fold(
         onSuccess = { Result.success(it) },
-        onFailure = { Result.failure(ActivityOperationException(ActivityErrorMapper.toUserMessage(it), it)) },
+        onFailure = {
+            Result.failure(
+                ActivityOperationException(
+                    userMessage = ActivityErrorMapper.toUserMessage(it),
+                    cause = it,
+                    kind = ActivityErrorMapper.failureKind(it),
+                ),
+            )
+        },
     )
 }
 

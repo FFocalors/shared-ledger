@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
@@ -37,6 +38,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.theme.DividerSubtle
 import com.ffocalors.sharedledger.ui.theme.IconContainerSage
@@ -61,6 +64,8 @@ fun SettlementSummaryCard(
     statistics: List<SettlementStatistic>,
     modifier: Modifier = Modifier,
     currencyCode: String = "CNY",
+    secondaryTitle: String? = null,
+    secondaryAmount: BigDecimal? = null,
     statusContent: (@Composable () -> Unit)? = null,
 ) {
     Card(
@@ -97,24 +102,34 @@ fun SettlementSummaryCard(
                 }
         ) {
             Column(modifier = Modifier.padding(SharedLedgerSpacing.Large)) {
-                Text(
-                    text = title,
-                    style = SharedLedgerTextStyles.SummaryLabel,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                if (primaryAmount != null) {
-                    SummaryAmount(
-                        amount = primaryAmount,
-                        currencyCode = currencyCode,
-                        modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
-                    )
+                if (secondaryTitle != null) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Large),
+                    ) {
+                        SummaryMetric(title, primaryAmount, currencyCode, Modifier.weight(1f))
+                        SummaryMetric(secondaryTitle, secondaryAmount, currencyCode, Modifier.weight(1f))
+                    }
                 } else {
                     Text(
-                        text = "未绑定参与人",
-                        style = SharedLedgerTextStyles.SummaryAmount,
+                        text = title,
+                        style = SharedLedgerTextStyles.SummaryLabel,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
                     )
+                    if (primaryAmount != null) {
+                        SummaryAmount(
+                            amount = primaryAmount,
+                            currencyCode = currencyCode,
+                            modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
+                        )
+                    } else {
+                        Text(
+                            text = "未绑定参与人",
+                            style = SharedLedgerTextStyles.SummaryAmount,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
+                        )
+                    }
                 }
                 if (statusContent != null) {
                     Box(modifier = Modifier.padding(top = SharedLedgerSpacing.Medium)) {
@@ -156,6 +171,33 @@ fun SettlementSummaryCard(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun SummaryMetric(
+    title: String,
+    amount: BigDecimal?,
+    currencyCode: String,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        Text(title, style = SharedLedgerTextStyles.SummaryLabel, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (amount == null) {
+            Text(
+                "未绑定",
+                style = SharedLedgerTextStyles.CardTitle,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
+            )
+        } else {
+            AmountDisplay(
+                amount = amount,
+                currencyCode = currencyCode,
+                size = AmountSize.Medium,
+                modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
+            )
         }
     }
 }
@@ -499,9 +541,19 @@ fun ExpenseCard(
 ) {
     Card(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics {
+                if (expense.isDeleted) stateDescription = "已删除，不计入统计"
+            },
         shape = SharedLedgerRadius.Large,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(
+            containerColor = if (expense.isDeleted) {
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
+            } else {
+                MaterialTheme.colorScheme.surface
+            },
+        ),
         border = BorderStroke(
             SharedLedgerDimens.OutlineWidth,
             MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f),
@@ -509,7 +561,9 @@ fun ExpenseCard(
         elevation = CardDefaults.cardElevation(SharedLedgerElevation.Card),
     ) {
         Row(
-            modifier = Modifier.padding(SharedLedgerSpacing.Medium),
+            modifier = Modifier
+                .padding(SharedLedgerSpacing.Medium)
+                .alpha(if (expense.isDeleted) 0.68f else 1f),
             horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -537,8 +591,38 @@ fun ExpenseCard(
                 Text(
                     text = expense.name,
                     style = SharedLedgerTextStyles.Body,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = if (expense.isDeleted) {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
                 )
+                if (expense.isDeleted) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Surface(
+                            shape = SharedLedgerRadius.Full,
+                            color = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                        ) {
+                            Text(
+                                text = "已删除",
+                                modifier = Modifier.padding(
+                                    horizontal = SharedLedgerSpacing.Small,
+                                    vertical = SharedLedgerSpacing.XSmall,
+                                ),
+                                style = SharedLedgerTextStyles.Label,
+                            )
+                        }
+                        Text(
+                            text = "不计入统计",
+                            style = SharedLedgerTextStyles.Label,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
                 Text(
                     text = "${expense.payerName}付款 · ${expense.participantCount}人参与",
                     style = SharedLedgerTextStyles.Label,

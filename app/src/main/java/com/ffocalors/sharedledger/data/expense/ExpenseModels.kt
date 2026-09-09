@@ -130,8 +130,9 @@ data class RefundExpenseInput(
     val aaParticipantIds: List<String> = emptyList(),
     val occurredAt: String,
     val note: String? = null,
+    val originalExpenseId: String? = null,
 ) {
-    fun toCreateInput(originalExpenseId: String): CreateExpenseInput {
+    fun toCreateInput(originalExpenseId: String? = this.originalExpenseId): CreateExpenseInput {
         val refundAmount = amount.abs().negate()
         return CreateExpenseInput(
             ledgerUnitId = ledgerUnitId,
@@ -156,6 +157,44 @@ data class ExpenseMutationResult(
     val version: Long,
     val changed: Boolean? = null,
 )
+
+enum class ExpenseWriteState {
+    SUCCEEDED,
+    FAILED,
+    COMMITTED_REFRESH_FAILED,
+    UNKNOWN,
+}
+
+data class ExpenseWriteResult<out T>(
+    val value: T? = null,
+    val errorMessage: String? = null,
+    val state: ExpenseWriteState = if (value != null && errorMessage == null) {
+        ExpenseWriteState.SUCCEEDED
+    } else {
+        ExpenseWriteState.FAILED
+    },
+    val operationId: String? = null,
+) {
+    val isSuccess: Boolean get() = state == ExpenseWriteState.SUCCEEDED && value != null
+    val isCommitted: Boolean get() = state == ExpenseWriteState.COMMITTED_REFRESH_FAILED
+    val isUnknown: Boolean get() = state == ExpenseWriteState.UNKNOWN
+
+    companion object {
+        fun <T> success(value: T) = ExpenseWriteResult(value = value)
+        fun <T> failure(message: String) = ExpenseWriteResult<T>(errorMessage = message)
+        fun <T> committedRefreshFailure(operationId: String, message: String, value: T? = null) =
+            ExpenseWriteResult(
+                value = value,
+                errorMessage = message,
+                state = ExpenseWriteState.COMMITTED_REFRESH_FAILED,
+                operationId = operationId,
+            )
+        fun <T> unknown(message: String) = ExpenseWriteResult<T>(
+            errorMessage = message,
+            state = ExpenseWriteState.UNKNOWN,
+        )
+    }
+}
 
 class ExpenseOperationException(
     val userMessage: String,

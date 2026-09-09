@@ -14,6 +14,10 @@ import kotlinx.serialization.json.JsonPrimitive
 interface TransferRepository {
     suspend fun loadContext(activityId: String, direction: SettlementDirection): Result<SettlementContext>
     suspend fun createSettlement(input: CreateSettlementTransferInput): Result<SettlementTransferResult>
+
+    /** Keeps the existing Result API while exposing ambiguous RPC outcomes to new callers. */
+    suspend fun createSettlementWrite(input: CreateSettlementTransferInput): TransferWriteResult<SettlementTransferResult> =
+        createSettlement(input).toTransferWriteResult()
 }
 
 class SupabaseTransferRepository(private val client: SupabaseClient) : TransferRepository {
@@ -29,6 +33,9 @@ class SupabaseTransferRepository(private val client: SupabaseClient) : TransferR
                 eq("is_deleted", false)
             }
         }.decodeList<TransferParticipantRowDto>()
+        val claims = client.from("participant_claims").select {
+            filter { eq("activity_id", activityId) }
+        }.decodeList<TransferClaimRowDto>()
         val currentClaim = client.from("participant_claims").select {
             filter {
                 eq("activity_id", activityId)
@@ -39,13 +46,23 @@ class SupabaseTransferRepository(private val client: SupabaseClient) : TransferR
             filter { eq("activity_id", activityId) }
         }.decodeList<BilateralDebtRowDto>()
         val names = participants.associate { it.id to it.name }
-        val candidates = selectSettlementCandidates(currentClaim?.participantId, direction, debts, names)
+        val claimedParticipantIds = claims.map { it.participantId }.toSet()
+        val canActOnBehalf = activity.createdBy == userId
+        val candidates = selectSettlementCandidates(
+            currentParticipantId = currentClaim?.participantId,
+            direction = direction,
+            debts = debts,
+            participantNames = names,
+            canActOnBehalf = canActOnBehalf,
+            claimedParticipantIds = claimedParticipantIds,
+        )
         SettlementContext(
             activityId = activityId,
             currentParticipantId = currentClaim?.participantId,
             currentParticipantName = currentClaim?.participantId?.let(names::get),
             baseCurrency = activity.baseCurrency.trim().uppercase(),
             candidates = candidates,
+            canActOnBehalf = canActOnBehalf,
         )
     }.mapFailure()
 
@@ -61,32 +78,82 @@ class SupabaseTransferRepository(private val client: SupabaseClient) : TransferR
         )
     }.mapFailure()
 
+    override suspend fun createSettlementWrite(input: CreateSettlementTransferInput): TransferWriteResult<SettlementTransferResult> =
+        createSettlement(input).toTransferWriteResult()
+
     private fun <T> Result<T>.mapFailure(): Result<T> = fold(
         onSuccess = { Result.success(it) },
         onFailure = { Result.failure(it.takeIf { error -> error is TransferOperationException } ?: TransferOperationException(TransferErrorMapper.toUserMessage(it), it)) },
     )
 }
 
+internal fun <T> Result<T>.toTransferWriteResult(): TransferWriteResult<T> = fold(
+    onSuccess = { TransferWriteResult.success(it) },
+    onFailure = {
+        if (TransferErrorMapper.isTransferNetworkFailure(it)) {
+            TransferWriteResult.unknown("转账写入结果未知，请先刷新资金记录确认，勿重复提交")
+        } else {
+            TransferWriteResult.failure(TransferErrorMapper.toUserMessage(it))
+        }
+    },
+)
+
 internal fun selectSettlementCandidates(
     currentParticipantId: String?,
     direction: SettlementDirection,
     debts: List<BilateralDebtRowDto>,
     participantNames: Map<String, String>,
+    canActOnBehalf: Boolean = false,
+    claimedParticipantIds: Set<String> = emptySet(),
 ): List<SettlementCandidate> = currentParticipantId?.let { currentId ->
     debts.mapNotNull { debt ->
         val candidateId = when (direction) {
-            SettlementDirection.TRANSFER -> debt.creditorParticipantId.takeIf { debt.debtorParticipantId == currentId }
-            SettlementDirection.RECEIVE -> debt.debtorParticipantId.takeIf { debt.creditorParticipantId == currentId }
+            SettlementDirection.TRANSFER -> debt.creditorParticipantId.takeIf { canActOnBehalf || debt.debtorParticipantId == currentId }
+            SettlementDirection.RECEIVE -> debt.debtorParticipantId.takeIf { canActOnBehalf || debt.creditorParticipantId == currentId }
         }
         val amount = debt.amount.toBigDecimalOrNull()
         candidateId?.let { id ->
             val name = participantNames[id]
             if (name != null && amount != null && amount > BigDecimal.ZERO) {
-                SettlementCandidate(id, name, amount)
+                val fromId = debt.debtorParticipantId
+                val toId = debt.creditorParticipantId
+                SettlementCandidate(
+                    participantId = id,
+                    participantName = name,
+                    amount = amount,
+                    fromParticipantId = fromId,
+                    fromParticipantName = participantNames[fromId],
+                    toParticipantId = toId,
+                    toParticipantName = participantNames[toId],
+                    onBehalfOptions = listOf(fromId, toId).distinct()
+                        .filter { it !in claimedParticipantIds }
+                        .mapNotNull { participantId -> participantNames[participantId]?.let { SettlementParticipant(participantId, it) } },
+                )
             } else null
         }
     }
-}.orEmpty()
+}.orEmpty().let { claimedCandidates ->
+    if (currentParticipantId != null || !canActOnBehalf) claimedCandidates
+    else debts.mapNotNull { debt ->
+        val fromId = debt.debtorParticipantId
+        val toId = debt.creditorParticipantId
+        val id = toId
+        val amount = debt.amount.toBigDecimalOrNull() ?: return@mapNotNull null
+        val name = participantNames[id] ?: return@mapNotNull null
+        SettlementCandidate(
+            participantId = id,
+            participantName = name,
+            amount = amount,
+            fromParticipantId = fromId,
+            fromParticipantName = participantNames[fromId],
+            toParticipantId = toId,
+            toParticipantName = participantNames[toId],
+            onBehalfOptions = listOf(fromId, toId).distinct()
+                .filter { it !in claimedParticipantIds }
+                .mapNotNull { participantId -> participantNames[participantId]?.let { SettlementParticipant(participantId, it) } },
+        ).takeIf { it.onBehalfOptions.isNotEmpty() }
+    }
+}
 
 object TransferRepositoryFactory {
     fun create(): TransferRepository = SupabaseClientProvider.createOrNull()?.let(::SupabaseTransferRepository)

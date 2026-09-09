@@ -11,7 +11,11 @@ internal object SettlementRpcPayloadBuilder {
         put("to_participant_id", input.toParticipantId())
         put("amount", input.amount.toPlainString())
         put("occurred_at", input.occurredAt)
-        put("on_behalf_of_participant_id", JsonNull)
+        if (input.onBehalfOfParticipantId == null) {
+            put("on_behalf_of_participant_id", JsonNull)
+        } else {
+            put("on_behalf_of_participant_id", input.onBehalfOfParticipantId)
+        }
     }
 
     private fun CreateSettlementTransferInput.fromParticipantId(): String = when (direction) {
@@ -24,4 +28,3 @@ internal object SettlementRpcPayloadBuilder {
         SettlementDirection.RECEIVE -> currentParticipantId
     }
 }
-

@@ -44,13 +44,13 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
 import com.ffocalors.sharedledger.data.activity.ActivityDetail
 
 /**
- * Static V0.1 form for creating a child activity. It only owns local form
- * state; the host decides what to do after the user taps create.
+ * Form for creating a child activity. It owns local input state; the host
+ * validates and persists the request after the user taps create.
  */
 @Composable
 fun CreateSubActivityScreen(
-    parentActivityName: String = "日本旅行",
-    participants: List<ParticipantUiModel> = DemoData.japanTravel.participants,
+    parentActivityName: String = "",
+    participants: List<ParticipantUiModel> = emptyList(),
     activity: ActivityDetail? = null,
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
@@ -283,6 +283,9 @@ private fun FormSection(
 @Composable
 private fun CreateSubActivityScreenPreview() {
     SharedLedgerTheme {
-        CreateSubActivityScreen()
+        CreateSubActivityScreen(
+            parentActivityName = "日本旅行",
+            participants = DemoData.japanTravel.participants,
+        )
     }
 }

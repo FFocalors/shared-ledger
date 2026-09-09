@@ -8,7 +8,7 @@ import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
 import java.math.BigDecimal
 
-/** Stable IDs used by the V0.1 navigation demo; these are not domain entities. */
+/** Stable IDs used only by Compose previews and UI tests; these are not domain entities. */
 object DemoRouteIds {
     const val JOIN_ACTIVITY = "demo-join"
     const val NORMAL_ACTIVITY = "demo-normal"
@@ -23,7 +23,7 @@ object DemoRouteIds {
     const val CREATED_NORMAL_ACTIVITY = "demo-created-normal"
     const val CREATED_LARGE_ACTIVITY = "demo-created-large"
 
-    /** Stable demo identity for a locally completed transfer submission. */
+    /** Stable preview identity for a locally completed transfer fixture. */
     fun transfer(
         activityId: String,
         ledgerUnitId: String?,
@@ -40,7 +40,7 @@ object DemoRouteIds {
     fun finalSettlementTransfer(activityId: String): String = "demo-final-settlement-$activityId"
 }
 
-/** Shared display fixtures. They intentionally remain UI models, not persistence entities. */
+/** Shared Compose preview fixtures. They remain UI models, not persistence entities. */
 object DemoData {
     val japanTravel = ActivityCardUiModel(
         name = "日本旅行",

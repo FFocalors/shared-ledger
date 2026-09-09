@@ -1,6 +1,20 @@
 package com.ffocalors.sharedledger.data.activity
 
 object ActivityErrorMapper {
+    fun failureKind(error: Throwable): ActivityFailureKind {
+        val raw = error.message.orEmpty()
+        return when {
+            raw.contains("42501") || raw.contains("permission", ignoreCase = true) ||
+                raw.contains("member", ignoreCase = true) ->
+                ActivityFailureKind.PermissionDenied
+            raw.contains("P0002") || raw.contains("PGRST116") ||
+                raw.contains("not found", ignoreCase = true) -> ActivityFailureKind.NotFound
+            raw.contains("timeout", ignoreCase = true) || raw.contains("network", ignoreCase = true) ||
+                raw.contains("connect", ignoreCase = true) -> ActivityFailureKind.Network
+            else -> ActivityFailureKind.Other
+        }
+    }
+
     fun toUserMessage(error: Throwable): String {
         if (error is ActivityOperationException) return error.userMessage
         val raw = error.message.orEmpty()

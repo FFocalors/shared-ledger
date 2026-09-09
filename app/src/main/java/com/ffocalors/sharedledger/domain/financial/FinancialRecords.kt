@@ -2,7 +2,7 @@ package com.ffocalors.sharedledger.domain.financial
 
 import java.math.BigDecimal
 
-/** The values are the public.transfer_type enum values in the database. */
+/** Transfer values mirror public.transfer_type; projected timeline rows use client-only keys. */
 enum class FundRecordType(
     val databaseValue: String,
     val displayName: String,
@@ -11,7 +11,8 @@ enum class FundRecordType(
     PREPAYMENT("prepayment", "预存"),
     PREPAYMENT_RETURN("prepayment_return", "预存返还"),
     FINAL_SETTLEMENT("final_settlement", "最终结算"),
-    AUTO_PREPAYMENT_USAGE("auto_prepayment_usage", "预存自动抵扣"),
+    AUTO_PREPAYMENT_USAGE("auto_prepayment_usage", "预存自动扣款"),
+    REFUND("refund", "退款"),
     ;
 
     companion object {
@@ -123,7 +124,7 @@ data class FundRecord(
     val sourceExpenseTitle: String? = null,
 ) {
     val isVoided: Boolean get() = voidMetadata != null
-    val isReadOnly: Boolean get() = source == FundRecordSource.PREPAYMENT_USAGE
+    val isReadOnly: Boolean get() = source != FundRecordSource.TRANSFER
     val unresolvedDisputes: List<TransferDispute> get() = disputes.filterNot { it.isResolved }
     val hasUnresolvedDispute: Boolean get() = unresolvedDisputes.isNotEmpty()
 
@@ -150,11 +151,12 @@ data class FundRecord(
 enum class FundRecordSource {
     TRANSFER,
     PREPAYMENT_USAGE,
+    REFUND_EXPENSE,
 }
 
 /** Encodes the component rules enforced by private.assert_component_total and its RPC callers. */
 fun isValidComponentSet(recordType: FundRecordType, components: List<FundRecordComponent>): Boolean {
-    if (recordType == FundRecordType.AUTO_PREPAYMENT_USAGE) return components.isEmpty()
+    if (recordType == FundRecordType.AUTO_PREPAYMENT_USAGE || recordType == FundRecordType.REFUND) return components.isEmpty()
     if (components.isEmpty() || components.map { it.type }.distinct().size != components.size) return false
     if (components.any { it.amount <= BigDecimal.ZERO }) return false
     if (components.sumOf { it.amount } <= BigDecimal.ZERO) return false
@@ -170,11 +172,12 @@ fun isValidComponentSet(recordType: FundRecordType, components: List<FundRecordC
             types.isNotEmpty() && types.all {
                 it == FundRecordComponentType.SETTLEMENT || it == FundRecordComponentType.PREPAYMENT_RETURN
             }
+        FundRecordType.REFUND -> components.isEmpty()
     }
 }
 
 fun FundRecord.hasValidComponentSet(): Boolean =
-    if (type == FundRecordType.AUTO_PREPAYMENT_USAGE) amount > BigDecimal.ZERO && components.isEmpty()
+    if (type == FundRecordType.AUTO_PREPAYMENT_USAGE || type == FundRecordType.REFUND) amount > BigDecimal.ZERO && components.isEmpty()
     else components.sumOf { it.amount }.compareTo(amount) == 0 && isValidComponentSet(type, components)
 
 fun FundRecordType.componentTypesAllowed(): Set<FundRecordComponentType> = when (this) {
@@ -183,4 +186,5 @@ fun FundRecordType.componentTypesAllowed(): Set<FundRecordComponentType> = when 
     FundRecordType.PREPAYMENT_RETURN -> setOf(FundRecordComponentType.PREPAYMENT_RETURN)
     FundRecordType.FINAL_SETTLEMENT -> setOf(FundRecordComponentType.SETTLEMENT, FundRecordComponentType.PREPAYMENT_RETURN)
     FundRecordType.AUTO_PREPAYMENT_USAGE -> emptySet()
+    FundRecordType.REFUND -> emptySet()
 }

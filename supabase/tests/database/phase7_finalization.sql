@@ -2,7 +2,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select extensions.plan(69);
+select extensions.plan(71);
 
 create function pg_temp.authenticate(p_user uuid) returns void
 language plpgsql as $function$
@@ -24,6 +24,7 @@ insert into public.activity_members(activity_id,user_id) values
  ('f9700000-0000-0000-0000-000000000001','f9700000-0000-0000-0000-000000000001'),
  ('f9700000-0000-0000-0000-000000000001','f9700000-0000-0000-0000-000000000002'),
  ('f9700000-0000-0000-0000-000000000002','f9700000-0000-0000-0000-000000000001'),
+ ('f9700000-0000-0000-0000-000000000002','f9700000-0000-0000-0000-000000000002'),
  ('f9700000-0000-0000-0000-000000000003','f9700000-0000-0000-0000-000000000001'),
  ('f9700000-0000-0000-0000-000000000003','f9700000-0000-0000-0000-000000000002');
 insert into public.ledger_units(id,activity_id,name,type) values
@@ -92,10 +93,12 @@ do $$ begin perform public.create_sub_activity('f9700000-0000-0000-0000-00000000
 select throws_ok($$select public.create_participant('f9700000-0000-0000-0000-000000000002','late large',null)$$,'55000',null,'large list locked by first sub-activity');
 select ok((select private.is_activity_member('f9700000-0000-0000-0000-000000000001')), 'member predicate permits active member');
 select pg_temp.authenticate('f9700000-0000-0000-0000-000000000002');
+select ok((select count(*)=1 from public.create_sub_activity('f9700000-0000-0000-0000-000000000002','member sub-activity')), 'activity member can create a sub-activity');
 select ok((select is_new from public.claim_participant('f9700000-0000-0000-0000-000000000001',(select id from public.participants where activity_id='f9700000-0000-0000-0000-000000000001' and participant_order=1))), 'member can claim after list lock');
 select ok((select public.unclaim_participant('f9700000-0000-0000-0000-000000000001')), 'member can release its claimed participant');
 select throws_ok($$select public.claim_participant('f9700000-0000-0000-0000-000000000001',(select id from public.participants where activity_id='f9700000-0000-0000-0000-000000000001' and participant_order=0))$$,'23505',null,'one user cannot claim a second participant');
 select pg_temp.authenticate('f9700000-0000-0000-0000-000000000003');
+select throws_ok($$select public.create_sub_activity('f9700000-0000-0000-0000-000000000002','outsider sub-activity')$$,'42501',null,'non-member cannot create a sub-activity');
 select throws_ok($$select public.claim_participant('f9700000-0000-0000-0000-000000000001',(select id from public.participants where activity_id='f9700000-0000-0000-0000-000000000001' and participant_order=1))$$,'42501',null,'outsider cannot claim participant');
 select pg_temp.authenticate('f9700000-0000-0000-0000-000000000001');
 

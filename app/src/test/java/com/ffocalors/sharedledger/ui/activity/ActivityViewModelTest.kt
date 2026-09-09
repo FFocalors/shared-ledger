@@ -3,6 +3,8 @@ package com.ffocalors.sharedledger.ui.activity
 import com.ffocalors.sharedledger.data.activity.ActivityDetail
 import com.ffocalors.sharedledger.data.activity.ActivityMember
 import com.ffocalors.sharedledger.data.activity.ActivityPermissions
+import com.ffocalors.sharedledger.data.activity.ActivityFailureKind
+import com.ffocalors.sharedledger.data.activity.ActivityOperationException
 import com.ffocalors.sharedledger.data.activity.ActivityRole
 import com.ffocalors.sharedledger.data.activity.ActivitySummary
 import com.ffocalors.sharedledger.data.activity.ActivityType
@@ -23,6 +25,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -139,6 +142,40 @@ class ActivityViewModelTest {
     }
 
     @Test
+    fun forceRefreshClearsRemovedActivityDetailButNetworkFailureKeepsCachedDetail() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeActivityRepository(summary)
+        val viewModel = ActivityViewModel(repository, "user-1")
+
+        viewModel.loadDetail("activity-1")
+        advanceUntilIdle()
+        assertTrue(viewModel.detail("activity-1").value.detail != null)
+
+        repository.detailResult = Result.failure(
+            ActivityOperationException(
+                "你没有权限执行此操作，或已不是活动成员",
+                kind = ActivityFailureKind.PermissionDenied,
+            ),
+        )
+        viewModel.loadDetail("activity-1", force = true)
+        advanceUntilIdle()
+        assertEquals(null, viewModel.detail("activity-1").value.detail)
+
+        repository.detailResult = Result.success(repository.detailFor(summary))
+        viewModel.loadDetail("activity-1", force = true)
+        advanceUntilIdle()
+        repository.detailResult = Result.failure(
+            ActivityOperationException(
+                "网络连接失败，请检查网络后重试",
+                kind = ActivityFailureKind.Network,
+            ),
+        )
+        viewModel.loadDetail("activity-1", force = true)
+        advanceUntilIdle()
+        assertTrue(viewModel.detail("activity-1").value.detail != null)
+    }
+
+    @Test
     fun joinCanCompleteWithoutClaimingParticipant() = runTest(dispatcher) {
         Dispatchers.setMain(dispatcher)
         val repository = FakeActivityRepository(summary).apply {
@@ -183,6 +220,78 @@ class ActivityViewModelTest {
         assertEquals("p", viewModel.managementState("activity-1")?.currentUserParticipantId)
         assertEquals("Alex", viewModel.managementState("activity-1")?.participants?.single()?.boundUserName)
         assertTrue(viewModel.isCurrentUserBound(viewModel.detail("activity-1").value.detail))
+    }
+
+    @Test
+    fun settingsToggleKeepsTheLoadedActivityBaseCurrency() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val jpySummary = summary.copy(baseCurrency = "JPY")
+        val repository = FakeActivityRepository(jpySummary)
+        val viewModel = ActivityViewModel(repository, "user-1")
+
+        viewModel.loadDetail("activity-1")
+        advanceUntilIdle()
+        viewModel.updateSettings("activity-1", "日本旅行", multiCurrency = true)
+        advanceUntilIdle()
+
+        assertEquals("JPY", repository.lastUpdatedBaseCurrency)
+    }
+
+    @Test
+    fun managementStateExposesParticipantLockAndStructuredDebtState() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val locked = summary.copy(
+            totalDebt = "0.00",
+            participantsLockedAt = "2026-09-07T10:00:00Z",
+        )
+        val repository = FakeActivityRepository(locked)
+        val viewModel = ActivityViewModel(repository, "user-1")
+
+        viewModel.loadDetail("activity-1")
+        advanceUntilIdle()
+
+        val state = viewModel.managementState("activity-1")
+        assertTrue(state?.participantListLocked == true)
+        assertTrue(state?.participantListLockMessage?.contains("不能新增或删除") == true)
+        assertTrue(state?.hasOutstandingDebt == false)
+
+        viewModel.deleteParticipant("p", "activity-1")
+        advanceUntilIdle()
+        assertEquals(0, repository.deleteParticipantCalls.get())
+        assertEquals("参与人名单已锁定，不能删除参与人", viewModel.message.value)
+        viewModel.clearMessage()
+        assertNull(viewModel.message.value)
+    }
+
+    @Test
+    fun archivedManagementStateIsReadOnlyButExposesCreatorUnarchiveAction() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val archived = summary.copy(archivedAt = "2026-09-07T10:00:00Z")
+        val repository = FakeActivityRepository(archived)
+        val viewModel = ActivityViewModel(repository, "user-1")
+
+        viewModel.loadDetail("activity-1")
+        advanceUntilIdle()
+
+        val state = viewModel.managementState("activity-1")
+        assertEquals(com.ffocalors.sharedledger.ui.screens.ActivityManagementStatus.Archived, state?.status)
+        assertTrue(state?.showSettings == false)
+        assertTrue(state?.canManageParticipants == false)
+        assertTrue(state?.canManageMembers == false)
+        assertTrue(state?.canBindParticipant == false)
+        assertTrue(state?.canUnbindParticipant == false)
+        assertTrue(state?.showTransferOwnershipAction == false)
+        assertTrue(state?.showDeleteAction == false)
+        assertTrue(state?.canArchiveActivity == false)
+        assertTrue(state?.canUnarchiveActivity == true)
+
+        viewModel.createSubActivity("activity-1", "不应创建")
+        advanceUntilIdle()
+        assertEquals(0, repository.createSubActivityCalls.get())
+
+        viewModel.unarchiveActivity("activity-1")
+        advanceUntilIdle()
+        assertEquals(1, repository.unarchiveCalls.get())
     }
 
     @Test
@@ -248,17 +357,22 @@ class ActivityViewModelTest {
         var joinDetail: ActivityDetail? = null
         val createCalls = AtomicInteger()
         val claimCalls = AtomicInteger()
+        val createSubActivityCalls = AtomicInteger()
+        val unarchiveCalls = AtomicInteger()
         val detailCalls = AtomicInteger()
         var detailOverride: (() -> ActivityDetail)? = null
+        var detailResult: Result<ActivityDetail>? = null
         var lastClaimedParticipantId: String? = null
         var memberUserId: String = "user-1"
         var memberDisplayName: String = "Alex"
         var memberIsCreator: Boolean = true
         var memberParticipantId: String = "p"
+        var lastUpdatedBaseCurrency: String? = null
+        val deleteParticipantCalls = AtomicInteger()
         override suspend fun listActivities() = Result.success(activities)
         override suspend fun getActivity(activityId: String): Result<ActivityDetail> {
             detailCalls.incrementAndGet()
-            return Result.success(detailOverride?.invoke() ?: detailFor(defaultSummary, activityId))
+            return detailResult ?: Result.success(detailOverride?.invoke() ?: detailFor(defaultSummary, activityId))
         }
 
         fun detailFor(summary: ActivitySummary, activityId: String = summary.id) = ActivityDetail(
@@ -281,11 +395,23 @@ class ActivityViewModelTest {
             return Result.success(Unit)
         }
         override suspend fun unclaimParticipant(activityId: String) = Result.success(Unit)
-        override suspend fun deleteParticipant(participantId: String) = Result.success(Unit)
-        override suspend fun createSubActivity(activityId: String, name: String) = Result.success(LedgerUnit("u2", activityId, name, "sub_activity"))
-        override suspend fun updateSettings(activityId: String, name: String, baseCurrency: String, multiCurrencyEnabled: Boolean) = Result.success(Unit)
+        override suspend fun deleteParticipant(participantId: String): Result<Unit> {
+            deleteParticipantCalls.incrementAndGet()
+            return Result.success(Unit)
+        }
+        override suspend fun createSubActivity(activityId: String, name: String): Result<LedgerUnit> {
+            createSubActivityCalls.incrementAndGet()
+            return Result.success(LedgerUnit("u2", activityId, name, "sub_activity"))
+        }
+        override suspend fun updateSettings(activityId: String, name: String, baseCurrency: String, multiCurrencyEnabled: Boolean): Result<Unit> {
+            lastUpdatedBaseCurrency = baseCurrency
+            return Result.success(Unit)
+        }
         override suspend fun archiveActivity(activityId: String) = Result.success(Unit)
-        override suspend fun unarchiveActivity(activityId: String) = Result.success(Unit)
+        override suspend fun unarchiveActivity(activityId: String): Result<Unit> {
+            unarchiveCalls.incrementAndGet()
+            return Result.success(Unit)
+        }
         override suspend fun deleteActivity(activityId: String) = Result.success(Unit)
         override suspend fun removeMember(activityId: String, userId: String) = Result.success(Unit)
         override suspend fun transferCreator(activityId: String, newCreatorUserId: String) = Result.success(Unit)

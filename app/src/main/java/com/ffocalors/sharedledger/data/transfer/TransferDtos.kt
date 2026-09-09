@@ -7,6 +7,7 @@ import kotlinx.serialization.json.JsonElement
 @Serializable
 internal data class TransferActivityRowDto(
     @SerialName("base_currency") val baseCurrency: String,
+    @SerialName("created_by") val createdBy: String? = null,
 )
 
 @Serializable
@@ -35,4 +36,3 @@ internal data class CreateSettlementTransferRpcDto(
     val currency: String,
     @SerialName("financial_version") val financialVersion: Long,
 )
-

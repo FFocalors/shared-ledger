@@ -11,18 +11,52 @@ sealed interface FinancialReadResult<out T> {
     data class Failure(val message: String) : FinancialReadResult<Nothing>
 }
 
+enum class FinancialWriteState {
+    SUCCEEDED,
+    FAILED,
+    COMMITTED_REFRESH_FAILED,
+    UNKNOWN,
+}
+
 /** Every successful mutation asks the caller to re-query; no local balance projection is kept. */
 data class FinancialWriteResult<out T>(
     val value: T?,
     val errorMessage: String? = null,
     val requiresRefresh: Boolean = true,
+    val state: FinancialWriteState = if (value != null && errorMessage == null) {
+        FinancialWriteState.SUCCEEDED
+    } else {
+        FinancialWriteState.FAILED
+    },
+    /** Server-side identifier returned by a committed RPC, when its follow-up refresh failed. */
+    val committedOperationId: String? = null,
 ) {
-    val isSuccess: Boolean get() = value != null && errorMessage == null
+    val isSuccess: Boolean get() = state == FinancialWriteState.SUCCEEDED && value != null
+    val isCommitted: Boolean get() = state == FinancialWriteState.COMMITTED_REFRESH_FAILED
+    val isUnknown: Boolean get() = state == FinancialWriteState.UNKNOWN
 
     companion object {
         fun <T> success(value: T): FinancialWriteResult<T> = FinancialWriteResult(value)
         fun <T> failure(message: String): FinancialWriteResult<T> =
             FinancialWriteResult(value = null, errorMessage = message, requiresRefresh = false)
+
+        fun <T> committedRefreshFailure(operationId: String, message: String): FinancialWriteResult<T> =
+            FinancialWriteResult(
+                value = null,
+                errorMessage = message,
+                requiresRefresh = true,
+                state = FinancialWriteState.COMMITTED_REFRESH_FAILED,
+                committedOperationId = operationId,
+            )
+
+        fun <T> unknown(operationId: String? = null, message: String): FinancialWriteResult<T> =
+            FinancialWriteResult(
+                value = null,
+                errorMessage = message,
+                requiresRefresh = true,
+                state = FinancialWriteState.UNKNOWN,
+                committedOperationId = operationId,
+            )
     }
 }
 
@@ -41,6 +75,8 @@ data class FinancialContext(
     val participants: List<com.ffocalors.sharedledger.domain.financial.ParticipantInfo>,
     val currentParticipantId: String?,
     val accounts: List<PrepaymentAccount>,
+    val canActOnBehalf: Boolean = false,
+    val unclaimedParticipants: List<com.ffocalors.sharedledger.domain.financial.ParticipantInfo> = emptyList(),
 )
 
 data class FinalSettlementSuggestion(
@@ -53,6 +89,7 @@ data class FinalSettlementSuggestion(
     val prepaymentReturnAmount: BigDecimal,
     val currency: String,
     val sourceFinancialVersion: Long,
+    val onBehalfOfParticipantId: String? = null,
 )
 
 data class PrepaymentInput(
@@ -61,6 +98,7 @@ data class PrepaymentInput(
     val custodianParticipantId: String,
     val amount: BigDecimal,
     val occurredAt: String,
+    val onBehalfOfParticipantId: String? = null,
 )
 
 interface FinancialRecordRepository {
@@ -73,6 +111,12 @@ interface FinancialRecordRepository {
     suspend fun list(activityId: String, type: FundRecordType? = null): FinancialReadResult<List<FundRecord>>
     suspend fun get(activityId: String, transferId: String): FinancialReadResult<FundRecord>
     suspend fun void(
+        activityId: String,
+        transferId: String,
+        reason: String,
+    ): FinancialWriteResult<FundRecord>
+
+    suspend fun restore(
         activityId: String,
         transferId: String,
         reason: String,

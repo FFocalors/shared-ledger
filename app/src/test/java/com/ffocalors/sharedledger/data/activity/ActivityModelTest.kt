@@ -16,6 +16,7 @@ class ActivityModelTest {
         assertTrue(creator.canEditSettings)
         assertFalse(member.canManageParticipants)
         assertFalse(member.canEditSettings)
+        assertTrue(member.canCreateSubActivity)
     }
 
     @Test
@@ -26,6 +27,35 @@ class ActivityModelTest {
         assertTrue(participant.id != member.id)
         assertTrue(participant.activityId == "activity-1")
         assertTrue(member.userId == "user-1")
+    }
+
+    @Test
+    fun activityMemberErrorsClearAsPermissionFailures() {
+        assertEquals(
+            ActivityFailureKind.PermissionDenied,
+            ActivityErrorMapper.failureKind(IllegalStateException("user is not an activity member")),
+        )
+    }
+
+    @Test
+    fun activityRowDecodesParticipantListLockTimestamp() {
+        val row = Json.decodeFromString<ActivityRowDto>(
+            """
+            {
+              "id":"activity-1",
+              "name":"旅行",
+              "type":"normal",
+              "join_code":"12345678",
+              "base_currency":"JPY",
+              "multi_currency_enabled":true,
+              "created_by":"user-1",
+              "participants_locked_at":"2026-09-07T10:00:00Z"
+            }
+            """.trimIndent(),
+        )
+
+        assertEquals("JPY", row.baseCurrency)
+        assertEquals("2026-09-07T10:00:00Z", row.participantsLockedAt)
     }
 
     @Test

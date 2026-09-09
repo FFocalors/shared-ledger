@@ -19,4 +19,29 @@ class TransferSelectionTest {
         assertEquals(listOf("bob"), selectSettlementCandidates("me", SettlementDirection.RECEIVE, debts, names).map { it.participantId })
         assertEquals(BigDecimal("30.0"), selectSettlementCandidates("me", SettlementDirection.TRANSFER, debts, names).single().amount)
     }
+
+    @Test
+    fun unboundCreatorSeesOnlyDebtsWithAnUnclaimedPartyToActFor() {
+        val debts = listOf(
+            BilateralDebtRowDto("debtor", "claimed-creditor", JsonPrimitive("30.0")),
+            BilateralDebtRowDto("claimed-debtor", "claimed-creditor", JsonPrimitive("20.0")),
+        )
+        val names = mapOf(
+            "debtor" to "Debtor",
+            "claimed-creditor" to "Claimed creditor",
+            "claimed-debtor" to "Claimed debtor",
+        )
+
+        val candidates = selectSettlementCandidates(
+            currentParticipantId = null,
+            direction = SettlementDirection.TRANSFER,
+            debts = debts,
+            participantNames = names,
+            canActOnBehalf = true,
+            claimedParticipantIds = setOf("claimed-creditor", "claimed-debtor"),
+        )
+
+        assertEquals(listOf("debtor"), candidates.single().onBehalfOptions.map { it.participantId })
+        assertEquals("claimed-creditor", candidates.single().participantId)
+    }
 }

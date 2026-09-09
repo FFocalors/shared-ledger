@@ -1,8 +1,16 @@
 # Android × Supabase 联调路线
 
-> 状态：`执行基线`
+> 状态：`Integration Phase 4 COMPLETE / P2-P5 代码收口完成 / P6 E2E 待执行`
 >
 > 目标：将已经冻结的 Supabase 后端契约与 Android 前端原型按真实业务链逐段接通，最终实现 Runtime Demo/Fake 数据归零和双账号端到端验收。
+
+当前状态为 `Integration Phase 4 COMPLETE`。该状态表示 Phase 1–4 的真实业务代码已经接通；P2-P5 的代码收口已完成，但 Phase 2–4 保留的负向/真机验收、Storage/Realtime 真实环境、异常矩阵和双账号验收仍未完成，因此项目尚未达到 `E2E Acceptance READY`。
+
+P2 Storage 与 P3 Activity-scoped Realtime 的 Android 代码接线已完成；P4 异常/权限/未知写入硬化和 P5 Runtime Demo/Fake 运行时清零代码也已完成。真实 Supabase Storage/Realtime、设备相册/相机、上传中断、网络切换、前后台、Session/并发/归档、双账号和权限验收尚未完成；下一开发阶段为 P6 双账号完整 E2E。
+
+2026-09-08 P6 本地环境预检已通过：Docker Engine 29.7.2 和本地 Supabase 核心服务可用，17/17 migration 已应用；8 个 pgTAP 脚本共 94 项 assertion 通过，5 个 plain SQL assert 脚本经本地 `psql -v ON_ERROR_STOP=1` 通过，13/13 脚本按各自 runner 通过。`vector` 日志辅助容器仍有重启异常，`imgproxy`/`pooler` 停止，但不阻塞当前应用核心链。真机尚未接入，完整双账号 E2E 仍未开始，执行步骤见 [P6_REAL_DEVICE_RUNBOOK.md](./P6_REAL_DEVICE_RUNBOOK.md)。
+
+Phase 4 后的具体实施顺序见 [ANDROID_INTEGRATION_COMPLETION_PLAN.md](./ANDROID_INTEGRATION_COMPLETION_PLAN.md)，双账号验收证据统一记录在 [E2E_ACCEPTANCE_CHECKLIST.md](./E2E_ACCEPTANCE_CHECKLIST.md)。
 
 ## 1. 联调基线
 
@@ -44,7 +52,7 @@ Supabase Auth / PostgREST / RPC / Storage / Realtime
 - [x] 将旧 [api-contracts.md](./api-contracts.md) 标记为废弃。
 - [x] 将本机 `JAVA_HOME` 修正为 JDK 根目录，而不是 `bin` 目录（当前用户环境为 `D:\project\JDK`）。
 - [x] 安装 Supabase CLI，并通过 `supabase --help`、`supabase --version` 和项目状态检查验证环境（CLI 2.116.0；Docker Engine 29.7.2）。
-- [x] 在空本地数据库重新应用全部 17 条 migration；本次 Phase 4 未修改 migration。`supabase test db --local` 已执行：7 个脚本的 78 项断言通过，另有 5 个历史脚本因缺少 TAP plan 被 pg_prove 判为解析失败，详见 Phase 1 实测记录。
+- [x] 2026-09-08 在本地数据库应用全部 17 条 migration；本次未修改 migration。8 个有 TAP plan 的脚本共 94 项 pgTAP assertion 通过，5 个 plain SQL assert 脚本改用本地 `psql -v ON_ERROR_STOP=1` 逐个执行并全部退出码为 0，13/13 脚本按各自 runner 通过；plain SQL 的断言不计入 pgTAP 数量。
 - [x] 确认 `main` clean 后创建 integration feature 分支：`codex/integration-phase-1-auth`。
 - [x] 确认 Android 环境配置不会把本地或生产密钥提交到 Git。
 
@@ -284,7 +292,7 @@ Expense List
 - [ ] 快速重复点击不会产生重复消费。
 - [ ] 并发修改能显示明确冲突并重新读取。
 
-### Phase 3 Android 实际进展（2026-09-05，UI/ViewModel/Navigation 已接线）
+### Phase 3 Android 实际进展（2026-09-05，代码接线完成，待完整验收）
 
 - [x] 已复用现有 `ExpenseRepository`，新增按当前 Auth 用户隔离的
   `ExpenseViewModel`、列表/详情/表单状态和 Factory。
@@ -327,7 +335,7 @@ Final Settlement 必须遵循：
 
 > 当前结算方案已发生变化，请重新查看最新方案。
 
-### Phase 4 Android 实际进展（2026-09-06，代码接线完成，待用户验收）
+### Phase 4 Android 实际进展（2026-09-06，代码接线完成，待完整验收）
 
 - [x] 新增异步 Financial Remote DataSource、DTO/mapper 和 Supabase Repository；资金记录按 RLS 读取 `transfers`，并补齐 Participant、Profile、`transfer_components`、作废元数据、`transfer_disputes` 和 `final_settlement_paths`。
 - [x] 统一资金记录列表和资金详情已移除运行时 `FakeFinancialRecordRepository`，支持 settlement、prepayment、prepayment_return、final_settlement 四类记录；作废、争议和最终结算路径均在成功写入后重新读取服务端。
@@ -336,6 +344,23 @@ Final Settlement 必须遵循：
 - [x] 运行时不再从导航装配 Fake 金融仓库；Fake/Sample 仅保留给 Preview 和单元测试。
 - [x] 已增加 DTO/mapper、四类记录、预存输入、作废/争议和最终结算请求的高价值测试覆盖。
 - [ ] 尚未执行真机验收；大型活动预览、预存抵扣/返还、作废争议和最终结算刷新仍需用户按本阶段验收门槛验证。
+
+### Phase 4/P1b 当前代码进展（2026-09-07，代码收口完成，待真实环境验收）
+
+- [x] Creator 代记已接通 Transfer、Prepayment、Prepayment Return 和 Final Settlement 四类资金流，提交 `on_behalf_of_participant_id` 并按当前参与人权限校验。
+- [x] Expense Refund 同时支持关联退款和独立退款；独立退款将 `original_expense_id` 保持为 `null`，金额、付款和分摊转换为负数。
+- [x] 活动取消归档已接线；归档时隐藏/禁用写入口，取消归档后刷新当前详情和首页。
+- [x] 活动名称编辑、复制加入码、删除 Participant、忘记密码 recovery 和 Auth deep link 回跳已接入对应页面/流程。
+- [x] Expense 发生时间使用 UTC+8 日期/时间选择器，内部保存合法 `Instant`；资金记录列表支持时间正序和倒序排序。
+- [x] `compileDebugKotlin` 及 Expense/Activity/Routes 定向测试已通过。
+- [ ] 尚未完成真实 Supabase API、真机和双账号验收；P1 退出门槛保持未通过，项目状态继续为 `Integration Phase 4 COMPLETE` / `E2E Acceptance NOT READY`。
+
+### P4/P5 当前代码进展（2026-09-07，代码完成，真实矩阵待执行）
+
+- P4 已完成 Session/网络错误可恢复提示、Activity 权限/移除成员旧缓存清理、归档写入口门禁、UNKNOWN/COMMITTED_REFRESH_FAILED 写入保护和刷新确认路径；这些改动没有替代真实 Session 过期、响应丢失、并发和双账号验证。
+- P5 已完成正式导航和 Repository Factory 的 Runtime Demo/Fake 清零；`FakeFinancialRecordRepository`、迁移出的 `demo*` 构造器和最小资金 fixture 位于 `src/test`，`DemoData`/`DemoRouteIds` 仅由 `@Preview` 或测试引用，正式组件默认值使用真实输入或安全空值。
+- `compileDebugKotlin`、`compileReleaseKotlin` 通过；`RoutesTest`、`FinalSettlementRequestTest`、`LedgerUnitTest`、`FinancialRecordsTest` 定向测试通过。
+- 真实 Supabase、真机、Storage、Realtime 和双账号异常矩阵尚未执行；所有 E2E 退出门槛继续保持未勾选，状态仍为 `E2E Acceptance NOT READY`。
 
 ### 验收门槛
 
@@ -347,7 +372,21 @@ Final Settlement 必须遵循：
 
 ## 8. Integration Phase 5：Storage、Realtime 与 E2E
 
-### Storage
+Phase 5 按以下顺序执行，详细任务、风险和退出门槛以 [ANDROID_INTEGRATION_COMPLETION_PLAN.md](./ANDROID_INTEGRATION_COMPLETION_PLAN.md) 为准：
+
+```text
+P0 基线与验收设施
+→ P1 Phase 4 收尾与业务补口
+→ P2 Storage
+→ P3 Realtime Coordinator
+→ P4 异常、权限与并发矩阵
+→ P5 Runtime Demo/Fake 清零
+→ P6 双账号完整 E2E 与发布门禁
+```
+
+P1 是对既有实现的可靠性和业务完整性收尾，不新增新的财务模型。若 LedgerUnit 文字备注或 Final Settlement 严格版本语义需要后端变化，必须先形成契约决策，再新增 migration 和数据库测试。
+
+### Storage（P2 代码接线完成，真实验收待执行）
 
 - 使用私有 bucket `activity-attachments`。
 - 支持 JPEG、PNG、WebP，单文件最大 10 MiB。
@@ -355,11 +394,24 @@ Final Settlement 必须遵循：
 - 支持 Expense 和 LedgerUnit 附件的查看、删除及 archived 只读。
 - 不保存永久公开 URL；读取必须遵守 Activity 成员权限。
 
-### Realtime
+当前代码已覆盖 `create_attachment` → Storage upload → `complete_attachment` 三步协议，并保留 pending、UNKNOWN、complete 响应丢失和删除部分失败的恢复状态。已返回 metadata/`attachmentId` 后可以复用同一 metadata 做确认、完成或清理；若 `create_attachment` 请求本身响应丢失，冻结 RPC 没有客户端幂等键，客户端无法可靠对账，真实中断验收必须记录并评估，不能笼统声称不会创建重复 metadata。客户端图片准备层支持 JPEG/PNG/WebP、采样压缩、10 MiB 最终结果限制、伪 MIME 拒绝、系统 Photo Picker 剩余名额限制和私有 FileProvider 相机临时文件。上述内容仍需通过真实 Storage 和设备验收，P2 退出门槛未通过。
 
-使用 Activity-scoped Realtime Coordinator，不为 16 张表分别建立独立 UI 监听器。
+### Realtime（P3 代码接线完成，真实验收待执行）
 
-事件到达后标记对应 Repository 数据失效，并带短 debounce 重新读取服务端状态。客户端不得依据事件自行累加 Debt、Prepayment 或 Settlement。
+使用共享 `SupabaseClient`、`realtime-kt` 和 OkHttp WebSocket 的 Activity-scoped Realtime Coordinator，不为 16 张表分别建立独立 UI 监听器。16 张 publication 表按 ActivityIdentity、Expense、Financial、Attachment 四域映射；15 张表按 `id`/`activity_id` 过滤，`expenses` 通过 RLS 读取有效 `ledger_unit` ID 后按 `ledger_unit_id` 过滤。
+
+事件到达后标记对应 Repository 数据失效，并带 250ms debounce、single-flight/trailing 重新读取服务端状态；Activity 切换/stop、动态 scope rebuild、前台/重连补读和页面 revision 刷新均已接线，NewExpense 草稿保持保护。客户端不得依据事件自行累加 Debt、Prepayment 或 Settlement。
+
+P3 代码接线已完成，但真实 Supabase Realtime、网络切换、前后台、双账号四域同步、DELETE/RLS 遗漏恢复和无全表监听仍未验收；P3 exit gate 保持未勾选。下一开发阶段为 P6 双账号完整 E2E，同时补做 P2/P3/P4 真实设备验收。
+
+### P6 本地环境进展（2026-09-08）
+
+- Docker Engine 29.7.2 可达，本地 Supabase 核心容器（DB、Kong、Auth、REST、Storage、Realtime、Studio）已启动并通过容器健康检查；Auth、REST、Storage status、Realtime websocket 路由和 Studio 本地 HTTP 探针均可达。
+- 当前仓库 17/17 migration 已在本地应用。8 个 pgTAP 脚本共 94 项 assertion 通过；5 个 plain SQL assert 脚本经本地容器 `psql -v ON_ERROR_STOP=1` 逐个执行并通过，合计 13/13，plain SQL assert 数不并入 pgTAP 统计。
+- `vector` 仅为日志采集辅助容器，当前有重启/网络错误；`imgproxy` 和 `pooler` 停止。上述环境项不阻塞当前应用核心链，但不代表完整本地栈全绿。
+- 真机尚未连接，USB debugging/RSA、`adb reverse tcp:54321 tcp:54321`、APK 安装、双账号和 Realtime 并发验收均待执行；不得把本地服务健康或单设备顺序切账号视为 E2E 通过。
+
+真机操作和证据记录按 [P6_REAL_DEVICE_RUNBOOK.md](./P6_REAL_DEVICE_RUNBOOK.md) 执行；真实验收 checkbox 和 `E2E Acceptance READY` 状态保持未通过。
 
 ### E2E Acceptance
 
@@ -374,7 +426,7 @@ Final Settlement 必须遵循：
 
 同时覆盖断网、超时、Session 过期、重复点击、并发修改、archived 后写入、权限不足、stale version 和杀进程恢复。
 
-完成后状态从 `Integration GO` 升级为 `E2E Acceptance READY`。
+所有结果记录到 [E2E_ACCEPTANCE_CHECKLIST.md](./E2E_ACCEPTANCE_CHECKLIST.md)。完成后状态从 `Integration Phase 4 COMPLETE` 升级为 `E2E Acceptance READY`。
 
 ## 9. Demo/Fake 退出策略
 
@@ -386,9 +438,9 @@ Runtime Demo/Fake 必须按阶段退出，不一次性删除：
 | Phase 2 | Home、Activity、Participant、Member、LedgerUnit 的 `DemoData` |
 | Phase 3 | Expense Runtime Demo 数据与本地假写入 |
 | Phase 4 | `FakeFinancialRecordRepository` 和资金/结算本地假写入 |
-| Phase 5 | 全局搜索并清除剩余 Runtime `Demo` / `Fake` 引用 |
+| Phase 5 | 全局搜索并清除剩余 Runtime `Demo` / `Fake` 引用（代码已完成，Preview/test fixture 保留） |
 
-`@Preview`、截图测试和纯 UI 预览使用的 Sample Data 可以保留，但必须位于清晰的 preview/sample 边界内，不能成为正式运行时数据源。
+`@Preview`、截图测试和纯 UI 预览使用的 Sample Data 可以保留，但必须位于清晰的 preview/sample 边界内，不能成为正式运行时数据源。P5 代码已完成，真实 release/E2E 门禁仍待执行。
 
 ## 10. 完成定义
 
@@ -400,9 +452,9 @@ Phase 1  Supabase Foundation + Auth ✅
         ↓
 Phase 2  Activity + Participant + Member ✅（Android 真实接线完成，双账号主链路基本通过；负向验收保留）
         ↓
-Phase 3  Expense End-to-End
+Phase 3  Expense End-to-End ✅（代码接线完成，完整验收待补齐）
         ↓
-Phase 4  Transfer + Prepayment + Final Settlement
+Phase 4  Transfer + Prepayment + Final Settlement ✅（代码接线完成，完整验收待补齐）
         ↓
 Phase 5  Storage + Realtime + E2E
         ↓

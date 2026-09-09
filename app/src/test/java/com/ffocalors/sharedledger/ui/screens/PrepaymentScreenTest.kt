@@ -69,4 +69,25 @@ class PrepaymentScreenTest {
 
         assertFalse(isValidPrepaymentDirection(candidate))
     }
+
+    @Test
+    fun proxyCandidateRequiresAnUnclaimedOnBehalfParticipant() {
+        val proxy = buildPrepaymentPairCandidate(
+            mode = PrepaymentMode.FUND,
+            owner = ParticipantInfo("unclaimed-owner", "代记所有者"),
+            custodian = target,
+            account = null,
+            unclaimedParticipants = listOf(ParticipantInfo("unclaimed-owner", "代记所有者")),
+        )
+
+        assertFalse(isValidPrepaymentActingParty(proxy, current.participantId, null))
+        assertTrue(isValidPrepaymentActingParty(proxy, current.participantId, "unclaimed-owner"))
+    }
+
+    @Test
+    fun candidateContainingCurrentParticipantCanUseNoOnBehalf() {
+        val own = buildPrepaymentCandidate(PrepaymentMode.FUND, current.participantId, target)
+
+        assertTrue(isValidPrepaymentActingParty(own, current.participantId, null))
+    }
 }

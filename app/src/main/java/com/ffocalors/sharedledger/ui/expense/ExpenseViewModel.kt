@@ -10,6 +10,8 @@ import com.ffocalors.sharedledger.data.expense.ExpenseErrorMapper
 import com.ffocalors.sharedledger.data.expense.ExpenseOperationException
 import com.ffocalors.sharedledger.data.expense.ExpenseRepository
 import com.ffocalors.sharedledger.data.expense.ExpenseRepositoryFactory
+import com.ffocalors.sharedledger.data.expense.ExpenseWriteResult
+import com.ffocalors.sharedledger.data.expense.ExpenseWriteState
 import com.ffocalors.sharedledger.data.expense.ParticipantExpenseShareRepository
 import com.ffocalors.sharedledger.data.expense.ParticipantExpenseShareRepositoryFactory
 import com.ffocalors.sharedledger.data.expense.ParticipantExpenseShareSnapshot
@@ -72,6 +74,8 @@ data class ExpenseFormUiState(
     val isLoading: Boolean = false,
     val isSubmitting: Boolean = false,
     val errorMessage: String? = null,
+    val submissionBlocked: Boolean = false,
+    val writeState: ExpenseWriteState? = null,
 )
 
 class ExpenseViewModel(
@@ -96,7 +100,7 @@ class ExpenseViewModel(
         if (!force && !state.value.isLoading && state.value.errorMessage == null) return
         loadList(
             key = key,
-            expenseBlock = { repository.listByActivity(activityId, includeDeleted = false) },
+            expenseBlock = { repository.listByActivity(activityId, includeDeleted = true) },
             shareBlock = { shareRepository.getForActivity(activityId, currentUserId) },
             currencyCode = baseCurrency,
         )
@@ -117,7 +121,7 @@ class ExpenseViewModel(
         if (!force && !state.value.isLoading && state.value.errorMessage == null) return
         loadList(
             key = key,
-            expenseBlock = { repository.listByLedgerUnit(ledgerUnitId, includeDeleted = false) },
+            expenseBlock = { repository.listByLedgerUnit(ledgerUnitId, includeDeleted = true) },
             shareBlock = { shareRepository.getForLedgerUnit(activityId, ledgerUnitId, currentUserId) },
             currencyCode = baseCurrency,
         )
@@ -143,7 +147,7 @@ class ExpenseViewModel(
         draft: ExpenseFormDraft,
         onSuccess: (String) -> Unit = {},
     ) {
-        if (_form.value.isSubmitting) return
+        if (_form.value.isSubmitting || _form.value.submissionBlocked) return
         val validation = validate(draft, mode)
         if (validation != null) {
             _form.value = ExpenseFormUiState(errorMessage = validation)
@@ -153,8 +157,8 @@ class ExpenseViewModel(
         _form.value = ExpenseFormUiState(isSubmitting = true)
         viewModelScope.launch {
             val result = when (mode) {
-                ExpenseFormMode.Create -> repository.create(input.create)
-                ExpenseFormMode.Edit -> repository.update(
+                ExpenseFormMode.Create -> repository.createWrite(input.create)
+                ExpenseFormMode.Edit -> repository.updateWrite(
                     UpdateExpenseInput(
                         expenseId = requireNotNull(expenseId),
                         ledgerUnitId = input.create.ledgerUnitId,
@@ -171,7 +175,7 @@ class ExpenseViewModel(
                         originalExpenseId = input.create.originalExpenseId,
                     ),
                 )
-                ExpenseFormMode.Refund -> repository.refund(
+                ExpenseFormMode.Refund -> repository.refundWrite(
                     RefundExpenseInput(
                         ledgerUnitId = input.create.ledgerUnitId,
                         title = input.create.title,
@@ -184,46 +188,113 @@ class ExpenseViewModel(
                         aaParticipantIds = input.create.aaParticipantIds,
                         occurredAt = input.create.occurredAt,
                         note = input.create.note,
+                        originalExpenseId = input.create.originalExpenseId,
                     ),
-                    requireNotNull(input.create.originalExpenseId),
                 )
             }
-            result.fold(
-                onSuccess = { mutation ->
+            when {
+                result.isSuccess && result.value != null -> {
+                    val mutation = result.value
                     _form.value = ExpenseFormUiState()
                     refreshAfterMutation(activityId, input.create.ledgerUnitId, expenseId ?: mutation.expenseId)
                     onSuccess(mutation.expenseId)
-                },
-                onFailure = { _form.value = ExpenseFormUiState(errorMessage = userMessage(it)) },
-            )
+                }
+                result.isCommitted && result.value != null -> {
+                    // The RPC committed and returned the authoritative expense id. A failed
+                    // follow-up read must not discard that id or block attachment upload.
+                    val mutation = result.value
+                    _form.value = ExpenseFormUiState(
+                        errorMessage = result.errorMessage
+                            ?: "账单已保存，但最新详情暂时无法刷新，请稍后刷新确认",
+                        writeState = result.state,
+                    )
+                    refreshAfterMutation(activityId, input.create.ledgerUnitId, mutation.expenseId)
+                    onSuccess(mutation.expenseId)
+                }
+                else -> _form.value = ExpenseFormUiState(
+                    errorMessage = result.errorMessage ?: "账单写入失败",
+                    submissionBlocked = result.isUnknown,
+                    writeState = result.state,
+                )
+            }
         }
     }
 
-    fun delete(expenseId: String) = mutateDetail(expenseId, "账单已作废") { repository.delete(expenseId) }
+    fun delete(expenseId: String) = mutateDetail(expenseId, "账单已作废") { repository.deleteWrite(expenseId) }
 
-    fun restore(expenseId: String) = mutateDetail(expenseId, "账单已恢复") { repository.restore(expenseId) }
+    fun restore(expenseId: String) = mutateDetail(expenseId, "账单已恢复") { repository.restoreWrite(expenseId) }
 
-    fun clearFormError() { _form.value = _form.value.copy(errorMessage = null) }
+    fun clearFormError() { _form.value = ExpenseFormUiState() }
 
-    private fun mutateDetail(expenseId: String, successMessage: String, action: suspend () -> Result<*>) {
-        if (_form.value.isSubmitting) return
+    /** Clears an ambiguous-write guard only after the caller has explicitly refreshed/confirmed. */
+    fun recoverFromUnknownWrite(
+        activityId: String,
+        ledgerUnitId: String,
+        expenseId: String? = null,
+        onConfirmed: () -> Unit = {},
+    ) {
+        if (_form.value.writeState != ExpenseWriteState.UNKNOWN) return
+        viewModelScope.launch {
+            val confirmed = if (expenseId != null) {
+                repository.getDetail(expenseId).isSuccess
+            } else {
+                repository.listByActivity(activityId, includeDeleted = true).isSuccess &&
+                    repository.listByLedgerUnit(ledgerUnitId, includeDeleted = true).isSuccess
+            }
+            if (!confirmed) {
+                _form.value = _form.value.copy(errorMessage = "刷新账单失败，请重试")
+                return@launch
+            }
+            clearFormError()
+            onConfirmed()
+            if (expenseId != null) refreshAfterMutation(activityId, ledgerUnitId, expenseId)
+            else {
+                loadByActivity(activityId, force = true)
+                loadByLedgerUnit(activityId, ledgerUnitId, force = true)
+            }
+        }
+    }
+
+    private fun mutateDetail(
+        expenseId: String,
+        successMessage: String,
+        action: suspend () -> ExpenseWriteResult<com.ffocalors.sharedledger.data.expense.ExpenseMutationResult>,
+    ) {
+        if (_form.value.isSubmitting || _form.value.submissionBlocked) return
         _form.value = ExpenseFormUiState(isSubmitting = true)
         viewModelScope.launch {
-            action().fold(
-                onSuccess = {
-                    _form.value = ExpenseFormUiState()
+            val result = action()
+            if (result.isSuccess || (result.isCommitted && result.value != null)) {
+                    val committed = result.isCommitted
+                    _form.value = if (committed) {
+                        ExpenseFormUiState(
+                            errorMessage = result.errorMessage
+                                ?: "账单已保存，但最新详情暂时无法刷新，请稍后刷新确认",
+                            writeState = result.state,
+                        )
+                    } else {
+                        ExpenseFormUiState()
+                    }
                     val current = detailStates[expenseId]?.value?.detail
                     if (current != null) refreshAfterMutation(current.ledgerUnit.activityId, current.expense.ledgerUnitId, expenseId)
                     detailStates.getOrPut(expenseId) { MutableStateFlow(ExpenseDetailRouteState()) }.value =
-                        detailStates[expenseId]!!.value.copy(actionMessage = successMessage)
+                        detailStates[expenseId]!!.value.copy(
+                            actionMessage = if (committed) {
+                                result.errorMessage ?: "账单已保存，但最新详情暂时无法刷新，请稍后刷新确认"
+                            } else {
+                                successMessage
+                            },
+                        )
                     loadDetail(expenseId, force = true)
-                },
-                onFailure = { error ->
-                    _form.value = ExpenseFormUiState(errorMessage = userMessage(error))
+            } else {
+                    _form.value = ExpenseFormUiState(
+                        errorMessage = result.errorMessage ?: "账单操作失败",
+                        submissionBlocked = result.isUnknown,
+                        writeState = result.state,
+                    )
                     detailStates.getOrPut(expenseId) { MutableStateFlow(ExpenseDetailRouteState()) }.value =
-                        detailStates[expenseId]!!.value.copy(actionMessage = userMessage(error))
-                },
-            )
+                        detailStates[expenseId]!!.value.copy(actionMessage = result.errorMessage ?: "账单操作失败")
+            }
         }
     }
 
@@ -302,7 +373,6 @@ class ExpenseViewModel(
             }
             ExpenseSplitMethod.Aa -> if (draft.aaParticipantIds.isEmpty()) return "请选择 AA 参与人"
         }
-        if (mode == ExpenseFormMode.Refund && draft.originalExpenseId.isNullOrBlank()) return "退款缺少原账单"
         return null
     }
 
@@ -384,7 +454,7 @@ fun ExpenseDetail.toFormDraft(mode: ExpenseFormMode): ExpenseFormDraft {
         splitMethod = expense.splitMethod,
         manualSplitAmounts = splitAmounts.mapValues { it.value.toPlainString() },
         aaParticipantIds = splitAmounts.keys.toList(),
-        occurredAt = expense.occurredAt,
+        occurredAt = if (mode == ExpenseFormMode.Refund) Instant.now().toString() else expense.occurredAt,
         note = expense.note.orEmpty(),
     )
 }
@@ -402,6 +472,7 @@ internal fun Expense.toExpenseCardUiModel(
     time = UiDateTimeFormatter.format(occurredAt),
     expenseId = id,
     amountAvailable = amountAvailable,
+    isDeleted = isDeleted,
 )
 
 fun ExpenseDetail.toUiState(): ExpenseDetailUiState {

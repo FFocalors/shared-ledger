@@ -19,7 +19,7 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         ?: throw FinancialOperationException("登录状态已失效，请重新登录")
 
     suspend fun listRecords(activityId: String, type: FundRecordType? = null): List<FundRecord> {
-        val transfers = if (type == FundRecordType.AUTO_PREPAYMENT_USAGE) {
+        val transfers = if (type == FundRecordType.AUTO_PREPAYMENT_USAGE || type == FundRecordType.REFUND) {
             emptyList()
         } else {
             client.from("transfers").select {
@@ -35,12 +35,24 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         } else {
             emptyList()
         }
-        return (transferRecords + usageRecords).sortedByDescending { it.occurredAt }
+        val refundRecords = if (type == null || type == FundRecordType.REFUND) {
+            enrichRefunds(activityId)
+        } else {
+            emptyList()
+        }
+        return (transferRecords + usageRecords + refundRecords).sortedByDescending { it.occurredAt }
     }
 
-    suspend fun getRecord(activityId: String, transferId: String): FundRecord =
-        listRecords(activityId).firstOrNull { it.transferId == transferId }
+    suspend fun getRecord(activityId: String, transferId: String): FundRecord {
+        val transfer = client.from("transfers").select {
+            filter {
+                eq("activity_id", activityId)
+                eq("id", transferId)
+            }
+        }.decodeList<FinancialTransferRowDto>().firstOrNull()
             ?: throw FinancialOperationException("未找到资金记录")
+        return enrich(activityId, listOf(transfer)).first()
+    }
 
     suspend fun currentParticipantId(activityId: String): String? {
         val userId = currentUserId()
@@ -50,12 +62,19 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
     }
 
     suspend fun loadContext(activityId: String): FinancialContext {
+        val userId = currentUserId()
         val participants = client.from("participants").select {
             filter { eq("activity_id", activityId); eq("is_deleted", false) }
         }.decodeList<FinancialParticipantRowDto>().map { it.toParticipant() }
         val currency = client.from("activities").select {
             filter { eq("id", activityId) }
-        }.decodeSingle<FinancialActivityRowDto>().baseCurrency.trim().uppercase()
+        }.decodeSingle<FinancialActivityRowDto>()
+        val claims = client.from("participant_claims").select {
+            filter { eq("activity_id", activityId) }
+        }.decodeList<FinancialClaimRowDto>()
+        val currentParticipantId = claims.firstOrNull { it.userId == userId }?.participantId
+        val claimedParticipantIds = claims.map { it.participantId }.toSet()
+        val canActOnBehalf = currency.createdBy == userId
         val accounts = client.from("prepayment_accounts").select {
             filter { eq("activity_id", activityId) }
         }.decodeList<FinancialAccountRowDto>().mapNotNull { row ->
@@ -76,7 +95,15 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         val accountsWithUsage = accounts.map { account ->
             account.copy(usedAmount = usagesByAccount[account.accountId] ?: BigDecimal.ZERO)
         }
-        return FinancialContext(activityId, currency, participants, currentParticipantId(activityId), accountsWithUsage)
+        return FinancialContext(
+            activityId = activityId,
+            currency = currency.baseCurrency.trim().uppercase(),
+            participants = participants,
+            currentParticipantId = currentParticipantId,
+            accounts = accountsWithUsage,
+            canActOnBehalf = canActOnBehalf,
+            unclaimedParticipants = participants.filterNot { it.participantId in claimedParticipantIds },
+        )
     }
 
     suspend fun previewFinalSettlement(activityId: String): List<FinalSettlementSuggestion> {
@@ -106,70 +133,144 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
     }
 
     suspend fun createPrepayment(input: PrepaymentInput): FundRecord {
-        val response = client.postgrest.rpc("create_prepayment", buildJsonObject {
-            put("activity_id", input.activityId)
-            put("owner_participant_id", input.ownerParticipantId)
-            put("custodian_participant_id", input.custodianParticipantId)
-            put("amount", input.amount.toPlainString())
-            put("occurred_at", input.occurredAt)
-            put("on_behalf_of_participant_id", JsonNull)
-        }).decodeSingle<FinancialPrepaymentRpcDto>()
-        return getRecord(input.activityId, response.transferId)
+        val response = executeWriteRpc {
+            client.postgrest.rpc("create_prepayment", buildJsonObject {
+                put("activity_id", input.activityId)
+                put("owner_participant_id", input.ownerParticipantId)
+                put("custodian_participant_id", input.custodianParticipantId)
+                put("amount", input.amount.toPlainString())
+                put("occurred_at", input.occurredAt)
+            if (input.onBehalfOfParticipantId == null) {
+                put("on_behalf_of_participant_id", JsonNull)
+            } else {
+                put("on_behalf_of_participant_id", input.onBehalfOfParticipantId)
+            }
+            }).decodeSingle<FinancialPrepaymentRpcDto>()
+        }
+        return loadCommittedRecord(input.activityId, response.transferId)
     }
 
     suspend fun createPrepaymentReturn(input: PrepaymentInput): FundRecord {
-        val response = client.postgrest.rpc("create_prepayment_return", buildJsonObject {
-            put("activity_id", input.activityId)
-            put("owner_participant_id", input.ownerParticipantId)
-            put("custodian_participant_id", input.custodianParticipantId)
-            put("amount", input.amount.toPlainString())
-            put("occurred_at", input.occurredAt)
-            put("on_behalf_of_participant_id", JsonNull)
-        }).decodeSingle<FinancialTransferRpcDto>()
-        return getRecord(input.activityId, response.transferId)
+        val response = executeWriteRpc {
+            client.postgrest.rpc("create_prepayment_return", buildJsonObject {
+                put("activity_id", input.activityId)
+                put("owner_participant_id", input.ownerParticipantId)
+                put("custodian_participant_id", input.custodianParticipantId)
+                put("amount", input.amount.toPlainString())
+                put("occurred_at", input.occurredAt)
+            if (input.onBehalfOfParticipantId == null) {
+                put("on_behalf_of_participant_id", JsonNull)
+            } else {
+                put("on_behalf_of_participant_id", input.onBehalfOfParticipantId)
+            }
+            }).decodeSingle<FinancialTransferRpcDto>()
+        }
+        return loadCommittedRecord(input.activityId, response.transferId)
     }
 
     suspend fun void(record: FundRecord, reason: String): FundRecord {
-        if (record.isReadOnly) throw FinancialOperationException("预存自动抵扣记录仅供查看，不能作废")
+        if (record.isReadOnly) throw FinancialOperationException("只读资金记录不能作废")
         val rpc = if (record.type == FundRecordType.SETTLEMENT) "void_settlement_transfer" else "void_prepayment_transfer"
-        client.postgrest.rpc(rpc, buildJsonObject {
-            put("transfer_id", record.transferId)
-            put("void_reason", reason.trim())
-        }).decodeSingle<FinancialVoidRpcDto>()
-        return getRecord(record.activityId, record.transferId)
+        val response = executeWriteRpc(record.transferId) {
+            client.postgrest.rpc(rpc, buildJsonObject {
+                put("transfer_id", record.transferId)
+                put("void_reason", reason.trim())
+            }).decodeSingle<FinancialVoidRpcDto>()
+        }
+        return loadCommittedRecord(record.activityId, response.transferId)
+    }
+
+    suspend fun restore(record: FundRecord, reason: String): FundRecord {
+        if (record.isReadOnly) throw FinancialOperationException("只读资金记录不能恢复")
+        val response = executeWriteRpc(record.transferId) {
+            client.postgrest.rpc("restore_transfer", buildJsonObject {
+                put("transfer_id", record.transferId)
+                put("restore_reason", reason.trim())
+            }).decodeSingle<FinancialRestoreRpcDto>()
+        }
+        return loadCommittedRecord(record.activityId, response.transferId)
     }
 
     suspend fun addDispute(activityId: String, transferId: String, participantId: String, note: String): TransferDisputeResult {
-        val response = client.postgrest.rpc("add_transfer_dispute", buildJsonObject {
-            put("transfer_id", transferId)
-            put("participant_id", participantId)
-            put("note", note.trim())
-        }).decodeSingle<FinancialDisputeRpcDto>()
-        val record = getRecord(activityId, transferId)
+        val response = executeWriteRpc(transferId) {
+            client.postgrest.rpc("add_transfer_dispute", buildJsonObject {
+                put("transfer_id", transferId)
+                put("participant_id", participantId)
+                put("note", note.trim())
+            }).decodeSingle<FinancialDisputeRpcDto>()
+        }
+        val record = loadCommittedRecord(activityId, transferId)
         val dispute = record.disputes.firstOrNull { it.disputeId == response.disputeId }
-            ?: throw FinancialOperationException("争议提交成功，但刷新记录失败")
+            ?: throw FinancialWriteCommittedException(
+                operationId = response.disputeId,
+                userMessage = "争议已提交，但最新记录暂时无法刷新，请稍后刷新确认，勿重复提交",
+            )
         return TransferDisputeResult(dispute)
     }
 
     suspend fun resolveDispute(activityId: String, disputeId: String): TransferDisputeResult {
-        client.postgrest.rpc("remove_transfer_dispute", buildJsonObject {
-            put("dispute_id", disputeId)
-        }).decodeSingle<Boolean>()
-        val record = listRecords(activityId).firstOrNull { it.disputes.any { dispute -> dispute.disputeId == disputeId } }
-            ?: throw FinancialOperationException("争议已更新，但刷新记录失败")
+        executeWriteRpc(disputeId) {
+            client.postgrest.rpc("remove_transfer_dispute", buildJsonObject {
+                put("dispute_id", disputeId)
+            }).decodeSingle<Boolean>()
+        }
+        val record = try {
+            listRecords(activityId).firstOrNull { it.disputes.any { dispute -> dispute.disputeId == disputeId } }
+        } catch (error: Throwable) {
+            throw FinancialWriteCommittedException(
+                operationId = disputeId,
+                userMessage = "争议已更新，但最新记录暂时无法刷新，请稍后刷新确认，勿重复提交",
+                cause = error,
+            )
+        } ?: throw FinancialWriteCommittedException(
+            operationId = disputeId,
+            userMessage = "争议已更新，但最新记录暂时无法刷新，请稍后刷新确认，勿重复提交",
+        )
         return TransferDisputeResult(record.disputes.first { it.disputeId == disputeId })
     }
 
     suspend fun executeFinalSettlement(request: FinalSettlementSuggestion, occurredAt: String): FundRecord {
-        val response = client.postgrest.rpc("execute_final_settlement_item", buildJsonObject {
-            put("activity_id", request.activityId)
-            put("from_participant_id", request.from.participantId)
-            put("to_participant_id", request.to.participantId)
-            put("amount", request.amount.toPlainString())
-            put("occurred_at", occurredAt)
-            put("on_behalf_of_participant_id", JsonNull)
-        }).decodeSingle<FinancialTransferRpcDto>()
-        return getRecord(request.activityId, response.transferId)
+        val response = executeWriteRpc {
+            client.postgrest.rpc("execute_final_settlement_item", buildJsonObject {
+                put("activity_id", request.activityId)
+                put("from_participant_id", request.from.participantId)
+                put("to_participant_id", request.to.participantId)
+                put("amount", request.amount.toPlainString())
+                put("occurred_at", occurredAt)
+            if (request.onBehalfOfParticipantId == null) {
+                put("on_behalf_of_participant_id", JsonNull)
+            } else {
+                put("on_behalf_of_participant_id", request.onBehalfOfParticipantId)
+            }
+            }).decodeSingle<FinancialTransferRpcDto>()
+        }
+        return loadCommittedRecord(request.activityId, response.transferId)
+    }
+
+    private suspend fun <T> executeWriteRpc(
+        operationId: String? = null,
+        block: suspend () -> T,
+    ): T = try {
+        block()
+    } catch (error: Throwable) {
+        if (isFinancialNetworkFailure(error)) {
+            throw FinancialWriteUnknownException(
+                operationId = operationId,
+                userMessage = "资金操作结果未知，请先查看或刷新资金记录，勿重复提交",
+                cause = error,
+            )
+        }
+        throw error
+    }
+
+    private suspend fun loadCommittedRecord(activityId: String, transferId: String): FundRecord = try {
+        getRecord(activityId, transferId)
+    } catch (error: Throwable) {
+        throw FinancialWriteCommittedException(
+            operationId = transferId,
+            userMessage = "资金操作已成功，但最新记录暂时无法刷新，请稍后刷新确认，勿重复提交",
+            cause = error,
+        )
     }
 
     private suspend fun enrich(activityId: String, transfers: List<FinancialTransferRowDto>): List<FundRecord> {
@@ -231,8 +332,59 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
             mapPrepaymentUsageRecord(usage, account, debt, expense, participants, currency)
         }
     }
+
+    private suspend fun enrichRefunds(activityId: String): List<FundRecord> {
+        val unitIds = client.from("ledger_units").select {
+            filter { eq("activity_id", activityId) }
+        }.decodeList<com.ffocalors.sharedledger.data.expense.ExpenseLedgerUnitRowDto>().map { it.id }
+        if (unitIds.isEmpty()) return emptyList()
+        val refunds = client.from("expenses").select {
+            filter {
+                isIn("ledger_unit_id", unitIds)
+                lt("original_amount", 0)
+            }
+        }.decodeList<FinancialRefundExpenseRowDto>()
+        if (refunds.isEmpty()) return emptyList()
+        val refundIds = refunds.map { it.id }
+        val payments = client.from("payments").select {
+            filter { isIn("expense_id", refundIds) }
+        }.decodeList<FinancialExpensePartyRowDto>().groupBy { it.expenseId }
+        val originalIds = refunds.mapNotNull { it.originalExpenseId }.distinct()
+        val originalTitles = if (originalIds.isEmpty()) emptyMap() else client.from("expenses").select {
+            filter { isIn("id", originalIds) }
+        }.decodeList<FinancialExpenseTimelineRowDto>().associate { it.id to it.title }
+        val participants = client.from("participants").select {
+            filter { eq("activity_id", activityId) }
+        }.decodeList<FinancialParticipantRowDto>().associate { it.id to it.toParticipant() }
+        val userIds = refunds.flatMap { listOfNotNull(it.createdBy, it.deletedBy) }.distinct()
+        val profiles = if (userIds.isEmpty()) emptyMap() else client.from("profiles").select {
+            filter { isIn("id", userIds) }
+        }.decodeList<FinancialProfileRowDto>().associate { it.id to it.toRecorder() }
+        return refunds.map { refund ->
+            mapRefundRecord(
+                activityId = activityId,
+                expense = refund,
+                payments = payments[refund.id].orEmpty(),
+                participants = participants,
+                profiles = profiles,
+                originalExpenseTitle = refund.originalExpenseId?.let(originalTitles::get),
+            )
+        }
+    }
 }
 
 internal data class TransferDisputeResult(val dispute: com.ffocalors.sharedledger.domain.financial.TransferDispute)
 
-class FinancialOperationException(val userMessage: String, cause: Throwable? = null) : RuntimeException(userMessage, cause)
+internal class FinancialWriteCommittedException(
+    val operationId: String,
+    userMessage: String,
+    cause: Throwable? = null,
+) : FinancialOperationException(userMessage, cause)
+
+internal class FinancialWriteUnknownException(
+    val operationId: String?,
+    userMessage: String,
+    cause: Throwable? = null,
+) : FinancialOperationException(userMessage, cause)
+
+open class FinancialOperationException(val userMessage: String, cause: Throwable? = null) : RuntimeException(userMessage, cause)

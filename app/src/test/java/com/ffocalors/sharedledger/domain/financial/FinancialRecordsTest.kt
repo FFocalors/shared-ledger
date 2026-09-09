@@ -19,7 +19,7 @@ class FinancialRecordsTest {
         assertEquals(FundRecordType.PREPAYMENT, FundRecordType.fromDatabaseValue("prepayment"))
         assertEquals(FundRecordType.PREPAYMENT_RETURN, FundRecordType.fromDatabaseValue("prepayment_return"))
         assertEquals(FundRecordType.FINAL_SETTLEMENT, FundRecordType.fromDatabaseValue("final_settlement"))
-        assertEquals(5, FundRecordType.entries.size)
+        assertEquals(6, FundRecordType.entries.size)
     }
 
     @Test
@@ -40,6 +40,7 @@ class FinancialRecordsTest {
         assertFalse(isValidComponentSet(FundRecordType.SETTLEMENT, listOf(component(FundRecordComponentType.PREPAYMENT, "10"))))
         assertFalse(isValidComponentSet(FundRecordType.PREPAYMENT_RETURN, listOf(component(FundRecordComponentType.SETTLEMENT, "10"))))
         assertTrue(isValidComponentSet(FundRecordType.AUTO_PREPAYMENT_USAGE, emptyList()))
+        assertTrue(isValidComponentSet(FundRecordType.REFUND, emptyList()))
     }
 
     @Test
@@ -62,7 +63,7 @@ class FinancialRecordsTest {
     }
 
     @Test
-    fun voidRequiresReasonAndStoresVoidMetadataWithoutRestoreApi() = runBlocking {
+    fun voidAndRestoreRequireReasonAndKeepTheRecordIdempotent() = runBlocking {
         val actor = RecorderInfo("u", "测试记录人")
         val repository = FakeFinancialRecordRepository(actorContext = FakeActorContext(actor = actor, participantIds = setOf("fake-alice")))
         val blank = repository.void("fake-preview-activity", "fake-settlement-001", " ")
@@ -73,6 +74,10 @@ class FinancialRecordsTest {
         assertEquals("重复录入", result.value!!.voidMetadata!!.reason)
         val read = repository.get("fake-preview-activity", "fake-settlement-001")
         assertTrue(read is FinancialReadResult.Success && read.value.isVoided)
+        val restored = repository.restore("fake-preview-activity", "fake-settlement-001", "已确认更正")
+        assertTrue(restored.isSuccess)
+        assertFalse(restored.value!!.isVoided)
+        assertTrue(repository.restore("fake-preview-activity", "fake-settlement-001", "重复点击").isSuccess)
     }
 
     @Test
@@ -115,7 +120,7 @@ class FinancialRecordsTest {
             currency = "CNY",
             occurredAt = "2026-09-07T04:00:00Z",
             recordedAt = "2026-09-07T04:00:01Z",
-            recordedBy = RecorderInfo("system:prepayment", "系统自动支付"),
+            recordedBy = RecorderInfo("system:prepayment", "预存自动扣款"),
             source = FundRecordSource.PREPAYMENT_USAGE,
             sourceExpenseId = "expense-1",
             sourceExpenseTitle = "午餐",

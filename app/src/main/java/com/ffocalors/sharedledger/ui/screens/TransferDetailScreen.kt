@@ -23,6 +23,7 @@ import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Flag
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.material.icons.rounded.Route
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.Warning
@@ -48,7 +49,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.ffocalors.sharedledger.data.financial.fakeFinancialRecordSamples
 import com.ffocalors.sharedledger.domain.financial.FundRecord
 import com.ffocalors.sharedledger.domain.financial.FundRecordComponent
 import com.ffocalors.sharedledger.domain.financial.FundRecordComponentType
@@ -83,8 +83,8 @@ enum class TransferDetailDirection { TRANSFER, RECEIVE }
 /** Compatibility shell for existing callers; [record] is the canonical state. */
 @Immutable
 data class TransferDetailUiState(
-    val transferId: String = "fake-final-001",
-    val activityId: String = "fake-preview-activity",
+    val transferId: String = "",
+    val activityId: String = "",
     val ledgerUnitId: String? = null,
     val direction: TransferDetailDirection = TransferDetailDirection.TRANSFER,
     val payer: ParticipantUiModel = ParticipantUiModel("张三", IconContainerSage),
@@ -94,8 +94,8 @@ data class TransferDetailUiState(
     val currencyCode: String = "CNY",
     val occurredAt: String = "2026-09-02 09:00",
     val recordedAt: String = "2026-09-02 09:01",
-    val recordedBy: ParticipantUiModel = ParticipantUiModel("Fake 预览记录人", IconContainerSage),
-    val recordMethod: String = "演示",
+    val recordedBy: ParticipantUiModel = ParticipantUiModel("", IconContainerSage),
+    val recordMethod: String = "",
     val disputed: Boolean = false,
     val debtRepayment: BigDecimal = BigDecimal("200.00"),
     val newPrepayment: BigDecimal = BigDecimal("120.00"),
@@ -105,7 +105,7 @@ data class TransferDetailUiState(
     val record: FundRecord? = null,
     val errorMessage: String? = null,
     /** Resolved by the host from the authenticated member, never inferred as payer. */
-    val currentParticipantId: String? = "legacy-from",
+    val currentParticipantId: String? = null,
     val currentParticipantName: String? = null,
 )
 
@@ -126,6 +126,7 @@ private fun TransferDetailUiState.toFundRecord(): FundRecord = record ?: run {
             newPrepayment.takeIf { it > BigDecimal.ZERO }?.let { FundRecordComponent("legacy-final-return", FundRecordComponentType.PREPAYMENT_RETURN, it) },
         )
         FundRecordType.AUTO_PREPAYMENT_USAGE -> emptyList()
+        FundRecordType.REFUND -> emptyList()
     }
     FundRecord(
         transferId = transferId, activityId = activityId, from = from, to = to, type = legacyType,
@@ -140,13 +141,14 @@ private fun TransferDetailUiState.toFundRecord(): FundRecord = record ?: run {
 /** Read-only financial facts plus explicit backend mutation callbacks. */
 @Composable
 fun TransferDetailScreen(
-    uiState: TransferDetailUiState = TransferDetailUiState(),
+    uiState: TransferDetailUiState,
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
     onMore: ((transferId: String) -> Unit)? = null,
     onAddDispute: ((transferId: String, note: String) -> Unit)? = null,
     onResolveDispute: ((disputeId: String) -> Unit)? = null,
     onVoid: ((transferId: String, reason: String) -> Unit)? = null,
+    onRestore: ((transferId: String, reason: String) -> Unit)? = null,
     onRecreateCorrectRecord: ((transferId: String) -> Unit)? = null,
 ) {
     val record = uiState.toFundRecord()
@@ -175,6 +177,7 @@ fun TransferDetailScreen(
                 onAddDispute = onAddDispute?.let { { dialog = DetailDialog.AddDispute } },
                 onResolveDispute = onResolveDispute,
                 onVoid = onVoid?.let { { dialog = DetailDialog.VoidRecord } },
+                onRestore = onRestore?.let { { dialog = DetailDialog.RestoreRecord } },
                 onRecreate = onRecreateCorrectRecord?.let { callback -> { callback(record.transferId) } },
             )
         },
@@ -199,7 +202,7 @@ fun TransferDetailScreen(
             if (record.isReadOnly) {
                 DetailSection("来源账单") {
                     DetailRow("账单", record.sourceExpenseTitle ?: record.sourceExpenseId ?: "未知账单")
-                Text("该记录由预存自动抵扣生成，仅供查看。", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("该记录由预存自动扣款生成，仅供查看。", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             ComponentsSection(record.components, record.currency)
@@ -212,14 +215,37 @@ fun TransferDetailScreen(
         }
     }
     when (dialog) {
-        DetailDialog.VoidRecord -> ReasonDialog("作废这条记录？", "作废原因（必填）", "确认作废", { dialog = null }) { reason ->
-            dialog = null
-            onVoid?.invoke(record.transferId, reason)
-        }
-        DetailDialog.AddDispute -> ReasonDialog("添加争议", "争议说明（必填）", "提交争议", { dialog = null }) { note ->
-            dialog = null
-            onAddDispute?.invoke(record.transferId, note)
-        }
+        DetailDialog.VoidRecord -> ReasonDialog(
+            title = "作废这条记录？",
+            label = "作废原因（必填）",
+            confirmLabel = "确认作废",
+            onDismiss = { dialog = null },
+            onConfirm = { reason ->
+                dialog = null
+                onVoid?.invoke(record.transferId, reason)
+            },
+        )
+        DetailDialog.AddDispute -> ReasonDialog(
+            title = "添加争议",
+            label = "争议说明（必填）",
+            confirmLabel = "提交争议",
+            onDismiss = { dialog = null },
+            onConfirm = { note ->
+                dialog = null
+                onAddDispute?.invoke(record.transferId, note)
+            },
+        )
+        DetailDialog.RestoreRecord -> ReasonDialog(
+            title = "恢复这条记录？",
+            label = "恢复原因（必填）",
+            confirmLabel = "确认恢复",
+            onDismiss = { dialog = null },
+            onConfirm = { reason ->
+                dialog = null
+                onRestore?.invoke(record.transferId, reason)
+            },
+            description = "恢复后会按当前账单、还款与预存状态重新计算。若当前状态已变化，恢复可能需要重新查看最新方案。",
+        )
         null -> Unit
     }
 }
@@ -227,6 +253,7 @@ fun TransferDetailScreen(
 private sealed interface DetailDialog {
     data object VoidRecord : DetailDialog
     data object AddDispute : DetailDialog
+    data object RestoreRecord : DetailDialog
 }
 
 @Composable
@@ -421,6 +448,7 @@ private fun DetailActions(
     onAddDispute: (() -> Unit)?,
     onResolveDispute: ((String) -> Unit)?,
     onVoid: (() -> Unit)?,
+    onRestore: (() -> Unit)?,
     onRecreate: (() -> Unit)?,
 ) {
     Column(
@@ -428,9 +456,10 @@ private fun DetailActions(
         verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
     ) {
         if (record.isReadOnly) {
-            Text("自动抵扣记录仅供查看", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("预存自动扣款记录仅供查看", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
         } else if (record.isVoided) {
-            onRecreate?.let { SharedLedgerButton("重新创建正确记录", it, tone = SharedLedgerButtonTone.SoftPrimary, icon = Icons.Rounded.Refresh) }
+            onRestore?.let { SharedLedgerButton("恢复记录", it, tone = SharedLedgerButtonTone.Success, icon = Icons.Rounded.Restore) }
+            onRecreate?.let { SharedLedgerButton("恢复失败时重新创建", it, tone = SharedLedgerButtonTone.SoftPrimary, icon = Icons.Rounded.Refresh) }
         } else if (record.hasUnresolvedDispute) {
             val dispute = record.unresolvedDisputes.first()
             onResolveDispute?.let { callback ->
@@ -446,12 +475,24 @@ private fun DetailActions(
 }
 
 @Composable
-private fun ReasonDialog(title: String, label: String, confirmLabel: String, onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
+private fun ReasonDialog(
+    title: String,
+    label: String,
+    confirmLabel: String,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+    description: String? = null,
+) {
     var value by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
-        text = { OutlinedTextField(value, { value = it }, label = { Text(label) }, modifier = Modifier.fillMaxWidth(), minLines = 3) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium)) {
+                description?.let { Text(it, style = SharedLedgerTextStyles.BodySecondary) }
+                OutlinedTextField(value, { value = it }, label = { Text(label) }, modifier = Modifier.fillMaxWidth(), minLines = 3)
+            }
+        },
         confirmButton = { TextButton(onClick = { if (value.isNotBlank()) onConfirm(value.trim()) }, enabled = value.isNotBlank()) { Text(confirmLabel) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
     )
@@ -504,9 +545,29 @@ private fun StatusBadge(label: String, color: Color) {
     }
 }
 
-@Preview(name = "资金详情 - Fake", showBackground = true, widthDp = 390, heightDp = 844)
+@Preview(name = "资金详情 - 预览", showBackground = true, widthDp = 390, heightDp = 844)
 @Composable
 private fun TransferDetailPreview() {
-    val fakeRecord = fakeFinancialRecordSamples().first { it.transferId == "fake-final-001" }
-    SharedLedgerTheme { TransferDetailScreen(TransferDetailUiState(record = fakeRecord)) }
+    SharedLedgerTheme { TransferDetailScreen(TransferDetailUiState(record = previewTransferDetailRecord())) }
+}
+
+private fun previewTransferDetailRecord(): FundRecord {
+    val from = ParticipantInfo("preview-alice", "Alice")
+    val to = ParticipantInfo("preview-carol", "Carol")
+    val amount = BigDecimal("320.00")
+    return FundRecord(
+        transferId = "preview-final-001",
+        activityId = "preview-activity",
+        from = from,
+        to = to,
+        type = FundRecordType.FINAL_SETTLEMENT,
+        amount = amount,
+        currency = "CNY",
+        occurredAt = "2026-09-02 09:00",
+        recordedAt = "2026-09-02 09:01",
+        recordedBy = RecorderInfo("preview-user", "预览记录人"),
+        components = listOf(
+            FundRecordComponent("preview-component", FundRecordComponentType.SETTLEMENT, amount),
+        ),
+    )
 }

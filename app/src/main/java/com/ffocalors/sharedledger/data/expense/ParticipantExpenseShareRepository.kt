@@ -91,7 +91,6 @@ class SupabaseParticipantExpenseShareRepository(
         val expenses = client.from("expenses").select {
             filter {
                 isIn("ledger_unit_id", unitIds)
-                eq("is_deleted", false)
             }
         }.decodeList<ExpenseShareExpenseRowDto>()
         val expenseIds = expenses.map { it.id }
@@ -107,7 +106,7 @@ class SupabaseParticipantExpenseShareRepository(
         }
         return ParticipantExpenseShareAggregator.aggregate(
             participantId = claimedParticipantId,
-            expenses = expenses.map { ParticipantExpenseFact(it.id, it.ledgerUnitId) },
+            expenses = expenses.map { ParticipantExpenseFact(it.id, it.ledgerUnitId, it.isDeleted) },
             splits = splitRows.map {
                 ParticipantSplitFact(
                     expenseId = it.expenseId,
@@ -138,21 +137,28 @@ object ParticipantExpenseShareAggregator {
             .groupingBy { it.expenseId }
             .fold(BigDecimal.ZERO) { total, split -> total + split.baseAmount }
         val completeExpenseTotals = expenses.associate { it.id to (expenseTotals[it.id] ?: BigDecimal.ZERO) }
-        val ledgerUnitTotals = expenses
+        val activeExpenses = expenses.filterNot { it.isDeleted }
+        val ledgerUnitTotals = activeExpenses
             .groupBy { it.ledgerUnitId }
             .mapValues { (_, unitExpenses) ->
                 unitExpenses.fold(BigDecimal.ZERO) { total, expense -> total + (completeExpenseTotals[expense.id] ?: BigDecimal.ZERO) }
             }
         return ParticipantExpenseShareSnapshot(
             isBound = true,
-            activityTotalBaseAmount = completeExpenseTotals.values.fold(BigDecimal.ZERO, BigDecimal::add),
+            activityTotalBaseAmount = activeExpenses.fold(BigDecimal.ZERO) { total, expense ->
+                total + (completeExpenseTotals[expense.id] ?: BigDecimal.ZERO)
+            },
             ledgerUnitTotals = ledgerUnitTotals,
             expenseTotals = completeExpenseTotals,
         )
     }
 }
 
-data class ParticipantExpenseFact(val id: String, val ledgerUnitId: String)
+data class ParticipantExpenseFact(
+    val id: String,
+    val ledgerUnitId: String,
+    val isDeleted: Boolean = false,
+)
 
 data class ParticipantSplitFact(
     val expenseId: String,
@@ -164,6 +170,7 @@ data class ParticipantSplitFact(
 private data class ExpenseShareExpenseRowDto(
     val id: String,
     @SerialName("ledger_unit_id") val ledgerUnitId: String,
+    @SerialName("is_deleted") val isDeleted: Boolean = false,
 )
 
 @Serializable

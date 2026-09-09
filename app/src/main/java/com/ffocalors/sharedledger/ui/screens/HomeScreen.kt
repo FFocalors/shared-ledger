@@ -77,15 +77,15 @@ import com.ffocalors.sharedledger.ui.theme.sharedLedgerColors
 /**
  * 首页活动流。
  *
- * This screen intentionally owns only presentational/demo state. Navigation and
- * activity creation/joining are supplied by the host through callbacks.
+ * This screen renders activity data supplied by the host. Navigation and
+ * activity creation/joining are supplied through callbacks.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onActivityClick: (ActivityCardUiModel) -> Unit,
     modifier: Modifier = Modifier,
-    activities: List<ActivityCardUiModel> = listOf(DemoData.japanTravel, DemoData.weekendDinner),
+    activities: List<ActivityCardUiModel> = emptyList(),
     isLoading: Boolean = false,
     errorMessage: String? = null,
     onRetry: () -> Unit = {},
@@ -93,6 +93,8 @@ fun HomeScreen(
     onCreateActivity: () -> Unit = {},
     onJoinActivity: () -> Unit = {},
     onSignOut: () -> Unit = {},
+    userDisplayName: String = "我",
+    onProfileClick: (() -> Unit)? = null,
 ) {
     var selectedTab by rememberSaveable { mutableStateOf(HomeTab.InProgress) }
     var sheetVisible by rememberSaveable { mutableStateOf(false) }
@@ -104,7 +106,8 @@ fun HomeScreen(
         topBar = {
             SharedLedgerTopBar(
                 title = "SharedLedger",
-                avatarName = "我",
+                avatarName = userDisplayName,
+                onAvatarClick = onProfileClick,
                 containerColor = AppBackground,
                 actionIcon = Icons.Rounded.Logout,
                 actionContentDescription = "退出登录",
@@ -530,6 +533,7 @@ private fun HomeScreenPreview() {
     com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme {
         HomeScreen(
             onActivityClick = {},
+            activities = listOf(DemoData.japanTravel, DemoData.weekendDinner),
         )
     }
 }

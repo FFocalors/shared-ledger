@@ -79,6 +79,17 @@ Stitch 画布均为移动端：宽度 `780px`；下表中的截图尺寸与 MIME
 - 结构：顶部栏；“此账单已删除”状态横幅；账单主卡（类别、商户、金额、基础币/原币、时间、备注）；付款信息卡；AA 平摊明细卡（Bob/Carol/Alice 状态与净垫付）；消费凭证图片区；恢复账单与更多操作底部区域；底部操作抽屉含添加退款/永久删除。
 - 关键规格：内容最大宽度 `480px`、页面边距 `24px`；主区顶部 padding `16px`、区块间距 `32px`；主卡 `rounded-xl p-6`；信息卡 `rounded-xl p-4`；金额展示使用 `40/48`；删除横幅使用 `error-container`、内边距 `12px`。
 
+### 个人信息
+
+- Screen ID：`b7b7c463d35443078c980889f0be25c0`
+- Stitch 尺寸：`780 × 3272`；设备：`MOBILE`
+- HTML：[`personal-info.html`](./personal-info.html)，文件大小 `17055` bytes
+- Screenshot：[`personal-info.png`](./personal-info.png)，实际文件尺寸 `123 × 512`，MIME `image/png`，文件大小 `19292` bytes
+- 原始 HTML URL：`https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sXzAwMDY1YWYwNTA2YmU3NTUwOTM0ZjE1MjFhMzU3OTI2EgsSBxC23pbAnh8YAZIBIwoKcHJvamVjdF9pZBIVQhM5NTk4Mjg1Mzc4MDA0MTc0OTIx&filename=&opi=89354086`
+- 原始 Screenshot URL：`https://lh3.googleusercontent.com/aida/AEtjO1Wi8YtFZgMQuqFfd7eDjQ8AB8KpU57qhbBbB1bSGQLwJfWNYh4-BAjHmmumx7-jQlMUZnsrCAWEdea3J3NFncZd3GGRXCdCDWne9WwkzjAdrAnvyCobh_Gvx1jp6p6n2ytRTITmBaWH_gFH4U2gxaCl4A7rupL-LdhgBjZ6dmfGIKlSJr6PobJ9qGy4x9ggZg2tBK_BNv8PAIXI0wMn7nW9wuQSvqb_YLZ61VlBW2hcFnxQ1a_qQfqIPHg`
+- 结构：顶部返回栏与“更多设置”占位操作；个人资料卡（头像、真实显示名、邮箱、登录状态、协作状态和编辑入口）；四项统计卡；我的协作身份列表（创建者、成员、已归档只读）；账号设置；关于应用；红色退出当前账号区域；底部产品说明。
+- 关键规格：移动端最大宽度 `430px`；页面背景 `#f8f6f5`；页面水平边距 `16px`；资料/列表卡片 `rounded-[24px]`、内边距 `20px`；统计网格间距 `10px`；主色 `#3e4a36`，浅绿容器 `#e4ebda`，危险色 `#ba1a1a`；区块垂直间距 `16px`。
+
 ## 下载完整性校验
 
 校验算法：SHA-256。所有 10 个 hosted 资源均为非零文件；HTML 含 1 个 `html`、1 个 `body`，截图均可由 PNG 解码。
@@ -95,6 +106,8 @@ Stitch 画布均为移动端：宽度 `780px`；下表中的截图尺寸与 MIME
 | `fund-record-detail.png` | 28828 | 170 × 512, image/png | `a4964278abb1d3d89edde3e9134cc6ceb318279a7c94b9779671cb7837f3b34a` |
 | `bill-detail.html` | 15662 | text/html | `4b8c23300c79421019cfe0bd1071f92e5bbfa0d5582bae889bf867bcb5a92956` |
 | `bill-detail.png` | 28176 | 132 × 512, image/png | `021bbba9efd6623d75b7b812420bdab8de1d757de4a581d4012997aaccc9cbfd` |
+| `personal-info.html` | 17055 | text/html | `9591DA7F96550D7EE089DC4C58421B55009EC45608FF6078BBD8C662E60B9756` |
+| `personal-info.png` | 19292 | 123 × 512, image/png | `710FB08B6F7ED9E93627C3C598FD26AC7541C92215F615F484FC38E8C55C85CE` |
 
 > 本次目标资源中，`fund-record-detail.html/.png` 已存在且已用最新 `get_screen` 元数据复核；统一页 HTML 已通过单次 PowerShell fallback 落盘，截图因 hosted 失败未生成。
 

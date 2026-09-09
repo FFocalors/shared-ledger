@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
@@ -24,6 +25,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -61,9 +66,10 @@ data class FinalSettlementRequest(
     val ordinaryAmount: BigDecimal,
     val prepaymentReturnAmount: BigDecimal,
     val sourceFinancialVersion: Long,
+    val onBehalfOfParticipantId: String? = null,
 )
 
-/** Request contract shared by the demo host and a future create/execute RPC adapter. */
+/** Request contract passed from the settlement form to the host write flow. */
 fun FinalSettlementRequest.isValid(): Boolean =
     activityId.isNotBlank() &&
         previewItemId.isNotBlank() &&
@@ -89,9 +95,16 @@ data class FinalSettlementSuggestionUi(
     val ordinaryAmount: BigDecimal,
     val prepaymentReturnAmount: BigDecimal,
     val sourceFinancialVersion: Long,
+    val onBehalfOptions: List<FinalSettlementParticipantOption> = emptyList(),
+    val onBehalfRequired: Boolean = false,
 )
 
-private fun FinalSettlementSuggestionUi.toRequest(activityId: String): FinalSettlementRequest =
+data class FinalSettlementParticipantOption(
+    val participantId: String,
+    val participantName: String,
+)
+
+private fun FinalSettlementSuggestionUi.toRequest(activityId: String, onBehalfOfParticipantId: String?): FinalSettlementRequest =
     FinalSettlementRequest(
         activityId = activityId,
         previewItemId = id,
@@ -102,6 +115,7 @@ private fun FinalSettlementSuggestionUi.toRequest(activityId: String): FinalSett
         ordinaryAmount = ordinaryAmount,
         prepaymentReturnAmount = prepaymentReturnAmount,
         sourceFinancialVersion = sourceFinancialVersion,
+        onBehalfOfParticipantId = onBehalfOfParticipantId,
     )
 
 private val SettlementSuggestions = listOf(
@@ -157,16 +171,16 @@ private val DepositReturn = FinalSettlementSuggestionUi(
 )
 
 /**
- * Large-activity settlement review. Each execution emits a complete request; the host owns
- * persistence and can later replace the handler with the create/execute settlement RPC.
+ * Large-activity settlement review. Each execution emits a complete request;
+ * the host owns persistence and the final-settlement write flow.
  */
 @Composable
 fun FinalSettlementScreen(
-    activityId: String = "demo-large",
+    activityId: String = "",
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
     onFinalize: ((FinalSettlementRequest) -> Unit)? = null,
-    suggestions: List<FinalSettlementSuggestionUi> = SettlementSuggestions + DepositReturn,
+    suggestions: List<FinalSettlementSuggestionUi> = emptyList(),
     isLoading: Boolean = false,
     errorMessage: String? = null,
     onRetry: (() -> Unit)? = null,
@@ -229,7 +243,7 @@ fun FinalSettlementScreen(
                     else -> {
                         item(key = "suggested-header") { SettlementSectionHeader("建议转账 (${suggestions.size}笔)", "待处理") }
                         items(suggestions, key = { it.id }) { suggestion ->
-                            SettlementSuggestionCard(suggestion, onFinalize?.let { callback -> { callback(suggestion.toRequest(activityId)) } })
+                            SettlementSuggestionCard(suggestion, onFinalize?.let { callback -> { behalfId -> callback(suggestion.toRequest(activityId, behalfId)) } })
                         }
                     }
                 }
@@ -274,9 +288,12 @@ private fun SettlementSectionHeader(
 @Composable
 private fun SettlementSuggestionCard(
     suggestion: FinalSettlementSuggestionUi,
-    onExecute: (() -> Unit)?,
+    onExecute: ((String?) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
+    var selectedOnBehalfId by remember(suggestion.id) {
+        mutableStateOf(suggestion.onBehalfOptions.firstOrNull()?.participantId.takeIf { suggestion.onBehalfRequired })
+    }
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = SharedLedgerRadius.Large,
@@ -292,44 +309,36 @@ private fun SettlementSuggestionCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
         ) {
-            Row(
+            Column(
                 modifier = Modifier.weight(1f),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
             ) {
-                ParticipantAvatar(
-                    name = suggestion.from.name,
-                    backgroundColor = SurfaceWarmHigh,
-                    size = SharedLedgerDimens.AvatarMedium,
-                )
-                Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
-                    contentDescription = "转给",
-                    modifier = Modifier.size(SharedLedgerDimens.IconSmall),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                ParticipantAvatar(
-                    name = suggestion.to.name,
-                    backgroundColor = SurfaceWarmHigh,
-                    size = SharedLedgerDimens.AvatarMedium,
-                )
-                Column(
-                    horizontalAlignment = Alignment.End,
-                    modifier = Modifier.padding(start = SharedLedgerSpacing.XSmall),
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
                 ) {
-                    AmountDisplay(
-                        amount = suggestion.amount,
-                        currencyCode = suggestion.currency,
-                        fractionDigitsOverride = 1,
-                        size = AmountSize.Small,
-                    )
-                    Text("账务版本 v${suggestion.sourceFinancialVersion}", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    ParticipantAvatar(name = suggestion.from.name, backgroundColor = SurfaceWarmHigh, size = SharedLedgerDimens.AvatarMedium)
+                    Icon(Icons.AutoMirrored.Rounded.ArrowForward, contentDescription = "转给", modifier = Modifier.size(SharedLedgerDimens.IconSmall), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    ParticipantAvatar(name = suggestion.to.name, backgroundColor = SurfaceWarmHigh, size = SharedLedgerDimens.AvatarMedium)
+                    Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(start = SharedLedgerSpacing.XSmall)) {
+                        AmountDisplay(amount = suggestion.amount, currencyCode = suggestion.currency, fractionDigitsOverride = 1, size = AmountSize.Small)
+                        Text("账务版本 v${suggestion.sourceFinancialVersion}", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                if (suggestion.onBehalfOptions.isNotEmpty()) {
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall)) {
+                        item(key = "on-behalf-label") { Text("代记", style = SharedLedgerTextStyles.Label) }
+                        items(suggestion.onBehalfOptions, key = { it.participantId }) { option ->
+                            TextButton(onClick = { selectedOnBehalfId = option.participantId }) {
+                                Text(if (selectedOnBehalfId == option.participantId) "✓ ${option.participantName}" else option.participantName)
+                            }
+                        }
+                    }
                 }
             }
             if (onExecute == null) {
                 SuggestionBadge("只读方案 · v${suggestion.sourceFinancialVersion}")
             } else {
-                TextButton(onClick = onExecute) { Text("执行") }
+                TextButton(onClick = { onExecute(selectedOnBehalfId) }) { Text("执行") }
             }
         }
     }
@@ -354,6 +363,9 @@ private fun SuggestionBadge(text: String) {
 @Composable
 private fun FinalSettlementScreenPreview() {
     SharedLedgerTheme {
-        FinalSettlementScreen()
+        FinalSettlementScreen(
+            activityId = "preview-large",
+            suggestions = SettlementSuggestions + DepositReturn,
+        )
     }
 }

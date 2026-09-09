@@ -50,7 +50,6 @@ import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
-import com.ffocalors.sharedledger.ui.demo.DemoRouteIds
 import com.ffocalors.sharedledger.ui.theme.IconContainerOrange
 import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
@@ -64,6 +63,7 @@ import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLowest
 import com.ffocalors.sharedledger.ui.util.MoneyFormatter
 import com.ffocalors.sharedledger.ui.transfer.TransferCandidateUi
 import com.ffocalors.sharedledger.ui.transfer.TransferUiState
+import com.ffocalors.sharedledger.data.transfer.SettlementParticipant
 import java.math.BigDecimal
 
 /** The two lightweight UI states supported by the single transfer screen. */
@@ -73,9 +73,11 @@ enum class TransferMode {
 }
 
 private data class TransferParticipant(
+    val candidateKey: String,
     val participantId: String,
     val participant: ParticipantUiModel,
     val amount: BigDecimal,
+    val onBehalfOptions: List<SettlementParticipant> = emptyList(),
 )
 
 data class TransferDraft(
@@ -84,24 +86,8 @@ data class TransferDraft(
     val mode: TransferMode,
     val participantId: String,
     val amount: String,
-)
-
-/** Preview/test compatibility only; the runtime transfer route does not call this helper. */
-data class TransferCreationResult(
-    val transferId: String,
-    val activityId: String,
-    val ledgerUnitId: String?,
-)
-
-internal fun demoCreateTransfer(draft: TransferDraft): TransferCreationResult = TransferCreationResult(
-    transferId = DemoRouteIds.transfer(
-        activityId = draft.activityId,
-        ledgerUnitId = draft.ledgerUnitId,
-        mode = if (draft.mode == TransferMode.RECEIVE) "receive" else "transfer",
-        participantId = draft.participantId,
-    ),
-    activityId = draft.activityId,
-    ledgerUnitId = draft.ledgerUnitId,
+    val onBehalfOfParticipantId: String? = null,
+    val candidateKey: String? = null,
 )
 
 /**
@@ -120,21 +106,30 @@ fun TransferScreen(
 ) {
     var selectedIndex by rememberSaveable(mode) { mutableIntStateOf(0) }
     var amountText by rememberSaveable(mode) { mutableStateOf("") }
+    var selectedOnBehalfId by rememberSaveable(mode) { mutableStateOf<String?>(null) }
     val participants = state.candidates.mapIndexed { index, candidate ->
         TransferParticipant(
+            candidateKey = candidate.candidateKey,
             participantId = candidate.participantId,
             participant = ParticipantUiModel(
                 candidate.participantName,
                 if (index % 2 == 0) IconContainerSage else IconContainerOrange,
             ),
             amount = candidate.amount,
+            onBehalfOptions = candidate.onBehalfOptions,
         )
     }
+    val selected = participants.getOrNull(selectedIndex)
     LaunchedEffect(mode, state.candidates) {
         selectedIndex = selectedIndex.coerceIn(0, (participants.size - 1).coerceAtLeast(0))
         amountText = participants.getOrNull(selectedIndex)?.amount?.toPlainString().orEmpty()
+        selectedOnBehalfId = null
     }
-    val selected = participants.getOrNull(selectedIndex)
+    LaunchedEffect(selected?.participantId, selected?.onBehalfOptions) {
+        if (state.currentParticipantId == null && selected?.onBehalfOptions?.isNotEmpty() == true) {
+            selectedOnBehalfId = selected.onBehalfOptions.first().participantId
+        }
+    }
     val isTransfer = mode == TransferMode.TRANSFER
     val title = if (isTransfer) "转账" else "收款"
     val isAmountValid = selected != null && isValidTransferAmount(amountText, selected.amount)
@@ -189,6 +184,7 @@ fun TransferScreen(
                         onSelected = { index ->
                             selectedIndex = index
                             amountText = participants[index].amount.toPlainString()
+                            selectedOnBehalfId = null
                         },
                     )
 
@@ -199,6 +195,11 @@ fun TransferScreen(
                         isAmountValid = isAmountValid,
                         currencyCode = state.baseCurrency,
                         isSubmitting = state.isSubmitting,
+                        canActOnBehalf = state.canActOnBehalf,
+                        currentParticipantId = state.currentParticipantId,
+                        onBehalfOptions = selected.onBehalfOptions,
+                        selectedOnBehalfId = selectedOnBehalfId,
+                        onBehalfOfParticipantIdChanged = { selectedOnBehalfId = it },
                         onAmountChange = { amountText = sanitizeCnyAmount(it) },
                         onConfirm = onConfirm?.let { callback -> {
                             callback(
@@ -208,6 +209,8 @@ fun TransferScreen(
                                     mode = mode,
                                     participantId = selected.participantId,
                                     amount = amountText,
+                                    onBehalfOfParticipantId = selectedOnBehalfId,
+                                    candidateKey = selected.candidateKey,
                                 ),
                             )
                         } },
@@ -239,7 +242,7 @@ private fun ParticipantPicker(
         ) {
             itemsIndexed(
                 items = participants,
-                key = { _, item -> item.participant.name },
+                key = { _, item -> item.candidateKey },
             ) { index, item ->
                 val selected = index == selectedIndex
                 Surface(
@@ -323,6 +326,11 @@ private fun TransferAmountCard(
     isAmountValid: Boolean,
     currencyCode: String,
     isSubmitting: Boolean,
+    canActOnBehalf: Boolean,
+    currentParticipantId: String?,
+    onBehalfOptions: List<SettlementParticipant>,
+    selectedOnBehalfId: String?,
+    onBehalfOfParticipantIdChanged: (String?) -> Unit,
     onAmountChange: (String) -> Unit,
     onConfirm: (() -> Unit)?,
     modifier: Modifier = Modifier,
@@ -382,6 +390,14 @@ private fun TransferAmountCard(
                     color = MaterialTheme.colorScheme.error,
                 )
             }
+            if (canActOnBehalf && onBehalfOptions.isNotEmpty()) {
+                OnBehalfPicker(
+                    options = onBehalfOptions,
+                    currentParticipantId = currentParticipantId,
+                    selectedId = selectedOnBehalfId,
+                    onSelected = onBehalfOfParticipantIdChanged,
+                )
+            }
             onConfirm?.let { callback ->
                 SharedLedgerButton(
                     text = if (isTransfer) "确认已转账" else "确认已收款",
@@ -392,6 +408,45 @@ private fun TransferAmountCard(
                     tone = if (isTransfer) SharedLedgerButtonTone.SoftPrimary else SharedLedgerButtonTone.WarmSecondary,
                     icon = Icons.Rounded.ArrowForward,
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun OnBehalfPicker(
+    options: List<SettlementParticipant>,
+    currentParticipantId: String?,
+    selectedId: String?,
+    onSelected: (String?) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
+        Text(
+            text = if (currentParticipantId == null) "代记参与人（必选）" else "代记参与人（可选）",
+            style = SharedLedgerTextStyles.Label,
+        )
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
+            if (currentParticipantId != null) {
+                item(key = "self") {
+                    Surface(
+                        modifier = Modifier.clickable { onSelected(null) },
+                        shape = SharedLedgerRadius.Full,
+                        color = if (selectedId == null) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmLow,
+                        border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant),
+                    ) {
+                        Text("本人", modifier = Modifier.padding(SharedLedgerSpacing.Small), style = SharedLedgerTextStyles.Label)
+                    }
+                }
+            }
+            itemsIndexed(options) { _, option ->
+                Surface(
+                    modifier = Modifier.clickable { onSelected(option.participantId) },
+                    shape = SharedLedgerRadius.Full,
+                    color = if (selectedId == option.participantId) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmLow,
+                    border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant),
+                ) {
+                    Text(option.participantName, modifier = Modifier.padding(SharedLedgerSpacing.Small), style = SharedLedgerTextStyles.Label)
+                }
             }
         }
     }

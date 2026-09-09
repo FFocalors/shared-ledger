@@ -17,7 +17,8 @@ the same empty search path. The private schema is not exposed by the Data API.
 - Expense: `create_expense`, `update_expense`, `delete_expense`, and
   `restore_expense`.
 - Settlement and prepayment: the existing Phase 4–5 create/void RPCs,
-  including `void_prepayment_transfer`.
+  including `void_prepayment_transfer`, plus
+  `restore_transfer(transfer_id, restore_reason)`.
 - Final settlement: `preview_final_settlement`,
   `preview_activity_settlement`, `create_final_settlement`, and
   `execute_final_settlement_item`.
@@ -31,6 +32,24 @@ Clients have no direct DML grants on financial facts or projection tables.
 `financial_version` changes only for successful financial fact changes; dispute,
 audit, attachment metadata, participant claims, and administrative operations
 do not change it.
+
+Transfer restore reactivates the same immutable Transfer, components, occurred
+time, final-settlement paths, and disputes. It never creates a replacement fact
+or resplits a mixed prepayment. The caller must remain an Activity member and
+must be either the Activity Creator or the original `recorded_by` user. Deleted
+or archived Activities reject restore. An already-active Transfer returns
+`restored=false` without changing `financial_version`.
+
+Restore validation uses the current locked financial state. Settlement
+components require enough same-direction bilateral debt; prepayment-return
+components require enough currently available account balance. A voided Final
+Settlement is restored only when its endpoint total, ordinary and return
+components, and every persisted path hop exactly match the current deterministic
+plan. Otherwise the client must preview and execute a new Final Settlement.
+Successful restore rebuilds allocations, prepayment accounts/usages, and
+bilateral debt atomically, then increments `financial_version` exactly once.
+`transfer.restore` audit metadata records the restore reason and the previous
+void reason, actor, and timestamp.
 
 ## Read contract
 
@@ -111,6 +130,8 @@ create_prepayment_return(activity_id uuid, owner_participant_id uuid, custodian_
   -> transfer_id, amount, currency, financial_version
 void_prepayment_transfer(transfer_id uuid, void_reason text)
   -> transfer_id, voided, financial_version
+restore_transfer(transfer_id uuid, restore_reason text)
+  -> transfer_id, restored, financial_version
 preview_final_settlement(activity_id uuid), preview_activity_settlement(activity_id uuid)
   -> activity_id, from_participant_id, to_participant_id, amount, ordinary_amount, prepayment_return_amount, currency, source_financial_version, is_prepayment_return
 create_final_settlement(activity_id uuid, from_participant_id uuid, to_participant_id uuid, amount numeric, occurred_at timestamptz, on_behalf_of_participant_id uuid)
@@ -165,7 +186,7 @@ non-image attachments, third-party FX fetch jobs, custom event bus, and
 Android SDK/repository/UI integration. Final Settlement remains the existing
 large-Activity deterministic recommendation and does not alter daily debt.
 
-**Backend Contract Freeze: READY.** Phase 1–7 migrations, public RPC
+**Backend Contract Freeze: READY.** Phase 1–8 migrations, public RPC
 signatures, RLS/permissions, computed views, Realtime publication, and image
 Storage protocol are frozen for Android integration. Future changes require a
 new migration and explicit contract revision.
@@ -175,7 +196,7 @@ new migration and explicit contract revision.
 Android 与 Supabase 的正式联调按
 [ANDROID_SUPABASE_INTEGRATION_PLAN.md](./ANDROID_SUPABASE_INTEGRATION_PLAN.md)
 中的五个阶段执行。Android DTO、Repository 和 RPC 调用必须以本文公开签名
-和 `supabase/migrations/` 中当前 17 条 migration 为准。
+和 `supabase/migrations/` 中当前 18 条 migration 为准。
 
 [api-contracts.md](./api-contracts.md) 已标记为废弃的历史设计，其中旧 RPC
 和表名不得用于新代码。联调期间发现契约缺口时，不直接修改既有 migration；

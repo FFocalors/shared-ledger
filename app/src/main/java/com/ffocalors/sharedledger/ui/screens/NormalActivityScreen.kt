@@ -25,6 +25,7 @@ import androidx.compose.material.icons.rounded.Group
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.LocalTaxi
 import androidx.compose.material.icons.rounded.RequestQuote
+import androidx.compose.material.icons.rounded.CurrencyExchange
 import androidx.compose.material.icons.rounded.Restaurant
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material3.Icon
@@ -33,6 +34,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.components.BottomActionItem
 import com.ffocalors.sharedledger.ui.components.ExpenseCard
 import com.ffocalors.sharedledger.ui.components.ExpenseCardUiModel
+import com.ffocalors.sharedledger.ui.components.ExpenseActionSheet
 import com.ffocalors.sharedledger.ui.components.PaymentStatusCard
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatarGroup
@@ -88,33 +94,36 @@ private val PreviewNormalActivityExpenses = listOf(
         participantCount = 5,
         participants = listOf(PreviewNormalActivityParticipants[1], PreviewNormalActivityParticipants[4]),
         expenseId = com.ffocalors.sharedledger.ui.demo.DemoRouteIds.TAXI_EXPENSE,
+        isDeleted = true,
     ),
 )
 
 /**
- * 普通活动详情页。页面只负责展示 Demo 账目，并把导航意图交给宿主处理。
+ * 普通活动详情页。活动、参与人和账单由宿主提供，导航意图通过回调交给宿主处理。
  */
 @Composable
 fun NormalActivityScreen(
-    activityTitle: String = "周末聚餐",
-    participants: List<ParticipantUiModel> = PreviewNormalActivityParticipants,
+    activityTitle: String = "",
+    participants: List<ParticipantUiModel> = emptyList(),
     activity: ActivityDetail? = null,
     isLoading: Boolean = false,
     errorMessage: String? = null,
     expenses: List<ExpenseCardUiModel> = emptyList(),
+    totalBaseAmount: BigDecimal? = null,
+    participantBound: Boolean = false,
     expenseLoading: Boolean = false,
     expenseErrorMessage: String? = null,
     onExpenseRetry: () -> Unit = {},
     onRetry: () -> Unit = {},
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
-    onTransfer: () -> Unit = {},
-    onNewExpense: () -> Unit = {},
-    onReceive: () -> Unit = {},
+    onTransfer: (() -> Unit)? = {},
+    onNewExpense: (() -> Unit)? = {},
+    onRefund: (() -> Unit)? = {},
+    onReceive: (() -> Unit)? = {},
     onFundRecords: () -> Unit = {},
     onManageActivity: (() -> Unit)? = null,
     onExpenseClick: (String) -> Unit = {},
-    previewMode: Boolean = false,
 ) {
     val displayTitle = activity?.summary?.name ?: activityTitle
     val displayParticipants = activity?.participants?.mapIndexed { index, participant ->
@@ -130,7 +139,8 @@ fun NormalActivityScreen(
         )
     } ?: emptyList()
     val displayCurrency = activity?.summary?.baseCurrency ?: "CNY"
-    val outstandingDebt = activity?.summary?.totalDebt?.toBigDecimalOrNull() ?: BigDecimal("320.0")
+    val outstandingDebt = activity?.summary?.totalDebt?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    var expenseActionSheetVisible by remember { mutableStateOf(false) }
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
@@ -165,10 +175,14 @@ fun NormalActivityScreen(
             ) {
                 SharedLedgerBottomActionBar(
                     actions = listOf(
-                        BottomActionItem("转账", Icons.Rounded.SwapHoriz, onTransfer),
-                        BottomActionItem("记一笔", Icons.Rounded.Edit, onNewExpense),
-                        BottomActionItem("收款", Icons.Rounded.RequestQuote, onReceive),
-                    ),
+                        onTransfer?.let { BottomActionItem("转账", Icons.Rounded.SwapHoriz, it) },
+                        if (onNewExpense != null || onRefund != null) {
+                            BottomActionItem("记一笔", Icons.Rounded.Edit) {
+                                expenseActionSheetVisible = true
+                            }
+                        } else null,
+                        onReceive?.let { BottomActionItem("收款", Icons.Rounded.RequestQuote, it) },
+                    ).filterNotNull(),
                 )
             }
         },
@@ -200,12 +214,12 @@ fun NormalActivityScreen(
                 } else {
                     item(key = "summary") {
                         SettlementSummaryCard(
-                            title = "当前待结算",
-                            primaryAmount = outstandingDebt,
+                            title = "实际消费",
+                            primaryAmount = totalBaseAmount?.takeIf { participantBound },
+                            secondaryTitle = "待结算",
+                            secondaryAmount = outstandingDebt,
                             currencyCode = displayCurrency,
                             statistics = listOf(
-                                // Expense totals remain a Phase 3 placeholder; debt is real activity data.
-                                SettlementStatistic("", ""),
                                 SettlementStatistic(
                                     "参与人",
                                     "${displayParticipants.size} 人",
@@ -222,34 +236,22 @@ fun NormalActivityScreen(
                             modifier = Modifier.fillMaxWidth(),
                         )
                     }
-                    item(key = "my-status") {
-                        PaymentStatusCard(
-                            title = "账务状态将在下一阶段接入",
-                            amount = BigDecimal.ZERO,
-                        )
-                    }
                     item(key = "expenses") {
-                        if (previewMode) {
-                            ExpenseTimeline(
-                                expenses = PreviewNormalActivityExpenses.map { expense ->
-                                    expense.copy(
-                                        participantCount = displayParticipants.size,
-                                        participants = displayParticipants,
-                                        currencyCode = displayCurrency,
-                                    )
-                                },
-                                onExpenseClick = onExpenseClick,
-                            )
-                        } else {
-                            ExpenseTimeline(
-                                expenses = expenses,
-                                onExpenseClick = onExpenseClick,
-                            )
-                        }
+                        ExpenseTimeline(
+                            expenses = expenses,
+                            onExpenseClick = onExpenseClick,
+                        )
                     }
                 }
             }
         }
+    }
+    if (expenseActionSheetVisible) {
+        ExpenseActionSheet(
+            onDismiss = { expenseActionSheetVisible = false },
+            onNewExpense = onNewExpense,
+            onRefund = onRefund,
+        )
     }
 }
 
@@ -393,6 +395,10 @@ private fun TimelineExpense(
 @Composable
 private fun NormalActivityScreenPreview() {
     SharedLedgerTheme {
-        NormalActivityScreen(previewMode = true)
+        NormalActivityScreen(
+            activityTitle = "周末聚餐",
+            participants = PreviewNormalActivityParticipants,
+            expenses = PreviewNormalActivityExpenses,
+        )
     }
 }

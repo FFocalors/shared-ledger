@@ -2,7 +2,9 @@ package com.ffocalors.sharedledger.data.financial
 
 import com.ffocalors.sharedledger.domain.financial.FundRecordComponentType
 import com.ffocalors.sharedledger.domain.financial.FundRecordType
+import com.ffocalors.sharedledger.domain.financial.FundRecordSource
 import com.ffocalors.sharedledger.domain.financial.ParticipantInfo
+import com.ffocalors.sharedledger.domain.financial.RecorderInfo
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import java.math.BigDecimal
@@ -64,6 +66,38 @@ class FinancialMappersTest {
         assertEquals("usage:owner:custodian:debt-1", record.transferId)
         assertEquals(FundRecordType.AUTO_PREPAYMENT_USAGE, record.type)
         assertEquals("2026-09-07T04:00:41Z", record.occurredAt)
+        assertEquals("午餐", record.sourceExpenseTitle)
+        assertEquals("预存自动扣款", record.recordedBy.displayName)
+        assertTrue(record.isReadOnly)
+    }
+
+    @Test
+    fun mapsRefundExpenseToReadOnlyFundRecord() {
+        val refund = FinancialRefundExpenseRowDto(
+            id = "refund-1",
+            ledgerUnitId = "unit-1",
+            title = "退款-午餐",
+            originalAmount = JsonPrimitive("-25.0"),
+            originalCurrency = "CNY",
+            originalExpenseId = "expense-1",
+            occurredAt = "2026-09-08T09:00:00Z",
+            createdBy = "user-1",
+            createdAt = "2026-09-08T09:01:00Z",
+        )
+
+        val record = mapRefundRecord(
+            activityId = "activity-1",
+            expense = refund,
+            payments = listOf(FinancialExpensePartyRowDto("refund-1", "payer-1", JsonPrimitive("-25.0"))),
+            participants = mapOf("payer-1" to ParticipantInfo("payer-1", "张三")),
+            profiles = mapOf("user-1" to RecorderInfo("user-1", "记录人")),
+            originalExpenseTitle = "午餐",
+        )
+
+        assertEquals(FundRecordType.REFUND, record.type)
+        assertEquals(FundRecordSource.REFUND_EXPENSE, record.source)
+        assertEquals(BigDecimal("25.0"), record.amount)
+        assertEquals("张三", record.to.displayName)
         assertEquals("午餐", record.sourceExpenseTitle)
         assertTrue(record.isReadOnly)
     }

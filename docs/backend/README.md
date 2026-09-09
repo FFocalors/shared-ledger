@@ -1,16 +1,19 @@
 # SharedLedger 后端文档
 
-> 文档状态：`后端契约冻结 / Android × Supabase 联调开始`
+> 文档状态：`后端契约冻结 / Integration Phase 4 COMPLETE / P2-P5 代码收口完成 / 真实验收待执行`
 >
 > 本目录用于约束 SharedLedger V0.1 的业务规则、Supabase 数据模型、权限边界和 Android 接入契约。业务规则以 `BUSINESS_LOGIC.md` 为基线；数据库实际状态以已应用 migration 为准。
 
 ## 当前状态
 
 - Android 端已完成 Kotlin + Jetpack Compose 前端原型、正式路由和阶段性 UI 优化。
-- Supabase Phase 1–7 共 16 条 migration 已冻结身份、活动、消费、债务、资金流、预存、最终结算、争议、附件、Realtime 和 Storage 契约。
-- Android 当前已接入 Supabase SDK 和 Phase 1 真实 Auth；Activity、Expense 等业务仍保留 `DemoData`、`FakeFinancialRecordRepository` 和本地 UI state，等待后续联调阶段替换。
-- 项目当前状态为 `Integration GO`，尚未达到 `E2E Acceptance READY`。
-- 后续实施统一按 [ANDROID_SUPABASE_INTEGRATION_PLAN.md](./ANDROID_SUPABASE_INTEGRATION_PLAN.md) 的五个阶段进行。
+- Supabase Phase 1–7 的当前 17 条 migration 已冻结身份、活动、消费、债务、资金流、预存、最终结算、争议、附件、Realtime 和 Storage 契约。
+- Android 已完成 Phase 1–4 真实接线：Auth、Activity/Identity、Expense 和 Financial 主业务链不再依赖 Runtime Fake 数据源。
+- Phase 2 的双账号主链已基本通过；Phase 2 负向验收以及 Phase 3/4 双账号真机验收仍待补齐。
+- P2 Storage、P3 Activity-scoped Realtime、P4 异常/权限/未知写入硬化和 P5 Runtime Demo/Fake 运行时清零代码已完成；真实 Storage/Realtime、设备相册/相机、网络切换、前后台、Session/并发/归档矩阵和双账号验收仍待执行。
+- 2026-09-08 本地 Supabase 核心服务已 READY，当前 17/17 migration 已应用；8 个 pgTAP 脚本共 94 项 assertion 通过，5 个 plain SQL assert 脚本经本地 `psql -v ON_ERROR_STOP=1` 通过，13/13 脚本按各自 runner 通过。`vector` 日志辅助容器仍有重启异常，`imgproxy`/`pooler` 停止，但不阻塞当前应用核心链；真机仍待接入。
+- 项目当前状态为 `Integration Phase 4 COMPLETE`，尚未达到 `E2E Acceptance READY`。
+- 下一开发阶段为 P6 双账号完整 E2E；P2 Storage、P3 Realtime、P4 异常/并发/Session/归档的真实矩阵同步补做。完整顺序按 [ANDROID_INTEGRATION_COMPLETION_PLAN.md](./ANDROID_INTEGRATION_COMPLETION_PLAN.md) 执行，真实验收结果记录在 [E2E_ACCEPTANCE_CHECKLIST.md](./E2E_ACCEPTANCE_CHECKLIST.md)。
 
 ## V0.1 后端目标
 
@@ -21,8 +24,8 @@
 3. 普通活动使用一个根账本；大型活动可以包含多个子活动/账本单元。
 4. 成员能够记录消费、付款人和分摊人，并支持主币种及多币种设计。
 5. 成员能够记录转账、收款、预存和退款等资金流。
-6. 系统能够生成结算预览、锁定最终结算批次，并逐项记录支付状态。
-7. 每项业务写入具备权限校验、事务一致性、幂等重试和基本并发保护。
+6. 系统能够生成确定性的当前结算预览，并将已执行项目记录为资金事实；未执行建议不持久化为账务事实。
+7. 每项业务写入具备权限校验、事务一致性和并发保护；响应结果未知时通过服务端重读避免盲目重试。
 
 ## 文档导航
 
@@ -30,11 +33,14 @@
 | --- | --- | --- |
 | [BUSINESS_LOGIC.md](./BUSINESS_LOGIC.md) | 已确认的业务规则、金额口径、权限边界和 MVP 完成标准 | `业务基线` |
 | [BACKEND_INTEGRATION_READINESS.md](./BACKEND_INTEGRATION_READINESS.md) | 已冻结的真实 RPC、读取、错误、Realtime 与 Storage 契约 | `执行基线` |
-| [ANDROID_SUPABASE_INTEGRATION_PLAN.md](./ANDROID_SUPABASE_INTEGRATION_PLAN.md) | Android × Supabase 五阶段联调路线、验收和 Demo 退出策略 | `执行基线` |
+| [ANDROID_SUPABASE_INTEGRATION_PLAN.md](./ANDROID_SUPABASE_INTEGRATION_PLAN.md) | Android × Supabase 联调路线、P2-P5 实际进展、验收和 Preview 退出边界 | `P2-P5 代码完成 / 真实验收待执行` |
+| [ANDROID_INTEGRATION_COMPLETION_PLAN.md](./ANDROID_INTEGRATION_COMPLETION_PLAN.md) | Phase 4 后的可靠性补强、P2 Storage、Realtime、异常和发布收口顺序 | `P2-P5 代码完成 / 真实验收待执行` |
+| [E2E_ACCEPTANCE_CHECKLIST.md](./E2E_ACCEPTANCE_CHECKLIST.md) | 双账号主链、Storage、权限、异常、并发和发布门禁的证据清单 | `真实验收待执行` |
+| [P6_REAL_DEVICE_RUNBOOK.md](./P6_REAL_DEVICE_RUNBOOK.md) | 本地 Supabase、USB 真机、adb reverse、双账号与证据记录步骤 | `本地环境 READY / 真机待接入` |
 | [database-schema.md](./database-schema.md) | 早期实体设计与 schema 说明；实际状态以 migration 为准 | `参考` |
 | [api-contracts.md](./api-contracts.md) | 早期 API 目标设计，部分名称与已冻结数据库不一致 | `废弃` |
 
-阅读顺序建议：先阅读业务逻辑，再阅读 Backend Integration Readiness，最后按 Android × Supabase 联调路线实施。不得从废弃的 API 契约复制 RPC 或表名。
+阅读顺序建议：先阅读业务逻辑和 Backend Integration Readiness，再按联调收口计划实施，并在 E2E 清单记录证据。不得从废弃的 API 契约复制 RPC 或表名。
 
 ## 架构边界
 
@@ -48,8 +54,8 @@ Android UI/ViewModel/Repository
                          └── PostgreSQL + RLS + 安全视图
 
 Edge Functions：仅用于第三方 webhook、邀请邮件、复杂文件处理等外部/长任务
-Realtime：后续按资源范围增加，不作为 V0.1 首次接入前提
-Storage：附件能力单独设计，使用私有 bucket 和短期 signed URL
+Realtime：Phase 5 使用 Activity-scoped Coordinator；事件只触发重新读取
+Storage：Phase 5 按冻结协议接入私有 `activity-attachments` bucket
 ```
 
 边界规则：
@@ -59,7 +65,7 @@ Storage：附件能力单独设计，使用私有 bucket 和短期 signed URL
 - 消费写入必须一次性处理消费、付款人、分摊和必要的汇率/附件关联。
 - 结算必须基于服务端快照生成，不能以客户端本地金额累加作为最终结果。
 - Edge Function 不能被用来绕过 RLS；只有确实需要服务端密钥、第三方回调或长任务时才引入。
-- Realtime/Storage 是后续能力，不应阻塞 V0.1 的 Auth、查询、消费、资金流和结算闭环。
+- Realtime/Storage 是 Phase 5 的完成条件；在其通过前不升级为 `E2E Acceptance READY`。
 
 ## 安全不变量
 
@@ -73,18 +79,18 @@ Storage：附件能力单独设计，使用私有 bucket 和短期 signed URL
 6. Android 只使用 publishable key/兼容 anon key + 用户 JWT；`service_role`、secret key、数据库连接密码和 Storage 管理 token 永不进入 APK、源码、日志或客户端配置。
 7. 金额使用精确 decimal/numeric，不使用浮点作为账本事实；跨币种必须保存原币金额、币种和服务端汇率快照。
 8. 删除账本事实优先使用作废/软删除；已进入结算的消费、资金流和结算批次不得被静默物理删除。
-9. 消费、转账、邀请、结算等可重试写入必须带 `clientOperationId`，服务端通过唯一约束或幂等记录避免重复副作用。
+9. 消费、转账、邀请、结算等可重试写入必须有明确幂等策略。冻结 RPC 未提供幂等键时，超时或响应丢失后必须先重新读取确认结果，不能直接重复提交。
 10. 敏感错误对无权用户统一表现为不可见/`not_found`，避免通过错误信息枚举活动或成员。
 
 ## 建议实施顺序
 
-1. **Phase 1**：Supabase 基础设施、数据分层和 Auth。
-2. **Phase 2**：Activity、Participant、ActivityMember 和 LedgerUnit。
-3. **Phase 3**：Expense 创建、修改、删除、恢复、Refund 和债务投影核对。
-4. **Phase 4**：Settlement、Prepayment、资金记录、争议与 Final Settlement。
-5. **Phase 5**：Storage、Activity-scoped Realtime 和双账号 E2E 收口。
+1. **Phase 1**：Supabase 基础设施、数据分层和 Auth。`已完成`
+2. **Phase 2**：Activity、Participant、ActivityMember 和 LedgerUnit。`代码完成，负向验收待补齐`
+3. **Phase 3**：Expense 创建、修改、删除、恢复、Refund 和债务投影核对。`代码完成，双账号验收待补齐`
+4. **Phase 4**：Settlement、Prepayment、资金记录、争议与 Final Settlement。`代码完成，双账号验收待补齐`
+5. **Phase 5**：P2 Storage、P3 Activity-scoped Realtime、P4 异常/权限硬化和 P5 Runtime Demo/Fake 运行时清零代码已完成；真实 Storage/Realtime、网络/前后台、异常矩阵和双账号设备验收待执行。2026-09-08 本地 Supabase 核心服务、17/17 migration 和 13/13 数据库脚本门禁已验证，下一阶段为 P6 双账号完整 E2E。`代码完成 / 本地环境 READY / 真机验收待执行`
 
-每个阶段完成后再退出对应 Runtime Demo/Fake 数据；`@Preview` Sample Data 可以继续保留。
+Runtime 正式链路已退出 Demo/Fake；`@Preview` 和单元测试 fixture 继续保留在明确边界内。
 
 ## 阶段验收门槛
 
@@ -149,7 +155,7 @@ Storage：附件能力单独设计，使用私有 bucket 和短期 signed URL
 14. 活动管理：`activity-management/{activityId}`
 15. 最终结算：`final-settlement/{activityId}`
 
-页面当前仍以原型数据运行为主，真实数据替换顺序和验收门槛见 [ANDROID_SUPABASE_INTEGRATION_PLAN.md](./ANDROID_SUPABASE_INTEGRATION_PLAN.md)。
+Phase 1–4 业务页面已按真实 Supabase 数据接线；P2 Storage/P3 Realtime 的真实环境验收和后续异常矩阵仍按 [ANDROID_SUPABASE_INTEGRATION_PLAN.md](./ANDROID_SUPABASE_INTEGRATION_PLAN.md) 执行。
 
 ## 当前实施边界
 

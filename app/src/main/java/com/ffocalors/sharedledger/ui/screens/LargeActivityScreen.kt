@@ -21,6 +21,7 @@ import androidx.compose.material.icons.rounded.Analytics
 import androidx.compose.material.icons.rounded.DoneAll
 import androidx.compose.material.icons.rounded.Hotel
 import androidx.compose.material.icons.rounded.RequestQuote
+import androidx.compose.material.icons.rounded.CurrencyExchange
 import androidx.compose.material.icons.rounded.Restaurant
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material3.MaterialTheme
@@ -104,15 +105,14 @@ private val LargeActivitySubActivities = listOf(
 )
 
 /**
- * Detail screen for a large activity. The callbacks intentionally contain no
- * navigation or accounting logic, keeping this screen reusable for the V0.1
- * static prototype and ready for the host Navigation graph to wire up.
+ * Detail screen for a large activity. Activity data is supplied by the host;
+ * callbacks carry navigation and write intents back to the host.
  */
 @Composable
 fun LargeActivityScreen(
-    activityTitle: String = "日本旅行",
-    participants: List<ParticipantUiModel> = LargeActivityParticipants,
-    subActivities: List<SubActivityUiModel> = LargeActivitySubActivities,
+    activityTitle: String = "",
+    participants: List<ParticipantUiModel> = emptyList(),
+    subActivities: List<SubActivityUiModel> = emptyList(),
     activity: ActivityDetail? = null,
     ledgerUnitAmounts: Map<String, BigDecimal> = emptyMap(),
     participantBound: Boolean? = null,
@@ -122,10 +122,11 @@ fun LargeActivityScreen(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
     onSubActivityClick: (id: String) -> Unit = {},
-    onAddSubActivity: () -> Unit = {},
-    onFinalSettlement: () -> Unit = {},
-    onTransfer: () -> Unit = {},
-    onReceive: () -> Unit = {},
+    onAddSubActivity: (() -> Unit)? = {},
+    onFinalSettlement: (() -> Unit)? = {},
+    onTransfer: (() -> Unit)? = {},
+    onRefund: (() -> Unit)? = {},
+    onReceive: (() -> Unit)? = {},
     onFundRecords: () -> Unit = {},
     onShowPrepayment: (() -> Unit)? = null,
     onManageActivity: (() -> Unit)? = null,
@@ -144,6 +145,7 @@ fun LargeActivityScreen(
         )
     } ?: emptyList()
     val displayCurrency = activity?.summary?.baseCurrency ?: "CNY"
+    val actualConsumption = ledgerUnitAmounts.values.sumOf { it }
     val displaySubActivities = activity?.ledgerUnits?.mapIndexed { index, ledgerUnit ->
         val icon = when (ledgerUnit.type.lowercase()) {
             "meal", "breakfast", "dining" -> Icons.Rounded.Restaurant
@@ -199,10 +201,10 @@ fun LargeActivityScreen(
             ) {
                 SharedLedgerBottomActionBar(
                     actions = listOf(
-                        BottomActionItem("转账", Icons.Rounded.SwapHoriz, onTransfer),
-                        BottomActionItem("预存", Icons.Rounded.AccountBalanceWallet, onShowPrepayment ?: {}),
-                        BottomActionItem("收款", Icons.Rounded.RequestQuote, onReceive),
-                    ),
+                        onTransfer?.let { BottomActionItem("转账", Icons.Rounded.SwapHoriz, it) },
+                        onShowPrepayment?.let { BottomActionItem("预存", Icons.Rounded.AccountBalanceWallet, it) },
+                        onReceive?.let { BottomActionItem("收款", Icons.Rounded.RequestQuote, it) },
+                    ).filterNotNull(),
                 )
             }
         },
@@ -235,8 +237,10 @@ fun LargeActivityScreen(
                 } else {
                     item(key = "summary") {
                         SettlementSummaryCard(
-                            title = "当前待结算",
-                            primaryAmount = outstandingDebt,
+                            title = "实际消费",
+                            primaryAmount = actualConsumption.takeIf { participantBound == true },
+                            secondaryTitle = "待结算",
+                            secondaryAmount = outstandingDebt,
                             currencyCode = displayCurrency,
                             statistics = listOf(
                                 SettlementStatistic("包含", "${displaySubActivities.size} 项活动"),
@@ -246,9 +250,13 @@ fun LargeActivityScreen(
                     }
                     item(key = "quick-actions") {
                         SharedLedgerActionItemsRow(
-                            items = listOf(
-                                QuickActionItem("查看总体结算", Icons.Rounded.Analytics, onClick = onFinalSettlement),
-                                QuickActionItem("最终结算", Icons.Rounded.DoneAll, onClick = onFinalSettlement),
+                            items = listOfNotNull(
+                                onRefund?.let { callback ->
+                                    QuickActionItem("退款", Icons.Rounded.CurrencyExchange, onClick = callback)
+                                },
+                                onFinalSettlement?.let { callback ->
+                                    QuickActionItem("最终结算", Icons.Rounded.DoneAll, onClick = callback)
+                                },
                                 QuickActionItem("资金记录", Icons.Rounded.AccountBalanceWallet, onClick = onFundRecords),
                             ),
                             modifier = Modifier.padding(top = SharedLedgerSpacing.Medium),
@@ -268,11 +276,13 @@ fun LargeActivityScreen(
                             onClick = { onSubActivityClick(activity.ledgerUnitId) },
                         )
                     }
-                    item(key = "add-sub-activity") {
-                        AddSubActivityButton(
-                            onClick = onAddSubActivity,
-                            modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
-                        )
+                    onAddSubActivity?.let { callback ->
+                        item(key = "add-sub-activity") {
+                            AddSubActivityButton(
+                                onClick = callback,
+                                modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
+                            )
+                        }
                     }
                 }
             }
@@ -316,6 +326,10 @@ private fun LargeActivityStateMessage(
 @Composable
 private fun LargeActivityScreenPreview() {
     SharedLedgerTheme {
-        LargeActivityScreen()
+        LargeActivityScreen(
+            activityTitle = "日本旅行",
+            participants = LargeActivityParticipants,
+            subActivities = LargeActivitySubActivities,
+        )
     }
 }

@@ -25,7 +25,7 @@ data class ActivityPermissions(
     companion object {
         fun forRole(role: ActivityRole): ActivityPermissions = when (role) {
             ActivityRole.Creator -> ActivityPermissions(role, true, true, true, true, true, true)
-            ActivityRole.Member -> ActivityPermissions(role, false, false, false, false, false, false)
+            ActivityRole.Member -> ActivityPermissions(role, false, false, false, true, false, false)
         }
     }
 }
@@ -42,6 +42,7 @@ data class ActivityRowDto(
     @SerialName("created_at") val createdAt: String? = null,
     @SerialName("updated_at") val updatedAt: String? = null,
     @SerialName("archived_at") val archivedAt: String? = null,
+    @SerialName("participants_locked_at") val participantsLockedAt: String? = null,
     @SerialName("is_deleted") val isDeleted: Boolean = false,
     @SerialName("financial_version") val financialVersion: Long = 0,
 )
@@ -161,6 +162,7 @@ data class ActivitySummary(
     val totalDebt: String,
     val totalPrepayment: String,
     val financialVersion: Long = 0,
+    val participantsLockedAt: String? = null,
 )
 
 data class ActivityMember(
@@ -197,7 +199,18 @@ data class ActivityDetail(
     val permissions: ActivityPermissions,
 )
 
-class ActivityOperationException(val userMessage: String, cause: Throwable? = null) : RuntimeException(userMessage, cause)
+enum class ActivityFailureKind {
+    PermissionDenied,
+    NotFound,
+    Network,
+    Other,
+}
+
+class ActivityOperationException(
+    val userMessage: String,
+    cause: Throwable? = null,
+    val kind: ActivityFailureKind = ActivityFailureKind.Other,
+) : RuntimeException(userMessage, cause)
 
 fun ActivityType.toUiKind(): com.ffocalors.sharedledger.ui.components.ActivityKind = when (this) {
     ActivityType.Normal -> com.ffocalors.sharedledger.ui.components.ActivityKind.Standard

@@ -15,9 +15,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
 import androidx.compose.material.icons.rounded.AccountBalanceWallet
-import androidx.compose.material.icons.rounded.Analytics
+import androidx.compose.material.icons.rounded.CurrencyExchange
 import androidx.compose.material.icons.rounded.DoneAll
-import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Hotel
 import androidx.compose.material.icons.rounded.RequestQuote
 import androidx.compose.material.icons.rounded.Restaurant
@@ -96,7 +95,7 @@ private val SmokeTestSubActivities = listOf(
 )
 
 @Composable
-fun LargeActivitySmokeTestScreen(
+private fun LargeActivitySmokeTestScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
 ) {
@@ -172,9 +171,9 @@ fun LargeActivitySmokeTestScreen(
             item(key = "quick-actions") {
                 SharedLedgerActionItemsRow(
                     items = listOf(
-                        QuickActionItem("查看总体结算", Icons.Rounded.Analytics),
+                        QuickActionItem("退款", Icons.Rounded.CurrencyExchange),
                         QuickActionItem("最终结算", Icons.Rounded.DoneAll),
-                        QuickActionItem("预存记录", Icons.Rounded.History),
+                        QuickActionItem("资金记录", Icons.Rounded.AccountBalanceWallet),
                     ),
                     modifier = Modifier.padding(top = SharedLedgerSpacing.Medium),
                 )

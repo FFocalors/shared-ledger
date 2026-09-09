@@ -17,9 +17,10 @@ class ExpenseRefundTest {
             payments = listOf(PaymentInput("payer", BigDecimal("100.00"))),
             manualSplits = listOf(ManualSplitInput("owner", BigDecimal("100.00"))),
             occurredAt = "2026-09-05T12:00:00Z",
+            originalExpenseId = "original-expense",
         )
 
-        val input = refund.toCreateInput("original-expense")
+        val input = refund.toCreateInput()
         assertEquals(BigDecimal("-100.00"), input.originalAmount)
         assertEquals(BigDecimal("-100.00"), input.payments.single().amount)
         assertEquals(BigDecimal("-100.00"), input.manualSplits.single().amount)
@@ -37,5 +38,25 @@ class ExpenseRefundTest {
 
         assertEquals(BigDecimal("-12.50"), input.originalAmount)
         assertEquals(BigDecimal("-12.50"), input.payments.single().amount)
+    }
+
+    @Test
+    fun independentRefundLeavesOriginalExpenseIdNullAndNormalizesAllAmounts() {
+        val input = RefundExpenseInput(
+            ledgerUnitId = "unit",
+            title = "独立退款",
+            amount = BigDecimal("-25.00"),
+            originalCurrency = "CNY",
+            fxRate = BigDecimal.ONE,
+            splitMethod = ExpenseSplitMethod.Manual,
+            payments = listOf(PaymentInput("payer", BigDecimal("-25.00"))),
+            manualSplits = listOf(ManualSplitInput("owner", BigDecimal("25.00"))),
+            occurredAt = "2026-09-05T12:00:00Z",
+        ).toCreateInput()
+
+        assertEquals(BigDecimal("-25.00"), input.originalAmount)
+        assertEquals(BigDecimal("-25.00"), input.payments.single().amount)
+        assertEquals(BigDecimal("-25.00"), input.manualSplits.single().amount)
+        assertEquals(null, input.originalExpenseId)
     }
 }
