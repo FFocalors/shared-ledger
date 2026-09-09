@@ -89,6 +89,7 @@ import com.ffocalors.sharedledger.ui.attachment.toExpenseDetailUiState
 import com.ffocalors.sharedledger.ui.attachment.toLedgerUnitUiState
 import com.ffocalors.sharedledger.ui.attachment.toNewExpenseUiState
 import com.ffocalors.sharedledger.ui.realtime.ActivityRealtimeViewModel
+import com.ffocalors.sharedledger.ui.auth.PasswordChangeUiState
 import com.ffocalors.sharedledger.data.realtime.ActivityRealtimeDomain
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
@@ -132,6 +133,9 @@ fun SharedLedgerApp(
                     currentUserDisplayName = authState.user.displayName,
                     currentUserEmail = authState.user.email,
                     onSignOut = authViewModel::signOut,
+                    passwordChangeState = authUiState.passwordChange,
+                    onChangePassword = authViewModel::changeAccountPassword,
+                    onClearPasswordChangeState = authViewModel::clearPasswordChangeState,
                 )
             }
             AuthState.Unauthenticated, is AuthState.Error -> AuthScreen(
@@ -184,6 +188,9 @@ private fun AuthenticatedNavHost(
     currentUserDisplayName: String,
     currentUserEmail: String,
     onSignOut: () -> Unit,
+    passwordChangeState: PasswordChangeUiState,
+    onChangePassword: (String, String) -> Unit,
+    onClearPasswordChangeState: () -> Unit,
 ) {
     val navController = rememberNavController()
     val context = LocalContext.current
@@ -219,6 +226,7 @@ private fun AuthenticatedNavHost(
         factory = ExpenseViewModel.Factory(currentUserId = currentUserId),
     )
     val homeState by activityViewModel.home.collectAsState()
+    val personalOverviewState by activityViewModel.personalOverview.collectAsState()
     val viewModelJoinState by activityViewModel.join.collectAsState()
     var joinInviteCode by rememberSaveable { mutableStateOf("") }
     var selectedJoinParticipantId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -257,17 +265,31 @@ private fun AuthenticatedNavHost(
                 },
                 onCreateActivity = { navController.navigate(SharedLedgerRoutes.CREATE_ACTIVITY) },
                 onJoinActivity = { navController.navigate(SharedLedgerRoutes.JOIN_ACTIVITY) },
-                onSignOut = onSignOut,
                 userDisplayName = currentUserDisplayName,
                 onProfileClick = { navController.navigate(SharedLedgerRoutes.PERSONAL_INFO) },
             )
         }
         composable(SharedLedgerRoutes.PERSONAL_INFO) {
+            androidx.compose.runtime.LaunchedEffect(Unit) {
+                activityViewModel.refreshPersonalOverview()
+            }
             PersonalInfoScreen(
                 displayName = currentUserDisplayName,
                 email = currentUserEmail,
                 onBack = { navController.navigateUp() },
                 onSignOut = onSignOut,
+                passwordChangeState = passwordChangeState,
+                onChangePassword = onChangePassword,
+                onClearPasswordChangeState = onClearPasswordChangeState,
+                overviewState = personalOverviewState,
+                onRetryOverview = activityViewModel::refreshPersonalOverview,
+                onOpenActivity = { identity ->
+                    val destination = when (identity.activityType) {
+                        ActivityType.Large -> SharedLedgerRoutes.largeActivity(identity.activityId)
+                        ActivityType.Normal -> SharedLedgerRoutes.normalActivity(identity.activityId)
+                    }
+                    navController.navigate(destination)
+                },
             )
         }
         composable(SharedLedgerRoutes.JOIN_ACTIVITY) {

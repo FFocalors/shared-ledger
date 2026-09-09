@@ -40,4 +40,30 @@ object AuthErrorMapper {
             else -> "请求失败，请稍后重试"
         }
     }
+
+    fun toPasswordUpdateMessage(error: Throwable): String {
+        if (error is CancellationException) throw error
+        val message = error.message.orEmpty().lowercase()
+        return when {
+            error is IOException || message.contains("timeout") || message.contains("network") ||
+                message.contains("host") || message.contains("connection") ->
+                "网络连接失败，请检查网络后重试"
+            message.contains("same password") || message.contains("different from the old") ||
+                message.contains("new password should be different") ->
+                "新密码不能与当前密码相同"
+            message.contains("weak password") ||
+                (message.contains("password") && (
+                    message.contains("short") || message.contains("length") ||
+                        message.contains("at least") || message.contains("character")
+                    )) ->
+                "密码强度不足，请使用至少 8 个字符并增加字符组合"
+            message.contains("reauth") || message.contains("nonce") ||
+                message.contains("recently signed in") ->
+                "当前登录时间过久，请退出后重新登录再修改密码"
+            message.contains("session") || message.contains("refresh token") ||
+                (message.contains("jwt") && message.contains("expir")) ->
+                "登录状态已失效，请重新登录"
+            else -> "密码修改失败，请稍后重试"
+        }
+    }
 }

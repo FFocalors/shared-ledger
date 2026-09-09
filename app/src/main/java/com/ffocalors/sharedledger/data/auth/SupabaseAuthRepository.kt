@@ -149,9 +149,14 @@ class SupabaseAuthRepository(
             AuthResult.Failure(AuthErrorMapper.toPasswordResetMessage(error))
         }
 
-    override suspend fun updatePassword(newPassword: String): AuthResult = runAuthRequest {
+    override suspend fun updatePassword(newPassword: String): AuthResult = try {
+        // Updating account credentials must not replace the global auth state with an
+        // error. The caller can keep the authenticated screen visible and explain the
+        // recoverable failure next to the password form.
         client.auth.updateUser { password = newPassword }
         AuthResult.Success
+    } catch (error: Throwable) {
+        AuthResult.Failure(AuthErrorMapper.toPasswordUpdateMessage(error))
     }
 
     override suspend fun handlePasswordRecovery(deepLink: String): AuthResult {

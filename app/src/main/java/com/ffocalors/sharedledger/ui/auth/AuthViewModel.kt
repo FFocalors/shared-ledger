@@ -19,6 +19,13 @@ data class AuthUiState(
     val isSubmitting: Boolean = false,
     val message: String? = null,
     val isPasswordRecovery: Boolean = false,
+    val passwordChange: PasswordChangeUiState = PasswordChangeUiState(),
+)
+
+data class PasswordChangeUiState(
+    val isSubmitting: Boolean = false,
+    val message: String? = null,
+    val isSuccess: Boolean = false,
 )
 
 class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
@@ -128,6 +135,51 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
                 )
             }
             requestInFlight = false
+        }
+    }
+
+    /** Changes the password for an already authenticated account without ending its session. */
+    fun changeAccountPassword(newPassword: String, confirmPassword: String) {
+        if (mutableUiState.value.passwordChange.isSubmitting) return
+        val validationMessage = when {
+            newPassword.length < 8 -> "新密码至少需要 8 个字符"
+            newPassword.none(Char::isLetter) || newPassword.none(Char::isDigit) ->
+                "新密码需同时包含字母和数字"
+            newPassword != confirmPassword -> "两次输入的密码不一致"
+            else -> null
+        }
+        if (validationMessage != null) {
+            mutableUiState.value = mutableUiState.value.copy(
+                passwordChange = PasswordChangeUiState(message = validationMessage),
+            )
+            return
+        }
+
+        mutableUiState.value = mutableUiState.value.copy(
+            passwordChange = PasswordChangeUiState(isSubmitting = true),
+        )
+        viewModelScope.launch {
+            val result = repository.updatePassword(newPassword)
+            mutableUiState.value = mutableUiState.value.copy(
+                passwordChange = when (result) {
+                    AuthResult.Success -> PasswordChangeUiState(
+                        message = "登录密码已更新",
+                        isSuccess = true,
+                    )
+                    is AuthResult.NeedsEmailConfirmation -> PasswordChangeUiState(
+                        message = result.message,
+                    )
+                    is AuthResult.Failure -> PasswordChangeUiState(message = result.message)
+                },
+            )
+        }
+    }
+
+    fun clearPasswordChangeState() {
+        if (!mutableUiState.value.passwordChange.isSubmitting) {
+            mutableUiState.value = mutableUiState.value.copy(
+                passwordChange = PasswordChangeUiState(),
+            )
         }
     }
 

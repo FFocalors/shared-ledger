@@ -31,6 +31,8 @@ import com.ffocalors.sharedledger.ui.screens.ActivityManagementMember
 import com.ffocalors.sharedledger.ui.screens.ActivityManagementParticipant
 import com.ffocalors.sharedledger.ui.screens.ActivityManagementStatus
 import com.ffocalors.sharedledger.ui.screens.ActivityManagementUiState
+import com.ffocalors.sharedledger.ui.profile.PersonalOverviewUiState
+import com.ffocalors.sharedledger.ui.profile.mapPersonalOverview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -63,6 +65,9 @@ class ActivityViewModel(
     val actionLoading: StateFlow<Boolean> = _actionLoading.asStateFlow()
     private val _message = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = _message.asStateFlow()
+    private val _personalOverview = MutableStateFlow(PersonalOverviewUiState())
+    val personalOverview: StateFlow<PersonalOverviewUiState> = _personalOverview.asStateFlow()
+    private var personalOverviewLoadInFlight = false
 
     fun detail(activityId: String): StateFlow<ActivityDetailUiState> = detailStates.getOrPut(activityId) {
         MutableStateFlow(ActivityDetailUiState())
@@ -187,6 +192,47 @@ class ActivityViewModel(
     }
 
     fun refreshHome() = loadHome(force = true)
+
+    fun refreshPersonalOverview() {
+        if (personalOverviewLoadInFlight) return
+        personalOverviewLoadInFlight = true
+        viewModelScope.launch {
+            val cachedOverview = _personalOverview.value.overview
+            _personalOverview.value = PersonalOverviewUiState(
+                isLoading = cachedOverview == null,
+                isRefreshing = cachedOverview != null,
+                overview = cachedOverview,
+            )
+            try {
+                val summaries = repository.listActivities().getOrElse { error ->
+                    _personalOverview.value = PersonalOverviewUiState(
+                        isLoading = false,
+                        overview = cachedOverview,
+                        errorMessage = messageFor(error),
+                    )
+                    return@launch
+                }
+                val details = mutableListOf<ActivityDetail>()
+                for (summary in summaries) {
+                    val detail = repository.getActivity(summary.id).getOrElse { error ->
+                        _personalOverview.value = PersonalOverviewUiState(
+                            isLoading = false,
+                            overview = cachedOverview,
+                            errorMessage = "活动「${summary.name}」加载失败：${messageFor(error)}",
+                        )
+                        return@launch
+                    }
+                    details += detail
+                }
+                _personalOverview.value = PersonalOverviewUiState(
+                    isLoading = false,
+                    overview = mapPersonalOverview(currentUserId, details),
+                )
+            } finally {
+                personalOverviewLoadInFlight = false
+            }
+        }
+    }
 
     fun resetJoin() {
         joinedActivityIdValue = null

@@ -4,6 +4,7 @@ import com.ffocalors.sharedledger.ui.auth.AuthViewModel
 import java.io.IOException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -17,6 +18,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class AuthViewModelTest {
     private val dispatcher = StandardTestDispatcher()
 
@@ -169,6 +171,18 @@ class AuthViewModelTest {
             "网络连接失败，请检查网络后重试",
             AuthErrorMapper.toPasswordResetMessage(IOException("connection reset")),
         )
+        assertEquals(
+            "新密码不能与当前密码相同",
+            AuthErrorMapper.toPasswordUpdateMessage(Exception("New password should be different from the old password")),
+        )
+        assertEquals(
+            "当前登录时间过久，请退出后重新登录再修改密码",
+            AuthErrorMapper.toPasswordUpdateMessage(Exception("Reauthentication nonce is required")),
+        )
+        assertEquals(
+            "密码修改失败，请稍后重试",
+            AuthErrorMapper.toPasswordUpdateMessage(Exception("internal auth detail")),
+        )
     }
 
     @Test
@@ -209,6 +223,69 @@ class AuthViewModelTest {
         assertEquals("new-password", repository.updatedPassword)
     }
 
+    @Test
+    fun accountPasswordChangeValidatesBeforeCallingRepository() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val user = AuthUser("user-1", "test@example.com", "测试用户")
+        val repository = FakeAuthRepository(AuthState.Authenticated(user))
+        val viewModel = AuthViewModel(repository)
+        advanceUntilIdle()
+
+        viewModel.changeAccountPassword("short", "short")
+        assertEquals("新密码至少需要 8 个字符", viewModel.uiState.value.passwordChange.message)
+        assertEquals(0, repository.passwordUpdateCalls)
+
+        viewModel.changeAccountPassword("onlyletters", "onlyletters")
+        assertEquals("新密码需同时包含字母和数字", viewModel.uiState.value.passwordChange.message)
+        assertEquals(0, repository.passwordUpdateCalls)
+
+        viewModel.changeAccountPassword("new-password1", "different-password1")
+        assertEquals("两次输入的密码不一致", viewModel.uiState.value.passwordChange.message)
+        assertEquals(0, repository.passwordUpdateCalls)
+    }
+
+    @Test
+    fun accountPasswordChangeKeepsAuthenticatedSessionOnSuccess() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val user = AuthUser("user-1", "test@example.com", "测试用户")
+        val repository = FakeAuthRepository(AuthState.Authenticated(user)).apply {
+            nextPasswordUpdate = AuthResult.Success
+        }
+        val viewModel = AuthViewModel(repository)
+        advanceUntilIdle()
+
+        viewModel.changeAccountPassword("new-password1", "new-password1")
+        advanceUntilIdle()
+
+        assertEquals(AuthState.Authenticated(user), viewModel.uiState.value.authState)
+        assertTrue(viewModel.uiState.value.passwordChange.isSuccess)
+        assertEquals("登录密码已更新", viewModel.uiState.value.passwordChange.message)
+        assertEquals(0, repository.signOutCalls)
+        assertEquals("new-password1", repository.updatedPassword)
+    }
+
+    @Test
+    fun accountPasswordChangeFailureStaysOnAuthenticatedScreen() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val user = AuthUser("user-1", "test@example.com", "测试用户")
+        val repository = FakeAuthRepository(AuthState.Authenticated(user)).apply {
+            nextPasswordUpdate = AuthResult.Failure("当前登录时间过久，请退出后重新登录再修改密码")
+        }
+        val viewModel = AuthViewModel(repository)
+        advanceUntilIdle()
+
+        viewModel.changeAccountPassword("new-password1", "new-password1")
+        advanceUntilIdle()
+
+        assertEquals(AuthState.Authenticated(user), viewModel.uiState.value.authState)
+        assertFalse(viewModel.uiState.value.passwordChange.isSuccess)
+        assertEquals(
+            "当前登录时间过久，请退出后重新登录再修改密码",
+            viewModel.uiState.value.passwordChange.message,
+        )
+        assertFalse(viewModel.uiState.value.passwordChange.isSubmitting)
+    }
+
     private class FakeAuthRepository(initialState: AuthState) : AuthRepository {
         private val mutableState = MutableStateFlow(initialState)
         override val authState: StateFlow<AuthState> = mutableState
@@ -221,6 +298,8 @@ class AuthViewModelTest {
         var resetEmail: String? = null
         var resetRedirect: String? = null
         var updatedPassword: String? = null
+        var passwordUpdateCalls = 0
+        var signOutCalls = 0
 
         override suspend fun initialize() {
             if (mutableState.value == AuthState.Loading) mutableState.value = AuthState.Unauthenticated
@@ -245,6 +324,7 @@ class AuthViewModelTest {
         }
 
         override suspend fun signOut(): AuthResult {
+            signOutCalls++
             mutableState.value = AuthState.Unauthenticated
             return AuthResult.Success
         }
@@ -263,6 +343,7 @@ class AuthViewModelTest {
         }
 
         override suspend fun updatePassword(newPassword: String): AuthResult {
+            passwordUpdateCalls++
             updatedPassword = newPassword
             return nextPasswordUpdate
         }

@@ -18,9 +18,11 @@ import com.ffocalors.sharedledger.ui.screens.JoinActivityStatus
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
@@ -29,6 +31,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ActivityViewModelTest {
     private val dispatcher = StandardTestDispatcher()
 
@@ -342,6 +345,79 @@ class ActivityViewModelTest {
         assertTrue(!ActivityViewModel(FakeActivityRepository(summary), "user-2").isCurrentUserBound(detail))
     }
 
+    @Test
+    fun personalOverviewDetailFailureIsVisibleAndRetryCanLoadRealCounts() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeActivityRepository(summary).apply {
+            activities = listOf(summary)
+            lastClaimedParticipantId = "p"
+            detailResult = Result.failure(
+                ActivityOperationException(
+                    "网络连接失败，请检查网络后重试",
+                    kind = ActivityFailureKind.Network,
+                ),
+            )
+        }
+        val viewModel = ActivityViewModel(repository, "user-1")
+
+        viewModel.refreshPersonalOverview()
+        advanceUntilIdle()
+
+        assertNull(viewModel.personalOverview.value.overview)
+        assertTrue(viewModel.personalOverview.value.errorMessage?.contains("日本旅行") == true)
+        assertTrue(!viewModel.personalOverview.value.isLoading)
+
+        repository.detailResult = Result.success(repository.detailFor(summary))
+        viewModel.refreshPersonalOverview()
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.personalOverview.value.overview?.initiatedCount)
+        assertEquals(1, viewModel.personalOverview.value.overview?.claimedIdentityCount)
+        assertNull(viewModel.personalOverview.value.errorMessage)
+    }
+
+    @Test
+    fun personalOverviewRefreshKeepsCachedRealDataAndShowsRefreshFailure() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeActivityRepository(summary).apply { activities = listOf(summary) }
+        val viewModel = ActivityViewModel(repository, "user-1")
+        viewModel.refreshPersonalOverview()
+        advanceUntilIdle()
+        val cachedOverview = viewModel.personalOverview.value.overview
+
+        val refreshGate = CompletableDeferred<Result<List<ActivitySummary>>>()
+        repository.listGate = refreshGate
+        viewModel.refreshPersonalOverview()
+        runCurrent()
+
+        assertTrue(viewModel.personalOverview.value.isRefreshing)
+        assertEquals(cachedOverview, viewModel.personalOverview.value.overview)
+
+        refreshGate.complete(Result.failure(ActivityOperationException("网络连接失败，请检查网络后重试")))
+        advanceUntilIdle()
+
+        assertTrue(!viewModel.personalOverview.value.isRefreshing)
+        assertEquals(cachedOverview, viewModel.personalOverview.value.overview)
+        assertEquals("网络连接失败，请检查网络后重试", viewModel.personalOverview.value.errorMessage)
+    }
+
+    @Test
+    fun personalOverviewRefreshReloadsActivitiesChangedSincePreviousEntry() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeActivityRepository(summary)
+        val viewModel = ActivityViewModel(repository, "user-1")
+
+        viewModel.refreshPersonalOverview()
+        advanceUntilIdle()
+        assertEquals(0, viewModel.personalOverview.value.overview?.initiatedCount)
+
+        repository.activities = listOf(summary)
+        viewModel.refreshPersonalOverview()
+        advanceUntilIdle()
+
+        assertEquals(1, viewModel.personalOverview.value.overview?.initiatedCount)
+    }
+
     private val summary = ActivitySummary(
         id = "activity-1", name = "日本旅行", type = ActivityType.Large, joinCode = "12345678",
         baseCurrency = "CNY", multiCurrencyEnabled = false, createdBy = "user-1", archivedAt = null,
@@ -353,6 +429,7 @@ class ActivityViewModelTest {
         private val defaultSummary: ActivitySummary,
     ) : ActivityRepository {
         var activities: List<ActivitySummary> = emptyList()
+        var listGate: CompletableDeferred<Result<List<ActivitySummary>>>? = null
         var createGate: CompletableDeferred<Result<ActivitySummary>>? = null
         var joinDetail: ActivityDetail? = null
         val createCalls = AtomicInteger()
@@ -369,7 +446,7 @@ class ActivityViewModelTest {
         var memberParticipantId: String = "p"
         var lastUpdatedBaseCurrency: String? = null
         val deleteParticipantCalls = AtomicInteger()
-        override suspend fun listActivities() = Result.success(activities)
+        override suspend fun listActivities() = listGate?.await() ?: Result.success(activities)
         override suspend fun getActivity(activityId: String): Result<ActivityDetail> {
             detailCalls.incrementAndGet()
             return detailResult ?: Result.success(detailOverride?.invoke() ?: detailFor(defaultSummary, activityId))

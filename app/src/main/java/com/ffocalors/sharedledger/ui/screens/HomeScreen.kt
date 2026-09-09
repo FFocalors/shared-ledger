@@ -22,7 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.FlightTakeoff
 import androidx.compose.material.icons.rounded.GroupAdd
-import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Restaurant
 import androidx.compose.material.icons.rounded.TaskAlt
 import androidx.compose.material3.Card
@@ -92,7 +91,6 @@ fun HomeScreen(
     onFabClick: () -> Unit = {},
     onCreateActivity: () -> Unit = {},
     onJoinActivity: () -> Unit = {},
-    onSignOut: () -> Unit = {},
     userDisplayName: String = "我",
     onProfileClick: (() -> Unit)? = null,
 ) {
@@ -109,9 +107,6 @@ fun HomeScreen(
                 avatarName = userDisplayName,
                 onAvatarClick = onProfileClick,
                 containerColor = AppBackground,
-                actionIcon = Icons.Rounded.Logout,
-                actionContentDescription = "退出登录",
-                onActionClick = onSignOut,
             )
         },
         floatingActionButton = {
