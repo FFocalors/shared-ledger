@@ -15,6 +15,12 @@ import com.ffocalors.sharedledger.data.attachment.AttachmentUploadResult
 import com.ffocalors.sharedledger.data.attachment.CreateAttachmentInput
 import com.ffocalors.sharedledger.data.attachment.PendingAttachmentUpload
 import com.ffocalors.sharedledger.data.attachment.PreparedAttachmentImage
+import com.ffocalors.sharedledger.data.common.ReadFailureKind
+import com.ffocalors.sharedledger.data.common.readFailureKind
+import com.ffocalors.sharedledger.data.common.shouldRemoveCachedRead
+import com.ffocalors.sharedledger.ui.cache.QueryCacheKey
+import com.ffocalors.sharedledger.ui.cache.QueryCacheState
+import com.ffocalors.sharedledger.ui.cache.SessionQueryCache
 import com.ffocalors.sharedledger.ui.screens.ExpenseAttachmentDraftUiState
 import com.ffocalors.sharedledger.ui.screens.ExpenseAttachmentStatus
 import com.ffocalors.sharedledger.ui.screens.ExpenseAttachmentUiState
@@ -73,6 +79,7 @@ data class AttachmentUiState(
     val isWriting: Boolean = false,
     val items: List<AttachmentClientItem> = emptyList(),
     val errorMessage: String? = null,
+    val failureKind: ReadFailureKind? = null,
 )
 
 sealed interface AttachmentWriteResult {
@@ -93,9 +100,12 @@ sealed interface AttachmentBatchResult {
 class AttachmentViewModel(
     private val repository: AttachmentRepository = AttachmentRepositoryFactory.create(),
     private val imageProcessor: AttachmentImageProcessor = AttachmentImageProcessor(),
+    private val queryCache: SessionQueryCache = SessionQueryCache(),
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AttachmentUiState())
     val uiState: StateFlow<AttachmentUiState> = _uiState.asStateFlow()
+    private val locallyManagedIds = mutableSetOf<String>()
+    private val locallyDeletedIds = mutableSetOf<String>()
 
     /** The host sets this from the authoritative activity state before exposing write actions. */
     var writesEnabled: Boolean = true
@@ -105,20 +115,10 @@ class AttachmentViewModel(
 
     suspend fun loadExpenseNow(activityId: String, ledgerUnitId: String, expenseId: String): Result<Unit> {
         val scope = AttachmentScope(activityId, ledgerUnitId, expenseId, AttachmentScopeKind.Expense)
-        _uiState.value = AttachmentUiState(scope = scope, isLoading = true)
-        return repository.listByExpense(activityId, expenseId).fold(
-            onSuccess = { metadata ->
-                _uiState.value = AttachmentUiState(
-                    scope = scope,
-                    items = metadata.filterNot { it.status == com.ffocalors.sharedledger.data.attachment.AttachmentStatus.DELETED }
-                        .map { it.toClientItem(scope) },
-                )
-                Result.success(Unit)
-            },
-            onFailure = { error ->
-                _uiState.value = AttachmentUiState(scope = scope, errorMessage = error.message ?: "加载附件失败")
-                Result.failure(error)
-            },
+        return loadScope(
+            scope = scope,
+            key = expenseCacheKey(activityId, expenseId),
+            loader = { repository.listByExpense(activityId, expenseId) },
         )
     }
 
@@ -127,22 +127,178 @@ class AttachmentViewModel(
 
     suspend fun loadLedgerUnitNow(activityId: String, ledgerUnitId: String): Result<Unit> {
         val scope = AttachmentScope(activityId, ledgerUnitId, null, AttachmentScopeKind.LedgerUnit)
-        _uiState.value = AttachmentUiState(scope = scope, isLoading = true)
-        return repository.listByLedgerUnit(activityId, ledgerUnitId).fold(
+        return loadScope(
+            scope = scope,
+            key = ledgerUnitCacheKey(activityId, ledgerUnitId),
+            loader = { repository.listByLedgerUnit(activityId, ledgerUnitId) },
+        )
+    }
+
+    private suspend fun loadScope(
+        scope: AttachmentScope,
+        key: QueryCacheKey<List<AttachmentMetadata>>,
+        loader: suspend () -> Result<List<AttachmentMetadata>>,
+    ): Result<Unit> {
+        val cached = queryCache.read(key)
+        cached.value?.let { metadata ->
+            if (_uiState.value.scope != scope) {
+                _uiState.value = AttachmentUiState(scope = scope)
+            }
+            showRemote(scope, metadata)
+        }
+        when {
+            cached.state == QueryCacheState.Fresh && cached.value != null -> return Result.success(Unit)
+            cached.state == QueryCacheState.Stale && cached.value != null -> {
+                refreshInBackground(scope, key, loader)
+                return Result.success(Unit)
+            }
+        }
+
+        // A miss is the only state that presents initial loading. Keep local write items
+        // when reloading the same scope so a cache miss cannot erase a pending upload.
+        if (_uiState.value.scope != scope) {
+            _uiState.value = AttachmentUiState(scope = scope, isLoading = true)
+        } else {
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+        }
+        return queryCache.getOrLoad(key, loader = loader).fold(
             onSuccess = { metadata ->
-                _uiState.value = AttachmentUiState(
-                    scope = scope,
-                    items = metadata.filterNot { it.status == com.ffocalors.sharedledger.data.attachment.AttachmentStatus.DELETED }
-                        .map { it.toClientItem(scope) },
-                )
+                showRemote(scope, metadata, authoritative = true)
                 Result.success(Unit)
             },
             onFailure = { error ->
-                _uiState.value = AttachmentUiState(scope = scope, errorMessage = error.message ?: "加载附件失败")
+                handleReadFailure(scope, key, error)
                 Result.failure(error)
             },
         )
     }
+
+    private fun refreshInBackground(
+        scope: AttachmentScope,
+        key: QueryCacheKey<List<AttachmentMetadata>>,
+        loader: suspend () -> Result<List<AttachmentMetadata>>,
+    ) {
+        viewModelScope.launch {
+            queryCache.getOrLoad(key, forceRefresh = true, loader = loader).fold(
+                onSuccess = { metadata -> showRemote(scope, metadata, authoritative = true) },
+                onFailure = { error ->
+                    handleReadFailure(scope, key, error)
+                },
+            )
+        }
+    }
+
+    private fun showRemote(
+        scope: AttachmentScope,
+        metadata: List<AttachmentMetadata>,
+        authoritative: Boolean = false,
+    ) {
+        if (_uiState.value.scope != scope) return
+        if (authoritative) {
+            val returnedIds = metadata.map { it.attachmentId }.toSet()
+            locallyDeletedIds.removeAll { it !in returnedIds }
+        }
+        _uiState.value = _uiState.value.copy(
+            isLoading = false,
+            items = mergeRemote(scope, metadata),
+            errorMessage = null,
+        )
+    }
+
+    private fun handleReadFailure(
+        scope: AttachmentScope,
+        key: QueryCacheKey<List<AttachmentMetadata>>,
+        error: Throwable,
+    ) {
+        if (_uiState.value.scope != scope) return
+        val kind = error.readFailureKind()
+        val message = error.message ?: "加载附件失败"
+        if (kind.shouldRemoveCachedRead()) {
+            queryCache.remove(key)
+            _uiState.value = AttachmentUiState(
+                scope = scope,
+                isLoading = false,
+                errorMessage = message,
+                failureKind = kind,
+            )
+        } else {
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                errorMessage = message,
+                failureKind = kind,
+            )
+        }
+    }
+
+    private fun mergeRemote(scope: AttachmentScope, metadata: List<AttachmentMetadata>): List<AttachmentClientItem> {
+        val visibleMetadata = metadata.filterNot {
+            it.status == com.ffocalors.sharedledger.data.attachment.AttachmentStatus.DELETED ||
+                it.attachmentId in locallyDeletedIds
+        }
+        val remoteIds = visibleMetadata.map { it.attachmentId }.toSet()
+        val existing = _uiState.value.items.filter { it.scope == scope }
+        val existingByServerId = existing.mapNotNull { item ->
+            item.serverAttachmentId()?.let { it to item }
+        }.toMap()
+        val remoteItems = visibleMetadata.map { item ->
+            val remoteItem = item.toClientItem(scope)
+            existingByServerId[item.attachmentId]
+                ?.takeIf { it.hasLocalWriteState() }
+                ?.copy(scope = scope)
+                ?: remoteItem
+        }
+        val localOnlyItems = existing.filter { item ->
+            val serverId = item.serverAttachmentId()
+            val isLocal = locallyManagedIds.contains(item.clientId) ||
+                serverId?.let(locallyManagedIds::contains) == true ||
+                item.hasLocalWriteState()
+            isLocal && (serverId == null || serverId !in remoteIds) &&
+                (serverId == null || serverId !in locallyDeletedIds)
+        }
+        locallyManagedIds.removeAll { id ->
+            id in remoteIds && existingByServerId[id]?.hasLocalWriteState() != true
+        }
+        return (remoteItems + localOnlyItems).distinctBy { it.clientId }
+    }
+
+    private fun AttachmentClientItem.serverAttachmentId(): String? =
+        metadata?.attachmentId ?: pendingUpload?.metadata?.attachmentId
+
+    private fun AttachmentClientItem.hasLocalWriteState(): Boolean =
+        bytes != null || pendingUpload != null || deleteRecovery != null ||
+            status == AttachmentClientStatus.Uploading || status == AttachmentClientStatus.Failed ||
+            errorMessage != null
+
+    private fun expenseCacheKey(activityId: String, expenseId: String) =
+        QueryCacheKey<List<AttachmentMetadata>>("attachment-query:$activityId:expense:$expenseId")
+
+    private fun ledgerUnitCacheKey(activityId: String, ledgerUnitId: String) =
+        QueryCacheKey<List<AttachmentMetadata>>("attachment-query:$activityId:ledger:$ledgerUnitId")
+
+    private fun invalidateScope(scope: AttachmentScope) {
+        if (scope.isLedgerUnitAttachment) {
+            queryCache.invalidate(ledgerUnitCacheKey(scope.activityId, scope.ledgerUnitId))
+        } else {
+            scope.expenseId?.let { queryCache.invalidate(expenseCacheKey(scope.activityId, it)) }
+        }
+    }
+
+    /** Invalidates all expense and LedgerUnit attachment reads for an activity. */
+    fun invalidateActivityAttachments(activityId: String) {
+        queryCache.invalidatePrefix("attachment-query:$activityId:")
+    }
+
+    /** Invalidates one expense attachment domain without touching LedgerUnit attachments. */
+    fun invalidateExpenseAttachments(activityId: String, expenseId: String) {
+        queryCache.invalidate(expenseCacheKey(activityId, expenseId))
+    }
+
+    /** Invalidates one standalone LedgerUnit attachment domain. */
+    fun invalidateLedgerUnitAttachments(activityId: String, ledgerUnitId: String) {
+        queryCache.invalidate(ledgerUnitCacheKey(activityId, ledgerUnitId))
+    }
+
+    fun clearSessionCache() = queryCache.clear()
 
     fun beginExpenseDraft(activityId: String, ledgerUnitId: String): AttachmentUiState {
         val scope = AttachmentScope(activityId, ledgerUnitId, null, AttachmentScopeKind.Expense)
@@ -183,6 +339,7 @@ class AttachmentViewModel(
             bytes = prepared.bytes,
         )
         _uiState.value = _uiState.value.copy(items = _uiState.value.items + item, errorMessage = null)
+        locallyManagedIds += clientId
         return AttachmentWriteResult.Accepted(clientId)
     }
 
@@ -252,6 +409,8 @@ class AttachmentViewModel(
             when (result) {
                 is AttachmentUploadResult.Completed -> {
                     uploaded += item.clientId
+                    locallyManagedIds += item.clientId
+                    locallyManagedIds += result.metadata.attachmentId
                     updateItem(item.clientId) {
                         it.copy(
                             scope = targetScope,
@@ -264,6 +423,8 @@ class AttachmentViewModel(
                 }
                 is AttachmentUploadResult.Pending -> {
                     pending += item.clientId
+                    locallyManagedIds += item.clientId
+                    locallyManagedIds += result.upload.metadata.attachmentId
                     updateItem(item.clientId) {
                         it.copy(
                             scope = targetScope,
@@ -275,6 +436,7 @@ class AttachmentViewModel(
                 }
                 is AttachmentUploadResult.Failed -> {
                     failed += item.clientId
+                    locallyManagedIds += item.clientId
                     updateItem(item.clientId) {
                         it.copy(
                             scope = targetScope,
@@ -286,6 +448,7 @@ class AttachmentViewModel(
             }
         }
         _uiState.value = _uiState.value.copy(isWriting = false)
+        invalidateScope(targetScope)
         return if (pending.isEmpty() && failed.isEmpty()) {
             AttachmentBatchResult.Completed(uploaded)
         } else {
@@ -303,17 +466,25 @@ class AttachmentViewModel(
         }
         val metadata = item.metadata ?: item.pendingUpload?.metadata
             ?: return AttachmentWriteResult.Failed(clientId, "附件状态不可恢复")
-        val result = if (item.pendingUpload != null) {
-            repository.cleanupPending(item.pendingUpload)
-        } else {
-            repository.delete(metadata)
+        locallyDeletedIds += metadata.attachmentId
+        val result = try {
+            if (item.pendingUpload != null) {
+                repository.cleanupPending(item.pendingUpload)
+            } else {
+                repository.delete(metadata)
+            }
+        } catch (cause: Throwable) {
+            locallyDeletedIds -= metadata.attachmentId
+            throw cause
         }
         return when (result) {
             is com.ffocalors.sharedledger.data.attachment.AttachmentDeleteResult.Deleted -> {
                 removeItem(clientId)
+                invalidateScope(item.scope)
                 AttachmentWriteResult.Accepted(clientId)
             }
             is com.ffocalors.sharedledger.data.attachment.AttachmentDeleteResult.PartialFailure -> {
+                locallyDeletedIds -= metadata.attachmentId
                 updateItem(clientId) {
                     it.copy(
                         status = AttachmentClientStatus.Failed,
@@ -333,12 +504,14 @@ class AttachmentViewModel(
         val bytes = item.bytes ?: return AttachmentWriteResult.Failed(clientId, "附件字节已丢失，请重新选择图片")
         val pending = item.pendingUpload
         val result = if (pending != null) {
+            updateItem(clientId) { it.copy(status = AttachmentClientStatus.Uploading, errorMessage = null) }
             repository.retryPending(pending, bytes)
         } else {
             val scope = _uiState.value.scope
                 ?: return AttachmentWriteResult.Failed(clientId, "附件作用域尚未建立")
             val expenseId = if (scope.isLedgerUnitAttachment) null else scope.expenseId
                 ?: return AttachmentWriteResult.Failed(clientId, "账单尚未创建，无法上传附件")
+            updateItem(clientId) { it.copy(status = AttachmentClientStatus.Uploading, errorMessage = null) }
             repository.createAndUpload(
                 CreateAttachmentInput(
                     activityId = item.scope.activityId,
@@ -360,12 +533,21 @@ class AttachmentViewModel(
             ?: return AttachmentWriteResult.Failed(clientId, "未找到附件")
         val pending = item.pendingUpload
             ?: return AttachmentWriteResult.Failed(clientId, "附件没有待清理上传")
-        return when (val result = repository.cleanupPending(pending)) {
+        locallyDeletedIds += pending.metadata.attachmentId
+        val result = try {
+            repository.cleanupPending(pending)
+        } catch (cause: Throwable) {
+            locallyDeletedIds -= pending.metadata.attachmentId
+            throw cause
+        }
+        return when (result) {
             is com.ffocalors.sharedledger.data.attachment.AttachmentDeleteResult.Deleted -> {
                 removeItem(clientId)
+                invalidateScope(item.scope)
                 AttachmentWriteResult.Accepted(clientId)
             }
             is com.ffocalors.sharedledger.data.attachment.AttachmentDeleteResult.PartialFailure -> {
+                locallyDeletedIds -= pending.metadata.attachmentId
                 updateItem(clientId) {
                     it.copy(status = AttachmentClientStatus.Failed, deleteRecovery = result, errorMessage = result.message)
                 }
@@ -391,6 +573,8 @@ class AttachmentViewModel(
     private fun applyUploadResult(item: AttachmentClientItem, result: AttachmentUploadResult): AttachmentWriteResult =
         when (result) {
             is AttachmentUploadResult.Completed -> {
+                locallyManagedIds += item.clientId
+                locallyManagedIds += result.metadata.attachmentId
                 updateItem(item.clientId) {
                     it.copy(
                         metadata = result.metadata,
@@ -400,15 +584,19 @@ class AttachmentViewModel(
                         errorMessage = null,
                     )
                 }
+                invalidateScope(item.scope)
                 AttachmentWriteResult.Accepted(item.clientId)
             }
             is AttachmentUploadResult.Pending -> {
+                locallyManagedIds += item.clientId
+                locallyManagedIds += result.upload.metadata.attachmentId
                 updateItem(item.clientId) {
                     it.copy(status = AttachmentClientStatus.Pending, pendingUpload = result.upload, errorMessage = result.upload.message)
                 }
                 AttachmentWriteResult.Failed(item.clientId, result.upload.message)
             }
             is AttachmentUploadResult.Failed -> {
+                locallyManagedIds += item.clientId
                 updateItem(item.clientId) { it.copy(status = AttachmentClientStatus.Failed, errorMessage = result.message) }
                 AttachmentWriteResult.Failed(item.clientId, result.message)
             }
@@ -426,11 +614,12 @@ class AttachmentViewModel(
 
     class Factory(
         private val repository: AttachmentRepository = AttachmentRepositoryFactory.create(),
+        private val queryCache: SessionQueryCache = SessionQueryCache(),
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             require(modelClass.isAssignableFrom(AttachmentViewModel::class.java))
-            return AttachmentViewModel(repository) as T
+            return AttachmentViewModel(repository, queryCache = queryCache) as T
         }
     }
 }

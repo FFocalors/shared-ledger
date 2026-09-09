@@ -1,5 +1,7 @@
 package com.ffocalors.sharedledger.data.expense
 
+import com.ffocalors.sharedledger.data.common.ReadFailureKind
+import com.ffocalors.sharedledger.data.common.StructuredReadFailure
 import java.math.BigDecimal
 
 enum class ExpenseSplitMethod(val backendValue: String) {
@@ -199,4 +201,5 @@ data class ExpenseWriteResult<out T>(
 class ExpenseOperationException(
     val userMessage: String,
     cause: Throwable? = null,
-) : RuntimeException(userMessage, cause)
+    override val failureKind: ReadFailureKind = ReadFailureKind.Other,
+) : RuntimeException(userMessage, cause), StructuredReadFailure

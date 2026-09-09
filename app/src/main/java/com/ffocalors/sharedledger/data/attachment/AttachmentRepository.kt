@@ -277,14 +277,20 @@ class SupabaseAttachmentRepository(
         require(path.isNotBlank()) { "附件 storage path 为空" }
     }
 
-    private fun <T> Result<T>.mapFailure(stage: AttachmentOperationStage): Result<T> =
-        recoverCatching { cause ->
-            throw if (cause is AttachmentException) cause else AttachmentOperationException(
-                stage,
-                "附件操作失败",
-                cause,
+    private fun <T> Result<T>.mapFailure(stage: AttachmentOperationStage): Result<T> = fold(
+        onSuccess = { Result.success(it) },
+        onFailure = { cause ->
+            if (cause is CancellationException) throw cause
+            Result.failure(
+                if (cause is AttachmentException) cause else AttachmentOperationException(
+                    stage,
+                    "附件操作失败",
+                    cause,
+                    AttachmentErrorMapper.failureKind(cause),
+                ),
             )
-        }
+        },
+    )
 }
 
 /** Resolves an ambiguous complete response using an exact, RLS-protected metadata read. */

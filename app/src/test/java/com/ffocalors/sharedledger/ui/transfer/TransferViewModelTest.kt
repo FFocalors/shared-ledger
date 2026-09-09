@@ -47,6 +47,21 @@ class TransferViewModelTest {
     }
 
     @Test
+    fun contextIsCachedForActivityAndDirection() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeTransferRepository()
+        val viewModel = TransferViewModel(repository)
+
+        viewModel.load("activity-1", SettlementDirection.TRANSFER)
+        advanceUntilIdle()
+        viewModel.load("activity-1", SettlementDirection.TRANSFER)
+        advanceUntilIdle()
+
+        assertEquals(1, repository.loadContextCalls)
+        assertEquals(false, viewModel.uiState.value.isRefreshing)
+    }
+
+    @Test
     fun duplicateSubmitIsIgnoredWhileRequestIsInFlight() = runTest(dispatcher) {
         Dispatchers.setMain(dispatcher)
         val gate = CompletableDeferred<Result<SettlementTransferResult>>()
@@ -166,6 +181,7 @@ class TransferViewModelTest {
 
     private class FakeTransferRepository : TransferRepository {
         val createCalls = AtomicInteger()
+        var loadContextCalls = 0
         var createGate: CompletableDeferred<Result<SettlementTransferResult>>? = null
         override suspend fun loadContext(activityId: String, direction: SettlementDirection) = Result.success(
             SettlementContext(
@@ -175,7 +191,7 @@ class TransferViewModelTest {
                 baseCurrency = "CNY",
                 candidates = listOf(SettlementCandidate("creditor", "Alice", BigDecimal("30.0"))),
             ),
-        )
+        ).also { loadContextCalls++ }
 
         override suspend fun createSettlement(input: CreateSettlementTransferInput): Result<SettlementTransferResult> {
             createCalls.incrementAndGet()

@@ -13,35 +13,49 @@ import java.math.BigDecimal
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 
 internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
     private suspend fun currentUserId(): String = client.auth.currentSessionOrNull()?.user?.id
         ?: throw FinancialOperationException("登录状态已失效，请重新登录")
 
-    suspend fun listRecords(activityId: String, type: FundRecordType? = null): List<FundRecord> {
-        val transfers = if (type == FundRecordType.AUTO_PREPAYMENT_USAGE || type == FundRecordType.REFUND) {
-            emptyList()
-        } else {
-            client.from("transfers").select {
-                filter {
-                    eq("activity_id", activityId)
-                    type?.let { eq("type", it.databaseValue) }
-                }
-            }.decodeList<FinancialTransferRowDto>()
+    suspend fun listRecords(activityId: String, type: FundRecordType? = null): List<FundRecord> = coroutineScope {
+        // There are only three fixed branches here. Each branch owns its dependent reads, so a
+        // full timeline no longer waits for transfers before starting the two projections.
+        val transferRecords = async {
+            if (type == FundRecordType.AUTO_PREPAYMENT_USAGE || type == FundRecordType.REFUND) {
+                emptyList()
+            } else {
+                val transfers = client.from("transfers").select {
+                    filter {
+                        eq("activity_id", activityId)
+                        type?.let { eq("type", it.databaseValue) }
+                    }
+                }.decodeList<FinancialTransferRowDto>()
+                enrich(activityId, transfers)
+            }
         }
-        val transferRecords = enrich(activityId, transfers)
-        val usageRecords = if (type == null || type == FundRecordType.AUTO_PREPAYMENT_USAGE) {
-            enrichPrepaymentUsages(activityId)
-        } else {
-            emptyList()
+        val usageRecords = async {
+            if (type == null || type == FundRecordType.AUTO_PREPAYMENT_USAGE) {
+                enrichPrepaymentUsages(activityId)
+            } else {
+                emptyList()
+            }
         }
-        val refundRecords = if (type == null || type == FundRecordType.REFUND) {
-            enrichRefunds(activityId)
-        } else {
-            emptyList()
+        val refundRecords = async {
+            if (type == null || type == FundRecordType.REFUND) {
+                enrichRefunds(activityId)
+            } else {
+                emptyList()
+            }
         }
-        return (transferRecords + usageRecords + refundRecords).sortedByDescending { it.occurredAt }
+        (transferRecords.await() + usageRecords.await() + refundRecords.await())
+            .sortedByDescending { it.occurredAt }
     }
+
+    /** Fetches one complete, sorted snapshot for a caller that will filter it locally/cache it. */
+    suspend fun listAllRecords(activityId: String): List<FundRecord> = listRecords(activityId)
 
     suspend fun getRecord(activityId: String, transferId: String): FundRecord {
         val transfer = client.from("transfers").select {
@@ -61,23 +75,40 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         }.decodeList<FinancialClaimRowDto>().firstOrNull()?.participantId
     }
 
-    suspend fun loadContext(activityId: String): FinancialContext {
+    suspend fun loadContext(activityId: String): FinancialContext = coroutineScope {
         val userId = currentUserId()
-        val participants = client.from("participants").select {
-            filter { eq("activity_id", activityId); eq("is_deleted", false) }
-        }.decodeList<FinancialParticipantRowDto>().map { it.toParticipant() }
-        val currency = client.from("activities").select {
-            filter { eq("id", activityId) }
-        }.decodeSingle<FinancialActivityRowDto>()
-        val claims = client.from("participant_claims").select {
-            filter { eq("activity_id", activityId) }
-        }.decodeList<FinancialClaimRowDto>()
+        val participantsRequest = async {
+            client.from("participants").select {
+                filter { eq("activity_id", activityId); eq("is_deleted", false) }
+            }.decodeList<FinancialParticipantRowDto>().map { it.toParticipant() }
+        }
+        val currencyRequest = async {
+            client.from("activities").select {
+                filter { eq("id", activityId) }
+            }.decodeSingle<FinancialActivityRowDto>()
+        }
+        val claimsRequest = async {
+            client.from("participant_claims").select {
+                filter { eq("activity_id", activityId) }
+            }.decodeList<FinancialClaimRowDto>()
+        }
+        val participants = participantsRequest.await()
+        val currency = currencyRequest.await()
+        val claims = claimsRequest.await()
         val currentParticipantId = claims.firstOrNull { it.userId == userId }?.participantId
         val claimedParticipantIds = claims.map { it.participantId }.toSet()
         val canActOnBehalf = currency.createdBy == userId
-        val accounts = client.from("prepayment_accounts").select {
-            filter { eq("activity_id", activityId) }
-        }.decodeList<FinancialAccountRowDto>().mapNotNull { row ->
+        val accountsRequest = async {
+            client.from("prepayment_accounts").select {
+                filter { eq("activity_id", activityId) }
+            }.decodeList<FinancialAccountRowDto>()
+        }
+        val usagesRequest = async {
+            client.from("prepayment_usages").select {
+                filter { eq("activity_id", activityId) }
+            }.decodeList<FinancialPrepaymentUsageRowDto>()
+        }
+        val accounts = accountsRequest.await().mapNotNull { row ->
             val owner = participants.firstOrNull { it.participantId == row.ownerParticipantId }
             val custodian = participants.firstOrNull { it.participantId == row.custodianParticipantId }
             if (owner == null || custodian == null) null else PrepaymentAccount(
@@ -88,14 +119,11 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
                 usedAmount = BigDecimal.ZERO,
             )
         }
-        val usagesByAccount = client.from("prepayment_usages").select {
-            filter { eq("activity_id", activityId) }
-        }.decodeList<FinancialPrepaymentUsageRowDto>()
-            .let(::aggregatePrepaymentUsageAmounts)
+        val usagesByAccount = usagesRequest.await().let(::aggregatePrepaymentUsageAmounts)
         val accountsWithUsage = accounts.map { account ->
             account.copy(usedAmount = usagesByAccount[account.accountId] ?: BigDecimal.ZERO)
         }
-        return FinancialContext(
+        FinancialContext(
             activityId = activityId,
             currency = currency.baseCurrency.trim().uppercase(),
             participants = participants,
@@ -106,14 +134,20 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         )
     }
 
-    suspend fun previewFinalSettlement(activityId: String): List<FinalSettlementSuggestion> {
-        val rows = client.postgrest.rpc("preview_activity_settlement", buildJsonObject {
-            put("activity_id", activityId)
-        }).decodeList<FinancialPreviewRowDto>()
-        val participantNames = client.from("participants").select {
-            filter { eq("activity_id", activityId); eq("is_deleted", false) }
-        }.decodeList<FinancialParticipantRowDto>().associate { it.id to it.toParticipant() }
-        return rows.mapNotNull { row ->
+    suspend fun previewFinalSettlement(activityId: String): List<FinalSettlementSuggestion> = coroutineScope {
+        val rowsRequest = async {
+            client.postgrest.rpc("preview_activity_settlement", buildJsonObject {
+                put("activity_id", activityId)
+            }).decodeList<FinancialPreviewRowDto>()
+        }
+        val participantNamesRequest = async {
+            client.from("participants").select {
+                filter { eq("activity_id", activityId); eq("is_deleted", false) }
+            }.decodeList<FinancialParticipantRowDto>().associate { it.id to it.toParticipant() }
+        }
+        val rows = rowsRequest.await()
+        val participantNames = participantNamesRequest.await()
+        rows.mapNotNull { row ->
             val from = participantNames[row.fromParticipantId] ?: return@mapNotNull null
             val to = participantNames[row.toParticipantId] ?: return@mapNotNull null
             val amount = row.amount.toFinancialBigDecimal()
@@ -273,21 +307,35 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         )
     }
 
-    private suspend fun enrich(activityId: String, transfers: List<FinancialTransferRowDto>): List<FundRecord> {
-        if (transfers.isEmpty()) return emptyList()
-        val participants = client.from("participants").select {
-            filter { eq("activity_id", activityId); eq("is_deleted", false) }
-        }.decodeList<FinancialParticipantRowDto>().associate { it.id to it.toParticipant() }
+    private suspend fun enrich(activityId: String, transfers: List<FinancialTransferRowDto>): List<FundRecord> = coroutineScope {
+        if (transfers.isEmpty()) return@coroutineScope emptyList()
         val transferIds = transfers.map { it.id }
-        val components = client.from("transfer_components").select {
-            filter { eq("activity_id", activityId); isIn("transfer_id", transferIds) }
-        }.decodeList<FinancialComponentRowDto>().groupBy { it.transferId }
-        val disputes = client.from("transfer_disputes").select {
-            filter { eq("activity_id", activityId); isIn("transfer_id", transferIds) }
-        }.decodeList<FinancialDisputeRowDto>().groupBy { it.transferId }
-        val paths = client.from("final_settlement_paths").select {
-            filter { eq("activity_id", activityId); isIn("transfer_id", transferIds) }
-        }.decodeList<FinancialPathRowDto>().groupBy { it.transferId }
+        // These are four fixed, independent reads. Do not turn this into one async job per
+        // transfer: PostgREST already supports the bounded `isIn` queries above.
+        val participantsRequest = async {
+            client.from("participants").select {
+                filter { eq("activity_id", activityId); eq("is_deleted", false) }
+            }.decodeList<FinancialParticipantRowDto>().associate { it.id to it.toParticipant() }
+        }
+        val componentsRequest = async {
+            client.from("transfer_components").select {
+                filter { eq("activity_id", activityId); isIn("transfer_id", transferIds) }
+            }.decodeList<FinancialComponentRowDto>().groupBy { it.transferId }
+        }
+        val disputesRequest = async {
+            client.from("transfer_disputes").select {
+                filter { eq("activity_id", activityId); isIn("transfer_id", transferIds) }
+            }.decodeList<FinancialDisputeRowDto>().groupBy { it.transferId }
+        }
+        val pathsRequest = async {
+            client.from("final_settlement_paths").select {
+                filter { eq("activity_id", activityId); isIn("transfer_id", transferIds) }
+            }.decodeList<FinancialPathRowDto>().groupBy { it.transferId }
+        }
+        val participants = participantsRequest.await()
+        val components = componentsRequest.await()
+        val disputes = disputesRequest.await()
+        val paths = pathsRequest.await()
         val userIds = buildSet {
             transfers.forEach { add(it.recordedBy); it.voidedBy?.let(::add) }
             disputes.values.flatten().forEach { add(it.disputedBy); it.resolvedBy?.let(::add) }
@@ -295,37 +343,51 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         val profiles = if (userIds.isEmpty()) emptyMap() else client.from("profiles").select {
             filter { isIn("id", userIds.toList()) }
         }.decodeList<FinancialProfileRowDto>().associate { it.id to it.toRecorder() }
-        return transfers.map {
+        transfers.map {
             mapFinancialRecord(it, participants, profiles, components[it.id].orEmpty(), disputes[it.id].orEmpty(), paths[it.id].orEmpty())
         }.sortedByDescending { it.occurredAt }
     }
 
-    private suspend fun enrichPrepaymentUsages(activityId: String): List<FundRecord> {
+    private suspend fun enrichPrepaymentUsages(activityId: String): List<FundRecord> = coroutineScope {
+        // Keep the existing dependency/early-return boundary: an activity without accounts must
+        // not trigger unrelated projection reads (or surface a new error from one of them).
         val accounts = client.from("prepayment_accounts").select {
             filter { eq("activity_id", activityId) }
         }.decodeList<FinancialAccountRowDto>().associateBy { it.id }
-        if (accounts.isEmpty()) return emptyList()
+        if (accounts.isEmpty()) return@coroutineScope emptyList()
         val usages = client.from("prepayment_usages").select {
             filter { eq("activity_id", activityId) }
         }.decodeList<FinancialPrepaymentUsageRowDto>()
-        if (usages.isEmpty()) return emptyList()
+        if (usages.isEmpty()) return@coroutineScope emptyList()
         val debtIds = usages.mapNotNull { it.expenseDebtId }.distinct()
-        if (debtIds.isEmpty()) return emptyList()
-        val debts = client.from("expense_debts").select {
-            filter { isIn("id", debtIds) }
-        }.decodeList<FinancialExpenseDebtRowDto>().associateBy { it.id }
+        if (debtIds.isEmpty()) return@coroutineScope emptyList()
+        val debtsRequest = async {
+            client.from("expense_debts").select {
+                filter { isIn("id", debtIds) }
+            }.decodeList<FinancialExpenseDebtRowDto>().associateBy { it.id }
+        }
+        val participantsRequest = async {
+            client.from("participants").select {
+                filter { eq("activity_id", activityId); eq("is_deleted", false) }
+            }.decodeList<FinancialParticipantRowDto>().associate { it.id to it.toParticipant() }
+        }
+        val currencyRequest = async {
+            client.from("activities").select {
+                filter { eq("id", activityId) }
+            }.decodeSingle<FinancialActivityRowDto>().baseCurrency.trim().uppercase()
+        }
+        val debts = debtsRequest.await()
         val expenseIds = debts.values.map { it.expenseId }.distinct()
-        if (expenseIds.isEmpty()) return emptyList()
-        val expenses = client.from("expenses").select {
-            filter { isIn("id", expenseIds) }
-        }.decodeList<FinancialExpenseTimelineRowDto>().associateBy { it.id }
-        val participants = client.from("participants").select {
-            filter { eq("activity_id", activityId); eq("is_deleted", false) }
-        }.decodeList<FinancialParticipantRowDto>().associate { it.id to it.toParticipant() }
-        val currency = client.from("activities").select {
-            filter { eq("id", activityId) }
-        }.decodeSingle<FinancialActivityRowDto>().baseCurrency.trim().uppercase()
-        return usages.mapNotNull { usage ->
+        if (expenseIds.isEmpty()) return@coroutineScope emptyList()
+        val expensesRequest = async {
+            client.from("expenses").select {
+                filter { isIn("id", expenseIds) }
+            }.decodeList<FinancialExpenseTimelineRowDto>().associateBy { it.id }
+        }
+        val expenses = expensesRequest.await()
+        val participants = participantsRequest.await()
+        val currency = currencyRequest.await()
+        usages.mapNotNull { usage ->
             val account = accounts[usage.accountId] ?: return@mapNotNull null
             val debt = usage.expenseDebtId?.let(debts::get) ?: return@mapNotNull null
             val expense = expenses[debt.expenseId] ?: return@mapNotNull null
@@ -333,34 +395,46 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         }
     }
 
-    private suspend fun enrichRefunds(activityId: String): List<FundRecord> {
+    private suspend fun enrichRefunds(activityId: String): List<FundRecord> = coroutineScope {
         val unitIds = client.from("ledger_units").select {
             filter { eq("activity_id", activityId) }
         }.decodeList<com.ffocalors.sharedledger.data.expense.ExpenseLedgerUnitRowDto>().map { it.id }
-        if (unitIds.isEmpty()) return emptyList()
+        if (unitIds.isEmpty()) return@coroutineScope emptyList()
         val refunds = client.from("expenses").select {
             filter {
                 isIn("ledger_unit_id", unitIds)
                 lt("original_amount", 0)
             }
         }.decodeList<FinancialRefundExpenseRowDto>()
-        if (refunds.isEmpty()) return emptyList()
+        if (refunds.isEmpty()) return@coroutineScope emptyList()
         val refundIds = refunds.map { it.id }
-        val payments = client.from("payments").select {
-            filter { isIn("expense_id", refundIds) }
-        }.decodeList<FinancialExpensePartyRowDto>().groupBy { it.expenseId }
         val originalIds = refunds.mapNotNull { it.originalExpenseId }.distinct()
-        val originalTitles = if (originalIds.isEmpty()) emptyMap() else client.from("expenses").select {
-            filter { isIn("id", originalIds) }
-        }.decodeList<FinancialExpenseTimelineRowDto>().associate { it.id to it.title }
-        val participants = client.from("participants").select {
-            filter { eq("activity_id", activityId) }
-        }.decodeList<FinancialParticipantRowDto>().associate { it.id to it.toParticipant() }
         val userIds = refunds.flatMap { listOfNotNull(it.createdBy, it.deletedBy) }.distinct()
-        val profiles = if (userIds.isEmpty()) emptyMap() else client.from("profiles").select {
-            filter { isIn("id", userIds) }
-        }.decodeList<FinancialProfileRowDto>().associate { it.id to it.toRecorder() }
-        return refunds.map { refund ->
+        val paymentsRequest = async {
+            client.from("payments").select {
+                filter { isIn("expense_id", refundIds) }
+            }.decodeList<FinancialExpensePartyRowDto>().groupBy { it.expenseId }
+        }
+        val originalTitlesRequest = async {
+            if (originalIds.isEmpty()) emptyMap() else client.from("expenses").select {
+                filter { isIn("id", originalIds) }
+            }.decodeList<FinancialExpenseTimelineRowDto>().associate { it.id to it.title }
+        }
+        val participantsRequest = async {
+            client.from("participants").select {
+                filter { eq("activity_id", activityId) }
+            }.decodeList<FinancialParticipantRowDto>().associate { it.id to it.toParticipant() }
+        }
+        val profilesRequest = async {
+            if (userIds.isEmpty()) emptyMap() else client.from("profiles").select {
+                filter { isIn("id", userIds) }
+            }.decodeList<FinancialProfileRowDto>().associate { it.id to it.toRecorder() }
+        }
+        val payments = paymentsRequest.await()
+        val originalTitles = originalTitlesRequest.await()
+        val participants = participantsRequest.await()
+        val profiles = profilesRequest.await()
+        refunds.map { refund ->
             mapRefundRecord(
                 activityId = activityId,
                 expense = refund,

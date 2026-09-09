@@ -12,7 +12,13 @@ import com.ffocalors.sharedledger.data.transfer.TransferErrorMapper
 import com.ffocalors.sharedledger.data.transfer.TransferRepository
 import com.ffocalors.sharedledger.data.transfer.TransferRepositoryFactory
 import com.ffocalors.sharedledger.data.transfer.TransferWriteState
+import com.ffocalors.sharedledger.data.common.ReadFailureKind
+import com.ffocalors.sharedledger.data.common.readFailureKind
+import com.ffocalors.sharedledger.data.common.shouldRemoveCachedRead
 import com.ffocalors.sharedledger.ui.screens.TransferDraft
+import com.ffocalors.sharedledger.ui.cache.QueryCacheKey
+import com.ffocalors.sharedledger.ui.cache.QueryCacheState
+import com.ffocalors.sharedledger.ui.cache.SessionQueryCache
 import java.math.BigDecimal
 import java.time.Instant
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,6 +40,7 @@ data class TransferCandidateUi(
 
 data class TransferUiState(
     val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
     val baseCurrency: String = "CNY",
     val currentParticipantId: String? = null,
     val canActOnBehalf: Boolean = false,
@@ -43,10 +50,12 @@ data class TransferUiState(
     val isSubmitting: Boolean = false,
     val submissionBlocked: Boolean = false,
     val writeState: TransferWriteState? = null,
+    val failureKind: ReadFailureKind? = null,
 )
 
 class TransferViewModel(
     private val repository: TransferRepository,
+    private val queryCache: SessionQueryCache = SessionQueryCache(),
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(TransferUiState())
     val uiState: StateFlow<TransferUiState> = _uiState.asStateFlow()
@@ -54,31 +63,42 @@ class TransferViewModel(
     private var loadedDirection: SettlementDirection? = null
 
     fun load(activityId: String, direction: SettlementDirection, force: Boolean = false) {
-        if (!force && loadedActivityId == activityId && loadedDirection == direction &&
-            !_uiState.value.isLoading && _uiState.value.errorMessage == null
-        ) return
+        val key = contextKey(activityId, direction)
+        val cached = queryCache.read(key)
+        if (!force && cached.state == QueryCacheState.Fresh && cached.value != null) {
+            _uiState.value = toUiState(cached.value, direction)
+            loadedActivityId = activityId
+            loadedDirection = direction
+            return
+        }
         loadedActivityId = activityId
         loadedDirection = direction
+        val existing = cached.value
         viewModelScope.launch {
-            _uiState.value = TransferUiState(isLoading = true)
-            repository.loadContext(activityId, direction).fold(
-                onSuccess = { context ->
-                    _uiState.value = TransferUiState(
-                        isLoading = false,
-                        baseCurrency = context.baseCurrency,
-                        currentParticipantId = context.currentParticipantId,
-                        canActOnBehalf = context.canActOnBehalf,
-                        candidates = context.candidates.map(::toUi),
-                        emptyMessage = when {
-                            context.candidates.isNotEmpty() -> null
-                            context.currentParticipantId == null -> "当前用户尚未绑定参与人，请先在活动管理中绑定"
-                            direction == SettlementDirection.TRANSFER -> "当前没有待付款债务"
-                            else -> "当前没有待收款债务"
-                        },
-                    )
-                },
+            _uiState.value = existing?.let { toUiState(it, direction).copy(isRefreshing = true) }
+                ?: TransferUiState(isLoading = true)
+            queryCache.getOrLoad(key, forceRefresh = true) {
+                repository.loadContext(activityId, direction)
+            }.fold(
+                onSuccess = { _uiState.value = toUiState(it, direction) },
                 onFailure = { error ->
-            _uiState.value = TransferUiState(isLoading = false, errorMessage = messageFor(error))
+                    val kind = error.readFailureKind()
+                    if (kind.shouldRemoveCachedRead()) queryCache.remove(key)
+                    _uiState.value = if (kind.shouldRemoveCachedRead()) {
+                        TransferUiState(
+                            isLoading = false,
+                            isRefreshing = false,
+                            errorMessage = messageFor(error),
+                            failureKind = kind,
+                        )
+                    } else {
+                        (existing?.let { toUiState(it, direction) } ?: TransferUiState()).copy(
+                            isLoading = false,
+                            isRefreshing = false,
+                            errorMessage = messageFor(error),
+                            failureKind = kind,
+                        )
+                    }
                 },
             )
         }
@@ -122,9 +142,15 @@ class TransferViewModel(
                     )
                     val result = repository.createSettlementWrite(input)
                     if (result.isSuccess && result.value != null) {
+                            queryCache.invalidate(contextKey(draft.activityId, direction))
+                            invalidateFinancialReadCaches(draft.activityId)
                             _uiState.value = _uiState.value.copy(isSubmitting = false)
                             onSuccess(result.value)
                     } else {
+                        if (result.isUnknown) {
+                            queryCache.invalidate(contextKey(draft.activityId, direction))
+                            invalidateFinancialReadCaches(draft.activityId)
+                        }
                         _uiState.value = _uiState.value.copy(
                             isSubmitting = false,
                             errorMessage = result.errorMessage ?: "转账失败",
@@ -143,6 +169,29 @@ class TransferViewModel(
         load(activityId, direction, force = true)
     }
 
+    /** Called by Realtime or after an external financial write. */
+    fun invalidateActivity(activityId: String? = null) {
+        if (activityId.isNullOrBlank()) {
+            queryCache.invalidatePrefix("transfer-query:")
+            queryCache.invalidatePrefix("financial-query:")
+        } else {
+            queryCache.invalidatePrefix("transfer-query:$activityId:")
+            queryCache.invalidatePrefix("financial-query:list:$activityId")
+            queryCache.invalidatePrefix("financial-query:detail:$activityId:")
+            queryCache.invalidatePrefix("financial-query:context:$activityId")
+            queryCache.invalidatePrefix("financial-query:preview:$activityId")
+        }
+    }
+
+    fun clearSessionCache() = queryCache.clear()
+
+    private fun invalidateFinancialReadCaches(activityId: String) {
+        queryCache.invalidatePrefix("financial-query:list:$activityId")
+        queryCache.invalidatePrefix("financial-query:detail:$activityId:")
+        queryCache.invalidatePrefix("financial-query:context:$activityId")
+        queryCache.invalidatePrefix("financial-query:preview:$activityId")
+    }
+
     private fun setError(message: String) {
         _uiState.value = _uiState.value.copy(errorMessage = message)
     }
@@ -158,6 +207,28 @@ class TransferViewModel(
         toParticipantName = candidate.toParticipantName,
         onBehalfOptions = candidate.onBehalfOptions,
     )
+
+    private fun toUiState(
+        context: com.ffocalors.sharedledger.data.transfer.SettlementContext,
+        direction: SettlementDirection,
+    ) = TransferUiState(
+        isLoading = false,
+        baseCurrency = context.baseCurrency,
+        currentParticipantId = context.currentParticipantId,
+        canActOnBehalf = context.canActOnBehalf,
+        candidates = context.candidates.map(::toUi),
+        emptyMessage = when {
+            context.candidates.isNotEmpty() -> null
+            context.currentParticipantId == null -> "当前用户尚未绑定参与人，请先在活动管理中绑定"
+            direction == SettlementDirection.TRANSFER -> "当前没有待付款债务"
+            else -> "当前没有待收款债务"
+        },
+    )
+
+    private fun contextKey(activityId: String, direction: SettlementDirection) =
+        QueryCacheKey<com.ffocalors.sharedledger.data.transfer.SettlementContext>(
+            "transfer-query:$activityId:${direction.name}",
+        )
 
     private fun isValidActingParty(
         state: TransferUiState,
@@ -176,8 +247,11 @@ class TransferViewModel(
         (error as? com.ffocalors.sharedledger.data.transfer.TransferOperationException)?.userMessage
             ?: TransferErrorMapper.toUserMessage(error)
 
-    class Factory(private val repository: TransferRepository = TransferRepositoryFactory.create()) : ViewModelProvider.Factory {
+    class Factory(
+        private val repository: TransferRepository = TransferRepositoryFactory.create(),
+        private val queryCache: SessionQueryCache = SessionQueryCache(),
+    ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T = TransferViewModel(repository) as T
+        override fun <T : ViewModel> create(modelClass: Class<T>): T = TransferViewModel(repository, queryCache) as T
     }
 }

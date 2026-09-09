@@ -11,6 +11,7 @@ import com.ffocalors.sharedledger.data.activity.ActivityRepository
 import com.ffocalors.sharedledger.data.activity.ActivityRepositoryFactory
 import com.ffocalors.sharedledger.data.activity.ActivitySummary
 import com.ffocalors.sharedledger.data.activity.ActivityType
+import com.ffocalors.sharedledger.data.activity.mapConcurrentlyPreservingOrder
 import com.ffocalors.sharedledger.data.activity.toUiKind
 import com.ffocalors.sharedledger.data.expense.ParticipantExpenseShareRepository
 import com.ffocalors.sharedledger.data.expense.ParticipantExpenseShareRepositoryFactory
@@ -31,8 +32,12 @@ import com.ffocalors.sharedledger.ui.screens.ActivityManagementMember
 import com.ffocalors.sharedledger.ui.screens.ActivityManagementParticipant
 import com.ffocalors.sharedledger.ui.screens.ActivityManagementStatus
 import com.ffocalors.sharedledger.ui.screens.ActivityManagementUiState
+import com.ffocalors.sharedledger.ui.profile.PersonalOverview
 import com.ffocalors.sharedledger.ui.profile.PersonalOverviewUiState
 import com.ffocalors.sharedledger.ui.profile.mapPersonalOverview
+import com.ffocalors.sharedledger.ui.cache.QueryCacheKey
+import com.ffocalors.sharedledger.ui.cache.QueryCacheState
+import com.ffocalors.sharedledger.ui.cache.SessionQueryCache
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,12 +45,14 @@ import kotlinx.coroutines.launch
 
 data class ActivityHomeUiState(
     val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
     val activities: List<ActivityCardUiModel> = emptyList(),
     val errorMessage: String? = null,
 )
 
 data class ActivityDetailUiState(
     val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
     val detail: ActivityDetail? = null,
     val errorMessage: String? = null,
 )
@@ -54,6 +61,7 @@ class ActivityViewModel(
     private val repository: ActivityRepository,
     private val currentUserId: String,
     private val participantExpenseShareRepository: ParticipantExpenseShareRepository = ParticipantExpenseShareRepositoryFactory.create(),
+    private val queryCache: SessionQueryCache = SessionQueryCache(),
 ) : ViewModel() {
     private val _home = MutableStateFlow(ActivityHomeUiState())
     val home: StateFlow<ActivityHomeUiState> = _home.asStateFlow()
@@ -166,27 +174,67 @@ class ActivityViewModel(
         }
 
     fun loadHome(force: Boolean = false) {
-        if (!force && !_home.value.isLoading && _home.value.activities.isNotEmpty()) return
+        val key = homeCacheKey()
+        val cached = queryCache.read(key)
+        if (!force && cached.state == QueryCacheState.Fresh && cached.value != null) {
+            _home.value = ActivityHomeUiState(
+                isLoading = false,
+                isRefreshing = false,
+                activities = cached.value,
+            )
+            return
+        }
+        val existing = cached.value ?: _home.value.activities
         viewModelScope.launch {
-            _home.value = ActivityHomeUiState(isLoading = true)
-            repository.listActivities().fold(
-                onSuccess = { summaries ->
-                    val cards = mutableListOf<ActivityCardUiModel>()
-                    for (summary in summaries) {
-                        val sharesResult = participantExpenseShareRepository
-                            .getForActivity(summary.id, currentUserId)
-                        if (sharesResult.isFailure) {
-                            _home.value = ActivityHomeUiState(
-                                isLoading = false,
-                                errorMessage = participantShareMessage(sharesResult.exceptionOrNull()),
+            _home.value = _home.value.copy(
+                isLoading = existing.isEmpty(),
+                isRefreshing = existing.isNotEmpty(),
+                activities = existing,
+                errorMessage = null,
+            )
+            val result = queryCache.getOrLoad(key, forceRefresh = true) {
+                repository.listActivities().fold(
+                    onSuccess = { summaries ->
+                        val cardResults = mapConcurrentlyPreservingOrder(
+                            summaries,
+                            maxConcurrency = 4,
+                        ) { summary ->
+                            participantExpenseShareRepository.getForActivity(summary.id, currentUserId).fold(
+                                onSuccess = { Result.success(toCard(summary, it)) },
+                                onFailure = {
+                                    Result.failure<ActivityCardUiModel>(
+                                        ExpenseOperationException("我的应承担金额加载失败，请重试", it),
+                                    )
+                                },
                             )
-                            return@launch
                         }
-                        cards += toCard(summary, sharesResult.getOrNull())
-                    }
-                    _home.value = ActivityHomeUiState(false, cards)
+                        val firstFailure = cardResults.indexOfFirst { it.isFailure }
+                        if (firstFailure >= 0) {
+                            Result.failure(cardResults[firstFailure].exceptionOrNull()!!)
+                        } else {
+                            Result.success(cardResults.map { it.getOrThrow() })
+                        }
+                    },
+                    onFailure = { Result.failure(it) },
+                )
+            }
+            result.fold(
+                onSuccess = { cards ->
+                    _home.value = ActivityHomeUiState(
+                        isLoading = false,
+                        isRefreshing = false,
+                        activities = cards,
+                    )
                 },
-                onFailure = { _home.value = ActivityHomeUiState(false, errorMessage = messageFor(it)) },
+                onFailure = { error ->
+                    _home.value = _home.value.copy(
+                        isLoading = false,
+                        isRefreshing = false,
+                        activities = existing,
+                        errorMessage = participantShareMessage(error).takeIf { error is ExpenseOperationException }
+                            ?: messageFor(error),
+                    )
+                },
             )
         }
     }
@@ -195,38 +243,64 @@ class ActivityViewModel(
 
     fun refreshPersonalOverview() {
         if (personalOverviewLoadInFlight) return
+        val key = personalOverviewCacheKey()
+        val cached = queryCache.read(key)
+        if (cached.state == QueryCacheState.Fresh && cached.value != null && _personalOverview.value.overview == null) {
+            _personalOverview.value = PersonalOverviewUiState(
+                isLoading = false,
+                isRefreshing = false,
+                overview = cached.value,
+            )
+            return
+        }
         personalOverviewLoadInFlight = true
         viewModelScope.launch {
-            val cachedOverview = _personalOverview.value.overview
+            val cachedOverview = cached.value ?: _personalOverview.value.overview
             _personalOverview.value = PersonalOverviewUiState(
                 isLoading = cachedOverview == null,
                 isRefreshing = cachedOverview != null,
                 overview = cachedOverview,
             )
             try {
-                val summaries = repository.listActivities().getOrElse { error ->
-                    _personalOverview.value = PersonalOverviewUiState(
-                        isLoading = false,
-                        overview = cachedOverview,
-                        errorMessage = messageFor(error),
-                    )
-                    return@launch
+                val result = queryCache.getOrLoad(key, forceRefresh = true) {
+                    val summariesResult = repository.listActivities()
+                    if (summariesResult.isFailure) return@getOrLoad Result.failure(summariesResult.exceptionOrNull()!!)
+                    val summaries = summariesResult.getOrThrow()
+                    val detailResults = mapConcurrentlyPreservingOrder(
+                        summaries,
+                        maxConcurrency = 4,
+                    ) { summary -> repository.getActivity(summary.id) }
+                    val firstFailure = detailResults.indexOfFirst { it.isFailure }
+                    if (firstFailure >= 0) {
+                        val summary = summaries[firstFailure]
+                        val error = detailResults[firstFailure].exceptionOrNull()!!
+                        return@getOrLoad Result.failure(
+                            IllegalStateException(
+                                "活动「${summary.name}」加载失败：${messageFor(error)}",
+                                error,
+                            ),
+                        )
+                    }
+                    val details = detailResults.map { it.getOrThrow() }
+                    Result.success(mapPersonalOverview(currentUserId, details))
                 }
-                val details = mutableListOf<ActivityDetail>()
-                for (summary in summaries) {
-                    val detail = repository.getActivity(summary.id).getOrElse { error ->
+                result.fold(
+                    onSuccess = { overview ->
                         _personalOverview.value = PersonalOverviewUiState(
                             isLoading = false,
-                            overview = cachedOverview,
-                            errorMessage = "活动「${summary.name}」加载失败：${messageFor(error)}",
+                            isRefreshing = false,
+                            overview = overview,
                         )
-                        return@launch
-                    }
-                    details += detail
-                }
-                _personalOverview.value = PersonalOverviewUiState(
-                    isLoading = false,
-                    overview = mapPersonalOverview(currentUserId, details),
+                    },
+                    onFailure = { error ->
+                        _personalOverview.value = PersonalOverviewUiState(
+                            isLoading = false,
+                            isRefreshing = false,
+                            overview = cachedOverview,
+                            errorMessage = error.message?.takeIf { it.startsWith("活动「") }
+                                ?: messageFor(error),
+                        )
+                    },
                 )
             } finally {
                 personalOverviewLoadInFlight = false
@@ -241,18 +315,41 @@ class ActivityViewModel(
 
     fun loadDetail(activityId: String, force: Boolean = false) {
         val state = detailStates.getOrPut(activityId) { MutableStateFlow(ActivityDetailUiState()) }
-        if (!force && !state.value.isLoading && state.value.detail != null) return
+        val key = detailCacheKey(activityId)
+        val cached = queryCache.read(key)
+        if (!force && cached.state == QueryCacheState.Fresh && cached.value != null) {
+            state.value = ActivityDetailUiState(
+                isLoading = false,
+                isRefreshing = false,
+                detail = cached.value,
+            )
+            return
+        }
+        val existing = cached.value ?: state.value.detail
         viewModelScope.launch {
-            state.value = ActivityDetailUiState(isLoading = true, detail = state.value.detail)
-            repository.getActivity(activityId).fold(
-                onSuccess = { state.value = ActivityDetailUiState(false, it) },
+            state.value = state.value.copy(
+                isLoading = existing == null,
+                isRefreshing = existing != null,
+                detail = existing,
+                errorMessage = null,
+            )
+            val result = queryCache.getOrLoad(key, forceRefresh = true) { repository.getActivity(activityId) }
+            result.fold(
+                onSuccess = {
+                    state.value = ActivityDetailUiState(
+                        isLoading = false,
+                        isRefreshing = false,
+                        detail = it,
+                    )
+                },
                 onFailure = { error ->
                     val kind = (error as? ActivityOperationException)?.kind
                     val keepCachedDetail = kind != ActivityFailureKind.PermissionDenied &&
                         kind != ActivityFailureKind.NotFound
+                    if (!keepCachedDetail) clearActivitySessionData(activityId, messageFor(error))
                     state.value = ActivityDetailUiState(
                         isLoading = false,
-                        detail = state.value.detail.takeIf { keepCachedDetail },
+                        detail = existing.takeIf { keepCachedDetail },
                         errorMessage = messageFor(error),
                     )
                 },
@@ -266,7 +363,7 @@ class ActivityViewModel(
         viewModelScope.launch {
             try {
                 repository.createActivity(name, if (kind == com.ffocalors.sharedledger.ui.components.ActivityKind.Large) ActivityType.Large else ActivityType.Normal, "CNY", multiCurrency)
-                    .fold({ _message.value = "活动已创建"; loadHome(force = true); onSuccess(it) }, { _message.value = messageFor(it) })
+                    .fold({ invalidateSessionCaches(); _message.value = "活动已创建"; loadHome(force = true); onSuccess(it) }, { _message.value = messageFor(it) })
             } finally {
                 _actionLoading.value = false
             }
@@ -291,7 +388,7 @@ class ActivityViewModel(
         viewModelScope.launch {
             _actionLoading.value = true
             repository.claimParticipant(activityId, participantId).fold(
-                onSuccess = { _join.value = _join.value.copy(status = JoinActivityStatus.Joined); loadHome(); loadDetail(activityId, true); onSuccess() },
+                onSuccess = { invalidateActivityCaches(activityId); _join.value = _join.value.copy(status = JoinActivityStatus.Joined); loadHome(); loadDetail(activityId, true); onSuccess() },
                 onFailure = { _message.value = messageFor(it); _join.value = _join.value.copy(status = JoinActivityStatus.ReadyToJoin) },
             )
             _actionLoading.value = false
@@ -302,7 +399,7 @@ class ActivityViewModel(
         if (_actionLoading.value) return
         viewModelScope.launch {
             _actionLoading.value = true
-            repository.unclaimParticipant(activityId).fold({ loadDetail(activityId, true); _message.value = "已解除参与人认领" }, { _message.value = messageFor(it) })
+            repository.unclaimParticipant(activityId).fold({ invalidateActivityCaches(activityId); loadDetail(activityId, true); _message.value = "已解除参与人认领" }, { _message.value = messageFor(it) })
             _actionLoading.value = false
         }
     }
@@ -313,6 +410,7 @@ class ActivityViewModel(
             _actionLoading.value = true
             repository.claimParticipant(activityId, participantId).fold(
                 onSuccess = {
+                    invalidateActivityCaches(activityId)
                     loadDetail(activityId, force = true)
                     _message.value = "已绑定参与人"
                 },
@@ -328,6 +426,7 @@ class ActivityViewModel(
             _actionLoading.value = true
             repository.unclaimParticipant(activityId).fold(
                 onSuccess = {
+                    invalidateActivityCaches(activityId)
                     loadDetail(activityId, force = true)
                     _message.value = "已解除参与人绑定"
                 },
@@ -366,7 +465,7 @@ class ActivityViewModel(
         }
         viewModelScope.launch {
             _actionLoading.value = true
-            repository.createParticipant(activityId, name).fold({ loadDetail(activityId, true); _message.value = "参与人已添加" }, { _message.value = messageFor(it) })
+            repository.createParticipant(activityId, name).fold({ invalidateActivityCaches(activityId); loadDetail(activityId, true); _message.value = "参与人已添加" }, { _message.value = messageFor(it) })
             _actionLoading.value = false
         }
     }
@@ -379,7 +478,7 @@ class ActivityViewModel(
         }
         viewModelScope.launch {
             _actionLoading.value = true
-            repository.createSubActivity(activityId, name).fold({ loadDetail(activityId, true); _message.value = "子活动已创建"; onSuccess() }, { _message.value = messageFor(it) })
+            repository.createSubActivity(activityId, name).fold({ invalidateActivityCaches(activityId); loadDetail(activityId, true); _message.value = "子活动已创建"; onSuccess() }, { _message.value = messageFor(it) })
             _actionLoading.value = false
         }
     }
@@ -397,7 +496,7 @@ class ActivityViewModel(
         if (name.isBlank() || _actionLoading.value) return
         viewModelScope.launch {
             _actionLoading.value = true
-            repository.updateSettings(activityId, name, baseCurrency, multiCurrency).fold({ loadDetail(activityId, true); _message.value = "活动设置已保存" }, { _message.value = messageFor(it) })
+            repository.updateSettings(activityId, name, baseCurrency, multiCurrency).fold({ invalidateActivityCaches(activityId); loadDetail(activityId, true); _message.value = "活动设置已保存" }, { _message.value = messageFor(it) })
             _actionLoading.value = false
         }
     }
@@ -422,7 +521,7 @@ class ActivityViewModel(
         if (_actionLoading.value) return
         viewModelScope.launch {
             _actionLoading.value = true
-            block().fold({ loadHome(force = true); loadDetail(activityId, force = true); _message.value = "操作已完成"; onSuccess() }, { _message.value = messageFor(it) })
+            block().fold({ invalidateActivityCaches(activityId); loadHome(force = true); loadDetail(activityId, force = true); _message.value = "操作已完成"; onSuccess() }, { _message.value = messageFor(it) })
             _actionLoading.value = false
         }
     }
@@ -469,16 +568,66 @@ class ActivityViewModel(
         (error as? ExpenseOperationException)?.userMessage
             ?: "我的应承担金额加载失败，请重试"
 
+    /** Called by the navigation/realtime bridge after an activity read-model change. */
+    fun invalidateActivity(activityId: String? = null) {
+        if (activityId.isNullOrBlank()) invalidateSessionCaches()
+        else invalidateActivityCaches(activityId)
+    }
+
+    /** Clears the injected session cache on sign-out/session destruction. */
+    fun clearSessionCache() = queryCache.clear()
+
+    /** Remove every scoped read model after access is denied or the activity disappears. */
+    private fun clearActivitySessionData(activityId: String, errorMessage: String) {
+        queryCache.remove(detailCacheKey(activityId))
+        queryCache.remove(homeCacheKey())
+        queryCache.remove(personalOverviewCacheKey())
+        queryCache.removePrefix("expense-query:$currentUserId:activity:$activityId")
+        // Detail keys predate activity scoping; clear them conservatively on access loss.
+        queryCache.removePrefix("expense-query:$currentUserId:detail:")
+        queryCache.removePrefix("financial-query:list:$activityId")
+        queryCache.removePrefix("financial-query:detail:$activityId:")
+        queryCache.removePrefix("financial-query:context:$activityId")
+        queryCache.removePrefix("financial-query:preview:$activityId")
+        queryCache.removePrefix("transfer-query:$activityId:")
+        queryCache.removePrefix("attachment-query:$activityId:")
+        _home.value = _home.value.copy(
+            activities = _home.value.activities.filterNot { it.activityId == activityId },
+        )
+        _personalOverview.value = PersonalOverviewUiState(
+            isLoading = false,
+            errorMessage = errorMessage,
+        )
+    }
+
+    private fun homeCacheKey() = QueryCacheKey<List<ActivityCardUiModel>>("activity-query:$currentUserId:home")
+    private fun personalOverviewCacheKey() = QueryCacheKey<PersonalOverview>("activity-query:$currentUserId:overview")
+    private fun detailCacheKey(activityId: String) = QueryCacheKey<ActivityDetail>("activity-query:$currentUserId:detail:$activityId")
+
+    private fun invalidateActivityCaches(activityId: String) {
+        queryCache.invalidate(homeCacheKey())
+        queryCache.invalidate(personalOverviewCacheKey())
+        queryCache.invalidate(detailCacheKey(activityId))
+        queryCache.invalidatePrefix("expense-query:$currentUserId:")
+    }
+
+    private fun invalidateSessionCaches() {
+        queryCache.invalidatePrefix("activity-query:$currentUserId:")
+        queryCache.invalidatePrefix("expense-query:$currentUserId:")
+    }
+
     class Factory(
         private val repository: ActivityRepository = ActivityRepositoryFactory.create(),
         private val currentUserId: String,
         private val participantExpenseShareRepository: ParticipantExpenseShareRepository = ParticipantExpenseShareRepositoryFactory.create(),
+        private val queryCache: SessionQueryCache = SessionQueryCache(),
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T = ActivityViewModel(
             repository,
             currentUserId,
             participantExpenseShareRepository,
+            queryCache,
         ) as T
     }
 }

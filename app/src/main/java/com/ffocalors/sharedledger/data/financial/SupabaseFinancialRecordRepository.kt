@@ -1,6 +1,7 @@
 package com.ffocalors.sharedledger.data.financial
 
 import com.ffocalors.sharedledger.data.supabase.SupabaseClientProvider
+import com.ffocalors.sharedledger.data.common.ReadFailureKind
 import com.ffocalors.sharedledger.domain.financial.FundRecord
 import com.ffocalors.sharedledger.domain.financial.FundRecordType
 import com.ffocalors.sharedledger.domain.financial.TransferDispute
@@ -10,6 +11,7 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.math.BigDecimal
 import java.util.concurrent.TimeoutException
+import kotlinx.coroutines.CancellationException
 
 internal class SupabaseFinancialRecordRepository(
     private val remote: FinancialRemoteDataSource,
@@ -19,6 +21,9 @@ internal class SupabaseFinancialRecordRepository(
 
     override suspend fun list(activityId: String, type: FundRecordType?): FinancialReadResult<List<FundRecord>> =
         read { remote.listRecords(activityId, type) }
+
+    override suspend fun listAll(activityId: String): FinancialReadResult<List<FundRecord>> =
+        read { remote.listAllRecords(activityId) }
 
     override suspend fun get(activityId: String, transferId: String): FinancialReadResult<FundRecord> =
         read { remote.getRecord(activityId, transferId) }
@@ -72,8 +77,13 @@ internal class SupabaseFinancialRecordRepository(
 
     private suspend fun <T> read(block: suspend () -> T): FinancialReadResult<T> = try {
         FinancialReadResult.Success(block())
+    } catch (cancelled: CancellationException) {
+        throw cancelled
     } catch (error: Throwable) {
-        FinancialReadResult.Failure(FinancialErrorMapper.toUserMessage(error))
+        FinancialReadResult.Failure(
+            message = FinancialErrorMapper.toUserMessage(error),
+            kind = FinancialErrorMapper.failureKind(error),
+        )
     }
 
     private suspend fun <T> write(block: suspend () -> T): FinancialWriteResult<T> = try {
@@ -141,6 +151,17 @@ private class UnavailableFinancialRecordRepository : FinancialRecordRepository {
 }
 
 object FinancialErrorMapper {
+    fun failureKind(error: Throwable): ReadFailureKind {
+        val text = generateSequence(error) { it.cause }.joinToString(" ") { it.message.orEmpty() }
+        val code = Regex("(?i)(?:sqlstate|errcode|\\\"code\\\"|\\bcode)\\s*[=: ]+\\\"?([0-9A-Z]{5})").find(text)
+            ?.groupValues?.getOrNull(1)?.uppercase()
+        return when (code) {
+            "28000", "42501" -> ReadFailureKind.PermissionDenied
+            "P0002", "PGRST116" -> ReadFailureKind.NotFound
+            else -> if (isFinancialNetworkFailure(error)) ReadFailureKind.Transient else ReadFailureKind.Other
+        }
+    }
+
     fun toUserMessage(error: Throwable): String {
         if (error is FinancialOperationException) return error.userMessage
         val text = generateSequence(error) { it.cause }.joinToString(" ") { it.message.orEmpty() }

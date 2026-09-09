@@ -1,5 +1,6 @@
 package com.ffocalors.sharedledger.data.financial
 
+import com.ffocalors.sharedledger.data.common.ReadFailureKind
 import com.ffocalors.sharedledger.domain.financial.FundRecord
 import com.ffocalors.sharedledger.domain.financial.FundRecordType
 import com.ffocalors.sharedledger.domain.financial.RecorderInfo
@@ -8,7 +9,10 @@ import java.math.BigDecimal
 
 sealed interface FinancialReadResult<out T> {
     data class Success<T>(val value: T) : FinancialReadResult<T>
-    data class Failure(val message: String) : FinancialReadResult<Nothing>
+    data class Failure(
+        val message: String,
+        val kind: ReadFailureKind = ReadFailureKind.Other,
+    ) : FinancialReadResult<Nothing>
 }
 
 enum class FinancialWriteState {
@@ -109,6 +113,9 @@ interface FinancialRecordRepository {
     suspend fun create(record: FundRecord): FinancialWriteResult<FundRecord>
 
     suspend fun list(activityId: String, type: FundRecordType? = null): FinancialReadResult<List<FundRecord>>
+
+    /** Loads one complete timeline snapshot; callers can locally filter this cached result by type. */
+    suspend fun listAll(activityId: String): FinancialReadResult<List<FundRecord>> = list(activityId)
     suspend fun get(activityId: String, transferId: String): FinancialReadResult<FundRecord>
     suspend fun void(
         activityId: String,

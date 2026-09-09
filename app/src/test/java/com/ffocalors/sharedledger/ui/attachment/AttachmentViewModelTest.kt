@@ -9,13 +9,24 @@ import com.ffocalors.sharedledger.data.attachment.AttachmentUploadResult
 import com.ffocalors.sharedledger.data.attachment.CreateAttachmentInput
 import com.ffocalors.sharedledger.data.attachment.PendingAttachmentUpload
 import com.ffocalors.sharedledger.data.attachment.PreparedAttachmentImage
+import com.ffocalors.sharedledger.ui.cache.QueryCacheClock
+import com.ffocalors.sharedledger.ui.cache.QueryCacheKey
+import com.ffocalors.sharedledger.ui.cache.SessionQueryCache
 import com.ffocalors.sharedledger.ui.screens.ExpenseAttachmentUploadStatus
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class AttachmentViewModelTest {
     @Test
     fun archivedScopeRejectsAddUploadAndDeleteWithoutCallingRepository() = runBlocking {
@@ -85,10 +96,12 @@ class AttachmentViewModelTest {
     @Test
     fun partialDeleteKeepsItemForRecovery() = runBlocking {
         val repository = FakeAttachmentRepository()
-        val viewModel = AttachmentViewModel(repository)
+        val cache = SessionQueryCache()
+        val viewModel = AttachmentViewModel(repository, queryCache = cache)
         val scope = AttachmentScope("activity-1", "unit-1", "expense-1")
         viewModel.loadExpenseNow("activity-1", "unit-1", "expense-1")
         repository.listResult = Result.success(listOf(metadata("attachment-1", "expense-1", AttachmentStatus.READY)))
+        cache.remove(QueryCacheKey<List<AttachmentMetadata>>("attachment-query:activity-1:expense:expense-1"))
         viewModel.loadExpenseNow("activity-1", "unit-1", "expense-1")
         repository.deleteResult = AttachmentDeleteResult.PartialFailure(
             attachmentId = "attachment-1",
@@ -173,6 +186,64 @@ class AttachmentViewModelTest {
         assertEquals("activity-2", viewModel.uiState.value.scope?.activityId)
     }
 
+    @Test
+    fun freshCacheHitSkipsAttachmentMetadataRequest() = runBlocking {
+        val cache = SessionQueryCache()
+        val firstRepository = FakeAttachmentRepository().apply {
+            listResult = Result.success(listOf(metadata("cached", "expense-1", AttachmentStatus.READY)))
+        }
+        AttachmentViewModel(firstRepository, queryCache = cache)
+            .loadExpenseNow("activity-1", "unit-1", "expense-1")
+
+        val secondRepository = FakeAttachmentRepository().apply {
+            listResult = Result.failure(IllegalStateException("must not be called"))
+        }
+        val secondViewModel = AttachmentViewModel(secondRepository, queryCache = cache)
+        secondViewModel.loadExpenseNow("activity-1", "unit-1", "expense-1")
+
+        assertEquals(0, secondRepository.listCalls)
+        assertEquals(listOf("cached"), secondViewModel.uiState.value.items.map { it.clientId })
+        assertEquals(null, secondViewModel.uiState.value.items.single().bytes)
+    }
+
+    @Test
+    fun staleRefreshKeepsPendingUploadState() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        try {
+        val clock = FakeAttachmentClock()
+        val cache = SessionQueryCache(ttlMillis = 10L, clock = clock, refreshScope = this)
+        val repository = FakeAttachmentRepository()
+        val viewModel = AttachmentViewModel(repository, queryCache = cache)
+        viewModel.loadExpenseNow("activity-1", "unit-1", "expense-1")
+        val scope = viewModel.uiState.value.scope!!
+        val added = viewModel.addPreparedImage(scope, prepared()) as AttachmentWriteResult.Accepted
+        repository.createResult = AttachmentUploadResult.Pending(
+            PendingAttachmentUpload(
+                metadata = metadata("pending", "expense-1", AttachmentStatus.PENDING),
+                storageState = AttachmentStorageState.UPLOADED,
+                message = "待重试",
+            ),
+        )
+        viewModel.uploadExpenseAttachments("expense-1")
+        clock.now = 10L
+        repository.listResult = Result.success(listOf(metadata("pending", "expense-1", AttachmentStatus.READY)))
+
+        viewModel.loadExpenseNow("activity-1", "unit-1", "expense-1")
+        advanceUntilIdle()
+
+        val item = viewModel.uiState.value.items.single { it.clientId == added.clientId }
+        assertEquals(AttachmentClientStatus.Pending, item.status)
+        assertArrayEquals(byteArrayOf(1, 2, 3), item.bytes)
+        assertEquals(2, repository.listCalls)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    private class FakeAttachmentClock(var now: Long = 0L) : QueryCacheClock {
+        override fun nowMillis() = now
+    }
+
     private fun prepared() = PreparedAttachmentImage(
         bytes = byteArrayOf(1, 2, 3),
         mimeType = "image/jpeg",
@@ -205,11 +276,18 @@ private class FakeAttachmentRepository : AttachmentRepository {
     var listResult: Result<List<AttachmentMetadata>> = Result.success(emptyList())
     var createCalls = 0
     var retryCalls = 0
+    var listCalls = 0
     var lastCreateInput: CreateAttachmentInput? = null
 
     override suspend fun listByActivity(activityId: String) = listResult
-    override suspend fun listByExpense(activityId: String, expenseId: String) = listResult
-    override suspend fun listByLedgerUnit(activityId: String, ledgerUnitId: String) = listResult
+    override suspend fun listByExpense(activityId: String, expenseId: String): Result<List<AttachmentMetadata>> {
+        listCalls++
+        return listResult
+    }
+    override suspend fun listByLedgerUnit(activityId: String, ledgerUnitId: String): Result<List<AttachmentMetadata>> {
+        listCalls++
+        return listResult
+    }
     override suspend fun download(attachment: AttachmentMetadata) = Result.success(byteArrayOf(4, 5))
     override suspend fun createAndUpload(input: CreateAttachmentInput, bytes: ByteArray): AttachmentUploadResult {
         createCalls++

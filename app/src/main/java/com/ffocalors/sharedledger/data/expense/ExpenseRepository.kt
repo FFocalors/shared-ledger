@@ -5,6 +5,7 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
@@ -152,7 +153,10 @@ class SupabaseExpenseRepository(private val client: SupabaseClient) : ExpenseRep
 
     private fun <T> Result<T>.mapFailure(): Result<T> = fold(
         onSuccess = { Result.success(it) },
-        onFailure = { Result.failure(ExpenseOperationException(ExpenseErrorMapper.toUserMessage(it), it)) },
+        onFailure = {
+            if (it is CancellationException) throw it
+            Result.failure(ExpenseOperationException(ExpenseErrorMapper.toUserMessage(it), it, ExpenseErrorMapper.failureKind(it)))
+        },
     )
 
     private suspend fun writeAndConfirm(

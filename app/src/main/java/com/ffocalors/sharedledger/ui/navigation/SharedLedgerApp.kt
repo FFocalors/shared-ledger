@@ -39,14 +39,11 @@ import com.ffocalors.sharedledger.ui.expense.ExpenseViewModel
 import com.ffocalors.sharedledger.ui.expense.toFormDraft
 import com.ffocalors.sharedledger.ui.expense.toUiState
 import com.ffocalors.sharedledger.data.activity.ActivityType
-import com.ffocalors.sharedledger.data.financial.FinancialReadResult
 import com.ffocalors.sharedledger.data.financial.FinancialRecordRepository
 import com.ffocalors.sharedledger.data.financial.FinancialRecordRepositoryFactory
 import com.ffocalors.sharedledger.data.financial.FinancialWriteResult
-import com.ffocalors.sharedledger.data.financial.FinancialContext
 import com.ffocalors.sharedledger.data.financial.FinalSettlementSuggestion
 import com.ffocalors.sharedledger.data.financial.PrepaymentInput
-import com.ffocalors.sharedledger.domain.financial.FundRecord
 import com.ffocalors.sharedledger.ui.components.ActivityKind
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
@@ -88,8 +85,13 @@ import com.ffocalors.sharedledger.ui.attachment.MAX_CLIENT_ATTACHMENTS
 import com.ffocalors.sharedledger.ui.attachment.toExpenseDetailUiState
 import com.ffocalors.sharedledger.ui.attachment.toLedgerUnitUiState
 import com.ffocalors.sharedledger.ui.attachment.toNewExpenseUiState
+import com.ffocalors.sharedledger.ui.financial.FinancialReadViewModel
 import com.ffocalors.sharedledger.ui.realtime.ActivityRealtimeViewModel
 import com.ffocalors.sharedledger.ui.auth.PasswordChangeUiState
+import com.ffocalors.sharedledger.ui.cache.QueryCacheKey
+import com.ffocalors.sharedledger.ui.cache.QueryCacheState
+import com.ffocalors.sharedledger.ui.cache.SessionQueryCache
+import com.ffocalors.sharedledger.ui.profile.PersonalOverview
 import com.ffocalors.sharedledger.data.realtime.ActivityRealtimeDomain
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
@@ -195,6 +197,10 @@ private fun AuthenticatedNavHost(
     val navController = rememberNavController()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val sessionQueryCache = remember(currentUserId) { SessionQueryCache() }
+    DisposableEffect(sessionQueryCache) {
+        onDispose { sessionQueryCache.clear() }
+    }
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val realtimeViewModel: ActivityRealtimeViewModel = viewModel(
         key = "realtime-$currentUserId",
@@ -219,18 +225,31 @@ private fun AuthenticatedNavHost(
     }
     val activityViewModel: ActivityViewModel = viewModel(
         key = "activity-$currentUserId",
-        factory = ActivityViewModel.Factory(currentUserId = currentUserId),
+        factory = ActivityViewModel.Factory(
+            currentUserId = currentUserId,
+            queryCache = sessionQueryCache,
+        ),
+    )
+    val financialRepository = remember { FinancialRecordRepositoryFactory.create() }
+    val financialReadViewModel: FinancialReadViewModel = viewModel(
+        key = "financial-$currentUserId",
+        factory = FinancialReadViewModel.Factory(
+            repository = financialRepository,
+            queryCache = sessionQueryCache,
+        ),
     )
     val expenseViewModel: ExpenseViewModel = viewModel(
         key = "expense-$currentUserId",
-        factory = ExpenseViewModel.Factory(currentUserId = currentUserId),
+        factory = ExpenseViewModel.Factory(
+            currentUserId = currentUserId,
+            queryCache = sessionQueryCache,
+        ),
     )
     val homeState by activityViewModel.home.collectAsState()
     val personalOverviewState by activityViewModel.personalOverview.collectAsState()
     val viewModelJoinState by activityViewModel.join.collectAsState()
     var joinInviteCode by rememberSaveable { mutableStateOf("") }
     var selectedJoinParticipantId by rememberSaveable { mutableStateOf<String?>(null) }
-    val financialRepository = remember { FinancialRecordRepositoryFactory.create() }
     fun requireParticipantBinding(activityId: String, action: () -> Unit) {
         val detail = activityViewModel.detail(activityId).value.detail
         if (canPerformFinancialAction(detail, currentUserId)) {
@@ -241,16 +260,21 @@ private fun AuthenticatedNavHost(
             }
         }
     }
+    fun invalidateActivityData(activityId: String) {
+        activityViewModel.invalidateActivity(activityId)
+        expenseViewModel.invalidateActivity(activityId)
+    }
     NavHost(
         navController = navController,
         startDestination = SharedLedgerRoutes.HOME,
         modifier = modifier,
     ) {
-        composable(SharedLedgerRoutes.HOME) {
+        composable(SharedLedgerRoutes.HOME) { backStackEntry ->
             androidx.compose.runtime.LaunchedEffect(currentUserId) {
                 activityViewModel.resetJoin()
-                activityViewModel.refreshHome()
+                activityViewModel.loadHome()
             }
+            RefreshActivityOnResume(backStackEntry) { activityViewModel.loadHome() }
             HomeScreen(
                 activities = homeState.activities,
                 isLoading = homeState.isLoading,
@@ -269,10 +293,19 @@ private fun AuthenticatedNavHost(
                 onProfileClick = { navController.navigate(SharedLedgerRoutes.PERSONAL_INFO) },
             )
         }
-        composable(SharedLedgerRoutes.PERSONAL_INFO) {
-            androidx.compose.runtime.LaunchedEffect(Unit) {
-                activityViewModel.refreshPersonalOverview()
+        composable(SharedLedgerRoutes.PERSONAL_INFO) { backStackEntry ->
+            androidx.compose.runtime.LaunchedEffect(currentUserId) {
+                val overviewCache = sessionQueryCache.read(
+                    QueryCacheKey<PersonalOverview>("activity-query:$currentUserId:overview"),
+                )
+                if (overviewCache.state != QueryCacheState.Fresh ||
+                    overviewCache.value == null ||
+                    personalOverviewState.overview == null
+                ) {
+                    activityViewModel.refreshPersonalOverview()
+                }
             }
+            RefreshActivityOnResume(backStackEntry) { activityViewModel.refreshPersonalOverview() }
             PersonalInfoScreen(
                 displayName = currentUserDisplayName,
                 email = currentUserEmail,
@@ -365,10 +398,9 @@ private fun AuthenticatedNavHost(
             val canWriteActivity = detailState.detail?.let { it.summary.archivedAt == null } == true
             RefreshActivityOnResume(backStackEntry) {
                 if (activityId.isNotBlank()) {
-                    activityViewModel.loadDetail(activityId, force = true)
+                    activityViewModel.loadDetail(activityId)
                     expenseViewModel.loadByActivity(
                         activityId,
-                        force = true,
                         baseCurrency = detailState.detail?.summary?.baseCurrency ?: "CNY",
                     )
                 }
@@ -388,10 +420,13 @@ private fun AuthenticatedNavHost(
                 realtimeState.revisions.financial,
             ) {
                 if (activityId.isNotBlank() && realtimeState.activeActivityId == activityId) {
-                    if (realtimeState.revisions.activityIdentity > 0L || realtimeState.revisions.financial > 0L) {
+                    val activityChanged = realtimeState.revisions.activityIdentity > 0L || realtimeState.revisions.financial > 0L
+                    val expenseChanged = realtimeState.revisions.expense > 0L || realtimeState.revisions.financial > 0L
+                    if (activityChanged || expenseChanged) invalidateActivityData(activityId)
+                    if (activityChanged) {
                         activityViewModel.loadDetail(activityId, force = true)
                     }
-                    if (realtimeState.revisions.expense > 0L || realtimeState.revisions.financial > 0L) {
+                    if (expenseChanged) {
                         expenseViewModel.loadByActivity(
                             activityId,
                             force = true,
@@ -473,10 +508,9 @@ private fun AuthenticatedNavHost(
             val canWriteActivity = detailState.detail?.let { it.summary.archivedAt == null } == true
             RefreshActivityOnResume(backStackEntry) {
                 if (activityId.isNotBlank()) {
-                    activityViewModel.loadDetail(activityId, force = true)
+                    activityViewModel.loadDetail(activityId)
                     expenseViewModel.loadByActivity(
                         activityId,
-                        force = true,
                         baseCurrency = detailState.detail?.summary?.baseCurrency ?: "CNY",
                     )
                 }
@@ -496,10 +530,13 @@ private fun AuthenticatedNavHost(
                 realtimeState.revisions.financial,
             ) {
                 if (activityId.isNotBlank() && realtimeState.activeActivityId == activityId) {
-                    if (realtimeState.revisions.activityIdentity > 0L || realtimeState.revisions.financial > 0L) {
+                    val activityChanged = realtimeState.revisions.activityIdentity > 0L || realtimeState.revisions.financial > 0L
+                    val expenseChanged = realtimeState.revisions.expense > 0L || realtimeState.revisions.financial > 0L
+                    if (activityChanged || expenseChanged) invalidateActivityData(activityId)
+                    if (activityChanged) {
                         activityViewModel.loadDetail(activityId, force = true)
                     }
-                    if (realtimeState.revisions.expense > 0L || realtimeState.revisions.financial > 0L) {
+                    if (expenseChanged) {
                         expenseViewModel.loadByActivity(
                             activityId,
                             force = true,
@@ -610,12 +647,18 @@ private fun AuthenticatedNavHost(
             val activityWritable = isActivityWritable(detailState.detail)
             val attachmentViewModel: AttachmentViewModel = viewModel(
                 key = "attachments-ledger-$activityId-$ledgerUnitId",
-                factory = AttachmentViewModel.Factory(),
+                factory = AttachmentViewModel.Factory(queryCache = sessionQueryCache),
             )
             val attachmentState by attachmentViewModel.uiState.collectAsState()
             val attachmentScope = androidx.compose.runtime.rememberCoroutineScope()
             var attachmentMessage by remember { mutableStateOf<String?>(null) }
             var attachmentPreview by remember { mutableStateOf<Pair<String, ByteArray>?>(null) }
+            fun refreshLedgerAttachments() {
+                if (activityId.isNotBlank() && ledgerUnitId.isNotBlank()) {
+                    attachmentViewModel.invalidateLedgerUnitAttachments(activityId, ledgerUnitId)
+                    attachmentViewModel.loadLedgerUnit(activityId, ledgerUnitId)
+                }
+            }
             val attachmentInput = rememberAttachmentInputController(
                 currentCount = attachmentState.items.size,
                 onUrisSelected = { selections ->
@@ -631,8 +674,14 @@ private fun AuthenticatedNavHost(
                     }
                     if (accepted) {
                         when (val result = attachmentViewModel.uploadLedgerUnitAttachments()) {
-                            is com.ffocalors.sharedledger.ui.attachment.AttachmentBatchResult.Completed -> attachmentMessage = null
-                            is com.ffocalors.sharedledger.ui.attachment.AttachmentBatchResult.Partial -> attachmentMessage = "部分附件上传未完成，可逐项重试"
+                            is com.ffocalors.sharedledger.ui.attachment.AttachmentBatchResult.Completed -> {
+                                attachmentMessage = null
+                                refreshLedgerAttachments()
+                            }
+                            is com.ffocalors.sharedledger.ui.attachment.AttachmentBatchResult.Partial -> {
+                                attachmentMessage = "部分附件上传未完成，可逐项重试"
+                                refreshLedgerAttachments()
+                            }
                             is com.ffocalors.sharedledger.ui.attachment.AttachmentBatchResult.RejectedArchived -> attachmentMessage = result.message
                             is com.ffocalors.sharedledger.ui.attachment.AttachmentBatchResult.Failed -> attachmentMessage = result.message
                         }
@@ -642,11 +691,10 @@ private fun AuthenticatedNavHost(
             )
             RefreshActivityOnResume(backStackEntry) {
                 if (activityId.isNotBlank()) {
-                    activityViewModel.loadDetail(activityId, force = true)
+                    activityViewModel.loadDetail(activityId)
                     expenseViewModel.loadByLedgerUnit(
                         activityId,
                         ledgerUnitId,
-                        force = true,
                         baseCurrency = detailState.detail?.summary?.baseCurrency ?: "CNY",
                     )
                     attachmentViewModel.loadLedgerUnit(activityId, ledgerUnitId)
@@ -669,6 +717,7 @@ private fun AuthenticatedNavHost(
                     activityId.isNotBlank() && ledgerUnitId.isNotBlank() &&
                     canReloadExternalAttachments(attachmentState)
                 ) {
+                    attachmentViewModel.invalidateLedgerUnitAttachments(activityId, ledgerUnitId)
                     attachmentViewModel.loadLedgerUnit(activityId, ledgerUnitId)
                 }
             }
@@ -676,6 +725,7 @@ private fun AuthenticatedNavHost(
                 if (realtimeState.activeActivityId == activityId &&
                     (realtimeState.revisions.expense > 0L || realtimeState.revisions.financial > 0L)
                 ) {
+                    invalidateActivityData(activityId)
                     expenseViewModel.loadByLedgerUnit(
                         activityId,
                         ledgerUnitId,
@@ -686,6 +736,7 @@ private fun AuthenticatedNavHost(
             }
             androidx.compose.runtime.LaunchedEffect(activityId, realtimeState.revisions.activityIdentity) {
                 if (realtimeState.activeActivityId == activityId && realtimeState.revisions.activityIdentity > 0L) {
+                    invalidateActivityData(activityId)
                     activityViewModel.loadDetail(activityId, force = true)
                 }
             }
@@ -766,8 +817,11 @@ private fun AuthenticatedNavHost(
                 },
                 onRetryAttachment = if (activityWritable) { { attachmentId ->
                     attachmentScope.launch {
-                        when (val result = attachmentViewModel.retryAttachment(attachmentId)) {
-                            is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.Accepted -> attachmentMessage = null
+                            when (val result = attachmentViewModel.retryAttachment(attachmentId)) {
+                            is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.Accepted -> {
+                                attachmentMessage = null
+                                refreshLedgerAttachments()
+                            }
                             is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.RejectedArchived -> attachmentMessage = result.message
                             is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.Failed -> attachmentMessage = result.message
                             else -> attachmentMessage = "附件重试失败"
@@ -776,8 +830,11 @@ private fun AuthenticatedNavHost(
                 } } else null,
                 onDeleteAttachment = if (activityWritable) { { attachmentId ->
                     attachmentScope.launch {
-                        when (val result = attachmentViewModel.deleteAttachment(attachmentId)) {
-                            is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.Accepted -> attachmentMessage = null
+                            when (val result = attachmentViewModel.deleteAttachment(attachmentId)) {
+                            is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.Accepted -> {
+                                attachmentMessage = null
+                                refreshLedgerAttachments()
+                            }
                             is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.RejectedArchived -> attachmentMessage = result.message
                             is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.Failed -> attachmentMessage = result.message
                             else -> attachmentMessage = "附件删除失败"
@@ -824,7 +881,7 @@ private fun AuthenticatedNavHost(
             val formState by expenseViewModel.form.collectAsState()
             val attachmentViewModel: AttachmentViewModel = viewModel(
                 key = "attachments-expense-form-$activityId-${expenseId ?: "new"}",
-                factory = AttachmentViewModel.Factory(),
+                factory = AttachmentViewModel.Factory(queryCache = sessionQueryCache),
             )
             val attachmentState by attachmentViewModel.uiState.collectAsState()
             val attachmentScope = androidx.compose.runtime.rememberCoroutineScope()
@@ -878,9 +935,15 @@ private fun AuthenticatedNavHost(
                 when (val result = attachmentViewModel.uploadExpenseAttachments(targetExpenseId)) {
                     is com.ffocalors.sharedledger.ui.attachment.AttachmentBatchResult.Completed -> {
                         attachmentMessage = null
+                        attachmentViewModel.invalidateExpenseAttachments(activityId, targetExpenseId)
+                        resolvedLedgerUnitId?.let { attachmentViewModel.loadExpense(activityId, it, targetExpenseId) }
                         navController.navigateUp()
                     }
-                    is com.ffocalors.sharedledger.ui.attachment.AttachmentBatchResult.Partial -> attachmentMessage = "部分附件上传未完成，可逐项重试后再次保存"
+                    is com.ffocalors.sharedledger.ui.attachment.AttachmentBatchResult.Partial -> {
+                        attachmentMessage = "部分附件上传未完成，可逐项重试后再次保存"
+                        attachmentViewModel.invalidateExpenseAttachments(activityId, targetExpenseId)
+                        resolvedLedgerUnitId?.let { attachmentViewModel.loadExpense(activityId, it, targetExpenseId) }
+                    }
                     is com.ffocalors.sharedledger.ui.attachment.AttachmentBatchResult.RejectedArchived -> attachmentMessage = result.message
                     is com.ffocalors.sharedledger.ui.attachment.AttachmentBatchResult.Failed -> attachmentMessage = result.message
                 }
@@ -937,7 +1000,13 @@ private fun AuthenticatedNavHost(
                     onRemoveAttachment = if (activityWritable) { { attachmentId ->
                         attachmentScope.launch {
                             when (val result = attachmentViewModel.deleteAttachment(attachmentId)) {
-                                is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.Accepted -> attachmentMessage = null
+                                is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.Accepted -> {
+                                    attachmentMessage = null
+                                    if (expenseId != null) {
+                                        attachmentViewModel.invalidateExpenseAttachments(activityId, expenseId)
+                                        resolvedLedgerUnitId?.let { attachmentViewModel.loadExpense(activityId, it, expenseId) }
+                                    }
+                                }
                                 is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.RejectedArchived -> attachmentMessage = result.message
                                 is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.Failed -> attachmentMessage = result.message
                                 else -> attachmentMessage = "附件移除失败"
@@ -947,7 +1016,13 @@ private fun AuthenticatedNavHost(
                     onRetryAttachment = if (activityWritable) { { attachmentId ->
                         attachmentScope.launch {
                             when (val result = attachmentViewModel.retryAttachment(attachmentId)) {
-                                is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.Accepted -> attachmentMessage = null
+                                is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.Accepted -> {
+                                    attachmentMessage = null
+                                    if (expenseId != null) {
+                                        attachmentViewModel.invalidateExpenseAttachments(activityId, expenseId)
+                                        resolvedLedgerUnitId?.let { attachmentViewModel.loadExpense(activityId, it, expenseId) }
+                                    }
+                                }
                                 is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.RejectedArchived -> attachmentMessage = result.message
                                 is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.Failed -> attachmentMessage = result.message
                                 else -> attachmentMessage = "附件重试失败"
@@ -980,7 +1055,7 @@ private fun AuthenticatedNavHost(
             }
             val transferViewModel: TransferViewModel = viewModel(
                 key = "transfer-$activityId-${mode.name}",
-                factory = TransferViewModel.Factory(),
+                factory = TransferViewModel.Factory(queryCache = sessionQueryCache),
             )
             val transferState by transferViewModel.uiState.collectAsState()
             val activityDetailState by activityViewModel.detail(activityId).collectAsState()
@@ -1002,6 +1077,7 @@ private fun AuthenticatedNavHost(
                 if (activityId.isNotBlank() && realtimeState.activeActivityId == activityId &&
                     realtimeState.revisions.activityIdentity > 0L
                 ) {
+                    transferViewModel.invalidateActivity(activityId)
                     activityViewModel.loadDetail(activityId, force = true)
                 }
             }
@@ -1016,6 +1092,7 @@ private fun AuthenticatedNavHost(
             }
             androidx.compose.runtime.LaunchedEffect(activityId, mode, realtimeState.revisions.financial) {
                 if (realtimeState.revisions.financial > 0L && realtimeState.activeActivityId == activityId) {
+                    transferViewModel.invalidateActivity(activityId)
                     transferViewModel.load(
                         activityId,
                         if (mode == TransferMode.RECEIVE) SettlementDirection.RECEIVE else SettlementDirection.TRANSFER,
@@ -1036,7 +1113,10 @@ private fun AuthenticatedNavHost(
                     transferViewModel.retry()
                 },
                 onConfirm = if (transferWritesEnabled) { { draft ->
-                    transferViewModel.submit(draft) {
+                    transferViewModel.submit(draft) { transferResult ->
+                        financialReadViewModel.invalidateAfterWrite(draft.activityId, transferResult.transferId)
+                        financialReadViewModel.loadRecords(draft.activityId, force = true)
+                        invalidateActivityData(draft.activityId)
                         activityViewModel.loadDetail(draft.activityId, force = true)
                         activityViewModel.refreshHome()
                         navController.navigateUp()
@@ -1060,11 +1140,19 @@ private fun AuthenticatedNavHost(
                 ExpenseRouteStatus("活动路由参数缺失", onBack = { navController.navigateUp() })
             } else {
                 val ledgerUnitId = backStackEntry.arguments?.getString("ledgerUnitId")
+                RefreshActivityOnResume(backStackEntry) {
+                    financialReadViewModel.loadRecords(activityId)
+                }
+                androidx.compose.runtime.LaunchedEffect(activityId, realtimeState.revisions.financial) {
+                    if (realtimeState.activeActivityId == activityId && realtimeState.revisions.financial > 0L) {
+                        financialReadViewModel.invalidateActivity(activityId)
+                        financialReadViewModel.loadRecords(activityId, force = true)
+                    }
+                }
                 FundRecordsScreen(
                     activityId = activityId,
                     ledgerUnitId = ledgerUnitId,
-                    externalRefreshToken = realtimeState.revisions.financial,
-                    repository = financialRepository,
+                    financialViewModel = financialReadViewModel,
                     onBack = { navController.navigateUp() },
                     onRecordClick = { record ->
                         if (record.source == com.ffocalors.sharedledger.domain.financial.FundRecordSource.REFUND_EXPENSE) {
@@ -1103,6 +1191,7 @@ private fun AuthenticatedNavHost(
                     if (realtimeState.activeActivityId == activityId &&
                         (realtimeState.revisions.activityIdentity > 0L || realtimeState.revisions.financial > 0L)
                     ) {
+                        invalidateActivityData(activityId)
                         activityViewModel.loadDetail(activityId, force = true)
                     }
                 }
@@ -1212,12 +1301,18 @@ private fun AuthenticatedNavHost(
             val activityState by activityViewModel.detail(activityIdForDetail).collectAsState()
             val attachmentViewModel: AttachmentViewModel = viewModel(
                 key = "attachments-expense-detail-$activityIdForDetail-$expenseId",
-                factory = AttachmentViewModel.Factory(),
+                factory = AttachmentViewModel.Factory(queryCache = sessionQueryCache),
             )
             val attachmentState by attachmentViewModel.uiState.collectAsState()
             val attachmentScope = androidx.compose.runtime.rememberCoroutineScope()
             var attachmentMessage by remember { mutableStateOf<String?>(null) }
             var attachmentPreview by remember { mutableStateOf<Pair<String, ByteArray>?>(null) }
+            fun refreshExpenseDetailAttachments() {
+                if (activityIdForDetail.isNotBlank() && attachmentLedgerUnitId.isNotBlank()) {
+                    attachmentViewModel.invalidateExpenseAttachments(activityIdForDetail, expenseId)
+                    attachmentViewModel.loadExpense(activityIdForDetail, attachmentLedgerUnitId, expenseId)
+                }
+            }
             androidx.compose.runtime.LaunchedEffect(expenseId) { expenseViewModel.loadDetail(expenseId) }
             androidx.compose.runtime.LaunchedEffect(expenseId, activityIdForDetail, attachmentLedgerUnitId) {
                 if (activityIdForDetail.isNotBlank()) {
@@ -1229,6 +1324,7 @@ private fun AuthenticatedNavHost(
                 if (realtimeState.activeActivityId == activityIdForDetail &&
                     (realtimeState.revisions.expense > 0L || realtimeState.revisions.financial > 0L)
                 ) {
+                    if (activityIdForDetail.isNotBlank()) expenseViewModel.invalidateActivity(activityIdForDetail)
                     expenseViewModel.loadDetail(expenseId, force = true)
                 }
             }
@@ -1236,6 +1332,7 @@ private fun AuthenticatedNavHost(
                 if (realtimeState.activeActivityId == activityIdForDetail &&
                     (realtimeState.revisions.activityIdentity > 0L || realtimeState.revisions.financial > 0L)
                 ) {
+                    if (activityIdForDetail.isNotBlank()) activityViewModel.invalidateActivity(activityIdForDetail)
                     activityViewModel.loadDetail(activityIdForDetail, force = true)
                 }
             }
@@ -1244,12 +1341,13 @@ private fun AuthenticatedNavHost(
                     activityIdForDetail.isNotBlank() && attachmentLedgerUnitId.isNotBlank() &&
                     canReloadExternalAttachments(attachmentState)
                 ) {
+                    attachmentViewModel.invalidateExpenseAttachments(activityIdForDetail, expenseId)
                     attachmentViewModel.loadExpense(activityIdForDetail, attachmentLedgerUnitId, expenseId)
                 }
             }
             RefreshActivityOnResume(backStackEntry) {
-                expenseViewModel.loadDetail(expenseId, force = true)
-                if (activityIdForDetail.isNotBlank()) activityViewModel.loadDetail(activityIdForDetail, force = true)
+                expenseViewModel.loadDetail(expenseId)
+                if (activityIdForDetail.isNotBlank()) activityViewModel.loadDetail(activityIdForDetail)
                 if (activityIdForDetail.isNotBlank() && attachmentLedgerUnitId.isNotBlank()) {
                     attachmentViewModel.loadExpense(activityIdForDetail, attachmentLedgerUnitId, expenseId)
                 }
@@ -1307,7 +1405,10 @@ private fun AuthenticatedNavHost(
                     onAttachmentDelete = if (activityWritable) { { _, attachmentId ->
                         attachmentScope.launch {
                             when (val result = attachmentViewModel.deleteAttachment(attachmentId)) {
-                                is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.Accepted -> attachmentMessage = null
+                                is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.Accepted -> {
+                                    attachmentMessage = null
+                                    refreshExpenseDetailAttachments()
+                                }
                                 is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.RejectedArchived -> attachmentMessage = result.message
                                 is com.ffocalors.sharedledger.ui.attachment.AttachmentWriteResult.Failed -> attachmentMessage = result.message
                                 else -> attachmentMessage = "附件删除失败"
@@ -1345,6 +1446,8 @@ private fun AuthenticatedNavHost(
                 }
                 androidx.compose.runtime.LaunchedEffect(activityId, realtimeState.revisions.activityIdentity) {
                     if (realtimeState.activeActivityId == activityId && realtimeState.revisions.activityIdentity > 0L) {
+                        financialReadViewModel.invalidateActivity(activityId)
+                        activityViewModel.invalidateActivity(activityId)
                         activityViewModel.loadDetail(activityId, force = true)
                     }
                 }
@@ -1355,9 +1458,13 @@ private fun AuthenticatedNavHost(
                     externalRefreshToken = realtimeState.revisions.financial,
                     writesEnabled = financialWritesEnabled,
                     repository = financialRepository,
-                    currentUserId = currentUserId,
+                    financialViewModel = financialReadViewModel,
+                    currentParticipantId = activityDetailState.detail?.members
+                        ?.firstOrNull { it.userId == currentUserId }
+                        ?.claimedParticipantId,
                     onBack = { navController.navigateUp() },
                     onRefreshActivity = {
+                        invalidateActivityData(activityId)
                         activityViewModel.loadDetail(activityId, force = true)
                         activityViewModel.refreshHome()
                     },
@@ -1378,28 +1485,24 @@ private fun AuthenticatedNavHost(
             val mode = if (backStackEntry.arguments?.getString("mode") == "return") PrepaymentMode.RETURN else PrepaymentMode.FUND
             val activityDetailState by activityViewModel.detail(activityId).collectAsState()
             val financialWritesEnabled = canPerformFinancialAction(activityDetailState.detail, currentUserId)
-            var context by remember(activityId) { mutableStateOf<FinancialContext?>(null) }
-            var loading by remember(activityId) { mutableStateOf(true) }
+            val contextState by financialReadViewModel.contextState(activityId).collectAsState()
             var submitting by remember(activityId) { mutableStateOf(false) }
-            var error by remember(activityId) { mutableStateOf<String?>(null) }
-            var reload by remember(activityId) { mutableStateOf(0) }
+            var actionError by remember(activityId) { mutableStateOf<String?>(null) }
             val scope = androidx.compose.runtime.rememberCoroutineScope()
             androidx.compose.runtime.LaunchedEffect(activityId) {
-                if (activityId.isNotBlank()) activityViewModel.loadDetail(activityId)
+                if (activityId.isNotBlank()) {
+                    activityViewModel.loadDetail(activityId)
+                    financialReadViewModel.loadContext(activityId)
+                }
             }
-            RefreshActivityOnResume(backStackEntry) { reload++ }
-            androidx.compose.runtime.LaunchedEffect(activityId, reload, realtimeState.revisions.financial) {
-                if (activityId.isBlank()) {
-                    loading = false
-                    return@LaunchedEffect
+            RefreshActivityOnResume(backStackEntry) {
+                if (activityId.isNotBlank()) financialReadViewModel.loadContext(activityId)
+            }
+            androidx.compose.runtime.LaunchedEffect(activityId, realtimeState.revisions.financial) {
+                if (realtimeState.activeActivityId == activityId && realtimeState.revisions.financial > 0L) {
+                    financialReadViewModel.invalidateActivity(activityId)
+                    financialReadViewModel.loadContext(activityId, force = true)
                 }
-                loading = true
-                error = null
-                when (val result = financialRepository.loadPrepaymentContext(activityId)) {
-                    is FinancialReadResult.Success -> context = result.value
-                    is FinancialReadResult.Failure -> error = result.message
-                }
-                loading = false
             }
             if (activityId.isBlank()) {
                 ExpenseRouteStatus("活动路由参数缺失", onBack = { navController.navigateUp() })
@@ -1412,15 +1515,15 @@ private fun AuthenticatedNavHost(
             } else {
                 PrepaymentScreen(
                     mode = mode,
-                    context = context,
-                    isLoading = loading,
+                    context = contextState.data,
+                    isLoading = contextState.isLoading,
                     isSubmitting = submitting,
-                    errorMessage = error,
-                    onRetry = { reload++ },
+                    errorMessage = actionError ?: contextState.errorMessage,
+                    onRetry = { financialReadViewModel.loadContext(activityId, force = true) },
                     onBack = { navController.navigateUp() },
                     onSubmit = { ownerId, custodianId, amount, onBehalfOfParticipantId ->
                     val endpointIds = setOf(ownerId, custodianId)
-                    val contextValue = context
+                    val contextValue = contextState.data
                     val currentIsParty = contextValue?.currentParticipantId in endpointIds
                     val validOnBehalf = contextValue != null && when {
                         onBehalfOfParticipantId == null -> currentIsParty
@@ -1429,30 +1532,37 @@ private fun AuthenticatedNavHost(
                             contextValue.unclaimedParticipants.any { it.participantId == onBehalfOfParticipantId }
                     }
                     if (ownerId == custodianId) {
-                        error = "预存所有者和保管人不能是同一位参与人"
+                        actionError = "预存所有者和保管人不能是同一位参与人"
                     } else if (!validOnBehalf) {
-                        error = "请选择有效的代记参与人"
+                        actionError = "请选择有效的代记参与人"
                     } else if (!submitting) {
                         submitting = true
-                        error = null
+                        actionError = null
                         val input = PrepaymentInput(activityId, ownerId, custodianId, amount, Instant.now().toString(), onBehalfOfParticipantId)
                         scope.launch {
                             val result = if (mode == PrepaymentMode.FUND) financialRepository.createPrepayment(input) else financialRepository.createPrepaymentReturn(input)
                             submitting = false
                             if (result.isSuccess) {
+                                financialReadViewModel.invalidateAfterWrite(activityId, result.value?.transferId)
+                                financialReadViewModel.loadRecords(activityId, force = true)
+                                invalidateActivityData(activityId)
                                 activityViewModel.loadDetail(activityId, force = true)
                                 activityViewModel.refreshHome()
                                 navController.navigate(SharedLedgerRoutes.transferDetail(activityId, result.value!!.transferId)) {
                                     popUpTo(SharedLedgerRoutes.PREPAYMENT_PATTERN) { inclusive = true }
                                 }
                             } else if (result.isCommitted && result.committedOperationId != null) {
+                                financialReadViewModel.invalidateAfterWrite(activityId, result.committedOperationId)
+                                financialReadViewModel.loadRecords(activityId, force = true)
+                                invalidateActivityData(activityId)
                                 activityViewModel.loadDetail(activityId, force = true)
                                 activityViewModel.refreshHome()
                                 navController.navigate(SharedLedgerRoutes.transferDetail(activityId, result.committedOperationId)) {
                                     popUpTo(SharedLedgerRoutes.PREPAYMENT_PATTERN) { inclusive = true }
                                 }
                             } else {
-                                error = result.errorMessage
+                                if (result.isUnknown) financialReadViewModel.invalidateActivity(activityId)
+                                actionError = result.errorMessage
                             }
                         }
                     }
@@ -1467,37 +1577,36 @@ private fun AuthenticatedNavHost(
             val activityId = backStackEntry.arguments?.getString("activityId").orEmpty()
             val activityDetailState by activityViewModel.detail(activityId).collectAsState()
             val financialWritesEnabled = canPerformFinancialAction(activityDetailState.detail, currentUserId)
-            var suggestions by remember(activityId) { mutableStateOf<List<FinalSettlementSuggestionUi>>(emptyList()) }
-            var loading by remember(activityId) { mutableStateOf(true) }
-            var error by remember(activityId) { mutableStateOf<String?>(null) }
+            val contextState by financialReadViewModel.contextState(activityId).collectAsState()
+            val previewState by financialReadViewModel.previewState(activityId).collectAsState()
             var submitting by remember(activityId) { mutableStateOf(false) }
-            var financialContext by remember(activityId) { mutableStateOf<FinancialContext?>(null) }
-            var refreshToken by remember(activityId) { mutableStateOf(0) }
+            var actionError by remember(activityId) { mutableStateOf<String?>(null) }
             val scope = androidx.compose.runtime.rememberCoroutineScope()
             androidx.compose.runtime.LaunchedEffect(activityId) {
-                if (activityId.isNotBlank()) activityViewModel.loadDetail(activityId)
+                if (activityId.isNotBlank()) {
+                    activityViewModel.loadDetail(activityId)
+                    financialReadViewModel.loadContext(activityId)
+                    financialReadViewModel.loadSettlementPreview(activityId)
+                }
             }
-            androidx.compose.runtime.LaunchedEffect(activityId, refreshToken, realtimeState.revisions.financial) {
-                if (activityId.isBlank()) {
-                    loading = false
-                    return@LaunchedEffect
+            RefreshActivityOnResume(backStackEntry) {
+                if (activityId.isNotBlank()) {
+                    financialReadViewModel.loadContext(activityId)
+                    financialReadViewModel.loadSettlementPreview(activityId)
                 }
-                loading = true
-                error = null
-                when (val contextResult = financialRepository.loadPrepaymentContext(activityId)) {
-                    is FinancialReadResult.Success -> financialContext = contextResult.value
-                    is FinancialReadResult.Failure -> {
-                        error = contextResult.message
-                        loading = false
-                        return@LaunchedEffect
-                    }
+            }
+            androidx.compose.runtime.LaunchedEffect(activityId, realtimeState.revisions.financial) {
+                if (realtimeState.activeActivityId == activityId && realtimeState.revisions.financial > 0L) {
+                    financialReadViewModel.invalidateActivity(activityId)
+                    financialReadViewModel.loadContext(activityId, force = true)
+                    financialReadViewModel.loadSettlementPreview(activityId, force = true)
                 }
-                val context = financialContext
-                when (val result = financialRepository.previewFinalSettlement(activityId)) {
-                    is FinancialReadResult.Success -> suggestions = result.value.map { item ->
-                        val onBehalfOptions = if (context?.canActOnBehalf == true) {
+            }
+            val financialContext = contextState.data
+            val suggestions = previewState.data.orEmpty().map { item ->
+                        val onBehalfOptions = if (financialContext?.canActOnBehalf == true) {
                             listOf(item.from, item.to).distinctBy { it.participantId }
-                                .filter { participant -> context.unclaimedParticipants.any { it.participantId == participant.participantId } }
+                                .filter { participant -> financialContext.unclaimedParticipants.any { it.participantId == participant.participantId } }
                                 .map { participant -> FinalSettlementParticipantOption(participant.participantId, participant.displayName) }
                         } else emptyList()
                         FinalSettlementSuggestionUi(
@@ -1512,14 +1621,15 @@ private fun AuthenticatedNavHost(
                             prepaymentReturnAmount = item.prepaymentReturnAmount,
                             sourceFinancialVersion = item.sourceFinancialVersion,
                             onBehalfOptions = onBehalfOptions,
-                            onBehalfRequired = context?.canActOnBehalf == true &&
-                                context.currentParticipantId !in listOf(item.from.participantId, item.to.participantId),
+                            onBehalfRequired = financialContext?.let {
+                                it.canActOnBehalf &&
+                                    it.currentParticipantId !in listOf(item.from.participantId, item.to.participantId)
+                            } == true,
                         )
                     }
-                    is FinancialReadResult.Failure -> error = result.message
-                }
-                loading = false
-            }
+            val error = actionError ?: contextState.errorMessage ?: previewState.errorMessage
+            val loading = (contextState.isLoading && financialContext == null) ||
+                (previewState.isLoading && previewState.data == null)
             if (activityId.isBlank()) {
                 ExpenseRouteStatus("活动路由参数缺失", onBack = { navController.navigateUp() })
             } else if (activityDetailState.isLoading) {
@@ -1533,20 +1643,24 @@ private fun AuthenticatedNavHost(
                     activityId = activityId,
                     onBack = { navController.navigateUp() },
                     suggestions = suggestions,
-                    isLoading = loading || submitting,
+                    isLoading = loading,
                     errorMessage = error,
-                    onRetry = { refreshToken++ },
+                    onRetry = {
+                        financialReadViewModel.loadContext(activityId, force = true)
+                        financialReadViewModel.loadSettlementPreview(activityId, force = true)
+                    },
                     onFinalize = { request ->
                     if (!submitting) {
                         val item = suggestions.firstOrNull { it.id == request.previewItemId }
                         if (item == null || !request.isValid()) {
-                            error = "当前结算方案已发生变化，请重新查看最新方案。"
-                            refreshToken++
+                            actionError = "当前结算方案已发生变化，请重新查看最新方案。"
+                            financialReadViewModel.loadContext(activityId, force = true)
+                            financialReadViewModel.loadSettlementPreview(activityId, force = true)
                         } else if (item.onBehalfRequired && request.onBehalfOfParticipantId == null) {
-                            error = "请选择代记参与人后再执行结算。"
+                            actionError = "请选择代记参与人后再执行结算。"
                         } else if (request.onBehalfOfParticipantId != null &&
                             item.onBehalfOptions.none { it.participantId == request.onBehalfOfParticipantId }) {
-                            error = "请选择有效的代记参与人后再执行结算。"
+                            actionError = "请选择有效的代记参与人后再执行结算。"
                         } else {
                             submitting = true
                             scope.launch {
@@ -1565,6 +1679,9 @@ private fun AuthenticatedNavHost(
                                 val written = financialRepository.executeFinalSettlement(remoteItem, Instant.now().toString())
                                 submitting = false
                                 if (written.isSuccess) {
+                                    financialReadViewModel.invalidateAfterWrite(activityId, written.value?.transferId)
+                                    financialReadViewModel.loadRecords(activityId, force = true)
+                                    invalidateActivityData(activityId)
                                     activityViewModel.loadDetail(activityId, force = true)
                                     activityViewModel.refreshHome()
                                     navController.navigate(SharedLedgerRoutes.transferDetail(activityId, written.value!!.transferId)) {
@@ -1572,6 +1689,9 @@ private fun AuthenticatedNavHost(
                                         launchSingleTop = true
                                     }
                                 } else if (written.isCommitted && written.committedOperationId != null) {
+                                    financialReadViewModel.invalidateAfterWrite(activityId, written.committedOperationId)
+                                    financialReadViewModel.loadRecords(activityId, force = true)
+                                    invalidateActivityData(activityId)
                                     activityViewModel.loadDetail(activityId, force = true)
                                     activityViewModel.refreshHome()
                                     navController.navigate(SharedLedgerRoutes.transferDetail(activityId, written.committedOperationId)) {
@@ -1579,8 +1699,10 @@ private fun AuthenticatedNavHost(
                                         launchSingleTop = true
                                     }
                                 } else {
-                                    error = written.errorMessage
-                                    refreshToken++
+                                    if (written.isUnknown) financialReadViewModel.invalidateActivity(activityId)
+                                    actionError = written.errorMessage
+                                    financialReadViewModel.loadContext(activityId, force = true)
+                                    financialReadViewModel.loadSettlementPreview(activityId, force = true)
                                 }
                             }
                         }
@@ -1610,12 +1732,6 @@ private fun ExpenseRouteStatus(message: String, onBack: () -> Unit) {
     }
 }
 
-private sealed interface FinancialDetailRouteState {
-    data object Loading : FinancialDetailRouteState
-    data class Content(val record: FundRecord) : FinancialDetailRouteState
-    data class Error(val message: String) : FinancialDetailRouteState
-}
-
 @Composable
 private fun FinancialRecordDetailRoute(
     activityId: String,
@@ -1624,49 +1740,49 @@ private fun FinancialRecordDetailRoute(
     externalRefreshToken: Long = 0L,
     writesEnabled: Boolean,
     repository: FinancialRecordRepository,
-    currentUserId: String,
+    financialViewModel: FinancialReadViewModel,
+    currentParticipantId: String?,
     onBack: () -> Unit,
     onRefreshActivity: () -> Unit,
     onRecreateCorrectRecord: () -> Unit,
 ) {
-    var state by remember(activityId, transferId) {
-        mutableStateOf<FinancialDetailRouteState>(FinancialDetailRouteState.Loading)
-    }
     var actionError by remember(activityId, transferId) { mutableStateOf<String?>(null) }
-    var refreshToken by remember(activityId, transferId) { mutableStateOf(0) }
     var isSubmitting by remember(activityId, transferId) { mutableStateOf(false) }
-    var currentParticipantId by remember(activityId, transferId) { mutableStateOf<String?>(null) }
+    val detailState by financialViewModel.detailState(activityId, transferId).collectAsState()
     val scope = androidx.compose.runtime.rememberCoroutineScope()
 
     fun handleFinancialActionResult(result: FinancialWriteResult<*>) {
         actionError = result.errorMessage
-        if (result.isSuccess || result.isCommitted || result.isUnknown) refreshToken++
-    }
-
-    androidx.compose.runtime.LaunchedEffect(activityId, transferId, repository, refreshToken, externalRefreshToken) {
-        state = FinancialDetailRouteState.Loading
-        state = when (val result = repository.get(activityId, transferId)) {
-            is FinancialReadResult.Success -> FinancialDetailRouteState.Content(result.value)
-            is FinancialReadResult.Failure -> FinancialDetailRouteState.Error(result.message)
-        }
-        currentParticipantId = when (val result = repository.currentParticipantId(activityId)) {
-            is FinancialReadResult.Success -> result.value
-            is FinancialReadResult.Failure -> null
+        if (result.isSuccess || result.isCommitted || result.isUnknown) {
+            financialViewModel.invalidateAfterWrite(activityId, transferId)
+            financialViewModel.loadDetail(activityId, transferId, force = true)
         }
     }
 
-    when (val current = state) {
-        FinancialDetailRouteState.Loading -> FinancialStateScreen("正在加载资金记录详情…", onBack)
-        is FinancialDetailRouteState.Error -> FinancialErrorScreen(current.message, onBack) { refreshToken++ }
-        is FinancialDetailRouteState.Content -> {
-            val record = current.record
+    androidx.compose.runtime.LaunchedEffect(activityId, transferId) {
+        financialViewModel.loadDetail(activityId, transferId)
+    }
+    androidx.compose.runtime.LaunchedEffect(activityId, transferId, externalRefreshToken) {
+        if (externalRefreshToken > 0L) {
+            financialViewModel.invalidateTransfer(activityId, transferId)
+            financialViewModel.loadDetail(activityId, transferId, force = true)
+        }
+    }
+
+    when {
+        detailState.data == null && detailState.isLoading -> FinancialStateScreen("正在加载资金记录详情…", onBack)
+        detailState.data == null -> FinancialErrorScreen(detailState.errorMessage ?: "资金记录不存在或已被删除", onBack) {
+            financialViewModel.loadDetail(activityId, transferId, force = true)
+        }
+        else -> {
+            val record = detailState.data!!
             TransferDetailScreen(
                 uiState = TransferDetailUiState(
                     record = record,
                     activityId = activityId,
                     transferId = transferId,
                     ledgerUnitId = ledgerUnitId,
-                    errorMessage = actionError,
+                    errorMessage = actionError ?: detailState.errorMessage,
                     currentParticipantId = currentParticipantId,
                     currentParticipantName = currentParticipantId?.let { participantId ->
                         listOf(record.from, record.to).firstOrNull { it.participantId == participantId }?.displayName

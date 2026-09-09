@@ -4,6 +4,7 @@ import com.ffocalors.sharedledger.data.activity.ParticipantClaimRowDto
 import com.ffocalors.sharedledger.data.supabase.SupabaseClientProvider
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
@@ -120,7 +121,10 @@ class SupabaseParticipantExpenseShareRepository(
 
     private fun <T> Result<T>.mapFailure(): Result<T> = fold(
         onSuccess = { Result.success(it) },
-        onFailure = { Result.failure(ExpenseOperationException(ExpenseErrorMapper.toUserMessage(it), it)) },
+        onFailure = {
+            if (it is CancellationException) throw it
+            Result.failure(ExpenseOperationException(ExpenseErrorMapper.toUserMessage(it), it, ExpenseErrorMapper.failureKind(it)))
+        },
     )
 }
 

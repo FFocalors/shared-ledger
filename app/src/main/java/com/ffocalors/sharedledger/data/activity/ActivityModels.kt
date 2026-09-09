@@ -1,5 +1,8 @@
 package com.ffocalors.sharedledger.data.activity
 
+import com.ffocalors.sharedledger.data.common.ReadFailureKind
+import com.ffocalors.sharedledger.data.common.StructuredReadFailure
+
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
@@ -210,7 +213,15 @@ class ActivityOperationException(
     val userMessage: String,
     cause: Throwable? = null,
     val kind: ActivityFailureKind = ActivityFailureKind.Other,
-) : RuntimeException(userMessage, cause)
+) : RuntimeException(userMessage, cause), StructuredReadFailure {
+    override val failureKind: ReadFailureKind
+        get() = when (kind) {
+            ActivityFailureKind.PermissionDenied -> ReadFailureKind.PermissionDenied
+            ActivityFailureKind.NotFound -> ReadFailureKind.NotFound
+            ActivityFailureKind.Network -> ReadFailureKind.Transient
+            ActivityFailureKind.Other -> ReadFailureKind.Other
+        }
+}
 
 fun ActivityType.toUiKind(): com.ffocalors.sharedledger.ui.components.ActivityKind = when (this) {
     ActivityType.Normal -> com.ffocalors.sharedledger.ui.components.ActivityKind.Standard

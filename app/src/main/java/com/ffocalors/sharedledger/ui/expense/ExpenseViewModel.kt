@@ -20,16 +20,25 @@ import com.ffocalors.sharedledger.data.expense.ManualSplitInput
 import com.ffocalors.sharedledger.data.expense.PaymentInput
 import com.ffocalors.sharedledger.data.expense.RefundExpenseInput
 import com.ffocalors.sharedledger.data.expense.UpdateExpenseInput
+import com.ffocalors.sharedledger.data.common.ReadFailureKind
+import com.ffocalors.sharedledger.data.common.readFailureKind
+import com.ffocalors.sharedledger.data.common.shouldRemoveCachedRead
 import com.ffocalors.sharedledger.ui.components.ExpenseCardUiModel
 import com.ffocalors.sharedledger.ui.screens.ExpenseDetailStatus
 import com.ffocalors.sharedledger.ui.screens.ExpenseDetailUiState
 import com.ffocalors.sharedledger.ui.screens.ExpenseSettlement
 import com.ffocalors.sharedledger.ui.screens.ExpenseSplitUiState
 import com.ffocalors.sharedledger.ui.util.UiDateTimeFormatter
+import com.ffocalors.sharedledger.ui.cache.QueryCacheKey
+import com.ffocalors.sharedledger.ui.cache.QueryCacheState
+import com.ffocalors.sharedledger.ui.cache.SessionQueryCache
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import java.math.BigDecimal
 import java.time.Instant
 
@@ -55,19 +64,23 @@ data class ExpenseFormDraft(
 
 data class ExpenseListUiState(
     val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
     val expenses: List<ExpenseCardUiModel> = emptyList(),
     val totalBaseAmount: BigDecimal = BigDecimal.ZERO,
     val participantBound: Boolean = false,
     val ledgerUnitTotals: Map<String, BigDecimal> = emptyMap(),
     val currencyCode: String = "CNY",
     val errorMessage: String? = null,
+    val failureKind: ReadFailureKind? = null,
 )
 
 data class ExpenseDetailRouteState(
     val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
     val detail: ExpenseDetail? = null,
     val errorMessage: String? = null,
     val actionMessage: String? = null,
+    val failureKind: ReadFailureKind? = null,
 )
 
 data class ExpenseFormUiState(
@@ -82,6 +95,7 @@ class ExpenseViewModel(
     private val repository: ExpenseRepository,
     val currentUserId: String,
     private val shareRepository: ParticipantExpenseShareRepository = ParticipantExpenseShareRepositoryFactory.create(),
+    private val queryCache: SessionQueryCache = SessionQueryCache(),
 ) : ViewModel() {
     private val listStates = mutableMapOf<String, MutableStateFlow<ExpenseListUiState>>()
     private val detailStates = mutableMapOf<String, MutableStateFlow<ExpenseDetailRouteState>>()
@@ -97,9 +111,15 @@ class ExpenseViewModel(
     fun loadByActivity(activityId: String, force: Boolean = false, baseCurrency: String = "CNY") {
         val key = activityKey(activityId)
         val state = listStates.getOrPut(key) { MutableStateFlow(ExpenseListUiState()) }
-        if (!force && !state.value.isLoading && state.value.errorMessage == null) return
+        val cached = queryCache.read(listCacheKey(key, baseCurrency))
+        if (!force && cached.state == QueryCacheState.Fresh && cached.value != null) {
+            state.value = cached.value.copy(isLoading = false, isRefreshing = false)
+            return
+        }
         loadList(
             key = key,
+            cacheKey = listCacheKey(key, baseCurrency),
+            cached = cached.value,
             expenseBlock = { repository.listByActivity(activityId, includeDeleted = true) },
             shareBlock = { shareRepository.getForActivity(activityId, currentUserId) },
             currencyCode = baseCurrency,
@@ -117,10 +137,17 @@ class ExpenseViewModel(
         baseCurrency: String = "CNY",
     ) {
         val key = ledgerKey(ledgerUnitId)
+        val cacheScope = if (activityId.isBlank()) key else "activity:$activityId:$key"
         val state = listStates.getOrPut(key) { MutableStateFlow(ExpenseListUiState()) }
-        if (!force && !state.value.isLoading && state.value.errorMessage == null) return
+        val cached = queryCache.read(listCacheKey(cacheScope, baseCurrency))
+        if (!force && cached.state == QueryCacheState.Fresh && cached.value != null) {
+            state.value = cached.value.copy(isLoading = false, isRefreshing = false)
+            return
+        }
         loadList(
             key = key,
+            cacheKey = listCacheKey(cacheScope, baseCurrency),
+            cached = cached.value,
             expenseBlock = { repository.listByLedgerUnit(ledgerUnitId, includeDeleted = true) },
             shareBlock = { shareRepository.getForLedgerUnit(activityId, ledgerUnitId, currentUserId) },
             currencyCode = baseCurrency,
@@ -129,13 +156,46 @@ class ExpenseViewModel(
 
     fun loadDetail(expenseId: String, force: Boolean = false) {
         val state = detailStates.getOrPut(expenseId) { MutableStateFlow(ExpenseDetailRouteState()) }
-        if (!force && !state.value.isLoading && state.value.detail != null && state.value.errorMessage == null) return
+        val key = detailCacheKey(expenseId)
+        val cached = queryCache.read(key)
+        if (!force && cached.state == QueryCacheState.Fresh && cached.value != null) {
+            state.value = ExpenseDetailRouteState(
+                isLoading = false,
+                isRefreshing = false,
+                detail = cached.value,
+            )
+            return
+        }
+        val existing = cached.value ?: state.value.detail
         viewModelScope.launch {
-            state.value = state.value.copy(isLoading = true, errorMessage = null)
+            state.value = state.value.copy(
+                isLoading = existing == null,
+                isRefreshing = existing != null,
+                detail = existing,
+                errorMessage = null,
+            )
             val actionMessage = state.value.actionMessage
-            repository.getDetail(expenseId).fold(
-                onSuccess = { state.value = ExpenseDetailRouteState(isLoading = false, detail = it, actionMessage = actionMessage) },
-                onFailure = { state.value = ExpenseDetailRouteState(false, state.value.detail, userMessage(it)) },
+            queryCache.getOrLoad(key, forceRefresh = true) { repository.getDetail(expenseId) }.fold(
+                onSuccess = {
+                    state.value = ExpenseDetailRouteState(
+                        isLoading = false,
+                        isRefreshing = false,
+                        detail = it,
+                        actionMessage = actionMessage,
+                    )
+                },
+                onFailure = { error ->
+                    val kind = error.readFailureKind()
+                    if (kind.shouldRemoveCachedRead()) queryCache.remove(key)
+                    state.value = ExpenseDetailRouteState(
+                        isLoading = false,
+                        isRefreshing = false,
+                        detail = existing.takeUnless { kind.shouldRemoveCachedRead() },
+                        errorMessage = userMessage(error),
+                        actionMessage = actionMessage,
+                        failureKind = kind,
+                    )
+                },
             )
         }
     }
@@ -299,6 +359,8 @@ class ExpenseViewModel(
     }
 
     private fun refreshAfterMutation(activityId: String, ledgerUnitId: String, expenseId: String) {
+        queryCache.invalidatePrefix("expense-query:$currentUserId:")
+        queryCache.invalidatePrefix("activity-query:$currentUserId:")
         val currencyCode = listStates[activityKey(activityId)]?.value?.currencyCode ?: "CNY"
         loadByActivity(activityId, force = true, baseCurrency = currencyCode)
         loadByLedgerUnit(activityId, ledgerUnitId, force = true, baseCurrency = currencyCode)
@@ -307,24 +369,77 @@ class ExpenseViewModel(
 
     private fun loadList(
         key: String,
+        cacheKey: QueryCacheKey<ExpenseListUiState>,
+        cached: ExpenseListUiState?,
         expenseBlock: suspend () -> Result<List<Expense>>,
         shareBlock: suspend () -> Result<ParticipantExpenseShareSnapshot>,
         currencyCode: String,
     ) {
         val state = listStates[key] ?: return
         viewModelScope.launch {
-            state.value = state.value.copy(isLoading = true, errorMessage = null)
-            val expensesResult = expenseBlock()
-            val sharesResult = shareBlock()
-            val expenses = expensesResult.getOrElse {
-                state.value = state.value.copy(isLoading = false, errorMessage = userMessage(it))
-                return@launch
+            val existing = cached ?: state.value
+            state.value = existing.copy(
+                isLoading = existing.expenses.isEmpty(),
+                isRefreshing = existing.expenses.isNotEmpty(),
+                errorMessage = null,
+            )
+            val result = queryCache.getOrLoad(cacheKey, forceRefresh = true) {
+                val (expensesResult, sharesResult) = supervisorScope {
+                    val expensesRequest = async {
+                        try {
+                            expenseBlock()
+                        } catch (cancelled: CancellationException) {
+                            throw cancelled
+                        } catch (error: Throwable) {
+                            Result.failure(error)
+                        }
+                    }
+                    val sharesRequest = async {
+                        try {
+                            shareBlock()
+                        } catch (cancelled: CancellationException) {
+                            throw cancelled
+                        } catch (error: Throwable) {
+                            Result.failure(error)
+                        }
+                    }
+                    val expensesResult = expensesRequest.await()
+                    if (expensesResult.isFailure) {
+                        // Preserve the historical expense-first error and stop the now-useless
+                        // share read before returning the failed list request.
+                        sharesRequest.cancel()
+                        expensesResult to Result.failure(expensesResult.exceptionOrNull()!!)
+                    } else {
+                        expensesResult to sharesRequest.await()
+                    }
+                }
+                if (expensesResult.isFailure) return@getOrLoad Result.failure(expensesResult.exceptionOrNull()!!)
+                if (sharesResult.isFailure) return@getOrLoad Result.failure(sharesResult.exceptionOrNull()!!)
+                Result.success(expensesResult.getOrThrow().toListUiState(sharesResult.getOrThrow(), currencyCode))
             }
-            val shares = sharesResult.getOrElse {
-                state.value = state.value.copy(isLoading = false, errorMessage = userMessage(it))
-                return@launch
-            }
-            state.value = expenses.toListUiState(shares, currencyCode)
+            result.fold(
+                onSuccess = { state.value = it.copy(isLoading = false, isRefreshing = false) },
+                onFailure = { error ->
+                    val kind = error.readFailureKind()
+                    if (kind.shouldRemoveCachedRead()) {
+                        queryCache.remove(cacheKey)
+                        state.value = ExpenseListUiState(
+                            isLoading = false,
+                            isRefreshing = false,
+                            currencyCode = currencyCode,
+                            errorMessage = userMessage(error),
+                            failureKind = kind,
+                        )
+                    } else {
+                        state.value = state.value.copy(
+                            isLoading = false,
+                            isRefreshing = false,
+                            errorMessage = userMessage(error),
+                            failureKind = kind,
+                        )
+                    }
+                },
+            )
         }
     }
 
@@ -413,6 +528,18 @@ class ExpenseViewModel(
     private fun String.toDecimal(): BigDecimal? = trim().toBigDecimalOrNull()
     private fun activityKey(id: String) = "activity:$id"
     private fun ledgerKey(id: String) = "ledger:$id"
+    private fun listCacheKey(scopeKey: String, currencyCode: String) =
+        QueryCacheKey<ExpenseListUiState>("expense-query:$currentUserId:$scopeKey:$currencyCode")
+    private fun detailCacheKey(id: String) = QueryCacheKey<ExpenseDetail>("expense-query:$currentUserId:detail:$id")
+
+    /** Called by the navigation/realtime bridge after an expense read-model change. */
+    fun invalidateActivity(activityId: String? = null) {
+        if (activityId.isNullOrBlank()) queryCache.invalidatePrefix("expense-query:$currentUserId:")
+        else queryCache.invalidatePrefix("expense-query:$currentUserId:activity:$activityId")
+    }
+
+    /** Clears the injected session cache on sign-out/session destruction. */
+    fun clearSessionCache() = queryCache.clear()
 
     private fun userMessage(error: Throwable): String =
         (error as? ExpenseOperationException)?.userMessage ?: ExpenseErrorMapper.toUserMessage(error)
@@ -421,10 +548,11 @@ class ExpenseViewModel(
         private val repository: ExpenseRepository = ExpenseRepositoryFactory.create(),
         private val shareRepository: ParticipantExpenseShareRepository = ParticipantExpenseShareRepositoryFactory.create(),
         private val currentUserId: String,
+        private val queryCache: SessionQueryCache = SessionQueryCache(),
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            ExpenseViewModel(repository, currentUserId, shareRepository) as T
+            ExpenseViewModel(repository, currentUserId, shareRepository, queryCache) as T
     }
 }
 

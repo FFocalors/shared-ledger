@@ -39,6 +39,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -68,6 +69,7 @@ import com.ffocalors.sharedledger.domain.financial.FundRecordType
 import com.ffocalors.sharedledger.ui.components.AmountDisplay
 import com.ffocalors.sharedledger.ui.components.AmountEmphasis
 import com.ffocalors.sharedledger.ui.components.AmountSize
+import com.ffocalors.sharedledger.ui.financial.FinancialReadViewModel
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.theme.AppBackground
@@ -137,6 +139,7 @@ fun FundRecordsScreen(
     activityId: String = "",
     ledgerUnitId: String? = null,
     externalRefreshToken: Long = 0L,
+    financialViewModel: FinancialReadViewModel? = null,
     repository: FinancialRecordRepository = remember { FinancialRecordRepositoryFactory.create() },
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
@@ -148,16 +151,30 @@ fun FundRecordsScreen(
     var sortOrder by remember(activityId) { mutableStateOf(FundRecordSortOrder.NEWEST_FIRST) }
     var uiState by remember { mutableStateOf<FundRecordsUiState>(FundRecordsUiState.Loading) }
     var refreshToken by remember { mutableIntStateOf(0) }
-    LaunchedEffect(activityId, repository, selectedFilter, refreshToken, externalRefreshToken) {
-        uiState = FundRecordsUiState.Loading
-        uiState = when (val result = repository.list(activityId, selectedFilter.type)) {
-            is FinancialReadResult.Success -> result.value.takeIf { it.isNotEmpty() }?.let(FundRecordsUiState::Content)
-                ?: FundRecordsUiState.Empty
-            is FinancialReadResult.Failure -> FundRecordsUiState.Error(result.message)
+    val financialState = financialViewModel?.let { it.recordsState(activityId).collectAsState().value }
+    LaunchedEffect(activityId, financialViewModel, selectedFilter, refreshToken, externalRefreshToken) {
+        if (financialViewModel != null) {
+            financialViewModel.loadRecords(activityId, force = refreshToken > 0 || externalRefreshToken > 0)
+        } else {
+            uiState = FundRecordsUiState.Loading
+            uiState = when (val result = repository.list(activityId, selectedFilter.type)) {
+                is FinancialReadResult.Success -> result.value.takeIf { it.isNotEmpty() }?.let(FundRecordsUiState::Content)
+                    ?: FundRecordsUiState.Empty
+                is FinancialReadResult.Failure -> FundRecordsUiState.Error(result.message)
+            }
         }
     }
+    val resolvedUiState = financialState?.let { state ->
+        when {
+            state.data != null -> state.data.filter { selectedFilter.type == null || it.type == selectedFilter.type }
+                .takeIf { it.isNotEmpty() }?.let(FundRecordsUiState::Content) ?: FundRecordsUiState.Empty
+            state.isLoading -> FundRecordsUiState.Loading
+            state.errorMessage != null -> FundRecordsUiState.Error(state.errorMessage)
+            else -> FundRecordsUiState.Empty
+        }
+    } ?: uiState
     FundRecordsScreen(
-        uiState = uiState,
+        uiState = resolvedUiState,
         selectedFilter = selectedFilter,
         sortOrder = sortOrder,
         modifier = modifier,

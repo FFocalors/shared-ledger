@@ -5,11 +5,39 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.put
+
+private const val MAX_CONCURRENT_ACTIVITY_READS = 4
+
+/**
+ * Runs independent reads with a bounded number of active operations while retaining input order.
+ * A structured scope makes a failed read cancel its siblings and propagates cancellation.
+ */
+internal suspend fun <T, R> mapConcurrentlyPreservingOrder(
+    items: List<T>,
+    maxConcurrency: Int,
+    block: suspend (T) -> R,
+): List<R> {
+    require(maxConcurrency > 0) { "maxConcurrency must be positive" }
+    val permits = Semaphore(maxConcurrency)
+    return coroutineScope {
+        items.map { item ->
+            async {
+                permits.withPermit { block(item) }
+            }
+        }.awaitAll()
+    }
+}
 
 interface ActivityRepository {
     suspend fun listActivities(): Result<List<ActivitySummary>>
@@ -31,51 +59,65 @@ interface ActivityRepository {
 
 class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityRepository {
     override suspend fun listActivities(): Result<List<ActivitySummary>> = runCatching {
-        client.from("activities").select().decodeList<ActivityRowDto>()
+        val activities = client.from("activities").select().decodeList<ActivityRowDto>()
             .filterNot { it.isDeleted }
-            .map { activity -> toSummary(activity, loadParticipants(activity.id), loadFinancialStatus(activity.id)) }
+        mapConcurrentlyPreservingOrder(activities, MAX_CONCURRENT_ACTIVITY_READS) { activity ->
+            // Keep each card's two reads together so at most four activity cards are loading.
+            val participants = loadParticipants(activity.id)
+            val status = loadFinancialStatus(activity.id)
+            toSummary(activity, participants, status)
+        }
     }.mapFailure()
 
     override suspend fun getActivity(activityId: String): Result<ActivityDetail> = runCatching {
         val activity = client.from("activities").select {
             filter { eq("id", activityId) }
         }.decodeSingle<ActivityRowDto>()
-        val participants = loadParticipants(activityId)
-        val claims = loadClaims(activityId)
-        val membersRows = loadMembers(activityId)
-        val profiles = loadProfiles(membersRows.map { it.userId })
-        val units = client.from("ledger_units").select {
-            filter { eq("activity_id", activityId) }
-        }.decodeList<LedgerUnitRowDto>().filterNot { it.isDeleted }
-        val members = membersRows.map { member ->
-            val claim = claims.firstOrNull { it.userId == member.userId }
-            ActivityMember(
-                id = member.id,
-                userId = member.userId,
-                displayName = profiles[member.userId].orEmpty().ifBlank { "用户 ${member.userId.take(6)}" },
-                isCreator = member.userId == activity.createdBy,
-                claimedParticipantId = claim?.participantId,
+        coroutineScope {
+            // These reads only depend on the activity id and can run together.
+            val participantsDeferred = async { loadParticipants(activityId) }
+            val claimsDeferred = async { loadClaims(activityId) }
+            val membersDeferred = async { loadMembers(activityId) }
+            val unitsDeferred = async { loadLedgerUnits(activityId) }
+            val financialStatusDeferred = async { loadFinancialStatus(activityId) }
+
+            val membersRows = membersDeferred.await()
+            val profilesDeferred = async { loadProfiles(membersRows.map { it.userId }) }
+            val participants = participantsDeferred.await()
+            val claims = claimsDeferred.await()
+            val profiles = profilesDeferred.await()
+            val units = unitsDeferred.await()
+            val financialStatus = financialStatusDeferred.await()
+            val members = membersRows.map { member ->
+                val claim = claims.firstOrNull { it.userId == member.userId }
+                ActivityMember(
+                    id = member.id,
+                    userId = member.userId,
+                    displayName = profiles[member.userId].orEmpty().ifBlank { "用户 ${member.userId.take(6)}" },
+                    isCreator = member.userId == activity.createdBy,
+                    claimedParticipantId = claim?.participantId,
+                )
+            }
+            val role = if (activity.createdBy == client.auth.currentSessionOrNull()?.user?.id) ActivityRole.Creator else ActivityRole.Member
+            ActivityDetail(
+                summary = toSummary(activity, participants, financialStatus),
+                members = members,
+                participants = participants.map { participant ->
+                    val claim = claims.firstOrNull { it.participantId == participant.id }
+                    Participant(
+                        id = participant.id,
+                        activityId = participant.activityId,
+                        name = participant.name,
+                        order = participant.participantOrder,
+                        claimedUserId = claim?.userId,
+                        claimedUserName = claim?.userId?.let { profiles[it] },
+                    )
+                }.sortedBy { it.order },
+                ledgerUnits = units.map { LedgerUnit(it.id, it.activityId, it.name, it.type, it.createdAt) },
+                currentUserRole = role,
+                permissions = ActivityPermissions.forRole(role),
             )
         }
-        val role = if (activity.createdBy == client.auth.currentSessionOrNull()?.user?.id) ActivityRole.Creator else ActivityRole.Member
-        ActivityDetail(
-            summary = toSummary(activity, participants, loadFinancialStatus(activityId)),
-            members = members,
-            participants = participants.map { participant ->
-                val claim = claims.firstOrNull { it.participantId == participant.id }
-                Participant(
-                    id = participant.id,
-                    activityId = participant.activityId,
-                    name = participant.name,
-                    order = participant.participantOrder,
-                    claimedUserId = claim?.userId,
-                    claimedUserName = claim?.userId?.let { profiles[it] },
-                )
-            }.sortedBy { it.order },
-            ledgerUnits = units.map { LedgerUnit(it.id, it.activityId, it.name, it.type, it.createdAt) },
-            currentUserRole = role,
-            permissions = ActivityPermissions.forRole(role),
-        )
     }.mapFailure()
 
     override suspend fun createActivity(name: String, type: ActivityType, baseCurrency: String, multiCurrencyEnabled: Boolean): Result<ActivitySummary> = runCatching {
@@ -183,6 +225,10 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
         filter { eq("activity_id", activityId) }
     }.decodeList()
 
+    private suspend fun loadLedgerUnits(activityId: String): List<LedgerUnitRowDto> = client.from("ledger_units").select {
+        filter { eq("activity_id", activityId) }
+    }.decodeList<LedgerUnitRowDto>().filterNot { it.isDeleted }
+
     private suspend fun loadProfiles(userIds: List<String>): Map<String, String> {
         if (userIds.isEmpty()) return emptyMap()
         return client.from("profiles").select {
@@ -223,6 +269,7 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
     private fun <T> Result<T>.mapFailure(): Result<T> = fold(
         onSuccess = { Result.success(it) },
         onFailure = {
+            if (it is CancellationException) throw it
             Result.failure(
                 ActivityOperationException(
                     userMessage = ActivityErrorMapper.toUserMessage(it),

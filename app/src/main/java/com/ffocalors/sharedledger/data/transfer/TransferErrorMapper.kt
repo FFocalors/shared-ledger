@@ -1,11 +1,21 @@
 package com.ffocalors.sharedledger.data.transfer
 
+import com.ffocalors.sharedledger.data.common.ReadFailureKind
 import java.io.IOException
 import java.net.SocketException
 import java.net.UnknownHostException
 import java.util.Locale
 
 object TransferErrorMapper {
+    fun failureKind(error: Throwable): ReadFailureKind {
+        if (error is TransferOperationException) return error.failureKind
+        return when (findSqlState(error)) {
+            "28000", "42501" -> ReadFailureKind.PermissionDenied
+            "P0002", "PGRST116" -> ReadFailureKind.NotFound
+            else -> if (isTransferNetworkFailure(error)) ReadFailureKind.Transient else ReadFailureKind.Other
+        }
+    }
+
     fun toUserMessage(error: Throwable): String {
         if (error is TransferOperationException) return error.userMessage
         val sqlState = findSqlState(error)
@@ -51,4 +61,8 @@ object TransferErrorMapper {
     }
 }
 
-class TransferOperationException(val userMessage: String, cause: Throwable? = null) : RuntimeException(userMessage, cause)
+class TransferOperationException(
+    val userMessage: String,
+    cause: Throwable? = null,
+    override val failureKind: ReadFailureKind = ReadFailureKind.Other,
+) : RuntimeException(userMessage, cause), com.ffocalors.sharedledger.data.common.StructuredReadFailure

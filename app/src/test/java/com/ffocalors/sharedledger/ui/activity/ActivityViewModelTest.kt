@@ -15,6 +15,9 @@ import com.ffocalors.sharedledger.data.activity.Participant
 import com.ffocalors.sharedledger.data.expense.ParticipantExpenseShareRepository
 import com.ffocalors.sharedledger.data.expense.ParticipantExpenseShareSnapshot
 import com.ffocalors.sharedledger.ui.screens.JoinActivityStatus
+import com.ffocalors.sharedledger.ui.cache.QueryCacheKey
+import com.ffocalors.sharedledger.ui.cache.QueryCacheState
+import com.ffocalors.sharedledger.ui.cache.SessionQueryCache
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +30,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -49,6 +53,13 @@ class ActivityViewModelTest {
 
         assertEquals("activity-1", viewModel.home.value.activities.single().activityId)
         assertEquals(com.ffocalors.sharedledger.ui.components.ActivityKind.Large, viewModel.home.value.activities.single().kind)
+        assertFalse(viewModel.home.value.isLoading)
+        assertFalse(viewModel.home.value.isRefreshing)
+
+        viewModel.loadHome()
+        advanceUntilIdle()
+        assertFalse(viewModel.home.value.isLoading)
+        assertFalse(viewModel.home.value.isRefreshing)
     }
 
     @Test
@@ -133,15 +144,21 @@ class ActivityViewModelTest {
         viewModel.loadDetail("activity-1")
         advanceUntilIdle()
         assertEquals("0.0", viewModel.detail("activity-1").value.detail?.summary?.totalDebt)
+        assertFalse(viewModel.detail("activity-1").value.isLoading)
+        assertFalse(viewModel.detail("activity-1").value.isRefreshing)
 
         viewModel.loadDetail("activity-1")
         advanceUntilIdle()
         assertEquals(1, repository.detailCalls.get())
+        assertFalse(viewModel.detail("activity-1").value.isLoading)
+        assertFalse(viewModel.detail("activity-1").value.isRefreshing)
 
         viewModel.loadDetail("activity-1", force = true)
         advanceUntilIdle()
         assertEquals("150.0", viewModel.detail("activity-1").value.detail?.summary?.totalDebt)
         assertEquals(2, repository.detailCalls.get())
+        assertFalse(viewModel.detail("activity-1").value.isLoading)
+        assertFalse(viewModel.detail("activity-1").value.isRefreshing)
     }
 
     @Test
@@ -176,6 +193,33 @@ class ActivityViewModelTest {
         viewModel.loadDetail("activity-1", force = true)
         advanceUntilIdle()
         assertTrue(viewModel.detail("activity-1").value.detail != null)
+    }
+
+    @Test
+    fun deniedActivityClearsItsScopedSessionReadCaches() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeActivityRepository(summary)
+        val cache = SessionQueryCache(refreshScope = this)
+        val viewModel = ActivityViewModel(repository, "user-1", queryCache = cache)
+        val keys = listOf(
+            "expense-query:user-1:activity:activity-1:CNY",
+            "financial-query:list:activity-1",
+            "financial-query:detail:activity-1:transfer-1",
+            "transfer-query:activity-1:TRANSFER",
+            "attachment-query:activity-1:expense:expense-1",
+        )
+        keys.forEach { key -> cache.getOrLoad(QueryCacheKey<String>(key)) { Result.success("old") } }
+        viewModel.loadDetail("activity-1")
+        advanceUntilIdle()
+
+        repository.detailResult = Result.failure(
+            ActivityOperationException("无权访问活动", kind = ActivityFailureKind.PermissionDenied),
+        )
+        viewModel.loadDetail("activity-1", force = true)
+        advanceUntilIdle()
+
+        keys.forEach { key -> assertEquals(QueryCacheState.Miss, cache.read(QueryCacheKey<String>(key)).state) }
+        assertNull(viewModel.detail("activity-1").value.detail)
     }
 
     @Test
@@ -374,6 +418,8 @@ class ActivityViewModelTest {
         assertEquals(1, viewModel.personalOverview.value.overview?.initiatedCount)
         assertEquals(1, viewModel.personalOverview.value.overview?.claimedIdentityCount)
         assertNull(viewModel.personalOverview.value.errorMessage)
+        assertFalse(viewModel.personalOverview.value.isLoading)
+        assertFalse(viewModel.personalOverview.value.isRefreshing)
     }
 
     @Test

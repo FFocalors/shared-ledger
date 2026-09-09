@@ -7,6 +7,7 @@ import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
 import java.math.BigDecimal
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
@@ -83,7 +84,17 @@ class SupabaseTransferRepository(private val client: SupabaseClient) : TransferR
 
     private fun <T> Result<T>.mapFailure(): Result<T> = fold(
         onSuccess = { Result.success(it) },
-        onFailure = { Result.failure(it.takeIf { error -> error is TransferOperationException } ?: TransferOperationException(TransferErrorMapper.toUserMessage(it), it)) },
+        onFailure = {
+            if (it is CancellationException) throw it
+            Result.failure(
+                it.takeIf { error -> error is TransferOperationException }
+                    ?: TransferOperationException(
+                        TransferErrorMapper.toUserMessage(it),
+                        it,
+                        TransferErrorMapper.failureKind(it),
+                    ),
+            )
+        },
     )
 }
 

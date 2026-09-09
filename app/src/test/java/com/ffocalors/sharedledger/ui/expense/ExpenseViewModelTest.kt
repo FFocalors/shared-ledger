@@ -7,6 +7,7 @@ import com.ffocalors.sharedledger.data.expense.ExpenseRepository
 import com.ffocalors.sharedledger.data.expense.ExpenseSplitMethod
 import com.ffocalors.sharedledger.data.expense.ExpenseMutationResult
 import com.ffocalors.sharedledger.data.expense.ExpenseOperationException
+import com.ffocalors.sharedledger.data.common.ReadFailureKind
 import com.ffocalors.sharedledger.data.expense.ExpenseWriteState
 import com.ffocalors.sharedledger.data.expense.ExpenseWriteResult
 import com.ffocalors.sharedledger.data.expense.toExpenseWriteResult
@@ -58,10 +59,40 @@ class ExpenseViewModelTest {
         assertEquals("expense-real", viewModel.listState("activity:activity-real").value.expenses.single().expenseId)
         viewModel.loadDetail("expense-real")
         advanceUntilIdle()
+        assertFalse(viewModel.detailState("expense-real").value.isLoading)
+        assertFalse(viewModel.detailState("expense-real").value.isRefreshing)
         val uiState = viewModel.detailState("expense-real").value.detail!!.toUiState()
         assertEquals("Alice、Bob", uiState.payer)
         assertTrue(uiState.splits.all { it.settlement.name == "Paid" })
         assertTrue(uiState.attachments.isEmpty())
+
+        viewModel.loadDetail("expense-real")
+        advanceUntilIdle()
+        assertFalse(viewModel.detailState("expense-real").value.isLoading)
+        assertFalse(viewModel.detailState("expense-real").value.isRefreshing)
+    }
+
+    @Test
+    fun permissionFailureRemovesCachedExpenseDetail() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeExpenseRepository()
+        val viewModel = ExpenseViewModel(repository, "user-1", fakeShareRepository(repository))
+
+        viewModel.loadDetail("expense-real")
+        advanceUntilIdle()
+        assertTrue(viewModel.detailState("expense-real").value.detail != null)
+
+        repository.detailResult = Result.failure(
+            ExpenseOperationException(
+                "无权访问账单",
+                failureKind = ReadFailureKind.PermissionDenied,
+            ),
+        )
+        viewModel.loadDetail("expense-real", force = true)
+        advanceUntilIdle()
+
+        assertNull(viewModel.detailState("expense-real").value.detail)
+        assertEquals(ReadFailureKind.PermissionDenied, viewModel.detailState("expense-real").value.failureKind)
     }
 
     @Test
@@ -558,6 +589,7 @@ private class FakeExpenseRepository : ExpenseRepository {
     var lastUpdate: UpdateExpenseInput? = null
     var lastRefund: RefundExpenseInput? = null
     var createWriteResult: ExpenseWriteResult<ExpenseMutationResult>? = null
+    var detailResult: Result<ExpenseDetail>? = null
     var listExpenses: List<Expense> = listOf(expense)
     val activityIncludeDeleted = mutableListOf<Boolean>()
     val ledgerIncludeDeleted = mutableListOf<Boolean>()
@@ -570,7 +602,7 @@ private class FakeExpenseRepository : ExpenseRepository {
         ledgerIncludeDeleted += includeDeleted
         return Result.success(if (includeDeleted) listExpenses else listExpenses.filterNot { it.isDeleted })
     }
-    override suspend fun getDetail(expenseId: String) = Result.success(
+    override suspend fun getDetail(expenseId: String) = detailResult ?: Result.success(
         detail.copy(expense = listExpenses.firstOrNull { it.id == expenseId } ?: detail.expense),
     )
     override suspend fun create(input: CreateExpenseInput): Result<ExpenseMutationResult> {

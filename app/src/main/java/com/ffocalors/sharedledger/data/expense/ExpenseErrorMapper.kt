@@ -1,11 +1,21 @@
 package com.ffocalors.sharedledger.data.expense
 
+import com.ffocalors.sharedledger.data.common.ReadFailureKind
 import java.io.IOException
 import java.net.SocketException
 import java.net.UnknownHostException
 import java.util.Locale
 
 object ExpenseErrorMapper {
+    fun failureKind(error: Throwable): ReadFailureKind {
+        if (error is ExpenseOperationException) return error.failureKind
+        return when (findSqlState(error)) {
+            "42501", "28000" -> ReadFailureKind.PermissionDenied
+            "P0002", "PGRST116" -> ReadFailureKind.NotFound
+            else -> if (isExpenseNetworkFailure(error)) ReadFailureKind.Transient else ReadFailureKind.Other
+        }
+    }
+
     fun toUserMessage(error: Throwable): String {
         if (error is ExpenseOperationException) return error.userMessage
         val sqlState = findSqlState(error)
