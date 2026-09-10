@@ -47,6 +47,7 @@ import com.ffocalors.sharedledger.ui.components.ExpenseActionSheet
 import com.ffocalors.sharedledger.ui.components.PaymentStatusCard
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatarGroup
+import com.ffocalors.sharedledger.ui.components.SettlementStatistic
 import com.ffocalors.sharedledger.ui.components.SettlementSummaryCard
 import com.ffocalors.sharedledger.ui.components.SharedLedgerBottomActionBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
@@ -229,35 +230,40 @@ fun LedgerUnitScreen(
                         )
                     }
                 } else {
-                    item(key = "summary") {
-                        SettlementSummaryCard(
-                            title = "实际消费",
-                            primaryAmount = displayTotal?.takeIf { participantBound },
-                            secondaryTitle = "待结算",
-                            secondaryAmount = activity?.summary?.totalDebt?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
-                            currencyCode = activity?.summary?.baseCurrency ?: "CNY",
-                            statistics = emptyList(),
-                        )
-                    }
-                    item(key = "fund-records") {
-                        SharedLedgerButton(
-                            text = "资金记录",
-                            onClick = onFundRecords,
-                            tone = SharedLedgerButtonTone.Neutral,
-                            icon = Icons.Rounded.History,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
-                    item(key = "attachments") {
-                        LedgerUnitAttachments(
-                            attachments = attachments,
-                            onAddAttachment = onAddAttachment,
-                            onAttachmentClick = onAttachmentClick,
-                            onDeleteAttachment = onDeleteAttachment,
-                            onRetryAttachment = onRetryAttachment,
-                        )
-                        attachmentMessage?.let {
-                            Text(it, style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.error)
+                    item(key = "overview") {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+                        ) {
+                            SettlementSummaryCard(
+                                title = "实际消费",
+                                primaryAmount = displayTotal?.takeIf { participantBound },
+                                secondaryTitle = "待结算",
+                                secondaryAmount = activity?.summary?.totalDebt?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
+                                currencyCode = activity?.summary?.baseCurrency ?: "CNY",
+                                statistics = listOf(
+                                    SettlementStatistic(
+                                        "参与人",
+                                        "${activity?.participants?.size ?: 0} 人",
+                                    ),
+                                ),
+                            )
+                            SharedLedgerButton(
+                                text = "资金记录",
+                                onClick = onFundRecords,
+                                tone = SharedLedgerButtonTone.Neutral,
+                                icon = Icons.Rounded.History,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                            LedgerUnitAttachments(
+                                attachments = attachments,
+                                onAddAttachment = onAddAttachment,
+                                onAttachmentClick = onAttachmentClick,
+                                onDeleteAttachment = onDeleteAttachment,
+                                onRetryAttachment = onRetryAttachment,
+                            )
+                            attachmentMessage?.let {
+                                Text(it, style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.error)
+                            }
                         }
                     }
                     item(key = "today") {
