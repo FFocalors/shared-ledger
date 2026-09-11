@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.ffocalors.sharedledger.data.transfer.CreateSettlementTransferInput
 import com.ffocalors.sharedledger.data.transfer.SettlementCandidate
+import com.ffocalors.sharedledger.data.transfer.SettlementCandidateKind
 import com.ffocalors.sharedledger.data.transfer.SettlementDirection
 import com.ffocalors.sharedledger.data.transfer.SettlementTransferResult
 import com.ffocalors.sharedledger.data.transfer.SettlementParticipant
@@ -30,12 +31,13 @@ data class TransferCandidateUi(
     val participantId: String,
     val participantName: String,
     val amount: BigDecimal,
-    val fromParticipantId: String? = null,
-    val fromParticipantName: String? = null,
-    val toParticipantId: String? = null,
-    val toParticipantName: String? = null,
+    val fromParticipantId: String,
+    val fromParticipantName: String,
+    val toParticipantId: String,
+    val toParticipantName: String,
+    val kind: SettlementCandidateKind = SettlementCandidateKind.PERSONAL,
     val onBehalfOptions: List<SettlementParticipant> = emptyList(),
-    val candidateKey: String = "${fromParticipantId.orEmpty()}->${toParticipantId.orEmpty()}",
+    val candidateKey: String = "${kind.name}:$fromParticipantId->$toParticipantId",
 )
 
 data class TransferUiState(
@@ -45,6 +47,7 @@ data class TransferUiState(
     val currentParticipantId: String? = null,
     val canActOnBehalf: Boolean = false,
     val candidates: List<TransferCandidateUi> = emptyList(),
+    val onBehalfCandidates: List<TransferCandidateUi> = emptyList(),
     val errorMessage: String? = null,
     val emptyMessage: String? = null,
     val isSubmitting: Boolean = false,
@@ -108,9 +111,10 @@ class TransferViewModel(
         val state = _uiState.value
         if (state.isSubmitting || state.submissionBlocked) return
         val amount = draft.amount.toBigDecimalOrNull()
+        val allCandidates = state.candidates + state.onBehalfCandidates
         val candidate = draft.candidateKey?.let { key ->
-            state.candidates.firstOrNull { it.candidateKey == key }
-        } ?: state.candidates.firstOrNull { draft.candidateKey == null && it.participantId == draft.participantId }
+            allCandidates.firstOrNull { it.candidateKey == key }
+        } ?: allCandidates.singleOrNull { it.participantId == draft.participantId }
         when {
             state.currentParticipantId.isNullOrBlank() && draft.onBehalfOfParticipantId == null ->
                 setError("当前用户尚未绑定参与人，请先选择代记参与人")
@@ -121,34 +125,23 @@ class TransferViewModel(
             else -> {
                 _uiState.value = state.copy(isSubmitting = true, errorMessage = null)
                 viewModelScope.launch {
-                    val direction = if (draft.mode.name == "RECEIVE") SettlementDirection.RECEIVE else SettlementDirection.TRANSFER
-                    val currentParticipantId = state.currentParticipantId
-                        ?: when (direction) {
-                            SettlementDirection.TRANSFER -> candidate.fromParticipantId
-                            SettlementDirection.RECEIVE -> candidate.toParticipantId
-                        }
-                    if (currentParticipantId.isNullOrBlank()) {
-                        _uiState.value = _uiState.value.copy(isSubmitting = false, errorMessage = "结算方向信息已失效，请重新加载")
-                        return@launch
-                    }
                     val input = CreateSettlementTransferInput(
                         activityId = draft.activityId,
-                        currentParticipantId = currentParticipantId,
-                        selectedParticipantId = draft.participantId,
+                        fromParticipantId = candidate.fromParticipantId,
+                        toParticipantId = candidate.toParticipantId,
                         amount = amount,
-                        direction = direction,
                         occurredAt = Instant.now().toString(),
                         onBehalfOfParticipantId = draft.onBehalfOfParticipantId,
                     )
                     val result = repository.createSettlementWrite(input)
                     if (result.isSuccess && result.value != null) {
-                            queryCache.invalidate(contextKey(draft.activityId, direction))
-                            invalidateFinancialReadCaches(draft.activityId)
-                            _uiState.value = _uiState.value.copy(isSubmitting = false)
-                            onSuccess(result.value)
+                        queryCache.invalidatePrefix("transfer-query:${draft.activityId}:")
+                        invalidateFinancialReadCaches(draft.activityId)
+                        _uiState.value = _uiState.value.copy(isSubmitting = false)
+                        onSuccess(result.value)
                     } else {
                         if (result.isUnknown) {
-                            queryCache.invalidate(contextKey(draft.activityId, direction))
+                            queryCache.invalidatePrefix("transfer-query:${draft.activityId}:")
                             invalidateFinancialReadCaches(draft.activityId)
                         }
                         _uiState.value = _uiState.value.copy(
@@ -205,6 +198,7 @@ class TransferViewModel(
         fromParticipantName = candidate.fromParticipantName,
         toParticipantId = candidate.toParticipantId,
         toParticipantName = candidate.toParticipantName,
+        kind = candidate.kind,
         onBehalfOptions = candidate.onBehalfOptions,
     )
 
@@ -217,8 +211,10 @@ class TransferViewModel(
         currentParticipantId = context.currentParticipantId,
         canActOnBehalf = context.canActOnBehalf,
         candidates = context.candidates.map(::toUi),
+        onBehalfCandidates = context.onBehalfCandidates.map(::toUi),
         emptyMessage = when {
-            context.candidates.isNotEmpty() -> null
+            context.candidates.isNotEmpty() || context.onBehalfCandidates.isNotEmpty() -> null
+            context.canActOnBehalf -> null
             context.currentParticipantId == null -> "当前用户尚未绑定参与人，请先在活动管理中绑定"
             direction == SettlementDirection.TRANSFER -> "当前没有待付款债务"
             else -> "当前没有待收款债务"
@@ -235,12 +231,19 @@ class TransferViewModel(
         candidate: TransferCandidateUi,
         onBehalfOfParticipantId: String?,
     ): Boolean {
-        val from = candidate.fromParticipantId ?: return onBehalfOfParticipantId == null
-        val to = candidate.toParticipantId ?: return onBehalfOfParticipantId == null
-        val currentIsParty = state.currentParticipantId == from || state.currentParticipantId == to
-        if (!currentIsParty && onBehalfOfParticipantId == null) return false
-        if (onBehalfOfParticipantId == null) return true
-        return state.canActOnBehalf && candidate.onBehalfOptions.any { it.participantId == onBehalfOfParticipantId }
+        return when (candidate.kind) {
+            SettlementCandidateKind.PERSONAL -> {
+                val expectedCurrentParticipantId = when (loadedDirection) {
+                    SettlementDirection.TRANSFER -> candidate.fromParticipantId
+                    SettlementDirection.RECEIVE -> candidate.toParticipantId
+                    null -> return false
+                }
+                state.currentParticipantId == expectedCurrentParticipantId && onBehalfOfParticipantId == null
+            }
+            SettlementCandidateKind.ON_BEHALF -> state.canActOnBehalf &&
+                onBehalfOfParticipantId != null &&
+                candidate.onBehalfOptions.any { it.participantId == onBehalfOfParticipantId }
+        }
     }
 
     private fun messageFor(error: Throwable): String =

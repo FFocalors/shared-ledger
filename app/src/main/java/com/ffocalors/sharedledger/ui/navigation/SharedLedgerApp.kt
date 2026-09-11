@@ -482,6 +482,11 @@ private fun AuthenticatedNavHost(
                         navController.navigate(SharedLedgerRoutes.transfer(activityId, TransferRouteMode.RECEIVE))
                     }
                 } } else null,
+                onFinalSettlement = if (canWriteActivity) { {
+                    requireParticipantBinding(activityId) {
+                        navController.navigate(SharedLedgerRoutes.finalSettlement(activityId))
+                    }
+                } } else null,
                 onFundRecords = if (activityId.isNotBlank()) {
                     {
                     navController.navigate(SharedLedgerRoutes.fundRecords(activityId)) { launchSingleTop = true }
@@ -1364,8 +1369,11 @@ private fun AuthenticatedNavHost(
                 val activityId = routeActivityId ?: detail.ledgerUnit.activityId
                 val ledgerUnitId = routeLedgerUnitId ?: detail.ledgerUnit.id
                 val activityWritable = isActivityWritable(activityState.detail)
+                val currentParticipantId = activityState.detail?.members
+                    ?.firstOrNull { it.userId == currentUserId }
+                    ?.claimedParticipantId
                 ExpenseDetailScreen(
-                    uiState = detail.toUiState().copy(
+                    uiState = detail.toUiState(currentParticipantId).copy(
                         actionMessage = state.actionMessage,
                         attachments = attachmentState.toExpenseDetailUiState { item -> canDeleteAttachment(item, activityState.detail, currentUserId) },
                         attachmentMessage = attachmentMessage

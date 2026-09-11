@@ -7,19 +7,25 @@ enum class SettlementDirection {
     RECEIVE,
 }
 
+enum class SettlementCandidateKind {
+    PERSONAL,
+    ON_BEHALF,
+}
+
 data class SettlementCandidate(
     val participantId: String,
     val participantName: String,
     val amount: BigDecimal,
-    val fromParticipantId: String? = null,
-    val fromParticipantName: String? = null,
-    val toParticipantId: String? = null,
-    val toParticipantName: String? = null,
+    val fromParticipantId: String,
+    val fromParticipantName: String,
+    val toParticipantId: String,
+    val toParticipantName: String,
+    val kind: SettlementCandidateKind = SettlementCandidateKind.PERSONAL,
     val onBehalfOptions: List<SettlementParticipant> = emptyList(),
 ) {
     /** Stable identity for one directed bilateral debt, even when the target repeats. */
     val candidateKey: String
-        get() = "${fromParticipantId.orEmpty()}->${toParticipantId.orEmpty()}"
+        get() = "${kind.name}:$fromParticipantId->$toParticipantId"
 }
 
 data class SettlementParticipant(
@@ -32,16 +38,16 @@ data class SettlementContext(
     val currentParticipantId: String?,
     val currentParticipantName: String?,
     val baseCurrency: String,
-    val candidates: List<SettlementCandidate>,
+    val candidates: List<SettlementCandidate> = emptyList(),
+    val onBehalfCandidates: List<SettlementCandidate> = emptyList(),
     val canActOnBehalf: Boolean = false,
 )
 
 data class CreateSettlementTransferInput(
     val activityId: String,
-    val currentParticipantId: String,
-    val selectedParticipantId: String,
+    val fromParticipantId: String,
+    val toParticipantId: String,
     val amount: BigDecimal,
-    val direction: SettlementDirection,
     val occurredAt: String,
     val onBehalfOfParticipantId: String? = null,
 )

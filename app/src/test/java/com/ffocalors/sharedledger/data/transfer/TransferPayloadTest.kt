@@ -11,15 +11,12 @@ import org.junit.Test
 
 class TransferPayloadTest {
     @Test
-    fun payloadUsesDirectionAndNullOnBehalf() {
-        val transfer = SettlementRpcPayloadBuilder.create(input(SettlementDirection.TRANSFER))
-        val receive = SettlementRpcPayloadBuilder.create(input(SettlementDirection.RECEIVE))
+    fun payloadUsesImmutableDebtEndpointsAndNullOnBehalf() {
+        val transfer = SettlementRpcPayloadBuilder.create(input())
 
         assertEquals("activity-1", transfer["activity_id"]?.jsonPrimitive?.content)
         assertEquals("debtor", transfer["from_participant_id"]?.jsonPrimitive?.content)
         assertEquals("creditor", transfer["to_participant_id"]?.jsonPrimitive?.content)
-        assertEquals("creditor", receive["from_participant_id"]?.jsonPrimitive?.content)
-        assertEquals("debtor", receive["to_participant_id"]?.jsonPrimitive?.content)
         assertEquals("10.5", transfer["amount"]?.jsonPrimitive?.content)
         assertEquals("2026-09-06T00:00:00Z", transfer["occurred_at"]?.jsonPrimitive?.content)
         assertEquals(JsonNull, transfer["on_behalf_of_participant_id"])
@@ -28,23 +25,21 @@ class TransferPayloadTest {
     @Test
     fun payloadPreservesCreatorOnBehalfParticipant() {
         val payload = SettlementRpcPayloadBuilder.create(
-            input(SettlementDirection.TRANSFER).copy(onBehalfOfParticipantId = "unclaimed-debtor"),
+            input().copy(onBehalfOfParticipantId = "unclaimed-debtor"),
         )
 
         assertEquals("unclaimed-debtor", payload["on_behalf_of_participant_id"]?.jsonPrimitive?.content)
     }
 
     @Test
-    fun receivePayloadKeepsDebtorToCreditorEndpointsForUnboundCreator() {
+    fun onBehalfMetadataCannotRewriteDebtEndpoints() {
         val payload = SettlementRpcPayloadBuilder.create(
-            input(SettlementDirection.RECEIVE).copy(
-                currentParticipantId = "creditor",
-                selectedParticipantId = "debtor",
-            ),
+            input().copy(onBehalfOfParticipantId = "debtor"),
         )
 
         assertEquals("debtor", payload["from_participant_id"]?.jsonPrimitive?.content)
         assertEquals("creditor", payload["to_participant_id"]?.jsonPrimitive?.content)
+        assertEquals("debtor", payload["on_behalf_of_participant_id"]?.jsonPrimitive?.content)
     }
 
     @Test
@@ -61,12 +56,11 @@ class TransferPayloadTest {
         assertEquals("数据刚刚发生变化，请刷新债务后重试", TransferErrorMapper.toUserMessage(RuntimeException("code=40001")))
     }
 
-    private fun input(direction: SettlementDirection) = CreateSettlementTransferInput(
+    private fun input() = CreateSettlementTransferInput(
         activityId = "activity-1",
-        currentParticipantId = "debtor",
-        selectedParticipantId = "creditor",
+        fromParticipantId = "debtor",
+        toParticipantId = "creditor",
         amount = BigDecimal("10.5"),
-        direction = direction,
         occurredAt = "2026-09-06T00:00:00Z",
     )
 }

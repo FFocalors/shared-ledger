@@ -54,6 +54,12 @@ class SupabaseTransferRepository(private val client: SupabaseClient) : TransferR
             direction = direction,
             debts = debts,
             participantNames = names,
+        )
+        val onBehalfCandidates = selectOnBehalfSettlementCandidates(
+            currentParticipantId = currentClaim?.participantId,
+            direction = direction,
+            debts = debts,
+            participantNames = names,
             canActOnBehalf = canActOnBehalf,
             claimedParticipantIds = claimedParticipantIds,
         )
@@ -63,6 +69,7 @@ class SupabaseTransferRepository(private val client: SupabaseClient) : TransferR
             currentParticipantName = currentClaim?.participantId?.let(names::get),
             baseCurrency = activity.baseCurrency.trim().uppercase(),
             candidates = candidates,
+            onBehalfCandidates = onBehalfCandidates,
             canActOnBehalf = canActOnBehalf,
         )
     }.mapFailure()
@@ -114,13 +121,11 @@ internal fun selectSettlementCandidates(
     direction: SettlementDirection,
     debts: List<BilateralDebtRowDto>,
     participantNames: Map<String, String>,
-    canActOnBehalf: Boolean = false,
-    claimedParticipantIds: Set<String> = emptySet(),
 ): List<SettlementCandidate> = currentParticipantId?.let { currentId ->
     debts.mapNotNull { debt ->
         val candidateId = when (direction) {
-            SettlementDirection.TRANSFER -> debt.creditorParticipantId.takeIf { canActOnBehalf || debt.debtorParticipantId == currentId }
-            SettlementDirection.RECEIVE -> debt.debtorParticipantId.takeIf { canActOnBehalf || debt.creditorParticipantId == currentId }
+            SettlementDirection.TRANSFER -> debt.creditorParticipantId.takeIf { debt.debtorParticipantId == currentId }
+            SettlementDirection.RECEIVE -> debt.debtorParticipantId.takeIf { debt.creditorParticipantId == currentId }
         }
         val amount = debt.amount.toBigDecimalOrNull()
         candidateId?.let { id ->
@@ -133,36 +138,53 @@ internal fun selectSettlementCandidates(
                     participantName = name,
                     amount = amount,
                     fromParticipantId = fromId,
-                    fromParticipantName = participantNames[fromId],
+                    fromParticipantName = participantNames[fromId] ?: return@let null,
                     toParticipantId = toId,
-                    toParticipantName = participantNames[toId],
-                    onBehalfOptions = listOf(fromId, toId).distinct()
-                        .filter { it !in claimedParticipantIds }
-                        .mapNotNull { participantId -> participantNames[participantId]?.let { SettlementParticipant(participantId, it) } },
+                    toParticipantName = participantNames[toId] ?: return@let null,
                 )
             } else null
         }
     }
-}.orEmpty().let { claimedCandidates ->
-    if (currentParticipantId != null || !canActOnBehalf) claimedCandidates
-    else debts.mapNotNull { debt ->
+}.orEmpty()
+
+internal fun selectOnBehalfSettlementCandidates(
+    currentParticipantId: String?,
+    direction: SettlementDirection,
+    debts: List<BilateralDebtRowDto>,
+    participantNames: Map<String, String>,
+    canActOnBehalf: Boolean,
+    claimedParticipantIds: Set<String>,
+): List<SettlementCandidate> {
+    if (!canActOnBehalf) return emptyList()
+    return debts.mapNotNull { debt ->
         val fromId = debt.debtorParticipantId
         val toId = debt.creditorParticipantId
-        val id = toId
+        if (currentParticipantId == fromId || currentParticipantId == toId) return@mapNotNull null
+        val actingParticipantId = when (direction) {
+            SettlementDirection.TRANSFER -> fromId
+            SettlementDirection.RECEIVE -> toId
+        }
+        if (actingParticipantId in claimedParticipantIds) return@mapNotNull null
+        val id = when (direction) {
+            SettlementDirection.TRANSFER -> toId
+            SettlementDirection.RECEIVE -> fromId
+        }
         val amount = debt.amount.toBigDecimalOrNull() ?: return@mapNotNull null
+        if (amount <= BigDecimal.ZERO) return@mapNotNull null
         val name = participantNames[id] ?: return@mapNotNull null
+        val fromName = participantNames[fromId] ?: return@mapNotNull null
+        val toName = participantNames[toId] ?: return@mapNotNull null
         SettlementCandidate(
             participantId = id,
             participantName = name,
             amount = amount,
             fromParticipantId = fromId,
-            fromParticipantName = participantNames[fromId],
+            fromParticipantName = fromName,
             toParticipantId = toId,
-            toParticipantName = participantNames[toId],
-            onBehalfOptions = listOf(fromId, toId).distinct()
-                .filter { it !in claimedParticipantIds }
-                .mapNotNull { participantId -> participantNames[participantId]?.let { SettlementParticipant(participantId, it) } },
-        ).takeIf { it.onBehalfOptions.isNotEmpty() }
+            toParticipantName = toName,
+            kind = SettlementCandidateKind.ON_BEHALF,
+            onBehalfOptions = listOf(SettlementParticipant(actingParticipantId, participantNames.getValue(actingParticipantId))),
+        )
     }
 }
 

@@ -11,14 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowForward
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -31,12 +27,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.components.AmountDisplay
 import com.ffocalors.sharedledger.ui.components.AmountSize
-import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
@@ -50,7 +44,6 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
-import com.ffocalors.sharedledger.ui.theme.SurfaceWarmHigh
 import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLow
 import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLowest
 import com.ffocalors.sharedledger.ui.theme.WarmBrown
@@ -103,6 +96,15 @@ data class FinalSettlementParticipantOption(
     val participantId: String,
     val participantName: String,
 )
+
+internal const val FinalSettlementPlanExplanation =
+    "系统已汇总全部未结账目，并按每位参与人的净应收、净应付生成转账方案。"
+
+internal fun FinalSettlementSuggestionUi.directionLabel(): String =
+    "${from.name} → ${to.name}"
+
+internal fun FinalSettlementSuggestionUi.paymentInstruction(): String =
+    "${from.name} 向 ${to.name} 转账"
 
 private fun FinalSettlementSuggestionUi.toRequest(activityId: String, onBehalfOfParticipantId: String?): FinalSettlementRequest =
     FinalSettlementRequest(
@@ -225,7 +227,7 @@ fun FinalSettlementScreen(
                             color = MaterialTheme.colorScheme.onSurface,
                         )
                         Text(
-                            text = "根据当前全部未结账目计算",
+                            text = FinalSettlementPlanExplanation,
                             style = SharedLedgerTextStyles.BodySecondary,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -304,29 +306,52 @@ private fun SettlementSuggestionCard(
             MaterialTheme.colorScheme.outlineVariant,
         ),
     ) {
-        Row(
+        Column(
             modifier = Modifier.padding(SharedLedgerSpacing.Medium),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
         ) {
-            Column(
-                modifier = Modifier.weight(1f),
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
                 ) {
-                    ParticipantAvatar(name = suggestion.from.name, backgroundColor = SurfaceWarmHigh, size = SharedLedgerDimens.AvatarMedium)
-                    Icon(Icons.AutoMirrored.Rounded.ArrowForward, contentDescription = "转给", modifier = Modifier.size(SharedLedgerDimens.IconSmall), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    ParticipantAvatar(name = suggestion.to.name, backgroundColor = SurfaceWarmHigh, size = SharedLedgerDimens.AvatarMedium)
-                    Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(start = SharedLedgerSpacing.XSmall)) {
-                        AmountDisplay(amount = suggestion.amount, currencyCode = suggestion.currency, fractionDigitsOverride = 1, size = AmountSize.Small)
-                        Text("账务版本 v${suggestion.sourceFinancialVersion}", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
+                    Text(
+                        text = suggestion.directionLabel(),
+                        style = SharedLedgerTextStyles.CardTitle,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        text = suggestion.paymentInstruction(),
+                        style = SharedLedgerTextStyles.Label,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
-                if (suggestion.onBehalfOptions.isNotEmpty()) {
+                Column(horizontalAlignment = Alignment.End) {
+                    AmountDisplay(
+                        amount = suggestion.amount,
+                        currencyCode = suggestion.currency,
+                        fractionDigitsOverride = 1,
+                        size = AmountSize.Small,
+                    )
+                    Text(
+                        "账务版本 v${suggestion.sourceFinancialVersion}",
+                        style = SharedLedgerTextStyles.Label,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            if (suggestion.onBehalfOptions.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall)) {
+                    Text(
+                        "选择代记人（不会改变上方转账双方）",
+                        style = SharedLedgerTextStyles.Label,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall)) {
-                        item(key = "on-behalf-label") { Text("代记", style = SharedLedgerTextStyles.Label) }
                         items(suggestion.onBehalfOptions, key = { it.participantId }) { option ->
                             TextButton(onClick = { selectedOnBehalfId = option.participantId }) {
                                 Text(if (selectedOnBehalfId == option.participantId) "✓ ${option.participantName}" else option.participantName)
@@ -335,10 +360,16 @@ private fun SettlementSuggestionCard(
                     }
                 }
             }
-            if (onExecute == null) {
-                SuggestionBadge("只读方案 · v${suggestion.sourceFinancialVersion}")
-            } else {
-                TextButton(onClick = { onExecute(selectedOnBehalfId) }) { Text("执行") }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (onExecute == null) {
+                    SuggestionBadge("只读方案 · v${suggestion.sourceFinancialVersion}")
+                } else {
+                    TextButton(onClick = { onExecute(selectedOnBehalfId) }) { Text("记录已转账") }
+                }
             }
         }
     }

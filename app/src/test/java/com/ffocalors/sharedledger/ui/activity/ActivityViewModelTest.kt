@@ -196,6 +196,82 @@ class ActivityViewModelTest {
     }
 
     @Test
+    fun confirmedDeleteRemovesHomeDetailAndScopedReadCachesWithoutRefreshingDeletedDetail() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeActivityRepository(summary).apply { activities = listOf(summary) }
+        val cache = SessionQueryCache(refreshScope = this)
+        val viewModel = ActivityViewModel(repository, "user-1", FakeParticipantExpenseShareRepository(), cache)
+
+        viewModel.loadHome()
+        viewModel.loadDetail("activity-1")
+        advanceUntilIdle()
+        val cachedKeys = listOf(
+            "expense-query:user-1:activity:activity-1:CNY",
+            "expense-query:user-1:detail:expense-1",
+            "financial-query:list:activity-1",
+            "financial-query:detail:activity-1:transfer-1",
+            "financial-query:context:activity-1",
+            "financial-query:preview:activity-1",
+            "transfer-query:activity-1:TRANSFER",
+            "attachment-query:activity-1:ledger:unit-1",
+        )
+        cachedKeys.forEach { key -> cache.getOrLoad(QueryCacheKey<String>(key)) { Result.success("old") } }
+
+        var navigated = false
+        viewModel.deleteActivity("activity-1") { navigated = true }
+        advanceUntilIdle()
+
+        assertEquals(1, repository.deleteCalls.get())
+        assertTrue(navigated)
+        assertEquals("活动已删除", viewModel.message.value)
+        assertTrue(viewModel.home.value.activities.isEmpty())
+        assertNull(viewModel.detail("activity-1").value.detail)
+        cachedKeys.forEach { key -> assertEquals(QueryCacheState.Miss, cache.read(QueryCacheKey<String>(key)).state) }
+    }
+
+    @Test
+    fun confirmedDeleteFiltersAStaleInFlightHomeRead() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeActivityRepository(summary).apply { activities = listOf(summary) }
+        val viewModel = ActivityViewModel(repository, "user-1", FakeParticipantExpenseShareRepository())
+        viewModel.loadHome()
+        advanceUntilIdle()
+
+        val gate = CompletableDeferred<Result<List<ActivitySummary>>>()
+        repository.listGate = gate
+        viewModel.refreshHome()
+        runCurrent()
+        viewModel.deleteActivity("activity-1")
+        advanceUntilIdle()
+        gate.complete(Result.success(listOf(summary)))
+        advanceUntilIdle()
+
+        assertTrue(viewModel.home.value.activities.isEmpty())
+    }
+
+    @Test
+    fun deleteTransportFailureIsReportedAsUnknownAndDoesNotNavigate() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeActivityRepository(summary).apply {
+            activities = listOf(summary)
+            deleteResult = Result.failure(
+                ActivityOperationException("network timeout", kind = ActivityFailureKind.Network),
+            )
+        }
+        val viewModel = ActivityViewModel(repository, "user-1", FakeParticipantExpenseShareRepository())
+        viewModel.loadHome()
+        advanceUntilIdle()
+
+        var navigated = false
+        viewModel.deleteActivity("activity-1") { navigated = true }
+        advanceUntilIdle()
+
+        assertFalse(navigated)
+        assertEquals("删除结果未知，请刷新活动列表确认", viewModel.message.value)
+        assertEquals("activity-1", viewModel.home.value.activities.single().activityId)
+    }
+
+    @Test
     fun deniedActivityClearsItsScopedSessionReadCaches() = runTest(dispatcher) {
         Dispatchers.setMain(dispatcher)
         val repository = FakeActivityRepository(summary)
@@ -492,6 +568,8 @@ class ActivityViewModelTest {
         var memberParticipantId: String = "p"
         var lastUpdatedBaseCurrency: String? = null
         val deleteParticipantCalls = AtomicInteger()
+        val deleteCalls = AtomicInteger()
+        var deleteResult: Result<Unit> = Result.success(Unit)
         override suspend fun listActivities() = listGate?.await() ?: Result.success(activities)
         override suspend fun getActivity(activityId: String): Result<ActivityDetail> {
             detailCalls.incrementAndGet()
@@ -535,7 +613,10 @@ class ActivityViewModelTest {
             unarchiveCalls.incrementAndGet()
             return Result.success(Unit)
         }
-        override suspend fun deleteActivity(activityId: String) = Result.success(Unit)
+        override suspend fun deleteActivity(activityId: String): Result<Unit> {
+            deleteCalls.incrementAndGet()
+            return deleteResult
+        }
         override suspend fun removeMember(activityId: String, userId: String) = Result.success(Unit)
         override suspend fun transferCreator(activityId: String, newCreatorUserId: String) = Result.success(Unit)
     }

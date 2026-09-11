@@ -1,6 +1,8 @@
 package com.ffocalors.sharedledger.ui.screens
 
 import java.math.BigDecimal
+import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -23,6 +25,26 @@ class FinalSettlementRequestTest {
         assertFalse(request.copy(amount = BigDecimal("319.00")).isValid())
         assertFalse(request.copy(sourceFinancialVersion = -1L).isValid())
         assertFalse(request.copy(currency = "cny").isValid())
+    }
+
+    @Test
+    fun finalSettlementPresentationNamesBothTransferPartiesAndExplainsNetting() {
+        val suggestion = FinalSettlementSuggestionUi(
+            id = "whr-to-zhy",
+            fromParticipantId = "whr-id",
+            toParticipantId = "zhy-id",
+            from = ParticipantUiModel("whr"),
+            to = ParticipantUiModel("zhy"),
+            amount = BigDecimal("95.9"),
+            currency = "CNY",
+            ordinaryAmount = BigDecimal("95.9"),
+            prepaymentReturnAmount = BigDecimal.ZERO,
+            sourceFinancialVersion = 6L,
+        )
+
+        assertEquals("whr → zhy", suggestion.directionLabel())
+        assertEquals("whr 向 zhy 转账", suggestion.paymentInstruction())
+        assertTrue(FinalSettlementPlanExplanation.contains("净应收、净应付"))
     }
 
     @Test

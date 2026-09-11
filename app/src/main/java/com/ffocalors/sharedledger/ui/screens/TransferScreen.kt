@@ -63,6 +63,7 @@ import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLowest
 import com.ffocalors.sharedledger.ui.util.MoneyFormatter
 import com.ffocalors.sharedledger.ui.transfer.TransferCandidateUi
 import com.ffocalors.sharedledger.ui.transfer.TransferUiState
+import com.ffocalors.sharedledger.data.transfer.SettlementCandidateKind
 import com.ffocalors.sharedledger.data.transfer.SettlementParticipant
 import java.math.BigDecimal
 
@@ -77,8 +78,13 @@ private data class TransferParticipant(
     val participantId: String,
     val participant: ParticipantUiModel,
     val amount: BigDecimal,
+    val fromParticipantName: String,
+    val toParticipantName: String,
+    val kind: SettlementCandidateKind,
     val onBehalfOptions: List<SettlementParticipant> = emptyList(),
 )
+
+private enum class TransferCandidateScope { PERSONAL, ON_BEHALF }
 
 data class TransferDraft(
     val activityId: String,
@@ -107,7 +113,12 @@ fun TransferScreen(
     var selectedIndex by rememberSaveable(mode) { mutableIntStateOf(0) }
     var amountText by rememberSaveable(mode) { mutableStateOf("") }
     var selectedOnBehalfId by rememberSaveable(mode) { mutableStateOf<String?>(null) }
-    val participants = state.candidates.mapIndexed { index, candidate ->
+    var candidateScope by rememberSaveable(mode) { mutableStateOf(TransferCandidateScope.PERSONAL) }
+    val activeCandidates = when (candidateScope) {
+        TransferCandidateScope.PERSONAL -> state.candidates
+        TransferCandidateScope.ON_BEHALF -> state.onBehalfCandidates
+    }
+    val participants = activeCandidates.mapIndexed { index, candidate ->
         TransferParticipant(
             candidateKey = candidate.candidateKey,
             participantId = candidate.participantId,
@@ -116,17 +127,28 @@ fun TransferScreen(
                 if (index % 2 == 0) IconContainerSage else IconContainerOrange,
             ),
             amount = candidate.amount,
+            fromParticipantName = candidate.fromParticipantName,
+            toParticipantName = candidate.toParticipantName,
+            kind = candidate.kind,
             onBehalfOptions = candidate.onBehalfOptions,
         )
     }
     val selected = participants.getOrNull(selectedIndex)
-    LaunchedEffect(mode, state.candidates) {
+    LaunchedEffect(mode, state.candidates, state.onBehalfCandidates) {
+        candidateScope = when {
+            state.candidates.isEmpty() && state.onBehalfCandidates.isNotEmpty() -> TransferCandidateScope.ON_BEHALF
+            state.currentParticipantId == null && state.canActOnBehalf -> TransferCandidateScope.ON_BEHALF
+            state.onBehalfCandidates.isEmpty() -> TransferCandidateScope.PERSONAL
+            else -> candidateScope
+        }
+    }
+    LaunchedEffect(mode, candidateScope, activeCandidates) {
         selectedIndex = selectedIndex.coerceIn(0, (participants.size - 1).coerceAtLeast(0))
         amountText = participants.getOrNull(selectedIndex)?.amount?.toPlainString().orEmpty()
         selectedOnBehalfId = null
     }
-    LaunchedEffect(selected?.participantId, selected?.onBehalfOptions) {
-        if (state.currentParticipantId == null && selected?.onBehalfOptions?.isNotEmpty() == true) {
+    LaunchedEffect(selected?.candidateKey, selected?.onBehalfOptions) {
+        if (selected?.kind == SettlementCandidateKind.ON_BEHALF && selected.onBehalfOptions.isNotEmpty()) {
             selectedOnBehalfId = selected.onBehalfOptions.first().participantId
         }
     }
@@ -157,7 +179,7 @@ fun TransferScreen(
             when {
                 state.isLoading -> TransferStateMessage("正在加载真实债务…", onBack)
                 state.errorMessage != null -> TransferErrorMessage(state.errorMessage, onBack, onRetry)
-                state.emptyMessage != null || selected == null -> TransferEmptyMessage(state.emptyMessage ?: "当前没有可结算的债务", onBack, onRetry)
+                state.emptyMessage != null -> TransferEmptyMessage(state.emptyMessage, onBack, onRetry)
                 else -> Column(
                     modifier = Modifier
                         .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
@@ -171,51 +193,104 @@ fun TransferScreen(
                         ),
                     verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
                 ) {
+                    if (state.canActOnBehalf) {
+                        CandidateScopePicker(
+                            selected = candidateScope,
+                            onSelected = { candidateScope = it },
+                        )
+                    }
+
                     Text(
-                        text = if (isTransfer) "你需要付款给" else "当前欠你钱的人",
+                        text = when (candidateScope) {
+                            TransferCandidateScope.PERSONAL -> if (isTransfer) "你需要付款给" else "当前欠你钱的人"
+                            TransferCandidateScope.ON_BEHALF -> if (isTransfer) "代记他人付款" else "代记他人收款"
+                        },
                         style = SharedLedgerTextStyles.PageTitle,
                         color = MaterialTheme.colorScheme.onBackground,
                     )
 
-                    ParticipantPicker(
-                        participants = participants,
-                        selectedIndex = selectedIndex,
-                        currencyCode = state.baseCurrency,
-                        onSelected = { index ->
-                            selectedIndex = index
-                            amountText = participants[index].amount.toPlainString()
-                            selectedOnBehalfId = null
-                        },
-                    )
+                    if (candidateScope == TransferCandidateScope.ON_BEHALF) {
+                        Text(
+                            text = "以下是他人之间的债务，请核对付款方和收款方。",
+                            style = SharedLedgerTextStyles.BodySecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
 
-                    TransferAmountCard(
-                        mode = mode,
-                        selected = selected,
-                        amountText = amountText,
-                        isAmountValid = isAmountValid,
-                        currencyCode = state.baseCurrency,
-                        isSubmitting = state.isSubmitting,
-                        canActOnBehalf = state.canActOnBehalf,
-                        currentParticipantId = state.currentParticipantId,
-                        onBehalfOptions = selected.onBehalfOptions,
-                        selectedOnBehalfId = selectedOnBehalfId,
-                        onBehalfOfParticipantIdChanged = { selectedOnBehalfId = it },
-                        onAmountChange = { amountText = sanitizeCnyAmount(it) },
-                        onConfirm = onConfirm?.let { callback -> {
-                            callback(
-                                TransferDraft(
-                                    activityId = activityId,
-                                    ledgerUnitId = ledgerUnitId,
-                                    mode = mode,
-                                    participantId = selected.participantId,
-                                    amount = amountText,
-                                    onBehalfOfParticipantId = selectedOnBehalfId,
-                                    candidateKey = selected.candidateKey,
-                                ),
-                            )
-                        } },
-                    )
+                    if (selected == null) {
+                        Text(
+                            text = if (candidateScope == TransferCandidateScope.PERSONAL) "当前没有个人债务" else "当前没有可代记债务",
+                            style = SharedLedgerTextStyles.BodySecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    } else {
+                        ParticipantPicker(
+                            participants = participants,
+                            selectedIndex = selectedIndex,
+                            currencyCode = state.baseCurrency,
+                            onSelected = { index ->
+                                selectedIndex = index
+                                amountText = participants[index].amount.toPlainString()
+                                selectedOnBehalfId = participants[index].onBehalfOptions.firstOrNull()?.participantId
+                            },
+                        )
+
+                        TransferAmountCard(
+                            mode = mode,
+                            selected = selected,
+                            amountText = amountText,
+                            isAmountValid = isAmountValid,
+                            currencyCode = state.baseCurrency,
+                            isSubmitting = state.isSubmitting,
+                            canActOnBehalf = state.canActOnBehalf,
+                            currentParticipantId = state.currentParticipantId,
+                            onBehalfOptions = selected.onBehalfOptions,
+                            selectedOnBehalfId = selectedOnBehalfId,
+                            onBehalfOfParticipantIdChanged = { selectedOnBehalfId = it },
+                            onAmountChange = { amountText = sanitizeCnyAmount(it) },
+                            onConfirm = onConfirm?.let { callback -> {
+                                callback(
+                                    TransferDraft(
+                                        activityId = activityId,
+                                        ledgerUnitId = ledgerUnitId,
+                                        mode = mode,
+                                        participantId = selected.participantId,
+                                        amount = amountText,
+                                        onBehalfOfParticipantId = selectedOnBehalfId,
+                                        candidateKey = selected.candidateKey,
+                                    ),
+                                )
+                            } },
+                        )
+                    }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CandidateScopePicker(
+    selected: TransferCandidateScope,
+    onSelected: (TransferCandidateScope) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+    ) {
+        TransferCandidateScope.entries.forEach { scope ->
+            Surface(
+                modifier = Modifier.weight(1f).clickable { onSelected(scope) },
+                shape = SharedLedgerRadius.Full,
+                color = if (selected == scope) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmLow,
+                border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant),
+            ) {
+                Text(
+                    text = if (scope == TransferCandidateScope.PERSONAL) "我的结算" else "代记结算",
+                    modifier = Modifier.padding(SharedLedgerSpacing.Small),
+                    style = SharedLedgerTextStyles.Label,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
             }
         }
     }
@@ -296,7 +371,11 @@ private fun ParticipantPicker(
                             }
                         }
                         Text(
-                            text = item.participant.name,
+                            text = if (item.kind == SettlementCandidateKind.ON_BEHALF) {
+                                "${item.fromParticipantName} → ${item.toParticipantName}"
+                            } else {
+                                item.participant.name
+                            },
                             style = SharedLedgerTextStyles.Body,
                             color = if (selected) {
                                 MaterialTheme.colorScheme.onPrimaryContainer
@@ -351,7 +430,13 @@ private fun TransferAmountCard(
             verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
         ) {
             Text(
-                text = if (isTransfer) "转给 ${selected.participant.name}" else "向 ${selected.participant.name} 收款",
+                text = if (selected.kind == SettlementCandidateKind.ON_BEHALF) {
+                    "${selected.fromParticipantName} 向 ${selected.toParticipantName} 付款"
+                } else if (isTransfer) {
+                    "转给 ${selected.participant.name}"
+                } else {
+                    "向 ${selected.participant.name} 收款"
+                },
                 style = SharedLedgerTextStyles.CardTitle,
                 color = MaterialTheme.colorScheme.onSurface,
             )
@@ -371,7 +456,9 @@ private fun TransferAmountCard(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             )
             Text(
-                text = if (isTransfer) {
+                text = if (selected.kind == SettlementCandidateKind.ON_BEHALF) {
+                    "当前债务 ${MoneyFormatter.format(selected.amount, currencyCode, 1)}"
+                } else if (isTransfer) {
                     "最多可转 ${MoneyFormatter.format(selected.amount, currencyCode, 1)}"
                 } else {
                     "当前欠款 ${MoneyFormatter.format(selected.amount, currencyCode, 1)}"
@@ -393,14 +480,20 @@ private fun TransferAmountCard(
             if (canActOnBehalf && onBehalfOptions.isNotEmpty()) {
                 OnBehalfPicker(
                     options = onBehalfOptions,
-                    currentParticipantId = currentParticipantId,
+                    currentParticipantId = currentParticipantId.takeIf { selected.kind == SettlementCandidateKind.PERSONAL },
                     selectedId = selectedOnBehalfId,
                     onSelected = onBehalfOfParticipantIdChanged,
                 )
             }
             onConfirm?.let { callback ->
                 SharedLedgerButton(
-                    text = if (isTransfer) "确认已转账" else "确认已收款",
+                    text = if (selected.kind == SettlementCandidateKind.ON_BEHALF) {
+                        "确认代记已付款"
+                    } else if (isTransfer) {
+                        "确认已转账"
+                    } else {
+                        "确认已收款"
+                    },
                     onClick = callback,
                     enabled = isAmountValid && !isSubmitting,
                     loading = isSubmitting,
@@ -525,7 +618,17 @@ private fun TransferScreenPreview() {
             activityId = "preview",
             state = TransferUiState(
                 isLoading = false,
-                candidates = listOf(TransferCandidateUi("preview-bob", "李四", BigDecimal("300.0"))),
+                candidates = listOf(
+                    TransferCandidateUi(
+                        participantId = "preview-bob",
+                        participantName = "李四",
+                        amount = BigDecimal("300.0"),
+                        fromParticipantId = "preview-me",
+                        fromParticipantName = "我",
+                        toParticipantId = "preview-bob",
+                        toParticipantName = "李四",
+                    ),
+                ),
             ),
         )
     }
@@ -540,7 +643,17 @@ private fun ReceiveScreenPreview() {
             activityId = "preview",
             state = TransferUiState(
                 isLoading = false,
-                candidates = listOf(TransferCandidateUi("preview-alice", "张三", BigDecimal("120.0"))),
+                candidates = listOf(
+                    TransferCandidateUi(
+                        participantId = "preview-alice",
+                        participantName = "张三",
+                        amount = BigDecimal("120.0"),
+                        fromParticipantId = "preview-alice",
+                        fromParticipantName = "张三",
+                        toParticipantId = "preview-me",
+                        toParticipantName = "我",
+                    ),
+                ),
             ),
         )
     }

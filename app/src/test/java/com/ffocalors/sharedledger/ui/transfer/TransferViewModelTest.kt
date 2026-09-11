@@ -2,6 +2,7 @@ package com.ffocalors.sharedledger.ui.transfer
 
 import com.ffocalors.sharedledger.data.transfer.CreateSettlementTransferInput
 import com.ffocalors.sharedledger.data.transfer.SettlementCandidate
+import com.ffocalors.sharedledger.data.transfer.SettlementCandidateKind
 import com.ffocalors.sharedledger.data.transfer.SettlementContext
 import com.ffocalors.sharedledger.data.transfer.SettlementDirection
 import com.ffocalors.sharedledger.data.transfer.SettlementParticipant
@@ -124,7 +125,8 @@ class TransferViewModelTest {
         )
         advanceUntilIdle()
 
-        assertEquals("debtor", repository.lastInput?.currentParticipantId)
+        assertEquals("debtor", repository.lastInput?.fromParticipantId)
+        assertEquals("creditor", repository.lastInput?.toParticipantId)
         assertEquals("debtor", repository.lastInput?.onBehalfOfParticipantId)
         assertEquals(1, repository.createCalls.get())
     }
@@ -149,9 +151,8 @@ class TransferViewModelTest {
         )
         advanceUntilIdle()
 
-        assertEquals("creditor", repository.lastInput?.currentParticipantId)
-        assertEquals("debtor", repository.lastInput?.selectedParticipantId)
-        assertEquals(SettlementDirection.RECEIVE, repository.lastInput?.direction)
+        assertEquals("debtor", repository.lastInput?.fromParticipantId)
+        assertEquals("creditor", repository.lastInput?.toParticipantId)
     }
 
     @Test
@@ -170,13 +171,40 @@ class TransferViewModelTest {
                 participantId = "creditor",
                 amount = "20.0",
                 onBehalfOfParticipantId = "debtor-b",
-                candidateKey = "debtor-b->creditor",
+                candidateKey = "ON_BEHALF:debtor-b->creditor",
             ),
         )
         advanceUntilIdle()
 
         assertEquals(BigDecimal("20.0"), repository.lastInput?.amount)
-        assertEquals("debtor-b", repository.lastInput?.currentParticipantId)
+        assertEquals("debtor-b", repository.lastInput?.fromParticipantId)
+        assertEquals("creditor", repository.lastInput?.toParticipantId)
+    }
+
+    @Test
+    fun boundCreatorOnBehalfSubmissionPreservesHzlToWhrEndpoints() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = BoundCreatorTransferRepository()
+        val viewModel = TransferViewModel(repository)
+        viewModel.load("activity-1", SettlementDirection.TRANSFER)
+        advanceUntilIdle()
+
+        viewModel.submit(
+            TransferDraft(
+                activityId = "activity-1",
+                ledgerUnitId = null,
+                mode = TransferMode.TRANSFER,
+                participantId = "whr",
+                amount = "52.0",
+                onBehalfOfParticipantId = "hzl",
+                candidateKey = "ON_BEHALF:hzl->whr",
+            ),
+        )
+        advanceUntilIdle()
+
+        assertEquals("hzl", repository.lastInput?.fromParticipantId)
+        assertEquals("whr", repository.lastInput?.toParticipantId)
+        assertEquals("hzl", repository.lastInput?.onBehalfOfParticipantId)
     }
 
     private class FakeTransferRepository : TransferRepository {
@@ -189,7 +217,17 @@ class TransferViewModelTest {
                 currentParticipantId = "debtor",
                 currentParticipantName = "我",
                 baseCurrency = "CNY",
-                candidates = listOf(SettlementCandidate("creditor", "Alice", BigDecimal("30.0"))),
+                candidates = listOf(
+                    SettlementCandidate(
+                        participantId = "creditor",
+                        participantName = "Alice",
+                        amount = BigDecimal("30.0"),
+                        fromParticipantId = "debtor",
+                        fromParticipantName = "我",
+                        toParticipantId = "creditor",
+                        toParticipantName = "Alice",
+                    ),
+                ),
             ),
         ).also { loadContextCalls++ }
 
@@ -210,13 +248,16 @@ class TransferViewModelTest {
                 currentParticipantName = null,
                 baseCurrency = "CNY",
                 canActOnBehalf = true,
-                candidates = listOf(
+                onBehalfCandidates = listOf(
                     SettlementCandidate(
                         participantId = if (direction == SettlementDirection.RECEIVE) "debtor" else "creditor",
                         participantName = if (direction == SettlementDirection.RECEIVE) "Debtor" else "Creditor",
                         amount = BigDecimal("30.0"),
                         fromParticipantId = "debtor",
+                        fromParticipantName = "Debtor",
                         toParticipantId = "creditor",
+                        toParticipantName = "Creditor",
+                        kind = SettlementCandidateKind.ON_BEHALF,
                         onBehalfOptions = listOf(SettlementParticipant("debtor", "Debtor")),
                     ),
                 ),
@@ -240,13 +281,16 @@ class TransferViewModelTest {
                 currentParticipantName = null,
                 baseCurrency = "CNY",
                 canActOnBehalf = true,
-                candidates = listOf(
+                onBehalfCandidates = listOf(
                     SettlementCandidate(
                         participantId = "creditor",
                         participantName = "Creditor",
                         amount = BigDecimal("10.0"),
                         fromParticipantId = "debtor-a",
+                        fromParticipantName = "Debtor A",
                         toParticipantId = "creditor",
+                        toParticipantName = "Creditor",
+                        kind = SettlementCandidateKind.ON_BEHALF,
                         onBehalfOptions = listOf(SettlementParticipant("debtor-a", "Debtor A")),
                     ),
                     SettlementCandidate(
@@ -254,8 +298,43 @@ class TransferViewModelTest {
                         participantName = "Creditor",
                         amount = BigDecimal("20.0"),
                         fromParticipantId = "debtor-b",
+                        fromParticipantName = "Debtor B",
                         toParticipantId = "creditor",
+                        toParticipantName = "Creditor",
+                        kind = SettlementCandidateKind.ON_BEHALF,
                         onBehalfOptions = listOf(SettlementParticipant("debtor-b", "Debtor B")),
+                    ),
+                ),
+            ),
+        )
+
+        override suspend fun createSettlement(input: CreateSettlementTransferInput): Result<SettlementTransferResult> {
+            lastInput = input
+            return Result.success(SettlementTransferResult("transfer-1", input.amount, "CNY", 2))
+        }
+    }
+
+    private class BoundCreatorTransferRepository : TransferRepository {
+        var lastInput: CreateSettlementTransferInput? = null
+
+        override suspend fun loadContext(activityId: String, direction: SettlementDirection) = Result.success(
+            SettlementContext(
+                activityId = activityId,
+                currentParticipantId = "zhy",
+                currentParticipantName = "zhy",
+                baseCurrency = "CNY",
+                canActOnBehalf = true,
+                onBehalfCandidates = listOf(
+                    SettlementCandidate(
+                        participantId = "whr",
+                        participantName = "whr",
+                        amount = BigDecimal("52.0"),
+                        fromParticipantId = "hzl",
+                        fromParticipantName = "hzl",
+                        toParticipantId = "whr",
+                        toParticipantName = "whr",
+                        kind = SettlementCandidateKind.ON_BEHALF,
+                        onBehalfOptions = listOf(SettlementParticipant("hzl", "hzl")),
                     ),
                 ),
             ),

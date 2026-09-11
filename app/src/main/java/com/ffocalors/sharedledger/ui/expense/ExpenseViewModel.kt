@@ -26,7 +26,9 @@ import com.ffocalors.sharedledger.data.common.shouldRemoveCachedRead
 import com.ffocalors.sharedledger.ui.components.ExpenseCardUiModel
 import com.ffocalors.sharedledger.ui.screens.ExpenseDetailStatus
 import com.ffocalors.sharedledger.ui.screens.ExpenseDetailUiState
+import com.ffocalors.sharedledger.ui.screens.ExpensePaymentUiState
 import com.ffocalors.sharedledger.ui.screens.ExpenseSettlement
+import com.ffocalors.sharedledger.ui.screens.ExpenseSplitMethodUi
 import com.ffocalors.sharedledger.ui.screens.ExpenseSplitUiState
 import com.ffocalors.sharedledger.ui.util.UiDateTimeFormatter
 import com.ffocalors.sharedledger.ui.cache.QueryCacheKey
@@ -166,7 +168,10 @@ class ExpenseViewModel(
             )
             return
         }
-        val existing = cached.value ?: state.value.detail
+        // Keep an authoritative state already rendered by this route (for example the
+        // server-confirmed delete/restore result) ahead of a stale cache entry. Otherwise
+        // an invalidated cache can briefly overwrite the new status while refreshing.
+        val existing = state.value.detail ?: cached.value
         viewModelScope.launch {
             state.value = state.value.copy(
                 isLoading = existing == null,
@@ -325,35 +330,48 @@ class ExpenseViewModel(
         viewModelScope.launch {
             val result = action()
             if (result.isSuccess || (result.isCommitted && result.value != null)) {
-                    val committed = result.isCommitted
-                    _form.value = if (committed) {
-                        ExpenseFormUiState(
-                            errorMessage = result.errorMessage
-                                ?: "账单已保存，但最新详情暂时无法刷新，请稍后刷新确认",
-                            writeState = result.state,
-                        )
-                    } else {
-                        ExpenseFormUiState()
-                    }
-                    val current = detailStates[expenseId]?.value?.detail
-                    if (current != null) refreshAfterMutation(current.ledgerUnit.activityId, current.expense.ledgerUnitId, expenseId)
-                    detailStates.getOrPut(expenseId) { MutableStateFlow(ExpenseDetailRouteState()) }.value =
-                        detailStates[expenseId]!!.value.copy(
-                            actionMessage = if (committed) {
-                                result.errorMessage ?: "账单已保存，但最新详情暂时无法刷新，请稍后刷新确认"
-                            } else {
-                                successMessage
-                            },
-                        )
-                    loadDetail(expenseId, force = true)
-            } else {
-                    _form.value = ExpenseFormUiState(
-                        errorMessage = result.errorMessage ?: "账单操作失败",
-                        submissionBlocked = result.isUnknown,
+                val committed = result.isCommitted
+                val mutation = result.value
+                _form.value = if (committed) {
+                    ExpenseFormUiState(
+                        errorMessage = result.errorMessage
+                            ?: "账单已保存，但最新详情暂时无法刷新，请稍后刷新确认",
                         writeState = result.state,
                     )
+                } else {
+                    ExpenseFormUiState()
+                }
+                val current = detailStates[expenseId]?.value?.detail
+                val confirmedDetail = current?.let { detail ->
+                    mutation?.changed?.let { isDeleted ->
+                        detail.copy(expense = detail.expense.copy(isDeleted = isDeleted, version = mutation.version))
+                    }
+                }
+                if (confirmedDetail != null) {
                     detailStates.getOrPut(expenseId) { MutableStateFlow(ExpenseDetailRouteState()) }.value =
-                        detailStates[expenseId]!!.value.copy(actionMessage = result.errorMessage ?: "账单操作失败")
+                        detailStates[expenseId]!!.value.copy(
+                            detail = confirmedDetail,
+                            errorMessage = null,
+                        )
+                }
+                if (current != null) refreshAfterMutation(current.ledgerUnit.activityId, current.expense.ledgerUnitId, expenseId)
+                detailStates.getOrPut(expenseId) { MutableStateFlow(ExpenseDetailRouteState()) }.value =
+                    detailStates[expenseId]!!.value.copy(
+                        actionMessage = if (committed) {
+                            result.errorMessage ?: "账单已保存，但最新详情暂时无法刷新，请稍后刷新确认"
+                        } else {
+                            successMessage
+                        },
+                    )
+                loadDetail(expenseId, force = true)
+            } else {
+                _form.value = ExpenseFormUiState(
+                    errorMessage = result.errorMessage ?: "账单操作失败",
+                    submissionBlocked = result.isUnknown,
+                    writeState = result.state,
+                )
+                detailStates.getOrPut(expenseId) { MutableStateFlow(ExpenseDetailRouteState()) }.value =
+                    detailStates[expenseId]!!.value.copy(actionMessage = result.errorMessage ?: "账单操作失败")
             }
         }
     }
@@ -603,9 +621,10 @@ internal fun Expense.toExpenseCardUiModel(
     isDeleted = isDeleted,
 )
 
-fun ExpenseDetail.toUiState(): ExpenseDetailUiState {
+fun ExpenseDetail.toUiState(currentParticipantId: String? = null): ExpenseDetailUiState {
     val names = participants.associateBy { it.id }
-    val payerNames = payments.mapNotNull { names[it.participantId]?.name }.distinct()
+    val nonZeroPayments = payments.filter { it.amount.compareTo(BigDecimal.ZERO) != 0 }
+    val payerIds = nonZeroPayments.mapTo(mutableSetOf()) { it.participantId }
     return ExpenseDetailUiState(
         expenseId = expense.id,
         title = expense.title,
@@ -617,19 +636,29 @@ fun ExpenseDetail.toUiState(): ExpenseDetailUiState {
         occurredAt = UiDateTimeFormatter.format(expense.occurredAt),
         ledgerUnit = ledgerUnit.name,
         note = expense.note.orEmpty(),
-        payer = payerNames.ifEmpty { listOf("未知付款人") }.joinToString("、"),
-        payerIsCurrentUser = false,
+        payments = nonZeroPayments.map { payment ->
+            ExpensePaymentUiState(
+                participant = names[payment.participantId]?.name ?: payment.participantId,
+                amount = (payment.baseAmount ?: payment.amount.multiply(expense.fxRate)).toPlainString(),
+                isCurrentUser = payment.participantId == currentParticipantId,
+            )
+        },
+        splitMethod = when (expense.splitMethod) {
+            ExpenseSplitMethod.Aa -> ExpenseSplitMethodUi.Aa
+            ExpenseSplitMethod.Manual -> ExpenseSplitMethodUi.Manual
+        },
         splits = splits.map { split ->
             val remainingDebt = debtSettlements
                 .filter { it.debtorParticipantId == split.participantId }
                 .fold(BigDecimal.ZERO) { total, debt -> total + debt.remainingAmount }
             ExpenseSplitUiState(
                 participant = names[split.participantId]?.name ?: split.participantId,
-                owedAmount = split.amount.abs().toPlainString(),
+                owedAmount = (split.baseAmount ?: split.amount.multiply(expense.fxRate)).abs().toPlainString(),
                 settlement = if (remainingDebt <= BigDecimal.ZERO) ExpenseSettlement.Paid else ExpenseSettlement.Pending,
                 paidAmount = null,
                 netAdvance = null,
-                isPayer = payments.any { it.participantId == split.participantId },
+                isCurrentUser = split.participantId == currentParticipantId,
+                isPayer = split.participantId in payerIds,
             )
         },
         attachments = emptyList(),

@@ -69,6 +69,8 @@ class ActivityViewModel(
     private val _join = MutableStateFlow(JoinActivityUiState())
     val join: StateFlow<JoinActivityUiState> = _join.asStateFlow()
     private var joinedActivityIdValue: String? = null
+    // A confirmed delete must win over any read that was already in flight.
+    private val deletedActivityIds = mutableSetOf<String>()
     private val _actionLoading = MutableStateFlow(false)
     val actionLoading: StateFlow<Boolean> = _actionLoading.asStateFlow()
     private val _message = MutableStateFlow<String?>(null)
@@ -180,11 +182,12 @@ class ActivityViewModel(
             _home.value = ActivityHomeUiState(
                 isLoading = false,
                 isRefreshing = false,
-                activities = cached.value,
+                activities = cached.value.filterNot { it.activityId in deletedActivityIds },
             )
             return
         }
-        val existing = cached.value ?: _home.value.activities
+        val existing = (cached.value ?: _home.value.activities)
+            .filterNot { it.activityId in deletedActivityIds }
         viewModelScope.launch {
             _home.value = _home.value.copy(
                 isLoading = existing.isEmpty(),
@@ -195,8 +198,9 @@ class ActivityViewModel(
             val result = queryCache.getOrLoad(key, forceRefresh = true) {
                 repository.listActivities().fold(
                     onSuccess = { summaries ->
+                        val visibleSummaries = summaries.filterNot { it.id in deletedActivityIds }
                         val cardResults = mapConcurrentlyPreservingOrder(
-                            summaries,
+                            visibleSummaries,
                             maxConcurrency = 4,
                         ) { summary ->
                             participantExpenseShareRepository.getForActivity(summary.id, currentUserId).fold(
@@ -212,7 +216,8 @@ class ActivityViewModel(
                         if (firstFailure >= 0) {
                             Result.failure(cardResults[firstFailure].exceptionOrNull()!!)
                         } else {
-                            Result.success(cardResults.map { it.getOrThrow() })
+                            Result.success(cardResults.map { it.getOrThrow() }
+                                .filterNot { it.activityId in deletedActivityIds })
                         }
                     },
                     onFailure = { Result.failure(it) },
@@ -223,7 +228,7 @@ class ActivityViewModel(
                     _home.value = ActivityHomeUiState(
                         isLoading = false,
                         isRefreshing = false,
-                        activities = cards,
+                        activities = cards.filterNot { it.activityId in deletedActivityIds },
                     )
                 },
                 onFailure = { error ->
@@ -266,6 +271,7 @@ class ActivityViewModel(
                     val summariesResult = repository.listActivities()
                     if (summariesResult.isFailure) return@getOrLoad Result.failure(summariesResult.exceptionOrNull()!!)
                     val summaries = summariesResult.getOrThrow()
+                        .filterNot { it.id in deletedActivityIds }
                     val detailResults = mapConcurrentlyPreservingOrder(
                         summaries,
                         maxConcurrency = 4,
@@ -315,6 +321,14 @@ class ActivityViewModel(
 
     fun loadDetail(activityId: String, force: Boolean = false) {
         val state = detailStates.getOrPut(activityId) { MutableStateFlow(ActivityDetailUiState()) }
+        if (activityId in deletedActivityIds) {
+            state.value = ActivityDetailUiState(
+                isLoading = false,
+                detail = null,
+                errorMessage = "活动已删除",
+            )
+            return
+        }
         val key = detailCacheKey(activityId)
         val cached = queryCache.read(key)
         if (!force && cached.state == QueryCacheState.Fresh && cached.value != null) {
@@ -336,6 +350,14 @@ class ActivityViewModel(
             val result = queryCache.getOrLoad(key, forceRefresh = true) { repository.getActivity(activityId) }
             result.fold(
                 onSuccess = {
+                    if (activityId in deletedActivityIds) {
+                        state.value = ActivityDetailUiState(
+                            isLoading = false,
+                            detail = null,
+                            errorMessage = "活动已删除",
+                        )
+                        return@fold
+                    }
                     state.value = ActivityDetailUiState(
                         isLoading = false,
                         isRefreshing = false,
@@ -508,7 +530,41 @@ class ActivityViewModel(
     }
 
     fun archiveActivity(activityId: String, onSuccess: () -> Unit = {}) = lifecycleAction(activityId, onSuccess) { repository.archiveActivity(activityId) }
-    fun deleteActivity(activityId: String, onSuccess: () -> Unit = {}) = lifecycleAction(activityId, onSuccess) { repository.deleteActivity(activityId) }
+
+    /**
+     * Deletion is terminal for this session. Do not start the usual detail
+     * refresh after the RPC: a confirmed delete is expected to make that read
+     * return not-found, which must not be surfaced as a delete failure.
+     */
+    fun deleteActivity(activityId: String, onSuccess: () -> Unit = {}) {
+        if (_actionLoading.value) return
+        viewModelScope.launch {
+            _actionLoading.value = true
+            repository.deleteActivity(activityId).fold(
+                onSuccess = {
+                    deletedActivityIds += activityId
+                    removeDeletedActivitySessionData(activityId)
+                    _message.value = "活动已删除"
+                    onSuccess()
+                },
+                onFailure = { error ->
+                    // A transport failure can happen after the RPC committed. Keep
+                    // the card until confirmation and tell the user the result is
+                    // unknown instead of claiming that deletion did not happen.
+                    val kind = (error as? ActivityOperationException)?.kind
+                    _message.value = if (kind == ActivityFailureKind.Network) {
+                        "删除结果未知，请刷新活动列表确认"
+                    } else {
+                        messageFor(error)
+                    }
+                    if (kind == ActivityFailureKind.Network) {
+                        invalidateActivityCaches(activityId)
+                    }
+                },
+            )
+            _actionLoading.value = false
+        }
+    }
     fun removeMember(activityId: String, userId: String) = lifecycleAction(activityId) { repository.removeMember(activityId, userId) }
 
     private fun isParticipantListLocked(activityId: String): Boolean =
@@ -579,6 +635,33 @@ class ActivityViewModel(
 
     /** Remove every scoped read model after access is denied or the activity disappears. */
     private fun clearActivitySessionData(activityId: String, errorMessage: String) {
+        removeActivityScopedSessionCaches(activityId)
+        _home.value = _home.value.copy(
+            activities = _home.value.activities.filterNot { it.activityId == activityId },
+        )
+        _personalOverview.value = PersonalOverviewUiState(
+            isLoading = false,
+            errorMessage = errorMessage,
+        )
+    }
+
+    private fun removeDeletedActivitySessionData(activityId: String) {
+        removeActivityScopedSessionCaches(activityId)
+        _home.value = _home.value.copy(
+            activities = _home.value.activities.filterNot { it.activityId == activityId },
+            errorMessage = null,
+        )
+        detailStates[activityId]?.value = ActivityDetailUiState(
+            isLoading = false,
+            detail = null,
+            errorMessage = "活动已删除",
+        )
+        // The overview is derived from activity details; do not retain counts
+        // that include the deleted activity until the next explicit refresh.
+        _personalOverview.value = PersonalOverviewUiState()
+    }
+
+    private fun removeActivityScopedSessionCaches(activityId: String) {
         queryCache.remove(detailCacheKey(activityId))
         queryCache.remove(homeCacheKey())
         queryCache.remove(personalOverviewCacheKey())
@@ -591,13 +674,6 @@ class ActivityViewModel(
         queryCache.removePrefix("financial-query:preview:$activityId")
         queryCache.removePrefix("transfer-query:$activityId:")
         queryCache.removePrefix("attachment-query:$activityId:")
-        _home.value = _home.value.copy(
-            activities = _home.value.activities.filterNot { it.activityId == activityId },
-        )
-        _personalOverview.value = PersonalOverviewUiState(
-            isLoading = false,
-            errorMessage = errorMessage,
-        )
     }
 
     private fun homeCacheKey() = QueryCacheKey<List<ActivityCardUiModel>>("activity-query:$currentUserId:home")

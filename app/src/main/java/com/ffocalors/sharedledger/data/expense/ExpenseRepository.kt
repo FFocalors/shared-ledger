@@ -135,10 +135,16 @@ class SupabaseExpenseRepository(private val client: SupabaseClient) : ExpenseRep
         writeAndConfirm { update(input) }
 
     override suspend fun deleteWrite(expenseId: String): ExpenseWriteResult<ExpenseMutationResult> =
-        writeAndConfirm { delete(expenseId) }
+        writeAndConfirm(
+            expectedDeleted = true,
+            committedMessage = "账单已作废，但最新状态暂时无法确认，请稍后刷新确认，勿重复提交",
+        ) { delete(expenseId) }
 
     override suspend fun restoreWrite(expenseId: String): ExpenseWriteResult<ExpenseMutationResult> =
-        writeAndConfirm { restore(expenseId) }
+        writeAndConfirm(
+            expectedDeleted = false,
+            committedMessage = "账单已恢复，但最新状态暂时无法确认，请稍后刷新确认，勿重复提交",
+        ) { restore(expenseId) }
 
     override suspend fun refundWrite(input: RefundExpenseInput): ExpenseWriteResult<ExpenseMutationResult> =
         writeAndConfirm { refund(input) }
@@ -160,23 +166,39 @@ class SupabaseExpenseRepository(private val client: SupabaseClient) : ExpenseRep
     )
 
     private suspend fun writeAndConfirm(
+        expectedDeleted: Boolean? = null,
+        committedMessage: String = "账单已保存，但最新详情暂时无法刷新，请稍后刷新确认，勿重复提交",
         block: suspend () -> Result<ExpenseMutationResult>,
     ): ExpenseWriteResult<ExpenseMutationResult> {
         val mutation = block().toExpenseWriteResult()
         val value = mutation.value ?: return mutation
         if (!mutation.isSuccess) return mutation
         return getDetail(value.expenseId).fold(
-            onSuccess = { mutation },
+            onSuccess = { detail ->
+                if (detail.expense.hasExpectedDeletionState(expectedDeleted)) {
+                    mutation
+                } else {
+                    ExpenseWriteResult.committedRefreshFailure(
+                        operationId = value.expenseId,
+                        message = committedMessage,
+                        value = value,
+                    )
+                }
+            },
             onFailure = {
                 ExpenseWriteResult.committedRefreshFailure(
                     operationId = value.expenseId,
-                    message = "账单已保存，但最新详情暂时无法刷新，请稍后刷新确认，勿重复提交",
+                    message = committedMessage,
                     value = value,
                 )
             },
         )
     }
 }
+
+/** Exact post-write confirmation used by delete/restore without coupling the UI to RPC fields. */
+internal fun Expense.hasExpectedDeletionState(expectedDeleted: Boolean?): Boolean =
+    expectedDeleted == null || isDeleted == expectedDeleted
 
 internal fun <T> Result<T>.toExpenseWriteResult(): ExpenseWriteResult<T> = fold(
     onSuccess = { ExpenseWriteResult.success(it) },

@@ -23,6 +23,7 @@ import com.ffocalors.sharedledger.data.expense.RefundExpenseInput
 import com.ffocalors.sharedledger.data.expense.Split
 import com.ffocalors.sharedledger.data.expense.UpdateExpenseInput
 import com.ffocalors.sharedledger.ui.screens.createDefaultExpenseDraft
+import com.ffocalors.sharedledger.ui.screens.ExpenseSplitMethodUi
 import com.ffocalors.sharedledger.ui.screens.formatExpenseDetailAmount
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -62,7 +63,9 @@ class ExpenseViewModelTest {
         assertFalse(viewModel.detailState("expense-real").value.isLoading)
         assertFalse(viewModel.detailState("expense-real").value.isRefreshing)
         val uiState = viewModel.detailState("expense-real").value.detail!!.toUiState()
-        assertEquals("Alice、Bob", uiState.payer)
+        assertEquals(listOf("Alice"), uiState.payments.map { it.participant })
+        assertTrue(uiState.payments.none { it.isCurrentUser })
+        assertEquals(ExpenseSplitMethodUi.Manual, uiState.splitMethod)
         assertTrue(uiState.splits.all { it.settlement.name == "Paid" })
         assertTrue(uiState.attachments.isEmpty())
 
@@ -105,6 +108,7 @@ class ExpenseViewModelTest {
                     baseAmount = BigDecimal("12.34"),
                     originalAmount = BigDecimal("10.00"),
                     originalCurrency = "EUR",
+                    fxRate = BigDecimal("1.234"),
                 ),
             )
         }
@@ -115,6 +119,67 @@ class ExpenseViewModelTest {
         assertEquals("USD", uiState.currencyCode)
         assertEquals("10.00", uiState.originalAmount)
         assertEquals("EUR", uiState.originalCurrencyCode)
+        assertEquals("12.340", uiState.payments.single().amount)
+        assertEquals("6.170", uiState.splits.first().owedAmount)
+    }
+
+    @Test
+    fun detailIdentityUsesClaimedParticipantInsteadOfPayer() = runTest(dispatcher) {
+        val repository = FakeExpenseRepository()
+        val source = repository.getDetail("expense-real").getOrThrow()
+        val detail = source.copy(
+            expense = source.expense.copy(
+                title = "晚餐",
+                originalAmount = BigDecimal("156.2"),
+                baseAmount = BigDecimal("156.2"),
+                splitMethod = ExpenseSplitMethod.Aa,
+            ),
+            payments = listOf(Payment("payment-whr", "expense-real", "whr", BigDecimal("156.2"), BigDecimal("156.2"))),
+            splits = listOf(
+                Split("split-whr", "expense-real", "whr", BigDecimal("52.0667"), BigDecimal("52.1")),
+                Split("split-zhy", "expense-real", "zhy", BigDecimal("52.0667"), BigDecimal("52.1")),
+                Split("split-hzl", "expense-real", "hzl", BigDecimal("52.0666"), BigDecimal("52.0")),
+            ),
+            participants = listOf(
+                com.ffocalors.sharedledger.data.expense.ExpenseParticipant("whr", "activity-real", "whr", 0),
+                com.ffocalors.sharedledger.data.expense.ExpenseParticipant("zhy", "activity-real", "zhy", 1),
+                com.ffocalors.sharedledger.data.expense.ExpenseParticipant("hzl", "activity-real", "hzl", 2),
+            ),
+        )
+
+        val uiState = detail.toUiState(currentParticipantId = "zhy")
+        val splits = uiState.splits.associateBy { it.participant }
+
+        assertEquals(ExpenseSplitMethodUi.Aa, uiState.splitMethod)
+        assertEquals(listOf("whr"), uiState.payments.map { it.participant })
+        assertFalse(uiState.payments.single().isCurrentUser)
+        assertTrue(splits.getValue("whr").isPayer)
+        assertFalse(splits.getValue("whr").isCurrentUser)
+        assertFalse(splits.getValue("zhy").isPayer)
+        assertTrue(splits.getValue("zhy").isCurrentUser)
+        assertEquals("52.1", splits.getValue("whr").owedAmount)
+        assertEquals("52.1", splits.getValue("zhy").owedAmount)
+        assertEquals("52.0", splits.getValue("hzl").owedAmount)
+    }
+
+    @Test
+    fun detailMapperKeepsEachPayerAndAmountSeparate() = runTest(dispatcher) {
+        val repository = FakeExpenseRepository()
+        val source = repository.getDetail("expense-real").getOrThrow()
+        val detail = source.copy(
+            payments = listOf(
+                Payment("payment-a", "expense-real", "participant-a", BigDecimal("4"), BigDecimal("4.0")),
+                Payment("payment-b", "expense-real", "participant-b", BigDecimal("6"), BigDecimal("6.0")),
+            ),
+        )
+
+        val uiState = detail.toUiState(currentParticipantId = "participant-b")
+
+        assertEquals(listOf("Alice", "Bob"), uiState.payments.map { it.participant })
+        assertEquals(listOf("4.0", "6.0"), uiState.payments.map { it.amount })
+        assertEquals(listOf(false, true), uiState.payments.map { it.isCurrentUser })
+        assertTrue(uiState.splits.all { it.isPayer })
+        assertEquals(ExpenseSplitMethodUi.Manual, uiState.splitMethod)
     }
 
     @Test
@@ -484,6 +549,50 @@ class ExpenseViewModelTest {
     }
 
     @Test
+    fun committedDeleteKeepsAuthoritativeDeletedStateWhenDetailRefreshFails() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeExpenseRepository()
+        val viewModel = ExpenseViewModel(repository, "user-1", dynamicShareRepository(repository))
+
+        viewModel.loadDetail("expense-real")
+        advanceUntilIdle()
+        repository.listExpenses = repository.listExpenses.map { it.copy(isDeleted = true) }
+        repository.detailResult = Result.failure(ExpenseOperationException("网络暂时不可用", IOException("timeout")))
+        repository.deleteWriteResult = ExpenseWriteResult.committedRefreshFailure(
+            operationId = "expense-real",
+            message = "账单已作废，但最新状态暂时无法确认，请稍后刷新确认，勿重复提交",
+            value = ExpenseMutationResult("expense-real", null, 2, true),
+        )
+
+        viewModel.delete("expense-real")
+        advanceUntilIdle()
+
+        assertFalse(viewModel.form.value.isSubmitting)
+        assertFalse(viewModel.form.value.submissionBlocked)
+        assertEquals(ExpenseWriteState.COMMITTED_REFRESH_FAILED, viewModel.form.value.writeState)
+        assertEquals(true, viewModel.detailState("expense-real").value.detail?.expense?.isDeleted)
+        assertEquals("账单已作废，但最新状态暂时无法确认，请稍后刷新确认，勿重复提交", viewModel.detailState("expense-real").value.actionMessage)
+    }
+
+    @Test
+    fun unknownDeleteBlocksBlindRetry() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeExpenseRepository().apply {
+            deleteWriteResult = ExpenseWriteResult.unknown("账单写入结果未知，请先刷新账单确认，勿重复提交")
+        }
+        val viewModel = ExpenseViewModel(repository, "user-1", fakeShareRepository(repository))
+
+        viewModel.delete("expense-real")
+        advanceUntilIdle()
+        viewModel.delete("expense-real")
+        advanceUntilIdle()
+
+        assertEquals(1, repository.deleteCalls.get())
+        assertTrue(viewModel.form.value.submissionBlocked)
+        assertEquals(ExpenseWriteState.UNKNOWN, viewModel.form.value.writeState)
+    }
+
+    @Test
     fun independentRefundDoesNotRequireOriginalExpense() = runTest(dispatcher) {
         Dispatchers.setMain(dispatcher)
         val repository = FakeExpenseRepository()
@@ -589,6 +698,7 @@ private class FakeExpenseRepository : ExpenseRepository {
     var lastUpdate: UpdateExpenseInput? = null
     var lastRefund: RefundExpenseInput? = null
     var createWriteResult: ExpenseWriteResult<ExpenseMutationResult>? = null
+    var deleteWriteResult: ExpenseWriteResult<ExpenseMutationResult>? = null
     var detailResult: Result<ExpenseDetail>? = null
     var listExpenses: List<Expense> = listOf(expense)
     val activityIncludeDeleted = mutableListOf<Boolean>()
@@ -626,6 +736,13 @@ private class FakeExpenseRepository : ExpenseRepository {
         deleteCalls.incrementAndGet()
         listExpenses = listExpenses.map { if (it.id == expenseId) it.copy(isDeleted = true) else it }
         return Result.success(ExpenseMutationResult(expenseId, null, 3, true))
+    }
+    override suspend fun deleteWrite(expenseId: String): ExpenseWriteResult<ExpenseMutationResult> {
+        deleteWriteResult?.let {
+            deleteCalls.incrementAndGet()
+            return it
+        }
+        return delete(expenseId).toExpenseWriteResult()
     }
     override suspend fun restore(expenseId: String): Result<ExpenseMutationResult> {
         restoreCalls.incrementAndGet()

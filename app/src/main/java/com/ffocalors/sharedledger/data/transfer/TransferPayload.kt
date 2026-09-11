@@ -7,8 +7,8 @@ import kotlinx.serialization.json.put
 internal object SettlementRpcPayloadBuilder {
     fun create(input: CreateSettlementTransferInput) = buildJsonObject {
         put("activity_id", input.activityId)
-        put("from_participant_id", input.fromParticipantId())
-        put("to_participant_id", input.toParticipantId())
+        put("from_participant_id", input.fromParticipantId)
+        put("to_participant_id", input.toParticipantId)
         put("amount", input.amount.toPlainString())
         put("occurred_at", input.occurredAt)
         if (input.onBehalfOfParticipantId == null) {
@@ -16,15 +16,5 @@ internal object SettlementRpcPayloadBuilder {
         } else {
             put("on_behalf_of_participant_id", input.onBehalfOfParticipantId)
         }
-    }
-
-    private fun CreateSettlementTransferInput.fromParticipantId(): String = when (direction) {
-        SettlementDirection.TRANSFER -> currentParticipantId
-        SettlementDirection.RECEIVE -> selectedParticipantId
-    }
-
-    private fun CreateSettlementTransferInput.toParticipantId(): String = when (direction) {
-        SettlementDirection.TRANSFER -> selectedParticipantId
-        SettlementDirection.RECEIVE -> currentParticipantId
     }
 }

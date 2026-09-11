@@ -39,6 +39,21 @@ internal suspend fun <T, R> mapConcurrentlyPreservingOrder(
     }
 }
 
+/** A missing or logically deleted row confirms that the delete RPC took effect. */
+internal fun isDeleteConfirmedByRows(rows: List<ActivityRowDto>): Boolean =
+    rows.firstOrNull()?.isDeleted != false
+
+/** Detail reads must reject a logically deleted activity even if RLS exposes its row. */
+internal fun requireVisibleActivity(activity: ActivityRowDto): ActivityRowDto {
+    if (activity.isDeleted) {
+        throw ActivityOperationException(
+            userMessage = "活动不存在或已被删除",
+            kind = ActivityFailureKind.NotFound,
+        )
+    }
+    return activity
+}
+
 interface ActivityRepository {
     suspend fun listActivities(): Result<List<ActivitySummary>>
     suspend fun getActivity(activityId: String): Result<ActivityDetail>
@@ -73,6 +88,7 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
         val activity = client.from("activities").select {
             filter { eq("id", activityId) }
         }.decodeSingle<ActivityRowDto>()
+        requireVisibleActivity(activity)
         coroutineScope {
             // These reads only depend on the activity id and can run together.
             val participantsDeferred = async { loadParticipants(activityId) }
@@ -193,7 +209,28 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
     }.mapFailure()
 
     override suspend fun deleteActivity(activityId: String): Result<Unit> = runCatching {
-        client.postgrest.rpc("delete_activity", buildJsonObject { put("activity_id", activityId) }).decodeSingle<Boolean>()
+        val rpcResponse = client.postgrest.rpc("delete_activity", buildJsonObject { put("activity_id", activityId) })
+        val deleted = runCatching { rpcResponse.decodeAs<Boolean>() }.getOrElse { decodeError ->
+            // A committed RPC can still fail while decoding an unexpected scalar
+            // response. Confirm the write before surfacing a failure. An empty
+            // RLS result or a visible soft-deleted row both prove the write.
+            if (ActivityErrorMapper.failureKind(decodeError) != ActivityFailureKind.Other) {
+                throw decodeError
+            }
+            val confirmation = runCatching {
+                client.from("activities").select {
+                    filter { eq("id", activityId) }
+                }.decodeList<ActivityRowDto>()
+            }
+            if (confirmation.isSuccess) {
+                if (isDeleteConfirmedByRows(confirmation.getOrThrow())) true else throw decodeError
+            } else {
+                throw decodeError
+            }
+        }
+        if (!deleted) {
+            throw ActivityOperationException("删除未执行，服务器未确认删除")
+        }
         Unit
     }.mapFailure()
 
@@ -270,6 +307,7 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
         onSuccess = { Result.success(it) },
         onFailure = {
             if (it is CancellationException) throw it
+            if (it is ActivityOperationException) return@fold Result.failure(it)
             Result.failure(
                 ActivityOperationException(
                     userMessage = ActivityErrorMapper.toUserMessage(it),

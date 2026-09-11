@@ -276,13 +276,13 @@ select pg_temp.assert_true(
 select pg_temp.assert_true(
   (
     select array_agg(s.base_amount order by p.participant_order, p.id)
-           = array[33.3, 33.3, 33.4]::numeric[]
+           = array[33.4, 33.3, 33.3]::numeric[]
     from public.splits as s
     join public.participants as p on p.id = s.participant_id
     join phase2c_expense_ids as t on t.expense_id = s.expense_id
     where t.label = 'base_aa'
   ),
-  'AA base amounts must allocate 100 / 3 as 33.3, 33.3, 33.4'
+  'AA base amounts must distribute the 0.1 remainder by deterministic participant order'
 );
 
 select pg_temp.assert_true(
@@ -312,13 +312,13 @@ select pg_temp.assert_true(
 select pg_temp.assert_true(
   (
     select array_agg(s.base_amount order by p.participant_order, p.id)
-           = array[-24.1, -24.1, -24.3]::numeric[]
+           = array[-24.2, -24.2, -24.1]::numeric[]
     from public.splits as s
     join public.participants as p on p.id = s.participant_id
     join phase2c_expense_ids as t on t.expense_id = s.expense_id
     where t.label = 'negative_refund'
   ),
-  'negative AA base amounts must conserve sign and put the tail last'
+  'negative AA base amounts must conserve sign and distribute remainder by participant order'
 );
 
 select pg_temp.assert_true(

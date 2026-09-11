@@ -101,13 +101,20 @@ data class ExpenseDetailUiState(
     val occurredAt: String = "",
     val ledgerUnit: String = "",
     val note: String = "",
-    val payer: String = "",
-    val payerIsCurrentUser: Boolean = false,
+    val payments: List<ExpensePaymentUiState> = emptyList(),
+    val splitMethod: ExpenseSplitMethodUi = ExpenseSplitMethodUi.Aa,
     val splits: List<ExpenseSplitUiState> = emptyList(),
     val attachments: List<ExpenseAttachmentUiState> = emptyList(),
     val status: ExpenseDetailStatus = ExpenseDetailStatus.Deleted,
     val actionMessage: String? = null,
     val attachmentMessage: String? = null,
+)
+
+@Immutable
+data class ExpensePaymentUiState(
+    val participant: String,
+    val amount: String,
+    val isCurrentUser: Boolean = false,
 )
 
 @Immutable
@@ -117,8 +124,14 @@ data class ExpenseSplitUiState(
     val settlement: ExpenseSettlement = ExpenseSettlement.Pending,
     val paidAmount: String? = null,
     val netAdvance: String? = null,
+    val isCurrentUser: Boolean = false,
     val isPayer: Boolean = false,
 )
+
+enum class ExpenseSplitMethodUi {
+    Aa,
+    Manual,
+}
 
 @Immutable
 data class ExpenseAttachmentUiState(
@@ -170,8 +183,8 @@ private val PreviewExpenseDetail = ExpenseDetailUiState(
     occurredAt = "2023年10月24日 19:30",
     ledgerUnit = "周末聚餐",
     note = "庆祝项目上线聚餐",
-    payer = "Alice",
-    payerIsCurrentUser = true,
+    payments = listOf(ExpensePaymentUiState("Alice", "450", isCurrentUser = true)),
+    splitMethod = ExpenseSplitMethodUi.Aa,
     splits = previewExpenseSplits(),
 )
 
@@ -290,7 +303,14 @@ fun ExpenseDetailScreen(
                     }
                 }
                 item(key = "split") {
-                    ExpenseSection(title = "分摊详情", icon = Icons.Rounded.PieChart) {
+                    ExpenseSection(
+                        title = "分摊详情",
+                        icon = Icons.Rounded.PieChart,
+                        badge = when (uiState.splitMethod) {
+                            ExpenseSplitMethodUi.Aa -> "AA 平摊"
+                            ExpenseSplitMethodUi.Manual -> "手动分摊"
+                        },
+                    ) {
                         SplitCard(splits = uiState.splits, currencyCode = uiState.currencyCode)
                     }
                 }
@@ -420,6 +440,7 @@ private fun ExpenseHeroCard(uiState: ExpenseDetailUiState) {
 private fun ExpenseSection(
     title: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
+    badge: String? = null,
     content: @Composable () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -430,10 +451,10 @@ private fun ExpenseSection(
         ) {
             Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
             Text(title, style = SharedLedgerTextStyles.SectionTitle, color = MaterialTheme.colorScheme.primary)
-            if (title == "分摊详情") {
+            if (badge != null) {
                 Surface(shape = RoundedCornerShape(4.dp), color = WarmOrangeContainer) {
                     Text(
-                        "AA 平摊",
+                        badge,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                         style = SharedLedgerTextStyles.Label,
                         color = WarmBrown,
@@ -456,24 +477,34 @@ private fun expenseAvatarRes(name: String, isPayer: Boolean = false): Int = when
 @Composable
 private fun PaymentCard(uiState: ExpenseDetailUiState) {
     DetailCard {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            ParticipantAvatar(
-                name = uiState.payer,
-                image = painterResource(expenseAvatarRes(uiState.payer)),
-                size = SharedLedgerDimens.AvatarMedium,
-            )
-            Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
-                Text(
-                    text = if (uiState.payerIsCurrentUser) "${uiState.payer} (我)" else uiState.payer,
-                    style = SharedLedgerTextStyles.Body,
-                    fontWeight = FontWeight.Medium,
-                )
-                Text("垫付总计", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            uiState.payments.forEachIndexed { index, payment ->
+                if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    ParticipantAvatar(
+                        name = payment.participant,
+                        image = painterResource(expenseAvatarRes(payment.participant, isPayer = true)),
+                        size = SharedLedgerDimens.AvatarMedium,
+                    )
+                    Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
+                        Text(
+                            text = payment.participant + if (payment.isCurrentUser) "（我）" else "",
+                            style = SharedLedgerTextStyles.Body,
+                            fontWeight = FontWeight.Medium,
+                        )
+                        Text("垫付方", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Text(
+                        formatExpenseDetailAmount(payment.amount, uiState.currencyCode),
+                        style = SharedLedgerTextStyles.Body,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Medium,
+                    )
+                }
             }
-            Text(formatExpenseDetailAmount(uiState.amount, uiState.currencyCode), style = SharedLedgerTextStyles.Body, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
         }
     }
 }
@@ -514,7 +545,7 @@ private fun SplitRow(split: ExpenseSplitUiState, currencyCode: String) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Text(split.participant + if (split.isPayer) " (我)" else "", style = SharedLedgerTextStyles.Body, fontWeight = FontWeight.Medium)
+                Text(split.participant + if (split.isCurrentUser) "（我）" else "", style = SharedLedgerTextStyles.Body, fontWeight = FontWeight.Medium)
                 if (split.isPayer) {
                     Surface(shape = RoundedCornerShape(4.dp), color = SurfaceWarmHigh) {
                         Text("垫付方", modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp), style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)

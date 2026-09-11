@@ -5,6 +5,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.math.BigDecimal
 
@@ -30,6 +31,9 @@ class ExpenseDtoTest {
         assertEquals(BigDecimal("1.0000000001"), expense.fxRate)
         assertEquals(BigDecimal("1234567890123456.1"), expense.baseAmount)
         assertFalse(expense.isDeleted)
+        assertTrue(expense.hasExpectedDeletionState(false))
+        assertFalse(expense.hasExpectedDeletionState(true))
+        assertTrue(expense.hasExpectedDeletionState(null))
     }
 
     @Test
