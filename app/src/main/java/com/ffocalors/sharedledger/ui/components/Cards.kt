@@ -30,7 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
@@ -548,11 +547,7 @@ fun ExpenseCard(
             },
         shape = SharedLedgerRadius.Large,
         colors = CardDefaults.cardColors(
-            containerColor = if (expense.isDeleted) {
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
-            } else {
-                MaterialTheme.colorScheme.surface
-            },
+            containerColor = MaterialTheme.colorScheme.surface,
         ),
         border = BorderStroke(
             SharedLedgerDimens.OutlineWidth,
@@ -562,8 +557,7 @@ fun ExpenseCard(
     ) {
         Row(
             modifier = Modifier
-                .padding(SharedLedgerSpacing.Medium)
-                .alpha(if (expense.isDeleted) 0.68f else 1f),
+                .padding(SharedLedgerSpacing.Medium),
             horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -588,20 +582,19 @@ fun ExpenseCard(
                     .weight(1f)
                     .widthIn(min = 0.dp),
             ) {
-                Text(
-                    text = expense.name,
-                    style = SharedLedgerTextStyles.Body,
-                    color = if (expense.isDeleted) {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    },
-                )
-                if (expense.isDeleted) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = expense.name,
+                        modifier = Modifier.weight(1f),
+                        style = SharedLedgerTextStyles.Body,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    )
+                    if (expense.isDeleted) {
                         Surface(
                             shape = SharedLedgerRadius.Full,
                             color = MaterialTheme.colorScheme.errorContainer,
@@ -616,23 +609,22 @@ fun ExpenseCard(
                                 style = SharedLedgerTextStyles.Label,
                             )
                         }
-                        Text(
-                            text = "不计入统计",
-                            style = SharedLedgerTextStyles.Label,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
                     }
                 }
                 Text(
                     text = "${expense.payerName}付款 · ${expense.participantCount}人参与",
                     style = SharedLedgerTextStyles.Label,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                 )
                 expense.time?.let {
                     Text(
                         text = it,
                         style = SharedLedgerTextStyles.Label,
                         color = MaterialTheme.colorScheme.outline,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     )
                 }
                 if (expense.participants.isNotEmpty()) {

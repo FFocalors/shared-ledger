@@ -25,6 +25,8 @@ internal object ExpenseDtoMappers {
         updatedAt = dto.updatedAt,
         version = dto.version,
         isDeleted = dto.isDeleted,
+        fxRateSource = dto.fxRateSource,
+        fxRateObservedAt = dto.fxRateObservedAt,
     )
 
     fun payment(dto: PaymentRowDto) = Payment(dto.id, dto.expenseId, dto.participantId,

@@ -12,6 +12,7 @@ import com.ffocalors.sharedledger.data.activity.ActivityRepository
 import com.ffocalors.sharedledger.data.activity.ActivityFinancialStatus
 import com.ffocalors.sharedledger.data.activity.LedgerUnit
 import com.ffocalors.sharedledger.data.activity.Participant
+import com.ffocalors.sharedledger.data.activity.SubActivityLifecycleResult
 import com.ffocalors.sharedledger.data.expense.ParticipantExpenseShareRepository
 import com.ffocalors.sharedledger.data.expense.ParticipantExpenseShareSnapshot
 import com.ffocalors.sharedledger.ui.screens.JoinActivityStatus
@@ -387,6 +388,47 @@ class ActivityViewModelTest {
     }
 
     @Test
+    fun managementStateListsDeletedSubActivitiesAndDeleteRefreshesState() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val sub = LedgerUnit("sub-1", "activity-1", "门票", "sub_activity")
+        val deleted = sub.copy(isDeleted = true, deletedAt = "2026-09-13T12:00:00Z", deletedBy = "user-2")
+        val repository = FakeActivityRepository(summary).apply {
+            detailOverride = {
+                detailFor(summary).copy(ledgerUnits = listOf(sub), deletedLedgerUnits = listOf(deleted))
+            }
+        }
+        val viewModel = ActivityViewModel(repository, "user-1")
+
+        viewModel.loadDetail("activity-1")
+        advanceUntilIdle()
+        assertEquals("门票", viewModel.managementState("activity-1")?.deletedSubActivities?.single()?.name)
+
+        var navigated = false
+        viewModel.deleteSubActivity("activity-1", "sub-1") { navigated = true }
+        advanceUntilIdle()
+        assertEquals(1, repository.deleteSubActivityCalls.get())
+        assertTrue(navigated)
+        assertEquals("子活动已删除，可在活动管理中恢复", viewModel.message.value)
+    }
+
+    @Test
+    fun restoreSubActivityUsesRepositoryAndRefreshesDetail() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val deleted = LedgerUnit("sub-1", "activity-1", "门票", "sub_activity", isDeleted = true)
+        val repository = FakeActivityRepository(summary).apply {
+            detailOverride = { detailFor(summary).copy(deletedLedgerUnits = listOf(deleted)) }
+        }
+        val viewModel = ActivityViewModel(repository, "user-1")
+        viewModel.loadDetail("activity-1")
+        advanceUntilIdle()
+
+        viewModel.restoreSubActivity("activity-1", "sub-1")
+        advanceUntilIdle()
+        assertEquals(1, repository.restoreSubActivityCalls.get())
+        assertEquals("子活动已恢复", viewModel.message.value)
+    }
+
+    @Test
     fun archivedManagementStateIsReadOnlyButExposesCreatorUnarchiveAction() = runTest(dispatcher) {
         Dispatchers.setMain(dispatcher)
         val archived = summary.copy(archivedAt = "2026-09-07T10:00:00Z")
@@ -568,6 +610,8 @@ class ActivityViewModelTest {
         var memberParticipantId: String = "p"
         var lastUpdatedBaseCurrency: String? = null
         val deleteParticipantCalls = AtomicInteger()
+        val deleteSubActivityCalls = AtomicInteger()
+        val restoreSubActivityCalls = AtomicInteger()
         val deleteCalls = AtomicInteger()
         var deleteResult: Result<Unit> = Result.success(Unit)
         override suspend fun listActivities() = listGate?.await() ?: Result.success(activities)
@@ -616,6 +660,14 @@ class ActivityViewModelTest {
         override suspend fun deleteActivity(activityId: String): Result<Unit> {
             deleteCalls.incrementAndGet()
             return deleteResult
+        }
+        override suspend fun deleteSubActivity(subActivityId: String): Result<SubActivityLifecycleResult> {
+            deleteSubActivityCalls.incrementAndGet()
+            return Result.success(SubActivityLifecycleResult(subActivityId, "activity-1", true, true, 2L))
+        }
+        override suspend fun restoreSubActivity(subActivityId: String): Result<SubActivityLifecycleResult> {
+            restoreSubActivityCalls.incrementAndGet()
+            return Result.success(SubActivityLifecycleResult(subActivityId, "activity-1", true, false, 3L))
         }
         override suspend fun removeMember(activityId: String, userId: String) = Result.success(Unit)
         override suspend fun transferCreator(activityId: String, newCreatorUserId: String) = Result.success(Unit)

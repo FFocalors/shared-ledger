@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -18,13 +19,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.EditNote
 import androidx.compose.material.icons.rounded.Image
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Restaurant
 import androidx.compose.material.icons.rounded.Save
@@ -39,6 +43,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerDialog
 import androidx.compose.material3.rememberDatePickerState
@@ -56,9 +62,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.data.expense.ExpenseSplitMethod
+import com.ffocalors.sharedledger.data.exchange.SupportedExchangeCurrency
+import com.ffocalors.sharedledger.data.exchange.ExchangeRate
 import com.ffocalors.sharedledger.ui.components.ParticipantAmountRow
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.SegmentedControl
@@ -83,6 +92,7 @@ import com.ffocalors.sharedledger.ui.util.UiDateTimeFormatter
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -110,6 +120,22 @@ internal fun pickerMillisToExpenseDate(millis: Long): LocalDate =
 
 internal fun expenseOccurredAt(date: LocalDate, time: LocalTime): String =
     LocalDateTime.of(date, time).toInstant(ExpenseUiOffset).toString()
+
+internal fun isExchangeRateStale(observedAt: String, now: Instant = Instant.now()): Boolean {
+    val observed = runCatching { Instant.parse(observedAt) }
+        .recoverCatching { OffsetDateTime.parse(observedAt).toInstant() }
+        .getOrNull() ?: return false
+    var cursor = observed
+    var remainingBusinessHours = 72
+    while (remainingBusinessHours > 0) {
+        val day = cursor.atOffset(ZoneOffset.UTC).dayOfWeek
+        cursor = cursor.plusSeconds(60 * 60)
+        if (day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY) {
+            remainingBusinessHours -= 1
+        }
+    }
+    return cursor.isBefore(now)
+}
 
 internal fun createDefaultExpenseDraft(
     ledgerUnitId: String,
@@ -207,6 +233,13 @@ fun NewExpenseScreen(
     onAddAttachment: (() -> Unit)? = null,
     onRemoveAttachment: ((attachmentId: String) -> Unit)? = null,
     onRetryAttachment: ((attachmentId: String) -> Unit)? = null,
+    supportedCurrencies: List<SupportedExchangeCurrency> = emptyList(),
+    exchangeRates: Map<String, ExchangeRate> = emptyMap(),
+    onCurrencySelected: ((String) -> Unit)? = null,
+    exchangeRate: String? = null,
+    exchangeRateSource: String? = null,
+    exchangeRateObservedAt: String? = null,
+    isOffline: Boolean = false,
 ) {
     val safeParticipants = participants
     val seed = remember(mode, initialDraft, ledgerUnitId, safeParticipants, baseCurrency, currentParticipantId) {
@@ -224,6 +257,24 @@ fun NewExpenseScreen(
     var selectedTime by remember(mode, seed) { mutableStateOf(initialOccurredAt.toLocalTime().withSecond(0).withNano(0)) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    var showCurrencyMenu by remember { mutableStateOf(false) }
+    val currencyOptions = remember(supportedCurrencies, baseCurrency) {
+        // Keep the activity base currency first, but do not use its code as a
+        // display name. That was the source of labels such as "CNY CNY".
+        (listOf(SupportedExchangeCurrency(baseCurrency, "", null)) + supportedCurrencies)
+            .distinctBy { it.code.uppercase() }
+    }
+    val availableCurrencyOptions = remember(currencyOptions, exchangeRates, baseCurrency, draft.currency, isOffline) {
+        currencyOptions.filter { currency ->
+            !isOffline ||
+                currency.code.equals(baseCurrency, true) ||
+                currency.code.equals(draft.currency, true) ||
+                exchangeRates.containsKey("${baseCurrency.uppercase()}:${currency.code.uppercase()}")
+        }
+    }
+    val selectedExchangeRate = exchangeRates["${baseCurrency.uppercase()}:${draft.currency.uppercase()}"]
+    val externalCurrency = !draft.currency.equals(baseCurrency, ignoreCase = true)
+    val hasRateForSave = !externalCurrency || selectedExchangeRate != null || exchangeRate != null
     LaunchedEffect(multiCurrencyEnabled, baseCurrency, draft.currency) {
         if ((!multiCurrencyEnabled || draft.currency.equals(baseCurrency, ignoreCase = true)) && draft.fxRate != "1") {
             draft = draft.copy(currency = baseCurrency, fxRate = "1")
@@ -277,8 +328,8 @@ fun NewExpenseScreen(
                         onRefreshConfirmation != null -> "请先刷新确认"
                         else -> "保存"
                     },
-                    onClick = { if (!isSubmitting && onRefreshConfirmation == null) onSave(draft) },
-                    enabled = !isSubmitting && onRefreshConfirmation == null,
+                    onClick = { if (!isSubmitting && onRefreshConfirmation == null && hasRateForSave) onSave(draft) },
+                    enabled = !isSubmitting && onRefreshConfirmation == null && !isOffline && hasRateForSave,
                     icon = Icons.Rounded.Save,
                 )
             }
@@ -301,18 +352,77 @@ fun NewExpenseScreen(
                         Text(currencySymbol(draft.currency), style = SharedLedgerTextStyles.CardTitle, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         SharedLedgerTextField(draft.amount, { draft = draft.copy(amount = it) }, Modifier.weight(1f), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
                         if (multiCurrencyEnabled && mode != ExpenseFormMode.Refund) {
-                            SharedLedgerTextField(
-                                value = draft.currency,
-                                onValueChange = { value ->
-                                    val code = value.filter(Char::isLetter).uppercase().take(3)
-                                    draft = draft.copy(
-                                        currency = code,
-                                        fxRate = if (code.equals(baseCurrency, ignoreCase = true)) "1" else draft.fxRate,
-                                    )
-                                },
-                                modifier = Modifier.widthIn(min = 76.dp, max = 92.dp),
-                                label = "币种",
-                            )
+                            Box {
+                                Surface(
+                                    modifier = Modifier
+                                        .widthIn(min = 112.dp, max = 176.dp)
+                                        .clickable { showCurrencyMenu = true },
+                                    shape = RoundedCornerShape(16.dp),
+                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f),
+                                    border = BorderStroke(
+                                        1.dp,
+                                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.52f),
+                                    ),
+                                ) {
+                                    val selected = currencyOptions.firstOrNull { it.code.equals(draft.currency, true) }
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = SharedLedgerSpacing.MediumSmall, vertical = SharedLedgerSpacing.Small),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
+                                    ) {
+                                        Text(
+                                            selected?.let(::currencyOptionLabel) ?: draft.currency.uppercase(),
+                                            Modifier.weight(1f),
+                                            style = SharedLedgerTextStyles.Label,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                        )
+                                        Icon(
+                                            Icons.Rounded.KeyboardArrowDown,
+                                            contentDescription = "展开币种选择",
+                                            modifier = Modifier.size(18.dp),
+                                        )
+                                    }
+                                }
+                                DropdownMenu(
+                                    expanded = showCurrencyMenu,
+                                    onDismissRequest = { showCurrencyMenu = false },
+                                    modifier = Modifier
+                                        .widthIn(min = 184.dp, max = 248.dp)
+                                        .heightIn(max = 336.dp),
+                                ) {
+                                    availableCurrencyOptions.forEach { currency ->
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text(
+                                                    currencyOptionLabel(currency),
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                )
+                                            },
+                                            leadingIcon = {
+                                                if (currency.code.equals(draft.currency, true)) {
+                                                    Icon(
+                                                        Icons.Rounded.Check,
+                                                        contentDescription = "当前币种",
+                                                        tint = MaterialTheme.colorScheme.primary,
+                                                    )
+                                                } else {
+                                                    androidx.compose.foundation.layout.Spacer(Modifier.size(24.dp))
+                                                }
+                                            },
+                                            onClick = {
+                                                draft = draft.copy(
+                                                    currency = currency.code,
+                                                    fxRate = if (currency.code.equals(baseCurrency, true)) "1" else draft.fxRate,
+                                                )
+                                                onCurrencySelected?.invoke(currency.code)
+                                                showCurrencyMenu = false
+                                            },
+                                        )
+                                    }
+                                }
+                            }
                         } else {
                             Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceVariant) {
                             Text(draft.currency, Modifier.padding(horizontal = SharedLedgerSpacing.MediumSmall, vertical = SharedLedgerSpacing.XSmall), style = SharedLedgerTextStyles.Label)
@@ -320,7 +430,25 @@ fun NewExpenseScreen(
                         }
                     }
                     if (mode != ExpenseFormMode.Refund && multiCurrencyEnabled && !draft.currency.equals(baseCurrency, ignoreCase = true)) {
-                        SharedLedgerTextField(draft.fxRate, { draft = draft.copy(fxRate = it) }, Modifier.fillMaxWidth(), label = "汇率（${draft.currency} → $baseCurrency）", keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                        Text(
+                            text = when {
+                                (selectedExchangeRate?.rate?.toPlainString() ?: exchangeRate) != null -> {
+                                    val rate = selectedExchangeRate?.rate?.toPlainString() ?: exchangeRate.orEmpty()
+                                    val observedAt = selectedExchangeRate?.observedAt ?: exchangeRateObservedAt
+                                    "汇率 ${draft.currency} → $baseCurrency：$rate${observedAt?.let { "（ECB $it）" }.orEmpty()}"
+                                }
+                                else -> "暂无 ${draft.currency} → $baseCurrency 汇率缓存，在线保存前请刷新"
+                            },
+                            style = SharedLedgerTextStyles.Label,
+                            color = if ((selectedExchangeRate?.source ?: exchangeRateSource) == "ECB_REFERENCE") MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
+                        )
+                        val observedAt = selectedExchangeRate?.observedAt ?: exchangeRateObservedAt
+                        if (!observedAt.isNullOrBlank() && isExchangeRateStale(observedAt)) {
+                            Text("ECB 参考汇率已超过 72 个工作小时，仍可在线保存", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.tertiary)
+                        }
+                        if (!hasRateForSave) {
+                            Text("当前币对没有可用汇率缓存，只能使用基础币种", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.error)
+                        }
                     }
                 }
             }
@@ -565,6 +693,16 @@ private fun FormSection(content: @Composable ColumnScope.() -> Unit) {
 
 private fun participantColor(index: Int): Color = when (index % 3) { 0 -> IconContainerOrange; 1 -> IconContainerTertiary; else -> IconContainerSage }
 private fun currencySymbol(code: String): String = when (code.uppercase()) { "EUR" -> "€"; "USD" -> "$"; else -> "¥" }
+
+internal fun currencyOptionLabel(currency: SupportedExchangeCurrency): String {
+    val code = currency.code.uppercase()
+    val displayName = currency.displayName.trim()
+    return if (displayName.isBlank() || displayName.equals(code, ignoreCase = true)) {
+        code
+    } else {
+        "$code · $displayName"
+    }
+}
 
 @Preview(name = "新增消费", showBackground = true, widthDp = 390, heightDp = 844)
 @Composable

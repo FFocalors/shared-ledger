@@ -2,6 +2,9 @@ package com.ffocalors.sharedledger.ui.navigation
 
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.DisposableEffect
@@ -91,6 +94,7 @@ import com.ffocalors.sharedledger.ui.auth.PasswordChangeUiState
 import com.ffocalors.sharedledger.ui.cache.QueryCacheKey
 import com.ffocalors.sharedledger.ui.cache.QueryCacheState
 import com.ffocalors.sharedledger.ui.cache.SessionQueryCache
+import com.ffocalors.sharedledger.data.exchange.ExchangeRateRepositoryFactory
 import com.ffocalors.sharedledger.ui.profile.PersonalOverview
 import com.ffocalors.sharedledger.data.realtime.ActivityRealtimeDomain
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
@@ -184,6 +188,27 @@ private fun RefreshActivityOnResume(
 }
 
 @Composable
+private fun rememberNetworkAvailable(context: android.content.Context): Boolean {
+    val connectivity = context.getSystemService(ConnectivityManager::class.java)
+    fun isValidated(): Boolean = connectivity?.activeNetwork?.let { network ->
+        connectivity.getNetworkCapabilities(network)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
+    } ?: false
+    var available by remember(connectivity) { mutableStateOf(isValidated()) }
+    DisposableEffect(connectivity) {
+        if (connectivity == null) return@DisposableEffect onDispose { }
+        val callback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) { available = isValidated() }
+            override fun onLost(network: Network) {
+                available = isValidated()
+            }
+        }
+        connectivity.registerDefaultNetworkCallback(callback)
+        onDispose { connectivity.unregisterNetworkCallback(callback) }
+    }
+    return available
+}
+
+@Composable
 private fun AuthenticatedNavHost(
     modifier: Modifier = Modifier,
     currentUserId: String,
@@ -198,6 +223,8 @@ private fun AuthenticatedNavHost(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val sessionQueryCache = remember(currentUserId) { SessionQueryCache() }
+    val exchangeRateRepository = remember(currentUserId) { ExchangeRateRepositoryFactory.create(context) }
+    val networkAvailable = rememberNetworkAvailable(context)
     DisposableEffect(sessionQueryCache) {
         onDispose { sessionQueryCache.clear() }
     }
@@ -228,6 +255,7 @@ private fun AuthenticatedNavHost(
         factory = ActivityViewModel.Factory(
             currentUserId = currentUserId,
             queryCache = sessionQueryCache,
+            exchangeRateRepository = exchangeRateRepository,
         ),
     )
     val financialRepository = remember { FinancialRecordRepositoryFactory.create() }
@@ -247,9 +275,22 @@ private fun AuthenticatedNavHost(
     )
     val homeState by activityViewModel.home.collectAsState()
     val personalOverviewState by activityViewModel.personalOverview.collectAsState()
+    val supportedCurrencies by activityViewModel.supportedCurrencies.collectAsState()
+    val exchangeRates by activityViewModel.exchangeRates.collectAsState()
     val viewModelJoinState by activityViewModel.join.collectAsState()
     var joinInviteCode by rememberSaveable { mutableStateOf("") }
     var selectedJoinParticipantId by rememberSaveable { mutableStateOf<String?>(null) }
+    androidx.compose.runtime.LaunchedEffect(currentUserId) { activityViewModel.refreshExchangeRates() }
+    DisposableEffect(lifecycleOwner, activityViewModel) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) activityViewModel.refreshExchangeRates()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+            activityViewModel.refreshExchangeRates()
+        }
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
     fun requireParticipantBinding(activityId: String, action: () -> Unit) {
         val detail = activityViewModel.detail(activityId).value.detail
         if (canPerformFinancialAction(detail, currentUserId)) {
@@ -378,8 +419,9 @@ private fun AuthenticatedNavHost(
                 onBackClick = { navController.navigateUp() },
                 isLoading = creating,
                 errorMessage = message,
-                onCreate = { name, kind, multiCurrency ->
-                    activityViewModel.createActivity(name, kind, multiCurrency) { created ->
+                supportedCurrencies = supportedCurrencies,
+                onCreate = { name, kind, multiCurrency, baseCurrency ->
+                    activityViewModel.createActivity(name, kind, multiCurrency, baseCurrency) { created ->
                         val destination = if (created.type == ActivityType.Large) SharedLedgerRoutes.largeActivity(created.id) else SharedLedgerRoutes.normalActivity(created.id)
                         navController.navigate(destination) { popUpTo(SharedLedgerRoutes.CREATE_ACTIVITY) { inclusive = true } }
                     }
@@ -650,6 +692,9 @@ private fun AuthenticatedNavHost(
             val detailState by activityViewModel.detail(activityId).collectAsState()
             val expenseState by expenseViewModel.listState("ledger:$ledgerUnitId").collectAsState()
             val activityWritable = isActivityWritable(detailState.detail)
+            val currentLedgerUnit = detailState.detail?.ledgerUnits?.firstOrNull { it.id == ledgerUnitId }
+            val canDeleteSubActivity = activityWritable &&
+                currentLedgerUnit?.type?.equals("sub_activity", ignoreCase = true) == true
             val attachmentViewModel: AttachmentViewModel = viewModel(
                 key = "attachments-ledger-$activityId-$ledgerUnitId",
                 factory = AttachmentViewModel.Factory(queryCache = sessionQueryCache),
@@ -745,6 +790,17 @@ private fun AuthenticatedNavHost(
                     activityViewModel.loadDetail(activityId, force = true)
                 }
             }
+            androidx.compose.runtime.LaunchedEffect(activityId, ledgerUnitId, detailState.detail) {
+                val detail = detailState.detail
+                if (detail != null &&
+                    detail.summary.type == ActivityType.Large &&
+                    detail.ledgerUnits.none { it.id == ledgerUnitId } &&
+                    detail.deletedLedgerUnits.any { it.id == ledgerUnitId }
+                ) {
+                    activityViewModel.showMessage("子活动已被其他成员删除，账单和附件已隐藏")
+                    navController.navigateUp()
+                }
+            }
             androidx.compose.runtime.LaunchedEffect(detailState.detail) {
                 attachmentViewModel.writesEnabled = activityWritable
             }
@@ -804,6 +860,13 @@ private fun AuthenticatedNavHost(
                         )
                     }
                 } } else null,
+                onDeleteSubActivity = if (canDeleteSubActivity) {
+                    {
+                        activityViewModel.deleteSubActivity(activityId, ledgerUnitId) {
+                            navController.navigateUp()
+                        }
+                    }
+                } else null,
                 attachments = attachmentState.toLedgerUnitUiState { item -> canDeleteAttachment(item, detailState.detail, currentUserId) },
                 attachmentMessage = attachmentMessage ?: attachmentState.errorMessage,
                 onAddAttachment = if (activityWritable && attachmentState.items.size < MAX_CLIENT_ATTACHMENTS) attachmentInput.requestSourceChooser else null,
@@ -924,6 +987,22 @@ private fun AuthenticatedNavHost(
             val currentParticipantId = activityDetail?.members
                 ?.firstOrNull { it.userId == currentUserId }
                 ?.claimedParticipantId
+            val expenseBaseCurrency = activityDetail?.summary?.baseCurrency
+                ?: detailExpenseState.detail?.expense?.originalCurrency
+                ?: "CNY"
+            val existingExpenseCurrency = detailExpenseState.detail?.expense?.originalCurrency ?: expenseBaseCurrency
+            androidx.compose.runtime.LaunchedEffect(expenseBaseCurrency, existingExpenseCurrency, networkAvailable) {
+                if (networkAvailable) {
+                    activityViewModel.refreshExchangeRate(expenseBaseCurrency, existingExpenseCurrency)
+                } else {
+                    activityViewModel.loadCachedExchangeRates(expenseBaseCurrency)
+                }
+            }
+            androidx.compose.runtime.LaunchedEffect(expenseBaseCurrency, networkAvailable, supportedCurrencies) {
+                if (!networkAvailable && supportedCurrencies.isNotEmpty()) {
+                    activityViewModel.loadCachedExchangeRates(expenseBaseCurrency)
+                }
+            }
             androidx.compose.runtime.LaunchedEffect(activityId, resolvedLedgerUnitId, expenseId, routeMode) {
                 if (resolvedLedgerUnitId.isNullOrBlank()) return@LaunchedEffect
                 if (routeMode == ExpenseFormRouteMode.EDIT && expenseId != null) {
@@ -968,8 +1047,16 @@ private fun AuthenticatedNavHost(
                 NewExpenseScreen(
                     ledgerUnitId = resolvedLedgerUnitId,
                     participants = participants,
-                    baseCurrency = activityDetail?.summary?.baseCurrency ?: detailExpenseState.detail?.expense?.originalCurrency ?: "CNY",
+                    baseCurrency = expenseBaseCurrency,
                     multiCurrencyEnabled = activityDetail?.summary?.multiCurrencyEnabled == true,
+                    supportedCurrencies = supportedCurrencies,
+                    exchangeRates = exchangeRates,
+                    onCurrencySelected = { currency ->
+                        if (networkAvailable) {
+                            activityViewModel.refreshExchangeRate(expenseBaseCurrency, currency)
+                        }
+                    },
+                    isOffline = !networkAvailable,
                     currentParticipantId = currentParticipantId,
                     mode = formMode,
                     initialDraft = detailExpenseState.detail?.toFormDraft(formMode),
@@ -1283,6 +1370,11 @@ private fun AuthenticatedNavHost(
                     onDeleteActivity = { targetActivityId ->
                         if (targetActivityId == activityId) {
                             activityViewModel.deleteActivity(activityId) { navController.navigateUp() }
+                        }
+                    },
+                    onRestoreSubActivity = { targetActivityId, ledgerUnitId ->
+                        if (targetActivityId == activityId) {
+                            activityViewModel.restoreSubActivity(activityId, ledgerUnitId)
                         }
                     },
                 )

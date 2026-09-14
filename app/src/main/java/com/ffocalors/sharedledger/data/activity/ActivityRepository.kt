@@ -64,6 +64,13 @@ interface ActivityRepository {
     suspend fun unclaimParticipant(activityId: String): Result<Unit>
     suspend fun deleteParticipant(participantId: String): Result<Unit>
     suspend fun createSubActivity(activityId: String, name: String): Result<LedgerUnit>
+    /** Returns active units by default; pass true for management/recovery views. */
+    suspend fun listLedgerUnits(activityId: String, includeDeleted: Boolean = false): Result<List<LedgerUnit>> =
+        getActivity(activityId).map { detail ->
+            if (includeDeleted) detail.ledgerUnits + detail.deletedLedgerUnits else detail.ledgerUnits
+        }
+    suspend fun deleteSubActivity(subActivityId: String): Result<SubActivityLifecycleResult>
+    suspend fun restoreSubActivity(subActivityId: String): Result<SubActivityLifecycleResult>
     suspend fun updateSettings(activityId: String, name: String, baseCurrency: String, multiCurrencyEnabled: Boolean): Result<Unit>
     suspend fun archiveActivity(activityId: String): Result<Unit>
     suspend fun unarchiveActivity(activityId: String): Result<Unit>
@@ -94,7 +101,7 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
             val participantsDeferred = async { loadParticipants(activityId) }
             val claimsDeferred = async { loadClaims(activityId) }
             val membersDeferred = async { loadMembers(activityId) }
-            val unitsDeferred = async { loadLedgerUnits(activityId) }
+            val unitsDeferred = async { loadLedgerUnits(activityId, includeDeleted = true) }
             val financialStatusDeferred = async { loadFinancialStatus(activityId) }
 
             val membersRows = membersDeferred.await()
@@ -129,9 +136,10 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
                         claimedUserName = claim?.userId?.let { profiles[it] },
                     )
                 }.sortedBy { it.order },
-                ledgerUnits = units.map { LedgerUnit(it.id, it.activityId, it.name, it.type, it.createdAt) },
+                ledgerUnits = units.filterNot { it.isDeleted }.map(::toLedgerUnit),
                 currentUserRole = role,
                 permissions = ActivityPermissions.forRole(role),
+                deletedLedgerUnits = units.filter { it.isDeleted }.map(::toLedgerUnit),
             )
         }
     }.mapFailure()
@@ -186,6 +194,12 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
         }).decodeSingle<CreateSubActivityRpcDto>()
         LedgerUnit(result.ledgerUnitId, activityId, result.createdName, result.createdType)
     }.mapFailure()
+
+    override suspend fun deleteSubActivity(subActivityId: String): Result<SubActivityLifecycleResult> =
+        runSubActivityLifecycle("delete_sub_activity", subActivityId, expectedDeleted = true)
+
+    override suspend fun restoreSubActivity(subActivityId: String): Result<SubActivityLifecycleResult> =
+        runSubActivityLifecycle("restore_sub_activity", subActivityId, expectedDeleted = false)
 
     override suspend fun updateSettings(activityId: String, name: String, baseCurrency: String, multiCurrencyEnabled: Boolean): Result<Unit> = runCatching {
         client.postgrest.rpc("update_activity_settings", buildJsonObject {
@@ -262,9 +276,75 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
         filter { eq("activity_id", activityId) }
     }.decodeList()
 
-    private suspend fun loadLedgerUnits(activityId: String): List<LedgerUnitRowDto> = client.from("ledger_units").select {
-        filter { eq("activity_id", activityId) }
-    }.decodeList<LedgerUnitRowDto>().filterNot { it.isDeleted }
+    private suspend fun loadLedgerUnits(activityId: String, includeDeleted: Boolean = false): List<LedgerUnitRowDto> = client.from("ledger_units").select {
+        filter {
+            eq("activity_id", activityId)
+            if (!includeDeleted) eq("is_deleted", false)
+        }
+    }.decodeList<LedgerUnitRowDto>()
+
+    private suspend fun loadLedgerUnit(subActivityId: String): LedgerUnitRowDto? = client.from("ledger_units").select {
+        filter { eq("id", subActivityId) }
+    }.decodeList<LedgerUnitRowDto>().firstOrNull()
+
+    private suspend fun runSubActivityLifecycle(
+        rpcName: String,
+        subActivityId: String,
+        expectedDeleted: Boolean,
+    ): Result<SubActivityLifecycleResult> = runCatching {
+        val response = client.postgrest.rpc(rpcName, buildJsonObject {
+            // The public RPC signatures use sub_activity_id (not p_sub_activity_id).
+            put("sub_activity_id", subActivityId)
+        })
+        val rpcResult = try {
+            response.decodeSingle<SubActivityLifecycleRpcDto>()
+        } catch (decodeError: Throwable) {
+            // PostgREST can commit the function while a client fails to decode its
+            // response. Confirm the target state by id before reporting a failure.
+            val row = runCatching { loadLedgerUnit(subActivityId) }.getOrNull()
+            if (row?.isDeleted == expectedDeleted) {
+                return@runCatching SubActivityLifecycleResult(
+                    subActivityId = row.id,
+                    activityId = row.activityId,
+                    changed = false,
+                    isDeleted = row.isDeleted,
+                    financialVersion = 0L,
+                )
+            }
+            throw decodeError
+        }
+        if (rpcResult.subActivityId != subActivityId || rpcResult.isDeleted != expectedDeleted) {
+            val row = runCatching { loadLedgerUnit(subActivityId) }.getOrNull()
+            if (row?.isDeleted == expectedDeleted) {
+                return@runCatching SubActivityLifecycleResult(
+                    subActivityId = row.id,
+                    activityId = row.activityId,
+                    changed = false,
+                    isDeleted = row.isDeleted,
+                    financialVersion = rpcResult.financialVersion,
+                )
+            }
+            throw ActivityOperationException("服务器未确认子活动状态")
+        }
+        SubActivityLifecycleResult(
+            subActivityId = rpcResult.subActivityId,
+            activityId = rpcResult.activityId,
+            changed = rpcResult.changed,
+            isDeleted = rpcResult.isDeleted,
+            financialVersion = rpcResult.financialVersion,
+        )
+    }.mapFailure()
+
+    private fun toLedgerUnit(row: LedgerUnitRowDto): LedgerUnit = LedgerUnit(
+        id = row.id,
+        activityId = row.activityId,
+        name = row.name,
+        type = row.type,
+        createdAt = row.createdAt,
+        isDeleted = row.isDeleted,
+        deletedAt = row.deletedAt,
+        deletedBy = row.deletedBy,
+    )
 
     private suspend fun loadProfiles(userIds: List<String>): Map<String, String> {
         if (userIds.isEmpty()) return emptyMap()
@@ -342,6 +422,8 @@ class UnavailableActivityRepository : ActivityRepository {
     override suspend fun unclaimParticipant(activityId: String) = unavailable<Unit>()
     override suspend fun deleteParticipant(participantId: String) = unavailable<Unit>()
     override suspend fun createSubActivity(activityId: String, name: String) = unavailable<LedgerUnit>()
+    override suspend fun deleteSubActivity(subActivityId: String) = unavailable<SubActivityLifecycleResult>()
+    override suspend fun restoreSubActivity(subActivityId: String) = unavailable<SubActivityLifecycleResult>()
     override suspend fun updateSettings(activityId: String, name: String, baseCurrency: String, multiCurrencyEnabled: Boolean) = unavailable<Unit>()
     override suspend fun archiveActivity(activityId: String) = unavailable<Unit>()
     override suspend fun unarchiveActivity(activityId: String) = unavailable<Unit>()

@@ -43,6 +43,8 @@ data class Expense(
     val updatedAt: String?,
     val version: Long,
     val isDeleted: Boolean,
+    val fxRateSource: String = "legacy_manual",
+    val fxRateObservedAt: String? = null,
 )
 
 data class ExpenseLedgerUnit(
@@ -158,6 +160,9 @@ data class ExpenseMutationResult(
     val baseAmount: BigDecimal?,
     val version: Long,
     val changed: Boolean? = null,
+    val fxRate: BigDecimal? = null,
+    val fxRateSource: String? = null,
+    val fxRateObservedAt: String? = null,
 )
 
 enum class ExpenseWriteState {

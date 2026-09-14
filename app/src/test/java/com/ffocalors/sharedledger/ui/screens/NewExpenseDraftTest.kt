@@ -1,11 +1,29 @@
 package com.ffocalors.sharedledger.ui.screens
 
+import com.ffocalors.sharedledger.data.exchange.SupportedExchangeCurrency
 import com.ffocalors.sharedledger.ui.expense.ExpenseFormParticipant
 import java.math.BigDecimal
+import java.time.Instant
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class NewExpenseDraftTest {
+    @Test
+    fun exchangeRateFreshnessDoesNotCountWeekendHours() {
+        val friday = "2026-09-11T00:00:00Z"
+
+        assertFalse(isExchangeRateStale(friday, Instant.parse("2026-09-14T04:00:00Z")))
+        assertTrue(isExchangeRateStale(friday, Instant.parse("2026-09-16T00:00:01Z")))
+    }
+
+    @Test
+    fun currencyOptionLabelDoesNotRepeatCodeAsDisplayName() {
+        assertEquals("CNY", currencyOptionLabel(SupportedExchangeCurrency("cny", "CNY", null)))
+        assertEquals("USD · US Dollar", currencyOptionLabel(SupportedExchangeCurrency("usd", "US Dollar", null)))
+    }
+
     @Test
     fun defaultDraftUsesCurrentBoundParticipantAsPayer() {
         val participants = listOf(

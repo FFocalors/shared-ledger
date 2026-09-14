@@ -107,6 +107,7 @@ data class ActivityManagementUiState(
     val participantListLockMessage: String = "",
     val participants: List<ActivityManagementParticipant> = emptyList(),
     val members: List<ActivityManagementMember> = emptyList(),
+    val deletedSubActivities: List<ActivityManagementDeletedSubActivity> = emptyList(),
     val permissionSummary: String = "",
     val status: ActivityManagementStatus = ActivityManagementStatus.InProgress,
     val outstandingDebt: String = "",
@@ -127,6 +128,13 @@ data class ActivityManagementUiState(
     val canUnarchiveActivity: Boolean = false,
     val canBindParticipant: Boolean = false,
     val canUnbindParticipant: Boolean = false,
+)
+
+@Immutable
+data class ActivityManagementDeletedSubActivity(
+    val name: String,
+    val ledgerUnitId: String,
+    val deletedAt: String? = null,
 )
 
 @Immutable
@@ -189,6 +197,7 @@ fun ActivityManagementScreen(
     onUnarchiveActivity: (String) -> Unit = {},
     onLeaveActivity: (String) -> Unit = {},
     onDeleteActivity: (String) -> Unit = {},
+    onRestoreSubActivity: (String, String) -> Unit = { _, _ -> },
 ) {
     var pendingConfirmation by rememberSaveable { mutableStateOf<ManagementConfirmation?>(null) }
     var pendingParticipantId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -302,6 +311,10 @@ fun ActivityManagementScreen(
                     onRemoveMember = { memberId ->
                         onRemoveMember(activityId, memberId)
                     },
+                )
+                DeletedSubActivitiesCard(
+                    items = state.deletedSubActivities,
+                    onRestore = { ledgerUnitId -> onRestoreSubActivity(activityId, ledgerUnitId) },
                 )
                 if (state.showSettings) {
                     ActivitySettingsCard(
@@ -423,6 +436,47 @@ fun ActivityManagementScreen(
                 ) { Text("保存") }
             },
         )
+    }
+}
+
+@Composable
+private fun DeletedSubActivitiesCard(
+    items: List<ActivityManagementDeletedSubActivity>,
+    onRestore: (String) -> Unit,
+) {
+    if (items.isEmpty()) return
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = SharedLedgerRadius.Medium,
+        color = AppSurface,
+        tonalElevation = SharedLedgerElevation.Card,
+    ) {
+        Column(
+            modifier = Modifier.padding(SharedLedgerSpacing.Medium),
+            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+        ) {
+            Text("已删除子活动", style = SharedLedgerTextStyles.SectionTitle)
+            Text(
+                "删除后账单和附件会隐藏，账务已重算；恢复后可继续查看。",
+                style = SharedLedgerTextStyles.BodySecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            items.forEach { item ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(item.name, style = SharedLedgerTextStyles.BodySecondary)
+                        item.deletedAt?.let { timestamp ->
+                            Text("已删除 $timestamp", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                    TextButton(onClick = { onRestore(item.ledgerUnitId) }) { Text("恢复") }
+                }
+            }
+        }
     }
 }
 

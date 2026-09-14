@@ -84,6 +84,8 @@ data class LedgerUnitRowDto(
     val type: String,
     @SerialName("is_deleted") val isDeleted: Boolean = false,
     @SerialName("created_at") val createdAt: String? = null,
+    @SerialName("deleted_at") val deletedAt: String? = null,
+    @SerialName("deleted_by") val deletedBy: String? = null,
 )
 
 @Serializable
@@ -128,6 +130,15 @@ data class ClaimParticipantRpcDto(
     @SerialName("claim_id") val claimId: String,
     @SerialName("claimed_participant_id") val claimedParticipantId: String,
     @SerialName("is_new") val isNew: Boolean,
+)
+
+@Serializable
+data class SubActivityLifecycleRpcDto(
+    @SerialName("sub_activity_id") val subActivityId: String,
+    @SerialName("activity_id") val activityId: String,
+    val changed: Boolean,
+    @SerialName("is_deleted") val isDeleted: Boolean,
+    @SerialName("financial_version") val financialVersion: Long,
 )
 
 @Serializable
@@ -191,6 +202,9 @@ data class LedgerUnit(
     val name: String,
     val type: String,
     val createdAt: String? = null,
+    val isDeleted: Boolean = false,
+    val deletedAt: String? = null,
+    val deletedBy: String? = null,
 )
 
 data class ActivityDetail(
@@ -200,6 +214,15 @@ data class ActivityDetail(
     val ledgerUnits: List<LedgerUnit>,
     val currentUserRole: ActivityRole,
     val permissions: ActivityPermissions,
+    val deletedLedgerUnits: List<LedgerUnit> = emptyList(),
+)
+
+data class SubActivityLifecycleResult(
+    val subActivityId: String,
+    val activityId: String,
+    val changed: Boolean,
+    val isDeleted: Boolean,
+    val financialVersion: Long,
 )
 
 enum class ActivityFailureKind {

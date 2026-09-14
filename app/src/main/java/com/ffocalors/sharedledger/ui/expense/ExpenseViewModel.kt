@@ -484,8 +484,7 @@ class ExpenseViewModel(
         val amount = draft.amount.toDecimal() ?: return "请输入有效金额"
         if (amount <= BigDecimal.ZERO) return "金额必须大于 0"
         if (!draft.currency.matches(Regex("[A-Za-z]{3}"))) return "请输入 3 位币种代码"
-        val fxRate = draft.fxRate.toDecimal() ?: return "请输入有效汇率"
-        if (fxRate <= BigDecimal.ZERO) return "汇率必须大于 0"
+        // FX is resolved and snapshotted by the server-owned auto-rate RPC.
         if (!runCatching { Instant.parse(draft.occurredAt.trim()) }.isSuccess) return "发生时间必须是有效的 ISO-8601 时间"
         if (draft.payerIds.isEmpty()) return "请选择至少一位付款人"
         val payerValues = draft.payerIds.map { draft.payerAmounts[it]?.toDecimal() }

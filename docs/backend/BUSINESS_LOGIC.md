@@ -228,11 +228,30 @@ base_amount = round(original_amount × exchange_rate, 1)
 
 历史 Expense 固化自己的汇率。以后汇率变化不会修改旧账。
 
+Expense 还必须固化 `fx_rate_source` 与 `fx_rate_observed_at`：新自动汇率为
+`ECB_REFERENCE` 及 ECB 发布日期；同币种为 `same_currency` 且日期为空；迁移前
+的外币历史数据为 `legacy_manual`。客户端提交的汇率不是可信输入。
+
 ### 6.3 汇率缓存
 
-- App 在线启动时刷新汇率缓存。
-- 离线时使用最近一次成功缓存的汇率。
-- 创建 Expense 时把实际采用的汇率复制为该笔账的快照。
+- 服务端定时从 ECB 最新每日参考价刷新缓存（不是盘中价），并保存最近尝试、最近成功、
+  ECB 日期和安全化错误码。解析失败、响应不完整或部分损坏时不得覆盖旧缓存。
+- ECB 以 EUR 为基准：令 `r(X)` 为 1 EUR 可兑换的 X，消费从 quote 转成 base 时使用
+  `rate = r(base) / r(quote)`；缓存始终包含 `EUR = 1`，并使用十进制除法后保留 10 位。
+- 客户端可读取受支持币种、`get_exchange_rate(base, quote)` 和同步状态；写入缓存仅由
+  受保护的服务端同步入口完成。
+- 新建外币 Expense 必须使用服务端缓存；无缓存时拒绝保存。缓存超过 72 小时仍可用于保存，
+  但必须返回 `fx_rate_observed_at` 供 Android 显示过期警告和触发联网刷新，不得因此拒绝。
+  同币种固定为 1。编辑币种不变保留原快照，币种改变取最新快照。关联退款继承原账单的
+  完整汇率快照，独立退款取最新快照。
+- 创建 Expense 时把实际采用的汇率、来源和观测日期复制为该笔账的快照，金额不重估。
+
+部署同步入口时，在 Edge Function secrets 中配置 `SUPABASE_SERVICE_ROLE_KEY`（以及平台提供的
+`SUPABASE_URL`），并保持 JWT 验证开启。数据库 Cron 已配置两个工作日任务：
+`shared_ledger_ecb_reference_1630_utc_weekdays`（16:30 UTC）和
+`shared_ledger_ecb_reference_1830_utc_weekdays`（18:30 UTC）。任务 URL 与 key 均从 Vault
+读取，只发送 `Content-Type` 和 publishable-key `apikey`；不得把 key 写入 migration、客户端、
+仓库或日志。函数内部只用 Edge secret 调用受保护的服务端 RPC，并自行合并并限制最短刷新间隔。
 
 ### 6.4 金额精度
 

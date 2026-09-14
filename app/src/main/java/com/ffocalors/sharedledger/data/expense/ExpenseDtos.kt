@@ -23,6 +23,8 @@ data class ExpenseRowDto(
     @SerialName("updated_at") val updatedAt: String? = null,
     val version: Long,
     @SerialName("is_deleted") val isDeleted: Boolean = false,
+    @SerialName("fx_rate_source") val fxRateSource: String = "legacy_manual",
+    @SerialName("fx_rate_observed_at") val fxRateObservedAt: String? = null,
 )
 
 @Serializable
@@ -90,6 +92,9 @@ data class CreateExpenseRpcDto(
     @SerialName("expense_id") val expenseId: String,
     @SerialName("base_amount") val baseAmount: JsonElement,
     val version: Long,
+    @SerialName("fx_rate") val fxRate: JsonElement? = null,
+    @SerialName("fx_rate_source") val fxRateSource: String? = null,
+    @SerialName("fx_rate_observed_at") val fxRateObservedAt: String? = null,
 )
 
 @Serializable
@@ -97,6 +102,9 @@ data class UpdateExpenseRpcDto(
     @SerialName("updated_expense_id") val updatedExpenseId: String,
     @SerialName("base_amount") val baseAmount: JsonElement,
     val version: Long,
+    @SerialName("fx_rate") val fxRate: JsonElement? = null,
+    @SerialName("fx_rate_source") val fxRateSource: String? = null,
+    @SerialName("fx_rate_observed_at") val fxRateObservedAt: String? = null,
 )
 
 @Serializable

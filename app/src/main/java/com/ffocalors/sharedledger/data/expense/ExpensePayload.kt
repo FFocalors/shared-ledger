@@ -29,6 +29,27 @@ object ExpenseRpcPayloadBuilder {
         expenseId = input.expenseId,
     )
 
+    /** Server-owned FX snapshot payload. Deliberately never includes fx_rate. */
+    fun createAutoRate(input: CreateExpenseInput) = autoRatePayload(input)
+
+    fun updateAutoRate(input: UpdateExpenseInput) = autoRatePayload(
+        input = CreateExpenseInput(
+            ledgerUnitId = input.ledgerUnitId,
+            title = input.title,
+            originalAmount = input.originalAmount,
+            originalCurrency = input.originalCurrency,
+            fxRate = input.fxRate,
+            splitMethod = input.splitMethod,
+            payments = input.payments,
+            manualSplits = input.manualSplits,
+            aaParticipantIds = input.aaParticipantIds,
+            occurredAt = input.occurredAt,
+            note = input.note,
+            originalExpenseId = input.originalExpenseId,
+        ),
+        expenseId = input.expenseId,
+    )
+
     private fun inputPayload(input: CreateExpenseInput, expenseId: String? = null) = buildJsonObject {
         expenseId?.let { put("expense_id", it) }
         put("ledger_unit_id", input.ledgerUnitId)
@@ -36,6 +57,21 @@ object ExpenseRpcPayloadBuilder {
         put("original_amount", decimal(input.originalAmount))
         put("original_currency", input.originalCurrency.trim().uppercase())
         put("fx_rate", decimal(input.fxRate))
+        put("split_method", input.splitMethod.backendValue)
+        put("payments", input.payments.toPaymentJsonArray())
+        put("manual_splits", input.manualSplits.toSplitJsonArray())
+        put("aa_participant_ids", input.aaParticipantIds.toIdJsonArray())
+        put("occurred_at", input.occurredAt)
+        input.note?.let { put("note", it) } ?: put("note", JsonNull)
+        input.originalExpenseId?.let { put("original_expense_id", it) } ?: put("original_expense_id", JsonNull)
+    }
+
+    private fun autoRatePayload(input: CreateExpenseInput, expenseId: String? = null) = buildJsonObject {
+        expenseId?.let { put("expense_id", it) }
+        put("ledger_unit_id", input.ledgerUnitId)
+        put("title", input.title)
+        put("original_amount", decimal(input.originalAmount))
+        put("original_currency", input.originalCurrency.trim().uppercase())
         put("split_method", input.splitMethod.backendValue)
         put("payments", input.payments.toPaymentJsonArray())
         put("manual_splits", input.manualSplits.toSplitJsonArray())

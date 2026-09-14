@@ -17,6 +17,9 @@ import com.ffocalors.sharedledger.data.expense.ParticipantExpenseShareRepository
 import com.ffocalors.sharedledger.data.expense.ParticipantExpenseShareRepositoryFactory
 import com.ffocalors.sharedledger.data.expense.ParticipantExpenseShareSnapshot
 import com.ffocalors.sharedledger.data.expense.ExpenseOperationException
+import com.ffocalors.sharedledger.data.exchange.ExchangeRateRepository
+import com.ffocalors.sharedledger.data.exchange.ExchangeRate
+import com.ffocalors.sharedledger.data.exchange.SupportedExchangeCurrency
 import com.ffocalors.sharedledger.ui.components.ActivityCardUiModel
 import com.ffocalors.sharedledger.ui.components.ActivityStatus
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
@@ -29,6 +32,7 @@ import com.ffocalors.sharedledger.ui.screens.JoinActivityPreview
 import com.ffocalors.sharedledger.ui.screens.JoinActivityStatus
 import com.ffocalors.sharedledger.ui.screens.JoinActivityUiState
 import com.ffocalors.sharedledger.ui.screens.ActivityManagementMember
+import com.ffocalors.sharedledger.ui.screens.ActivityManagementDeletedSubActivity
 import com.ffocalors.sharedledger.ui.screens.ActivityManagementParticipant
 import com.ffocalors.sharedledger.ui.screens.ActivityManagementStatus
 import com.ffocalors.sharedledger.ui.screens.ActivityManagementUiState
@@ -42,6 +46,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 data class ActivityHomeUiState(
     val isLoading: Boolean = true,
@@ -62,6 +68,7 @@ class ActivityViewModel(
     private val currentUserId: String,
     private val participantExpenseShareRepository: ParticipantExpenseShareRepository = ParticipantExpenseShareRepositoryFactory.create(),
     private val queryCache: SessionQueryCache = SessionQueryCache(),
+    private val exchangeRateRepository: ExchangeRateRepository? = null,
 ) : ViewModel() {
     private val _home = MutableStateFlow(ActivityHomeUiState())
     val home: StateFlow<ActivityHomeUiState> = _home.asStateFlow()
@@ -78,12 +85,71 @@ class ActivityViewModel(
     private val _personalOverview = MutableStateFlow(PersonalOverviewUiState())
     val personalOverview: StateFlow<PersonalOverviewUiState> = _personalOverview.asStateFlow()
     private var personalOverviewLoadInFlight = false
+    private val _supportedCurrencies = MutableStateFlow<List<SupportedExchangeCurrency>>(emptyList())
+    val supportedCurrencies: StateFlow<List<SupportedExchangeCurrency>> = _supportedCurrencies.asStateFlow()
+    private val _exchangeRates = MutableStateFlow<Map<String, ExchangeRate>>(emptyMap())
+    val exchangeRates: StateFlow<Map<String, ExchangeRate>> = _exchangeRates.asStateFlow()
+    private val exchangeRateSyncMutex = Mutex()
 
     fun detail(activityId: String): StateFlow<ActivityDetailUiState> = detailStates.getOrPut(activityId) {
         MutableStateFlow(ActivityDetailUiState())
     }.asStateFlow()
 
     fun clearMessage() { _message.value = null }
+
+    fun refreshExchangeRates() {
+        val repository = exchangeRateRepository ?: return
+        viewModelScope.launch {
+            refreshExchangeRateCache(repository)
+        }
+    }
+
+    fun refreshExchangeRate(baseCurrency: String, quoteCurrency: String) {
+        val repository = exchangeRateRepository ?: return
+        val base = baseCurrency.trim().uppercase()
+        val quote = quoteCurrency.trim().uppercase()
+        if (base.isBlank() || quote.isBlank()) return
+        viewModelScope.launch {
+            // Always re-read the selected pair after the server refresh. This
+            // avoids racing a stale local/server read against the Edge sync.
+            refreshExchangeRateCache(repository)
+            repository.getRate(base, quote).onSuccess { rate ->
+                _exchangeRates.value = _exchangeRates.value + ("$base:$quote" to rate)
+            }
+        }
+    }
+
+    private suspend fun refreshExchangeRateCache(repository: ExchangeRateRepository) {
+        exchangeRateSyncMutex.withLock {
+            repository.syncExchangeRates()
+            repository.listSupportedCurrencies().onSuccess { _supportedCurrencies.value = it }
+        }
+    }
+
+    fun loadExchangeRate(baseCurrency: String, quoteCurrency: String) {
+        val repository = exchangeRateRepository ?: return
+        val base = baseCurrency.trim().uppercase()
+        val quote = quoteCurrency.trim().uppercase()
+        if (base.isBlank() || quote.isBlank()) return
+        viewModelScope.launch {
+            repository.getRate(base, quote).onSuccess { rate ->
+                _exchangeRates.value = _exchangeRates.value + ("$base:$quote" to rate)
+            }
+        }
+    }
+
+    fun loadCachedExchangeRates(baseCurrency: String) {
+        val repository = exchangeRateRepository ?: return
+        val base = baseCurrency.trim().uppercase()
+        if (base.isBlank()) return
+        viewModelScope.launch {
+            repository.readCachedRates(base).onSuccess { rates ->
+                _exchangeRates.value = _exchangeRates.value + rates.associateBy { rate ->
+                    "${base}:${rate.quoteCurrency.trim().uppercase()}"
+                }
+            }
+        }
+    }
 
     fun selectJoinParticipant(participantId: String, participantName: String?) {
         _join.value = _join.value.copy(
@@ -144,6 +210,17 @@ class ActivityViewModel(
                         isCreator = member.isCreator,
                         memberId = member.userId,
                     )
+                },
+                deletedSubActivities = if (detail.summary.type == ActivityType.Large) {
+                    detail.deletedLedgerUnits.map { unit ->
+                        ActivityManagementDeletedSubActivity(
+                            name = unit.name,
+                            ledgerUnitId = unit.id,
+                            deletedAt = unit.deletedAt?.let(UiDateTimeFormatter::format),
+                        )
+                    }
+                } else {
+                    emptyList()
                 },
                 status = when {
                     detail.summary.archivedAt != null -> ActivityManagementStatus.Archived
@@ -379,12 +456,12 @@ class ActivityViewModel(
         }
     }
 
-    fun createActivity(name: String, kind: com.ffocalors.sharedledger.ui.components.ActivityKind, multiCurrency: Boolean, onSuccess: (ActivitySummary) -> Unit) {
+    fun createActivity(name: String, kind: com.ffocalors.sharedledger.ui.components.ActivityKind, multiCurrency: Boolean, baseCurrency: String = "CNY", onSuccess: (ActivitySummary) -> Unit) {
         if (name.isBlank() || _actionLoading.value) return
         _actionLoading.value = true
         viewModelScope.launch {
             try {
-                repository.createActivity(name, if (kind == com.ffocalors.sharedledger.ui.components.ActivityKind.Large) ActivityType.Large else ActivityType.Normal, "CNY", multiCurrency)
+                repository.createActivity(name, if (kind == com.ffocalors.sharedledger.ui.components.ActivityKind.Large) ActivityType.Large else ActivityType.Normal, baseCurrency, multiCurrency)
                     .fold({ invalidateSessionCaches(); _message.value = "活动已创建"; loadHome(force = true); onSuccess(it) }, { _message.value = messageFor(it) })
             } finally {
                 _actionLoading.value = false
@@ -527,6 +604,56 @@ class ActivityViewModel(
 
     fun transferCreator(activityId: String, newCreatorUserId: String) = lifecycleAction(activityId) {
         repository.transferCreator(activityId, newCreatorUserId)
+    }
+
+    fun deleteSubActivity(activityId: String, subActivityId: String, onSuccess: () -> Unit = {}) {
+        if (_actionLoading.value) return
+        val unit = detailStates[activityId]?.value?.detail?.ledgerUnits?.firstOrNull { it.id == subActivityId }
+        if (unit == null || !unit.type.equals("sub_activity", ignoreCase = true)) {
+            _message.value = "只能删除大型活动中的子活动"
+            return
+        }
+        if (isActivityArchived(activityId)) {
+            _message.value = "活动已归档，当前为只读状态"
+            return
+        }
+        viewModelScope.launch {
+            _actionLoading.value = true
+            repository.deleteSubActivity(subActivityId).fold(
+                onSuccess = {
+                    invalidateActivityCaches(activityId)
+                    loadDetail(activityId, force = true)
+                    _message.value = "子活动已删除，可在活动管理中恢复"
+                    onSuccess()
+                },
+                onFailure = { _message.value = messageFor(it) },
+            )
+            _actionLoading.value = false
+        }
+    }
+
+    fun restoreSubActivity(activityId: String, subActivityId: String) {
+        if (_actionLoading.value) return
+        if (isActivityArchived(activityId)) {
+            _message.value = "活动已归档，当前为只读状态"
+            return
+        }
+        viewModelScope.launch {
+            _actionLoading.value = true
+            repository.restoreSubActivity(subActivityId).fold(
+                onSuccess = {
+                    invalidateActivityCaches(activityId)
+                    loadDetail(activityId, force = true)
+                    _message.value = "子活动已恢复"
+                },
+                onFailure = { _message.value = messageFor(it) },
+            )
+            _actionLoading.value = false
+        }
+    }
+
+    fun showMessage(message: String) {
+        _message.value = message
     }
 
     fun archiveActivity(activityId: String, onSuccess: () -> Unit = {}) = lifecycleAction(activityId, onSuccess) { repository.archiveActivity(activityId) }
@@ -685,6 +812,12 @@ class ActivityViewModel(
         queryCache.invalidate(personalOverviewCacheKey())
         queryCache.invalidate(detailCacheKey(activityId))
         queryCache.invalidatePrefix("expense-query:$currentUserId:")
+        queryCache.invalidatePrefix("financial-query:list:$activityId")
+        queryCache.invalidatePrefix("financial-query:detail:$activityId:")
+        queryCache.invalidatePrefix("financial-query:context:$activityId")
+        queryCache.invalidatePrefix("financial-query:preview:$activityId")
+        queryCache.invalidatePrefix("transfer-query:$activityId:")
+        queryCache.invalidatePrefix("attachment-query:$activityId:")
     }
 
     private fun invalidateSessionCaches() {
@@ -697,6 +830,7 @@ class ActivityViewModel(
         private val currentUserId: String,
         private val participantExpenseShareRepository: ParticipantExpenseShareRepository = ParticipantExpenseShareRepositoryFactory.create(),
         private val queryCache: SessionQueryCache = SessionQueryCache(),
+        private val exchangeRateRepository: ExchangeRateRepository? = null,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T = ActivityViewModel(
@@ -704,6 +838,7 @@ class ActivityViewModel(
             currentUserId,
             participantExpenseShareRepository,
             queryCache,
+            exchangeRateRepository,
         ) as T
     }
 }

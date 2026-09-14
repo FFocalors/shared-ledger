@@ -25,12 +25,14 @@ import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.CurrencyExchange
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -139,6 +141,7 @@ fun LedgerUnitScreen(
     onNewExpense: (() -> Unit)? = {},
     onRefund: (() -> Unit)? = {},
     onReceive: (() -> Unit)? = {},
+    onDeleteSubActivity: (() -> Unit)? = null,
     onFundRecords: () -> Unit = {},
     onExpenseClick: (String) -> Unit = {},
     attachments: List<LedgerAttachmentUiState> = emptyList(),
@@ -159,6 +162,7 @@ fun LedgerUnitScreen(
         )
     } ?: emptyList()
     var expenseActionSheetVisible by remember { mutableStateOf(false) }
+    var deleteConfirmationVisible by remember { mutableStateOf(false) }
     Scaffold(
         modifier = modifier.fillMaxSize(),
         // Stitch’s LedgerUnit frame uses the warm cream layer outside the cards.
@@ -168,6 +172,7 @@ fun LedgerUnitScreen(
                 title = displayTitle,
                 showBackButton = true,
                 onBackClick = onBack,
+                onMoreClick = onDeleteSubActivity?.let { { deleteConfirmationVisible = true } },
                 containerColor = Cream,
                 businessAction = {
                     ParticipantAvatarGroup(
@@ -282,6 +287,26 @@ fun LedgerUnitScreen(
             onDismiss = { expenseActionSheetVisible = false },
             onNewExpense = onNewExpense,
             onRefund = onRefund,
+        )
+    }
+    if (deleteConfirmationVisible && onDeleteSubActivity != null) {
+        AlertDialog(
+            onDismissRequest = { deleteConfirmationVisible = false },
+            title = { Text("删除子活动？") },
+            text = {
+                Text("删除后，账单和附件会从活动中隐藏，并重新计算账务。原始记录不会被永久删除，之后可在大型活动管理中恢复。")
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteConfirmationVisible = false }) { Text("取消") }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        deleteConfirmationVisible = false
+                        onDeleteSubActivity()
+                    },
+                ) { Text("删除") }
+            },
         )
     }
 }

@@ -36,9 +36,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -60,6 +63,7 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
 import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
+import com.ffocalors.sharedledger.data.exchange.SupportedExchangeCurrency
 
 /**
  * Create-activity form. The host owns navigation and receives the selected
@@ -69,13 +73,17 @@ import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
 fun CreateActivityScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
-    onCreate: (String, ActivityKind, Boolean) -> Unit = { _, _, _ -> },
+    onCreate: (String, ActivityKind, Boolean, String) -> Unit = { _, _, _, _ -> },
+    supportedCurrencies: List<SupportedExchangeCurrency> = emptyList(),
     isLoading: Boolean = false,
     errorMessage: String? = null,
 ) {
     var activityName by rememberSaveable { mutableStateOf("") }
     var selectedKindName by rememberSaveable { mutableStateOf(ActivityKind.Standard.name) }
     var multiCurrencyEnabled by rememberSaveable { mutableStateOf(false) }
+    var selectedCurrency by rememberSaveable { mutableStateOf("CNY") }
+    var currencyMenuVisible by rememberSaveable { mutableStateOf(false) }
+    val currencyOptions = remember(supportedCurrencies) { (listOf(SupportedExchangeCurrency("CNY", "人民币", null)) + supportedCurrencies).distinctBy { it.code } }
     val selectedKind = ActivityKind.values().firstOrNull { it.name == selectedKindName }
         ?: ActivityKind.Standard
 
@@ -93,7 +101,7 @@ fun CreateActivityScreen(
         },
         bottomBar = {
             CreateActivityBottomBar(
-                onClick = { onCreate(activityName, selectedKind, multiCurrencyEnabled) },
+                onClick = { onCreate(activityName, selectedKind, multiCurrencyEnabled, selectedCurrency) },
                 enabled = activityName.isNotBlank() && !isLoading,
                 loading = isLoading,
             )
@@ -125,8 +133,13 @@ fun CreateActivityScreen(
                     selectedKind = selectedKind,
                     onKindSelected = { selectedKindName = it.name },
                 )
-                CreateActivitySettingsSection(
-                    multiCurrencyEnabled = multiCurrencyEnabled,
+            CreateActivitySettingsSection(
+                selectedCurrency = selectedCurrency,
+                currencyOptions = currencyOptions,
+                currencyMenuVisible = currencyMenuVisible,
+                onCurrencyMenuVisibleChange = { currencyMenuVisible = it },
+                onCurrencySelected = { selectedCurrency = it },
+                multiCurrencyEnabled = multiCurrencyEnabled,
                     onMultiCurrencyChange = { multiCurrencyEnabled = it },
                 )
                 if (errorMessage != null) {
@@ -279,6 +292,11 @@ private fun ActivityTypeCard(
 
 @Composable
 private fun CreateActivitySettingsSection(
+    selectedCurrency: String,
+    currencyOptions: List<SupportedExchangeCurrency>,
+    currencyMenuVisible: Boolean,
+    onCurrencyMenuVisibleChange: (Boolean) -> Unit,
+    onCurrencySelected: (String) -> Unit,
     multiCurrencyEnabled: Boolean,
     onMultiCurrencyChange: (Boolean) -> Unit,
 ) {
@@ -298,7 +316,7 @@ private fun CreateActivitySettingsSection(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable {}
+                        .clickable { onCurrencyMenuVisibleChange(true) }
                         .padding(SharedLedgerSpacing.MediumLarge),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
@@ -311,7 +329,7 @@ private fun CreateActivitySettingsSection(
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                     Text(
-                        text = "CNY 人民币",
+                        text = currencyOptions.firstOrNull { it.code == selectedCurrency }?.let { "${it.code} ${it.displayName}" } ?: selectedCurrency,
                         style = SharedLedgerTextStyles.BodySecondary,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -320,6 +338,17 @@ private fun CreateActivitySettingsSection(
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                    DropdownMenu(expanded = currencyMenuVisible, onDismissRequest = { onCurrencyMenuVisibleChange(false) }) {
+                        currencyOptions.forEach { currency ->
+                            DropdownMenuItem(
+                                text = { Text("${currency.code}  ${currency.displayName}") },
+                                onClick = {
+                                    onCurrencySelected(currency.code)
+                                    onCurrencyMenuVisibleChange(false)
+                                },
+                            )
+                        }
+                    }
                 }
                 Box(
                     modifier = Modifier

@@ -102,15 +102,17 @@ class SupabaseExpenseRepository(private val client: SupabaseClient) : ExpenseRep
     }.mapFailure()
 
     override suspend fun create(input: CreateExpenseInput): Result<ExpenseMutationResult> = runCatching {
-        val result = client.postgrest.rpc("create_expense", ExpenseRpcPayloadBuilder.create(input))
+        val result = client.postgrest.rpc("create_expense_auto_rate", ExpenseRpcPayloadBuilder.createAutoRate(input))
             .decodeSingle<CreateExpenseRpcDto>()
-        ExpenseMutationResult(result.expenseId, ExpenseDtoMappers.decimalOrNull(result.baseAmount), result.version)
+        ExpenseMutationResult(result.expenseId, ExpenseDtoMappers.decimalOrNull(result.baseAmount), result.version,
+            fxRate = ExpenseDtoMappers.decimalOrNull(result.fxRate), fxRateSource = result.fxRateSource, fxRateObservedAt = result.fxRateObservedAt)
     }.mapFailure()
 
     override suspend fun update(input: UpdateExpenseInput): Result<ExpenseMutationResult> = runCatching {
-        val result = client.postgrest.rpc("update_expense", ExpenseRpcPayloadBuilder.update(input))
+        val result = client.postgrest.rpc("update_expense_auto_rate", ExpenseRpcPayloadBuilder.updateAutoRate(input))
             .decodeSingle<UpdateExpenseRpcDto>()
-        ExpenseMutationResult(result.updatedExpenseId, ExpenseDtoMappers.decimalOrNull(result.baseAmount), result.version)
+        ExpenseMutationResult(result.updatedExpenseId, ExpenseDtoMappers.decimalOrNull(result.baseAmount), result.version,
+            fxRate = ExpenseDtoMappers.decimalOrNull(result.fxRate), fxRateSource = result.fxRateSource, fxRateObservedAt = result.fxRateObservedAt)
     }.mapFailure()
 
     override suspend fun delete(expenseId: String): Result<ExpenseMutationResult> = runCatching {
