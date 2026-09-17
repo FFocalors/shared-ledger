@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,7 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.ArrowForward
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -40,11 +38,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.components.AmountDisplay
 import com.ffocalors.sharedledger.ui.components.AmountEmphasis
 import com.ffocalors.sharedledger.ui.components.AmountSize
@@ -53,9 +49,9 @@ import com.ffocalors.sharedledger.ui.components.ErrorState
 import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
+import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
-import com.ffocalors.sharedledger.ui.components.sharedLedgerButtonPaletteFor
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.theme.IconContainerOrange
@@ -179,7 +175,7 @@ fun TransferScreen(
         bottomBar = {
             if (isFormVisible && selected != null && onConfirm != null) {
                 SharedLedgerCtaBottomBar {
-                    CenteredCtaButton(
+                    SharedLedgerButton(
                         text = if (selected.kind == SettlementCandidateKind.ON_BEHALF) {
                             "确认代记已付款"
                         } else if (isTransfer) {
@@ -327,53 +323,6 @@ private fun CandidateScopePicker(
                         textAlign = TextAlign.Center,
                     )
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun CenteredCtaButton(
-    text: String,
-    onClick: () -> Unit,
-    enabled: Boolean,
-    loading: Boolean,
-    loadingText: String,
-    tone: SharedLedgerButtonTone,
-    icon: ImageVector?,
-    modifier: Modifier = Modifier,
-) {
-    val palette = sharedLedgerButtonPaletteFor(tone)
-    val isEnabled = enabled && !loading
-    Surface(
-        onClick = onClick,
-        enabled = isEnabled,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(SharedLedgerDimens.ButtonHeight),
-        shape = SharedLedgerRadius.Full,
-        color = if (isEnabled) palette.containerColor else MaterialTheme.colorScheme.surfaceVariant,
-        contentColor = if (isEnabled) palette.contentColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            if (loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(SharedLedgerSpacing.MediumLarge),
-                    color = palette.contentColor,
-                    strokeWidth = 2.dp,
-                )
-                Spacer(Modifier.width(SharedLedgerSpacing.Small))
-                Text(text = loadingText, style = SharedLedgerTextStyles.Button)
-            } else {
-                if (icon != null) {
-                    Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(SharedLedgerDimens.IconSmall))
-                    Spacer(Modifier.width(SharedLedgerSpacing.Small))
-                }
-                Text(text = text, style = SharedLedgerTextStyles.Button)
             }
         }
     }

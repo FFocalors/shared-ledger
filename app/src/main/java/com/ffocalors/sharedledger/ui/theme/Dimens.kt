@@ -34,6 +34,24 @@ object SharedLedgerDimens {
     val FabClearance = 88.dp
 }
 
+/** 组件尺寸：仅收语义明确的布局专用尺寸，无语义的孤立 dp 值不强行 token 化。 */
+object ComponentSizes {
+    /** 下拉菜单（如币种选择）的最小宽度。 */
+    val DropdownMinWidth = 184.dp
+    /** 下拉菜单的最大宽度。 */
+    val DropdownMaxWidth = 248.dp
+    /** 下拉菜单的最大高度（超出可滚动）。 */
+    val DropdownMaxHeight = 336.dp
+    /** 下拉菜单单项的最小触摸高度。 */
+    val DropdownItemMinHeight = 48.dp
+    /** 分段控件（如"手动分摊/AA均摊"）的最大宽度。 */
+    val SegmentedControlMaxWidth = 172.dp
+    /** 消费凭证附件缩略图的宽度。 */
+    val AttachmentCardWidth = 180.dp
+    /** 消费凭证附件缩略图的高度。 */
+    val AttachmentCardHeight = 116.dp
+}
+
 object SharedLedgerElevation {
     /** Tier 1: static content surfaces — no shadow. */
     val Flat = 0.dp

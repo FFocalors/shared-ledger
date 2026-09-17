@@ -7,10 +7,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -18,6 +16,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
+import com.ffocalors.sharedledger.ui.components.SharedLedgerDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -55,10 +54,10 @@ fun AttachmentImagePreviewDialog(
         }
     }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(filename) },
-        text = {
+    SharedLedgerDialog(
+        onDismiss = onDismiss,
+        title = filename,
+        textContent = {
             Column(modifier = modifier) {
                 when (val current = state) {
                     AttachmentPreviewState.Loading -> CircularProgressIndicator()
@@ -74,9 +73,9 @@ fun AttachmentImagePreviewDialog(
                 }
             }
         },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("关闭") }
-        },
+        dismissText = null,
+        confirmText = "关闭",
+        onConfirm = onDismiss,
     )
 }
 

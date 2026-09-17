@@ -22,7 +22,6 @@ import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.RequestQuote
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.SwapHoriz
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -53,7 +52,9 @@ import com.ffocalors.sharedledger.ui.components.SettlementStatistic
 import com.ffocalors.sharedledger.ui.components.SettlementSummaryCard
 import com.ffocalors.sharedledger.ui.components.SharedLedgerActionItemsRow
 import com.ffocalors.sharedledger.ui.components.SharedLedgerBottomActionBar
+import com.ffocalors.sharedledger.ui.components.SharedLedgerDialog
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.isTerminalActivityError
 import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
@@ -232,7 +233,10 @@ fun LedgerUnitScreen(
                     }
                 } else if (errorMessage != null) {
                     item(key = "ledger-state") {
-                        ErrorState(message = errorMessage, onRetry = onRetry)
+                        ErrorState(
+                            message = errorMessage,
+                            onRetry = if (isTerminalActivityError(errorMessage)) null else onRetry,
+                        )
                     }
                 } else {
                     item(key = "overview") {
@@ -287,7 +291,10 @@ fun LedgerUnitScreen(
                         }
                     } else if (expenseErrorMessage != null) {
                         item(key = "expenses-state") {
-                            ErrorState(message = expenseErrorMessage, onRetry = onExpenseRetry)
+                            ErrorState(
+                                message = expenseErrorMessage,
+                                onRetry = if (isTerminalActivityError(expenseErrorMessage)) null else onExpenseRetry,
+                            )
                         }
                     } else if (expenses.isEmpty()) {
                         item(key = "expenses-empty") {
@@ -314,22 +321,16 @@ fun LedgerUnitScreen(
         )
     }
     if (deleteConfirmationVisible && onDeleteSubActivity != null) {
-        AlertDialog(
-            onDismissRequest = { deleteConfirmationVisible = false },
-            title = { Text("删除子活动？") },
-            text = {
-                Text("删除后，账单和附件会从活动中隐藏，并重新计算账务。原始记录不会被永久删除，之后可在大型活动管理中恢复。")
-            },
-            dismissButton = {
-                TextButton(onClick = { deleteConfirmationVisible = false }) { Text("取消") }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        deleteConfirmationVisible = false
-                        onDeleteSubActivity()
-                    },
-                ) { Text("删除") }
+        SharedLedgerDialog(
+            onDismiss = { deleteConfirmationVisible = false },
+            title = "删除子活动？",
+            text = "删除后，账单和附件会从活动中隐藏，并重新计算账务。原始记录不会被永久删除，之后可在大型活动管理中恢复。",
+            dismissText = "取消",
+            confirmText = "删除",
+            destructive = true,
+            onConfirm = {
+                deleteConfirmationVisible = false
+                onDeleteSubActivity()
             },
         )
     }

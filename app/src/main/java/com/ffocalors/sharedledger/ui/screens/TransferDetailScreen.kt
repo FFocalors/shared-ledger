@@ -27,7 +27,6 @@ import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.material.icons.rounded.Route
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.Warning
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -64,6 +63,7 @@ import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
+import com.ffocalors.sharedledger.ui.components.SharedLedgerDialog
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.theme.Cream
 import com.ffocalors.sharedledger.ui.theme.IconContainerOrange
@@ -484,17 +484,19 @@ private fun ReasonDialog(
     description: String? = null,
 ) {
     var value by remember { mutableStateOf("") }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
+    SharedLedgerDialog(
+        onDismiss = onDismiss,
+        title = title,
+        textContent = {
             Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium)) {
                 description?.let { Text(it, style = SharedLedgerTextStyles.BodySecondary) }
                 OutlinedTextField(value, { value = it }, label = { Text(label) }, modifier = Modifier.fillMaxWidth(), minLines = 3)
             }
         },
-        confirmButton = { TextButton(onClick = { if (value.isNotBlank()) onConfirm(value.trim()) }, enabled = value.isNotBlank()) { Text(confirmLabel) } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
+        dismissText = "取消",
+        confirmText = confirmLabel,
+        confirmEnabled = value.isNotBlank(),
+        onConfirm = { if (value.isNotBlank()) onConfirm(value.trim()) },
     )
 }
 

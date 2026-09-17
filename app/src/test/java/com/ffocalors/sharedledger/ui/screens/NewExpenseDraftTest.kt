@@ -39,7 +39,7 @@ class NewExpenseDraftTest {
         )
 
         assertEquals(listOf("current"), draft.payerIds)
-        assertEquals("300.0", draft.payerAmounts["current"])
+        assertTrue(draft.payerAmounts.isEmpty())
     }
 
     @Test

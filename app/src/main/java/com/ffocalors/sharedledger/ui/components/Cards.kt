@@ -112,7 +112,7 @@ fun SettlementSummaryCard(
                     Text(
                         text = title,
                         style = SharedLedgerTextStyles.SummaryLabel,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = MaterialTheme.colorScheme.outline,
                     )
                     if (primaryAmount != null) {
                         SummaryAmount(
@@ -157,7 +157,7 @@ fun SettlementSummaryCard(
                                 Text(
                                     text = statistic.label,
                                     style = SharedLedgerTextStyles.SummaryLabel,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    color = MaterialTheme.colorScheme.outline,
                                 )
                                 Text(
                                     text = statistic.value,
@@ -181,12 +181,12 @@ private fun SummaryMetric(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
-        Text(title, style = SharedLedgerTextStyles.SummaryLabel, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(title, style = SharedLedgerTextStyles.SummaryLabel, color = MaterialTheme.colorScheme.outline)
         if (amount == null) {
             Text(
                 "—",
                 style = SharedLedgerTextStyles.CardTitle,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
             )
         } else {
@@ -382,7 +382,7 @@ fun ActivityCard(
                     text = "更新于 ${activity.updatedAt}",
                     modifier = Modifier.weight(1f),
                     style = SharedLedgerTextStyles.Label,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.outline,
                 )
                 ParticipantAvatarGroup(activity.participants)
             }
@@ -457,7 +457,7 @@ fun SubActivityCard(
                                     vertical = SharedLedgerSpacing.XSmall / 2,
                                 ),
                                 style = SharedLedgerTextStyles.ActionLabel,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = MaterialTheme.colorScheme.outline,
                             )
                         }
                     }
@@ -621,7 +621,7 @@ fun ExpenseCard(
                 Text(
                     text = "${expense.payerName}付款 · ${expense.participantCount}人参与",
                     style = SharedLedgerTextStyles.Label,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.outline,
                     maxLines = 1,
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                 )

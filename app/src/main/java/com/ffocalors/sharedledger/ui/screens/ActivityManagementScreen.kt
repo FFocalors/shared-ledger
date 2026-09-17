@@ -34,7 +34,6 @@ import androidx.compose.material.icons.rounded.ReceiptLong
 import androidx.compose.material.icons.rounded.Savings
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Warning
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -77,8 +76,10 @@ import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonVariant
+import com.ffocalors.sharedledger.ui.components.SharedLedgerDialog
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.isTerminalActivityError
 import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.AppSurface
 import com.ffocalors.sharedledger.ui.theme.AppSurfaceLow
@@ -375,7 +376,7 @@ fun ActivityManagementScreen(
                     } else {
                         ErrorState(
                             message = errorMessage ?: "活动信息加载失败",
-                            onRetry = onRetry,
+                            onRetry = if (isTerminalActivityError(errorMessage)) null else onRetry,
                             modifier = Modifier.fillMaxSize(),
                         )
                     }
@@ -408,10 +409,10 @@ fun ActivityManagementScreen(
     }
 
     if (showEditActivityDialog && onUpdateActivityName != null) {
-        AlertDialog(
-            onDismissRequest = { showEditActivityDialog = false },
-            title = { Text("编辑活动资料", style = SharedLedgerTextStyles.CardTitle) },
-            text = {
+        SharedLedgerDialog(
+            onDismiss = { showEditActivityDialog = false },
+            title = "编辑活动资料",
+            textContent = {
                 SharedLedgerTextField(
                     value = activityNameDraft,
                     onValueChange = { activityNameDraft = it },
@@ -419,20 +420,15 @@ fun ActivityManagementScreen(
                     placeholder = "活动名称",
                 )
             },
-            dismissButton = {
-                TextButton(onClick = { showEditActivityDialog = false }) { Text("取消") }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val name = activityNameDraft.trim()
-                        if (name.isNotBlank()) {
-                            onUpdateActivityName(activityId, name)
-                            showEditActivityDialog = false
-                        }
-                    },
-                    enabled = activityNameDraft.trim().isNotBlank(),
-                ) { Text("保存") }
+            dismissText = "取消",
+            confirmText = "保存",
+            confirmEnabled = activityNameDraft.trim().isNotBlank(),
+            onConfirm = {
+                val name = activityNameDraft.trim()
+                if (name.isNotBlank()) {
+                    onUpdateActivityName(activityId, name)
+                    showEditActivityDialog = false
+                }
             },
         )
     }
@@ -650,10 +646,10 @@ private fun ParticipantManagementCard(
         }
     }
     if (showCreateDialog) {
-        AlertDialog(
-            onDismissRequest = { showCreateDialog = false },
-            title = { Text("添加参与人", style = SharedLedgerTextStyles.CardTitle) },
-            text = {
+        SharedLedgerDialog(
+            onDismiss = { showCreateDialog = false },
+            title = "添加参与人",
+            textContent = {
                 SharedLedgerTextField(
                     value = participantName,
                     onValueChange = { participantName = it },
@@ -661,21 +657,16 @@ private fun ParticipantManagementCard(
                     placeholder = "请输入姓名",
                 )
             },
-            dismissButton = {
-                TextButton(onClick = { showCreateDialog = false }) { Text("取消") }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val name = participantName.trim()
-                        if (name.isNotBlank() && state.canManageParticipants && !state.participantListLocked) {
-                            onCreateParticipant(name)
-                            participantName = ""
-                            showCreateDialog = false
-                        }
-                    },
-                    enabled = participantName.isNotBlank(),
-                ) { Text("添加") }
+            dismissText = "取消",
+            confirmText = "添加",
+            confirmEnabled = participantName.isNotBlank(),
+            onConfirm = {
+                val name = participantName.trim()
+                if (name.isNotBlank() && state.canManageParticipants && !state.participantListLocked) {
+                    onCreateParticipant(name)
+                    participantName = ""
+                    showCreateDialog = false
+                }
             },
         )
     }
@@ -1392,71 +1383,44 @@ private fun ManagementConfirmationDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
 ) {
-    val (title, message, confirmLabel, confirmColor) = when (confirmation) {
-        ManagementConfirmation.Archive -> Quadruple(
+    val (title, message, confirmLabel) = when (confirmation) {
+        ManagementConfirmation.Archive -> Triple(
             "归档活动？",
             "归档后活动将变为只读状态，无法再添加新账单。确定继续吗？",
             "归档活动",
-            MaterialTheme.colorScheme.primary,
         )
-        ManagementConfirmation.Unarchive -> Quadruple(
+        ManagementConfirmation.Unarchive -> Triple(
             "取消归档活动？",
             "取消归档后将恢复活动写入口；已有账务数据和参与人名单保持不变。确定继续吗？",
             "取消归档",
-            MaterialTheme.colorScheme.primary,
         )
-        ManagementConfirmation.Leave -> Quadruple(
+        ManagementConfirmation.Leave -> Triple(
             "退出活动？",
             "退出后您将无法继续记录或查看此活动中的新变化。确定退出吗？",
             "退出活动",
-            MaterialTheme.colorScheme.primary,
         )
-        ManagementConfirmation.Delete -> Quadruple(
+        ManagementConfirmation.Delete -> Triple(
             "删除活动？",
             "删除后活动将从正常列表中移除，相关历史记录仍由系统保留。此操作不可撤销。",
             "删除活动",
-            ErrorRed,
         )
-        ManagementConfirmation.DeleteParticipant -> Quadruple(
+        ManagementConfirmation.DeleteParticipant -> Triple(
             "删除参与人？",
             "删除后将无法再使用该参与人记录新的账单。若参与人已绑定或已有账务事实，服务端会拒绝此操作。确定继续吗？",
             "删除参与人",
-            ErrorRed,
         )
     }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(text = title, style = SharedLedgerTextStyles.CardTitle) },
-        text = { Text(text = message, style = SharedLedgerTextStyles.BodySecondary) },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(text = "取消", style = SharedLedgerTextStyles.BodySecondary)
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = onConfirm,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = confirmColor,
-                    contentColor = if (confirmation == ManagementConfirmation.Delete) {
-                        MaterialTheme.colorScheme.onError
-                    } else {
-                        MaterialTheme.colorScheme.onPrimary
-                    },
-                ),
-            ) {
-                Text(text = confirmLabel, style = SharedLedgerTextStyles.BodySecondary)
-            }
-        },
+    SharedLedgerDialog(
+        onDismiss = onDismiss,
+        title = title,
+        text = message,
+        dismissText = "取消",
+        confirmText = confirmLabel,
+        destructive = confirmation == ManagementConfirmation.Delete ||
+            confirmation == ManagementConfirmation.DeleteParticipant,
+        onConfirm = onConfirm,
     )
 }
-
-private data class Quadruple<out A, out B, out C, out D>(
-    val first: A,
-    val second: B,
-    val third: C,
-    val fourth: D,
-)
 
 @Preview(name = "活动管理", showBackground = true, widthDp = 390, heightDp = 844)
 @Composable

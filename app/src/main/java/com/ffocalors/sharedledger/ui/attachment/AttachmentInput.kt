@@ -4,9 +4,6 @@ import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
@@ -22,6 +19,7 @@ import com.ffocalors.sharedledger.data.attachment.AttachmentCameraFileManager
 import com.ffocalors.sharedledger.data.attachment.AttachmentPickerLimits
 import com.ffocalors.sharedledger.data.attachment.AttachmentPhotoPickerContract
 import com.ffocalors.sharedledger.data.attachment.resolveAttachmentDisplayName
+import com.ffocalors.sharedledger.ui.components.SharedLedgerDialog
 import kotlinx.coroutines.launch
 
 data class AttachmentInputSelection(
@@ -166,15 +164,13 @@ fun AttachmentInputSourceDialog(
     title: String = "添加附件",
 ) {
     if (!controller.isSourceChooserVisible) return
-    AlertDialog(
-        onDismissRequest = controller.dismissSourceChooser,
-        title = { Text(title) },
-        text = { Text("请选择图片来源") },
-        confirmButton = {
-            TextButton(onClick = controller.launchGallery) { Text("相册") }
-        },
-        dismissButton = {
-            TextButton(onClick = controller.launchCamera) { Text("拍照") }
-        },
+    SharedLedgerDialog(
+        onDismiss = controller.dismissSourceChooser,
+        title = title,
+        text = "请选择图片来源",
+        dismissText = "拍照",
+        onDismissClick = controller.launchCamera,
+        confirmText = "相册",
+        onConfirm = controller.launchGallery,
     )
 }

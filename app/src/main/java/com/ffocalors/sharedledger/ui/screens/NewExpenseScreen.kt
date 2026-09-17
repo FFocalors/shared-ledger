@@ -7,10 +7,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -39,8 +37,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerDialog
 import androidx.compose.material3.rememberDatePickerState
@@ -63,11 +59,13 @@ import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.data.expense.ExpenseSplitMethod
 import com.ffocalors.sharedledger.data.exchange.SupportedExchangeCurrency
 import com.ffocalors.sharedledger.data.exchange.ExchangeRate
+import com.ffocalors.sharedledger.ui.components.CurrencyFlag
 import com.ffocalors.sharedledger.ui.components.ErrorBanner
 import com.ffocalors.sharedledger.ui.components.ParticipantAmountRow
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.SegmentedControl
 import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
+import com.ffocalors.sharedledger.ui.components.SharedLedgerCurrencyDropdownMenu
 import com.ffocalors.sharedledger.ui.components.SharedLedgerPrimaryButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
@@ -78,6 +76,7 @@ import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.IconContainerOrange
 import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.IconContainerTertiary
+import com.ffocalors.sharedledger.ui.theme.ComponentSizes
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
@@ -374,6 +373,7 @@ fun NewExpenseScreen(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
                                     ) {
+                                        CurrencyFlag(draft.currency)
                                         Text(
                                             draft.currency.uppercase(),
                                             style = SharedLedgerTextStyles.Label,
@@ -389,45 +389,20 @@ fun NewExpenseScreen(
                                         }
                                     }
                                 }
-                                DropdownMenu(
+                                SharedLedgerCurrencyDropdownMenu(
                                     expanded = showCurrencyMenu,
                                     onDismissRequest = { showCurrencyMenu = false },
-                                    modifier = Modifier
-                                        .widthIn(min = 184.dp, max = 248.dp)
-                                        .heightIn(max = 336.dp),
-                                ) {
-                                    availableCurrencyOptions.forEach { currency ->
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(
-                                                    currencyOptionLabel(currency),
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis,
-                                                )
-                                            },
-                                            leadingIcon = {
-                                                if (currency.code.equals(draft.currency, true)) {
-                                                    Icon(
-                                                        Icons.Rounded.Check,
-                                                        contentDescription = "当前币种",
-                                                        tint = MaterialTheme.colorScheme.primary,
-                                                    )
-                                                } else {
-                                                    androidx.compose.foundation.layout.Spacer(Modifier.size(SharedLedgerDimens.IconMedium))
-                                                }
-                                            },
-                                            onClick = {
-                                                draft = draft.copy(
-                                                    currency = currency.code,
-                                                    fxRate = if (currency.code.equals(baseCurrency, true)) "1" else draft.fxRate,
-                                                )
-                                                onCurrencySelected?.invoke(currency.code)
-                                                showCurrencyMenu = false
-                                            },
-                                            modifier = Modifier.defaultMinSize(minHeight = 48.dp),
+                                    currencyCodes = availableCurrencyOptions.map { it.code },
+                                    selectedCode = draft.currency,
+                                    onCurrencySelected = { code ->
+                                        draft = draft.copy(
+                                            currency = code,
+                                            fxRate = if (code.equals(baseCurrency, true)) "1" else draft.fxRate,
                                         )
-                                    }
-                                }
+                                        onCurrencySelected?.invoke(code)
+                                        showCurrencyMenu = false
+                                    },
+                                )
                             }
                         },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -477,7 +452,7 @@ fun NewExpenseScreen(
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Text("分摊方式", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
-                            SegmentedControl(options = listOf("手动分摊", "AA均摊"), selectedIndex = if (draft.splitMethod == ExpenseSplitMethod.Manual) 0 else 1, onSelected = { draft = draft.copy(splitMethod = if (it == 0) ExpenseSplitMethod.Manual else ExpenseSplitMethod.Aa) }, modifier = Modifier.widthIn(max = 172.dp))
+                            SegmentedControl(options = listOf("手动分摊", "AA均摊"), selectedIndex = if (draft.splitMethod == ExpenseSplitMethod.Manual) 0 else 1, onSelected = { draft = draft.copy(splitMethod = if (it == 0) ExpenseSplitMethod.Manual else ExpenseSplitMethod.Aa) }, modifier = Modifier.widthIn(max = ComponentSizes.SegmentedControlMaxWidth))
                         }
                     }
                     Surface(shape = CircleShape, color = if (splitTotal.compareTo(amount) == 0) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer) {
@@ -700,22 +675,12 @@ private fun currencySymbol(code: String): String = when (code.uppercase()) { "EU
 
 internal fun currencyOptionLabel(currency: SupportedExchangeCurrency): String {
     val code = currency.code.uppercase()
-    val (flag, name) = currencyFlagAndName(code)
-    return if (name.isBlank()) code else "$flag $name $code"
-}
-
-private fun currencyFlagAndName(code: String): Pair<String, String> = when (code.uppercase()) {
-    "CNY" -> "🇨🇳" to "人民币"
-    "JPY" -> "🇯🇵" to "日元"
-    "USD" -> "🇺🇸" to "美元"
-    "EUR" -> "🇪🇺" to "欧元"
-    "HKD" -> "🇭🇰" to "港币"
-    "GBP" -> "🇬🇧" to "英镑"
-    "AUD" -> "🇦🇺" to "澳元"
-    "CAD" -> "🇨🇦" to "加元"
-    "KRW" -> "🇰🇷" to "韩元"
-    "SGD" -> "🇸🇬" to "新加坡元"
-    else -> "" to ""
+    val displayName = currency.displayName.trim()
+    return if (displayName.isBlank() || displayName.equals(code, ignoreCase = true)) {
+        code
+    } else {
+        "$code · $displayName"
+    }
 }
 
 @Preview(name = "新增消费", showBackground = true, widthDp = 390, heightDp = 844)

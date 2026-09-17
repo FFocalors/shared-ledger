@@ -154,6 +154,18 @@ fun ErrorState(
     }
 }
 
+/**
+ * 终态错误（已删除/不存在/无权限）判断：重试不会成功，调用方应隐藏重试按钮。
+ * 状态层目前只向界面传递 message 字符串，故用保守关键字匹配。
+ */
+fun isTerminalActivityError(message: String?): Boolean =
+    message != null && (
+        message.contains("已删除") ||
+            message.contains("不存在") ||
+            message.contains("无权限") ||
+            message.contains("没有权限")
+        )
+
 @Composable
 fun ErrorBanner(
     message: String,

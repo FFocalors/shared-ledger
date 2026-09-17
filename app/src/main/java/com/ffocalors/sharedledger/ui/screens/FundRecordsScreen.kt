@@ -18,7 +18,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountBalanceWallet
-import androidx.compose.material.icons.rounded.ArrowForward
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import com.ffocalors.sharedledger.ui.components.SharedLedgerIcons
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Sort
 import androidx.compose.material3.HorizontalDivider
@@ -230,7 +231,7 @@ fun FundRecordsScreen(
                                 SharedLedgerButton("新增预存", callback, modifier = Modifier.weight(1f), tone = SharedLedgerButtonTone.WarmSecondary, icon = Icons.Rounded.AccountBalanceWallet)
                             }
                             onPrepaymentReturn?.let { callback ->
-                                SharedLedgerButton("返还预存", callback, modifier = Modifier.weight(1f), tone = SharedLedgerButtonTone.Neutral, icon = Icons.Rounded.ArrowForward)
+                                SharedLedgerButton("返还预存", callback, modifier = Modifier.weight(1f), tone = SharedLedgerButtonTone.Neutral, icon = SharedLedgerIcons.FundRecords)
                             }
                         }
                     }
@@ -383,7 +384,7 @@ private fun RecordCardContent(record: FundRecord, voided: Boolean, showChevron: 
                 style = SharedLedgerTextStyles.CardTitle.copy(textDecoration = if (voided) TextDecoration.LineThrough else TextDecoration.None),
                 color = if (voided) TextSecondary.copy(alpha = 0.5f) else DeepCharcoal,
             )
-            Icon(Icons.Rounded.ArrowForward, contentDescription = "资金流向", tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(SharedLedgerDimens.IconSmall))
+            Icon(Icons.AutoMirrored.Rounded.ArrowForward, contentDescription = "资金流向", tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(SharedLedgerDimens.IconSmall))
             Text(
                 record.to.displayName,
                 modifier = Modifier.weight(1f, fill = false),

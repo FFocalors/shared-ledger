@@ -15,9 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,7 +23,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,7 +38,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.auth.PasswordChangeUiState
-import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
+import com.ffocalors.sharedledger.ui.components.SharedLedgerDialog
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 
@@ -58,10 +55,10 @@ internal fun PasswordChangeDialog(
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(if (state.isSuccess) "密码已更新" else "修改登录密码") },
-        text = {
+    SharedLedgerDialog(
+        onDismiss = onDismiss,
+        title = if (state.isSuccess) "密码已更新" else "修改登录密码",
+        textContent = {
             if (state.isSuccess) {
                 Text(
                     text = state.message.orEmpty(),
@@ -108,28 +105,17 @@ internal fun PasswordChangeDialog(
                 }
             }
         },
-        confirmButton = {
+        dismissText = if (state.isSuccess) null else "取消",
+        dismissEnabled = !state.isSubmitting,
+        confirmText = if (state.isSuccess) "完成" else "保存",
+        confirmEnabled = state.isSuccess ||
+            (newPassword.isNotEmpty() && confirmPassword.isNotEmpty() && !state.isSubmitting),
+        confirmLoading = state.isSubmitting,
+        onConfirm = {
             if (state.isSuccess) {
-                Button(onClick = onDismiss) { Text("完成") }
+                onDismiss()
             } else {
-                Button(
-                    onClick = { onSubmit(newPassword, confirmPassword) },
-                    enabled = newPassword.isNotEmpty() && confirmPassword.isNotEmpty() && !state.isSubmitting,
-                ) {
-                    if (state.isSubmitting) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(SharedLedgerDimens.IconSmall),
-                            strokeWidth = 2.dp,
-                        )
-                    } else {
-                        Text("保存")
-                    }
-                }
-            }
-        },
-        dismissButton = {
-            if (!state.isSuccess) {
-                TextButton(onClick = onDismiss, enabled = !state.isSubmitting) { Text("取消") }
+                onSubmit(newPassword, confirmPassword)
             }
         },
     )

@@ -43,6 +43,7 @@ import com.ffocalors.sharedledger.ui.components.SharedLedgerBottomActionBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.components.SubActivityCard
 import com.ffocalors.sharedledger.ui.components.SubActivityUiModel
+import com.ffocalors.sharedledger.ui.components.isTerminalActivityError
 import com.ffocalors.sharedledger.data.activity.ActivityDetail
 import com.ffocalors.sharedledger.ui.demo.DemoData
 import com.ffocalors.sharedledger.ui.theme.IconContainerNeutralTint
@@ -228,7 +229,10 @@ fun LargeActivityScreen(
                     }
                 } else if (errorMessage != null) {
                     item(key = "activity-state") {
-                        ErrorState(message = errorMessage, onRetry = onRetry)
+                        ErrorState(
+                            message = errorMessage,
+                            onRetry = if (isTerminalActivityError(errorMessage)) null else onRetry,
+                        )
                     }
                 } else {
                     item(key = "summary") {

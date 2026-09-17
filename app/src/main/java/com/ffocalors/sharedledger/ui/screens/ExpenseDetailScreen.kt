@@ -75,6 +75,7 @@ import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.theme.AppBackground
+import com.ffocalors.sharedledger.ui.theme.ComponentSizes
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
@@ -620,8 +621,8 @@ private fun AttachmentCard(
 ) {
     Surface(
         modifier = Modifier
-            .width(180.dp)
-            .height(116.dp)
+            .width(ComponentSizes.AttachmentCardWidth)
+            .height(ComponentSizes.AttachmentCardHeight)
             .clip(SharedLedgerRadius.Medium)
             .then(onClick?.let { callback -> Modifier.clickable(onClick = callback) } ?: Modifier)
             .then(onClick?.let { Modifier.semantics { contentDescription = "查看${attachment.label}" } } ?: Modifier),

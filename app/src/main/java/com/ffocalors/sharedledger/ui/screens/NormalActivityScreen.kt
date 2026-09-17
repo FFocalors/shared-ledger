@@ -42,6 +42,7 @@ import com.ffocalors.sharedledger.ui.components.SettlementSummaryCard
 import com.ffocalors.sharedledger.ui.components.SharedLedgerActionItemsRow
 import com.ffocalors.sharedledger.ui.components.SharedLedgerBottomActionBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.isTerminalActivityError
 import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
@@ -192,7 +193,10 @@ fun NormalActivityScreen(
                     }
                 } else if (errorMessage != null) {
                     item(key = "activity-state") {
-                        ErrorState(message = errorMessage, onRetry = onRetry)
+                        ErrorState(
+                            message = errorMessage,
+                            onRetry = if (isTerminalActivityError(errorMessage)) null else onRetry,
+                        )
                     }
                 } else {
                     item(key = "summary") {
@@ -238,7 +242,10 @@ fun NormalActivityScreen(
                         }
                     } else if (expenseErrorMessage != null) {
                         item(key = "expenses-state") {
-                            ErrorState(message = expenseErrorMessage, onRetry = onExpenseRetry)
+                            ErrorState(
+                                message = expenseErrorMessage,
+                                onRetry = if (isTerminalActivityError(expenseErrorMessage)) null else onExpenseRetry,
+                            )
                         }
                     } else if (expenses.isEmpty()) {
                         item(key = "expenses-empty") {

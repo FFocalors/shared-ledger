@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
 import androidx.compose.material.icons.rounded.AccountBalanceWallet
-import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.RequestQuote
 import androidx.compose.material.icons.rounded.Save
@@ -82,7 +82,7 @@ private fun BottomActionBarPreview() = PreviewFrame {
     SharedLedgerBottomActionBar(
         actions = listOf(
             BottomActionItem("转账", Icons.Rounded.SwapHoriz, {}),
-            BottomActionItem("记一笔", Icons.Rounded.Add, {}),
+            BottomActionItem("记一笔", Icons.Rounded.Edit, {}),
             BottomActionItem("收款", Icons.Rounded.RequestQuote, {}),
         ),
     )
