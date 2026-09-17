@@ -54,6 +54,8 @@ import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
+import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.theme.IconContainerOrange
 import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
@@ -160,6 +162,7 @@ fun TransferScreen(
     val title = if (isTransfer) "转账" else "收款"
     val isAmountValid = selected != null && isValidTransferAmount(amountText, selected.amount)
     val isFormVisible = !state.isLoading && state.errorMessage == null && state.emptyMessage == null
+    val hazeState = rememberSharedLedgerHazeState()
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -170,11 +173,12 @@ fun TransferScreen(
                 showBackButton = onBack != null,
                 onBackClick = onBack,
                 containerColor = MaterialTheme.colorScheme.background,
+                hazeState = hazeState,
             )
         },
         bottomBar = {
             if (isFormVisible && selected != null && onConfirm != null) {
-                SharedLedgerCtaBottomBar {
+                SharedLedgerCtaBottomBar(hazeState = hazeState) {
                     SharedLedgerButton(
                         text = if (selected.kind == SettlementCandidateKind.ON_BEHALF) {
                             "确认代记已付款"
@@ -208,24 +212,36 @@ fun TransferScreen(
     ) { innerPadding ->
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+                .fillMaxSize(),
             contentAlignment = Alignment.TopCenter,
         ) {
             when {
-                state.isLoading -> LoadingState(message = "正在加载真实债务…")
-                state.errorMessage != null -> ErrorState(message = state.errorMessage, onRetry = onRetry)
-                state.emptyMessage != null -> EmptyState(title = state.emptyMessage, actionLabel = "刷新", onAction = onRetry)
+                state.isLoading -> LoadingState(
+                    modifier = Modifier.padding(innerPadding),
+                    message = "正在加载真实债务…",
+                )
+                state.errorMessage != null -> ErrorState(
+                    message = state.errorMessage,
+                    modifier = Modifier.padding(innerPadding),
+                    onRetry = onRetry,
+                )
+                state.emptyMessage != null -> EmptyState(
+                    title = state.emptyMessage,
+                    modifier = Modifier.padding(innerPadding),
+                    actionLabel = "刷新",
+                    onAction = onRetry,
+                )
                 else -> Column(
                     modifier = Modifier
                         .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
-                        .fillMaxWidth()
+                        .fillMaxSize()
+                        .sharedLedgerHazeSource(hazeState)
                         .verticalScroll(rememberScrollState())
                         .padding(
                             start = SharedLedgerDimens.PageHorizontalPadding,
-                            top = SharedLedgerSpacing.Medium,
+                            top = innerPadding.calculateTopPadding() + SharedLedgerSpacing.Medium,
                             end = SharedLedgerDimens.PageHorizontalPadding,
-                            bottom = SharedLedgerSpacing.Medium,
+                            bottom = innerPadding.calculateBottomPadding() + SharedLedgerSpacing.Medium,
                         ),
                     verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Large),
                 ) {

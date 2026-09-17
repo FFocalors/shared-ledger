@@ -79,6 +79,8 @@ import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonVariant
 import com.ffocalors.sharedledger.ui.components.SharedLedgerDialog
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
+import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.components.isTerminalActivityError
 import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.AppSurface
@@ -227,6 +229,7 @@ fun ActivityManagementScreen(
         action()
         actionMessage = message
     }
+    val hazeState = rememberSharedLedgerHazeState()
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -242,6 +245,7 @@ fun ActivityManagementScreen(
                 titleColor = MaterialTheme.colorScheme.primary,
                 moreButtonContainerColor = StitchSurfaceContainer,
                 containerColor = AppBackground,
+                hazeState = hazeState,
             )
         },
     ) { innerPadding ->
@@ -253,6 +257,7 @@ fun ActivityManagementScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
+                    .sharedLedgerHazeSource(hazeState)
                     .verticalScroll(rememberScrollState())
                     .padding(
                         start = SharedLedgerDimens.PageHorizontalPadding,

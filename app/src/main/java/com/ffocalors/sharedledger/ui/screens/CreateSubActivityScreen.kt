@@ -37,6 +37,8 @@ import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
+import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.demo.DemoData
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
@@ -68,6 +70,7 @@ fun CreateSubActivityScreen(
     var selectedNamesCsv by rememberSaveable(displayParticipants.joinToString("|")) {
         mutableStateOf(displayParticipants.joinToString("|") { it.name })
     }
+    val hazeState = rememberSharedLedgerHazeState()
     val selectedNames = selectedNamesCsv.split("|").filter { it.isNotBlank() }.toSet()
 
     Scaffold(
@@ -78,11 +81,12 @@ fun CreateSubActivityScreen(
                 title = "创建子活动",
                 showBackButton = true,
                 onBackClick = onBack,
+                hazeState = hazeState,
                 containerColor = MaterialTheme.colorScheme.background,
             )
         },
         bottomBar = {
-            SharedLedgerCtaBottomBar(backgroundColor = MaterialTheme.colorScheme.background) {
+            SharedLedgerCtaBottomBar(backgroundColor = MaterialTheme.colorScheme.background, hazeState = hazeState) {
                 SharedLedgerButton(
                     text = "创建子活动",
                     onClick = { onCreate(activityName.trim()) },
@@ -101,13 +105,14 @@ fun CreateSubActivityScreen(
             modifier = Modifier
                 .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
                 .fillMaxSize()
+                .sharedLedgerHazeSource(hazeState)
+                .verticalScroll(rememberScrollState())
                 .padding(
                     start = SharedLedgerDimens.PageHorizontalPadding,
                     top = innerPadding.calculateTopPadding() + SharedLedgerSpacing.Medium,
                     end = SharedLedgerDimens.PageHorizontalPadding,
                     bottom = innerPadding.calculateBottomPadding() + SharedLedgerSpacing.Medium,
                 )
-                .verticalScroll(rememberScrollState())
                 .imePadding(),
             verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Large),
         ) {

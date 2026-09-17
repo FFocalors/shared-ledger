@@ -43,6 +43,8 @@ import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
+import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
@@ -109,6 +111,7 @@ fun PrepaymentScreen(
     val actingPartyValid = selected?.let { choice ->
         isValidPrepaymentActingParty(choice, currentId, selectedOnBehalfId)
     } == true
+    val hazeState = rememberSharedLedgerHazeState()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -117,12 +120,13 @@ fun PrepaymentScreen(
                 title = if (mode == PrepaymentMode.FUND) "新增预存" else "返还预存",
                 showBackButton = true,
                 onBackClick = onBack,
+                hazeState = hazeState,
             )
         },
         bottomBar = {
             val choice = selected
             if (!isLoading && errorMessage == null && candidates.isNotEmpty() && choice != null) {
-                SharedLedgerCtaBottomBar {
+                SharedLedgerCtaBottomBar(hazeState = hazeState) {
                     SharedLedgerButton(
                         text = if (mode == PrepaymentMode.FUND) "确认新增预存" else "确认返还预存",
                         onClick = {
@@ -141,10 +145,12 @@ fun PrepaymentScreen(
         },
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding).widthIn(max = SharedLedgerDimens.ContentMaxWidth),
+            modifier = Modifier.widthIn(max = SharedLedgerDimens.ContentMaxWidth).fillMaxSize().sharedLedgerHazeSource(hazeState),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                horizontal = SharedLedgerDimens.PageHorizontalPadding,
-                vertical = SharedLedgerSpacing.Large,
+                start = SharedLedgerDimens.PageHorizontalPadding,
+                top = padding.calculateTopPadding() + SharedLedgerSpacing.Large,
+                end = SharedLedgerDimens.PageHorizontalPadding,
+                bottom = padding.calculateBottomPadding() + SharedLedgerSpacing.Large,
             ),
             verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
         ) {

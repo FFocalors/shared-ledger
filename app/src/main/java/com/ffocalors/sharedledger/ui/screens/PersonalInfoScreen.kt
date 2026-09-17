@@ -55,6 +55,8 @@ import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
+import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.auth.PasswordChangeUiState
 import com.ffocalors.sharedledger.ui.profile.CollaborationIdentity
 import com.ffocalors.sharedledger.ui.profile.PersonalOverviewUiState
@@ -93,6 +95,7 @@ fun PersonalInfoScreen(
     val coroutineScope = rememberCoroutineScope()
     var showPasswordDialog by rememberSaveable { mutableStateOf(false) }
     var showPrivacyNotice by rememberSaveable { mutableStateOf(false) }
+    val hazeState = rememberSharedLedgerHazeState()
     Surface(modifier = modifier.fillMaxSize(), color = AppBackground) {
         androidx.compose.material3.Scaffold(
             containerColor = AppBackground,
@@ -103,6 +106,7 @@ fun PersonalInfoScreen(
                     onBackClick = onBack,
                     showMoreButton = false,
                     containerColor = AppBackground,
+                    hazeState = hazeState,
                 )
             },
         ) { padding ->
@@ -112,7 +116,7 @@ fun PersonalInfoScreen(
             ) {
             LazyColumn(
                 state = listState,
-                modifier = Modifier.widthIn(max = SharedLedgerDimens.ContentMaxWidth).fillMaxSize(),
+                modifier = Modifier.widthIn(max = SharedLedgerDimens.ContentMaxWidth).fillMaxSize().sharedLedgerHazeSource(hazeState),
                 contentPadding = PaddingValues(
                     start = SharedLedgerDimens.PageHorizontalPadding,
                     top = padding.calculateTopPadding() + SharedLedgerSpacing.XSmall,

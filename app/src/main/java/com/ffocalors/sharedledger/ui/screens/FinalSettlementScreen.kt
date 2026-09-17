@@ -33,6 +33,8 @@ import com.ffocalors.sharedledger.ui.components.ErrorState
 import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
+import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.theme.IconContainerOrange
@@ -185,6 +187,7 @@ fun FinalSettlementScreen(
     errorMessage: String? = null,
     onRetry: (() -> Unit)? = null,
 ) {
+    val hazeState = rememberSharedLedgerHazeState()
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
@@ -193,25 +196,26 @@ fun FinalSettlementScreen(
                 title = "共享账本",
                 showBackButton = onBack != null,
                 onBackClick = onBack,
+                hazeState = hazeState,
                 containerColor = MaterialTheme.colorScheme.background,
             )
         },
     ) { innerPadding ->
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+                .fillMaxSize(),
             contentAlignment = Alignment.TopCenter,
         ) {
             LazyColumn(
                 modifier = Modifier
                     .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
-                    .fillMaxWidth(),
+                    .fillMaxSize()
+                    .sharedLedgerHazeSource(hazeState),
                 contentPadding = PaddingValues(
                     start = SharedLedgerDimens.PageHorizontalPadding,
-                    top = SharedLedgerSpacing.Large,
+                    top = innerPadding.calculateTopPadding() + SharedLedgerSpacing.Large,
                     end = SharedLedgerDimens.PageHorizontalPadding,
-                    bottom = SharedLedgerSpacing.XLarge,
+                    bottom = innerPadding.calculateBottomPadding() + SharedLedgerSpacing.XLarge,
                 ),
                 verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
             ) {

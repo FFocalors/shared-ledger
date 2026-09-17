@@ -3,10 +3,7 @@ package com.ffocalors.sharedledger.ui.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -41,6 +38,8 @@ import com.ffocalors.sharedledger.ui.components.SettlementSummaryCard
 import com.ffocalors.sharedledger.ui.components.SharedLedgerActionItemsRow
 import com.ffocalors.sharedledger.ui.components.SharedLedgerBottomActionBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
+import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.components.SubActivityCard
 import com.ffocalors.sharedledger.ui.components.SubActivityUiModel
 import com.ffocalors.sharedledger.ui.components.isTerminalActivityError
@@ -162,6 +161,7 @@ fun LargeActivityScreen(
         )
     } ?: subActivities
     val outstandingDebt = activity?.summary?.totalDebt?.toBigDecimalOrNull()
+    val hazeState = rememberSharedLedgerHazeState()
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -171,6 +171,7 @@ fun LargeActivityScreen(
                 title = displayTitle,
                 showBackButton = true,
                 onBackClick = onBack,
+                hazeState = hazeState,
                 onMoreClick = onManageActivity,
                 containerColor = MaterialTheme.colorScheme.background,
                 businessAction = {
@@ -190,19 +191,11 @@ fun LargeActivityScreen(
                 onReceive?.let { BottomActionItem("收款", Icons.Rounded.RequestQuote, it) },
             )
             if (bottomActions.isNotEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .navigationBarsPadding()
-                        .padding(
-                            start = SharedLedgerDimens.PageHorizontalPadding,
-                            top = SharedLedgerSpacing.Medium,
-                            end = SharedLedgerDimens.PageHorizontalPadding,
-                            bottom = SharedLedgerSpacing.Large,
-                        ),
-                    contentAlignment = Alignment.TopCenter,
-                ) {
-                    SharedLedgerBottomActionBar(actions = bottomActions)
-                }
+                SharedLedgerBottomActionBar(
+                    actions = bottomActions,
+                    backgroundColor = MaterialTheme.colorScheme.background,
+                    hazeState = hazeState,
+                )
             }
         },
     ) { innerPadding ->
@@ -213,8 +206,8 @@ fun LargeActivityScreen(
             LazyColumn(
                 modifier = Modifier
                     .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
-                    .fillMaxWidth()
-                    .fillMaxHeight(),
+                    .fillMaxSize()
+                    .sharedLedgerHazeSource(hazeState),
                 contentPadding = PaddingValues(
                     start = SharedLedgerDimens.PageHorizontalPadding,
                     top = innerPadding.calculateTopPadding() + SharedLedgerSpacing.Medium,

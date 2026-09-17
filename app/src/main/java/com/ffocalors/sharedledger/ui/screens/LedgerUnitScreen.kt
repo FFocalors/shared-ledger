@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -54,6 +53,8 @@ import com.ffocalors.sharedledger.ui.components.SharedLedgerActionItemsRow
 import com.ffocalors.sharedledger.ui.components.SharedLedgerBottomActionBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerDialog
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
+import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.components.isTerminalActivityError
 import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
@@ -162,6 +163,7 @@ fun LedgerUnitScreen(
     } ?: emptyList()
     var expenseActionSheetVisible by remember { mutableStateOf(false) }
     var deleteConfirmationVisible by remember { mutableStateOf(false) }
+    val hazeState = rememberSharedLedgerHazeState()
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
@@ -170,6 +172,7 @@ fun LedgerUnitScreen(
                 title = displayTitle,
                 showBackButton = true,
                 onBackClick = onBack,
+                hazeState = hazeState,
                 actionIcon = onDeleteSubActivity?.let { Icons.Rounded.Delete },
                 actionContentDescription = "删除子活动",
                 onActionClick = onDeleteSubActivity?.let { { deleteConfirmationVisible = true } },
@@ -195,19 +198,11 @@ fun LedgerUnitScreen(
                 onReceive?.let { BottomActionItem("收款", Icons.Rounded.RequestQuote, it) },
             )
             if (bottomActions.isNotEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .navigationBarsPadding()
-                        .padding(
-                            start = SharedLedgerDimens.PageHorizontalPadding,
-                            top = SharedLedgerSpacing.Medium,
-                            end = SharedLedgerDimens.PageHorizontalPadding,
-                            bottom = SharedLedgerSpacing.Large,
-                        ),
-                    contentAlignment = Alignment.TopCenter,
-                ) {
-                    SharedLedgerBottomActionBar(actions = bottomActions)
-                }
+                SharedLedgerBottomActionBar(
+                    actions = bottomActions,
+                    backgroundColor = MaterialTheme.colorScheme.background,
+                    hazeState = hazeState,
+                )
             }
         },
     ) { innerPadding ->
@@ -218,7 +213,8 @@ fun LedgerUnitScreen(
             LazyColumn(
                 modifier = Modifier
                     .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
-                    .fillMaxWidth(),
+                    .fillMaxSize()
+                    .sharedLedgerHazeSource(hazeState),
                 contentPadding = PaddingValues(
                     start = SharedLedgerDimens.PageHorizontalPadding,
                     top = innerPadding.calculateTopPadding() + SharedLedgerSpacing.Medium,

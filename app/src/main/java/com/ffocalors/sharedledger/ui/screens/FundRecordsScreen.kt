@@ -63,6 +63,8 @@ import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
+import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.AppOutlineVariant
 import com.ffocalors.sharedledger.ui.theme.DeepCharcoal
@@ -193,6 +195,7 @@ fun FundRecordsScreen(
     onPrepayment: (() -> Unit)? = null,
     onPrepaymentReturn: (() -> Unit)? = null,
 ) {
+    val hazeState = rememberSharedLedgerHazeState()
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = AppBackground,
@@ -206,19 +209,25 @@ fun FundRecordsScreen(
                 onBackClick = onBack,
                 showMoreButton = onRefresh != null,
                 onMoreClick = onRefresh,
+                hazeState = hazeState,
             )
         },
     ) { paddingValues ->
         Box(
-            modifier = Modifier.fillMaxSize().padding(paddingValues),
+            modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.TopCenter,
         ) {
             LazyColumn(
                 modifier = Modifier
                     .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
-                    .fillMaxWidth()
-                    .padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
-                contentPadding = PaddingValues(bottom = SharedLedgerSpacing.Large),
+                    .fillMaxSize()
+                    .sharedLedgerHazeSource(hazeState),
+                contentPadding = PaddingValues(
+                    start = SharedLedgerDimens.PageHorizontalPadding,
+                    top = paddingValues.calculateTopPadding(),
+                    end = SharedLedgerDimens.PageHorizontalPadding,
+                    bottom = paddingValues.calculateBottomPadding() + SharedLedgerSpacing.Large,
+                ),
                 verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
             ) {
                 item(key = "filters") {

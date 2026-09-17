@@ -53,6 +53,8 @@ import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerCurrencyDropdownMenu
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
+import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.components.currencyNameZh
 import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
@@ -84,6 +86,7 @@ fun CreateActivityScreen(
     val currencyOptions = remember(supportedCurrencies) { (listOf(SupportedExchangeCurrency("CNY", "人民币", null)) + supportedCurrencies).distinctBy { it.code } }
     val selectedKind = ActivityKind.values().firstOrNull { it.name == selectedKindName }
         ?: ActivityKind.Standard
+    val hazeState = rememberSharedLedgerHazeState()
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -95,10 +98,11 @@ fun CreateActivityScreen(
                 onBackClick = onBackClick,
                 containerColor = AppBackground,
                 showMoreButton = false,
+                hazeState = hazeState,
             )
         },
         bottomBar = {
-            SharedLedgerCtaBottomBar(backgroundColor = AppBackground) {
+            SharedLedgerCtaBottomBar(backgroundColor = AppBackground, hazeState = hazeState) {
                 SharedLedgerButton(
                     text = "创建活动",
                     onClick = { onCreate(activityName, selectedKind, multiCurrencyEnabled, selectedCurrency) },
@@ -116,15 +120,16 @@ fun CreateActivityScreen(
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
                     .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
+                    .fillMaxSize()
+                    .sharedLedgerHazeSource(hazeState)
+                    .verticalScroll(rememberScrollState())
                     .padding(
                         start = SharedLedgerDimens.PageHorizontalPadding,
                         top = innerPadding.calculateTopPadding() + SharedLedgerSpacing.Medium,
                         end = SharedLedgerDimens.PageHorizontalPadding,
                         bottom = innerPadding.calculateBottomPadding() + SharedLedgerSpacing.Large,
                     )
-                    .verticalScroll(rememberScrollState())
                     .imePadding(),
                 verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Large),
             ) {

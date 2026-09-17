@@ -19,6 +19,9 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.semantics.Role
 import androidx.compose.material.icons.Icons
@@ -36,6 +39,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.CircleShape
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
@@ -51,6 +55,12 @@ import com.ffocalors.sharedledger.ui.theme.IconTintNeutral
 import com.ffocalors.sharedledger.ui.theme.IconTintOrange
 import com.ffocalors.sharedledger.ui.theme.IconTintSage
 import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLow
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 
 @Composable
 fun SharedLedgerTopBar(
@@ -70,14 +80,34 @@ fun SharedLedgerTopBar(
     titleStyle: TextStyle = SharedLedgerTextStyles.CardTitle,
     titleColor: Color = MaterialTheme.colorScheme.onBackground,
     moreButtonContainerColor: Color = Color.Transparent,
+    hazeState: HazeState? = null,
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = containerColor,
-    ) {
+    val chromeModifier = if (hazeState != null) {
+        Modifier
+            .hazeEffect(
+                state = hazeState,
+                style = chromeHazeStyle(containerColor),
+            ) {
+                mask = smoothAlphaMask(fadeOut = true)
+            }
+            .then(chromeColorOverlay(containerColor, fadeOut = true))
+    } else {
+        Modifier.drawWithCache {
+            val edgeBrush = Brush.verticalGradient(
+                colorStops = smoothAlphaColorStops(containerColor, fadeOut = true),
+                startY = 0f,
+                endY = size.height,
+            )
+            onDrawBehind {
+                drawRect(brush = edgeBrush)
+            }
+        }
+    }
+    Column(modifier = modifier.fillMaxWidth()) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .background(containerColor)
                 .statusBarsPadding(),
             contentAlignment = Alignment.Center,
         ) {
@@ -163,6 +193,12 @@ fun SharedLedgerTopBar(
                 }
             }
         }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(SharedLedgerDimens.ChromeTransitionDepth)
+                .then(chromeModifier),
+        )
     }
 }
 
@@ -171,11 +207,15 @@ fun SharedLedgerBottomActionBar(
     actions: List<BottomActionItem>,
     modifier: Modifier = Modifier,
     emphasizedIndex: Int = 1,
+    backgroundColor: Color = MaterialTheme.colorScheme.background,
+    hazeState: HazeState? = null,
 ) {
     if (actions.isEmpty()) return
-    Box(
-        modifier = modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center,
+    SharedLedgerBottomChrome(
+        modifier = modifier,
+        backgroundColor = backgroundColor,
+        imeAware = false,
+        hazeState = hazeState,
     ) {
         Surface(
             modifier = Modifier
@@ -366,32 +406,157 @@ private fun SharedLedgerActionItem(
 fun SharedLedgerCtaBottomBar(
     modifier: Modifier = Modifier,
     backgroundColor: Color = MaterialTheme.colorScheme.background,
+    hazeState: HazeState? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(
-                Brush.verticalGradient(
-                    0f to backgroundColor.copy(alpha = 0f),
-                    0.4f to backgroundColor,
-                ),
-            )
-            .imePadding()
-            .navigationBarsPadding(),
-        horizontalAlignment = Alignment.CenterHorizontally,
+    SharedLedgerBottomChrome(
+        modifier = modifier,
+        backgroundColor = backgroundColor,
+        imeAware = true,
+        hazeState = hazeState,
     ) {
         Column(
-            modifier = Modifier
-                .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
-                .fillMaxWidth()
-                .padding(
-                    start = SharedLedgerDimens.PageHorizontalPadding,
-                    top = SharedLedgerSpacing.XLarge,
-                    end = SharedLedgerDimens.PageHorizontalPadding,
-                    bottom = SharedLedgerSpacing.Large,
-                ),
+            modifier = Modifier.fillMaxWidth(),
             content = content,
         )
     }
 }
+
+/**
+ * Shared translucent edge between scrolling content and fixed bottom controls.
+ * The restrained multi-stop tint reads as frosted glass without applying a
+ * continuous backdrop blur to the scrolling layer.
+ */
+@Composable
+private fun SharedLedgerBottomChrome(
+    modifier: Modifier,
+    backgroundColor: Color,
+    imeAware: Boolean,
+    hazeState: HazeState?,
+    content: @Composable () -> Unit,
+) {
+    val insetModifier = if (imeAware) Modifier.imePadding() else Modifier
+    val chromeModifier = if (hazeState != null) {
+        Modifier.hazeEffect(
+            state = hazeState,
+            style = chromeHazeStyle(backgroundColor),
+        ) {
+            mask = smoothAlphaMask(fadeOut = false)
+        }.then(chromeColorOverlay(backgroundColor, fadeOut = false))
+    } else {
+        Modifier.background(
+            Brush.verticalGradient(
+                colorStops = smoothAlphaColorStops(backgroundColor, fadeOut = false),
+            ),
+        )
+    }
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .then(insetModifier)
+            .navigationBarsPadding(),
+        contentAlignment = Alignment.TopCenter,
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(SharedLedgerDimens.ChromeTransitionDepth)
+                    .then(chromeModifier),
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(backgroundColor)
+                    .padding(
+                        start = SharedLedgerDimens.PageHorizontalPadding,
+                        end = SharedLedgerDimens.PageHorizontalPadding,
+                        bottom = SharedLedgerSpacing.Large,
+                    ),
+                contentAlignment = Alignment.TopCenter,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.TopCenter,
+                ) {
+                    content()
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Builds a dense smoothstep alpha ramp so the tint changes continuously across
+ * the short chrome transition, without a visible midpoint stop or hard edge.
+ * The supplied color remains the only tint source, so theme/container changes
+ * are reflected by the same draw pass as the surrounding chrome.
+ */
+private fun smoothAlphaColorStops(
+    color: Color,
+    fadeOut: Boolean,
+): Array<Pair<Float, Color>> {
+    val stopCount = 17
+    return Array(stopCount) { index ->
+        val position = index / (stopCount - 1f)
+        val smoothPosition = position * position * (3f - 2f * position)
+        val alpha = if (fadeOut) 1f - smoothPosition else smoothPosition
+        position to color.copy(alpha = alpha)
+    }
+}
+
+private fun chromeHazeStyle(color: Color): HazeStyle = HazeStyle(
+    backgroundColor = color.copy(alpha = 0.96f),
+    tint = HazeTint(color.copy(alpha = 0.18f)),
+    blurRadius = 20.dp,
+    noiseFactor = 0f,
+)
+
+private fun smoothAlphaMask(fadeOut: Boolean): Brush = Brush.verticalGradient(
+    colorStops = smoothAlphaColorStops(Color.White, fadeOut),
+)
+
+/**
+ * Keeps the first/last strip pixel continuous with the opaque chrome while Haze
+ * still contributes sampled content through the rest of the transition.
+ */
+private fun chromeColorOverlay(color: Color, fadeOut: Boolean): Modifier =
+    Modifier.drawWithCache {
+        val overlayBrush = Brush.verticalGradient(
+            colorStops = edgeOverlayColorStops(color, fadeOut),
+            startY = 0f,
+            endY = size.height,
+        )
+        onDrawWithContent {
+            drawContent()
+            drawRect(brush = overlayBrush)
+        }
+    }
+
+/**
+ * Only bridges the opaque chrome edge. The remaining part of the strip stays
+ * transparent so Haze's sampled content remains visible instead of being
+ * replaced by a second full-length fixed-color fade.
+ */
+private fun edgeOverlayColorStops(
+    color: Color,
+    fadeOut: Boolean,
+): Array<Pair<Float, Color>> {
+    val stopCount = 17
+    val edgeStart = if (fadeOut) 0f else 0.6f
+    val edgeEnd = if (fadeOut) 0.4f else 1f
+    return Array(stopCount) { index ->
+        val position = index / (stopCount - 1f)
+        val edgeProgress = ((position - edgeStart) / (edgeEnd - edgeStart)).coerceIn(0f, 1f)
+        val smoothProgress = edgeProgress * edgeProgress * (3f - 2f * edgeProgress)
+        val alpha = if (fadeOut) 1f - smoothProgress else smoothProgress
+        position to color.copy(alpha = alpha)
+    }
+}
+
+@Composable
+fun rememberSharedLedgerHazeState(): HazeState = rememberHazeState()
+
+fun Modifier.sharedLedgerHazeSource(state: HazeState): Modifier = hazeSource(state)

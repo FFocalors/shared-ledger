@@ -4,9 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -37,6 +34,8 @@ import com.ffocalors.sharedledger.ui.components.SettlementSummaryCard
 import com.ffocalors.sharedledger.ui.components.SharedLedgerActionItemsRow
 import com.ffocalors.sharedledger.ui.components.SharedLedgerBottomActionBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
+import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.components.SubActivityCard
 import com.ffocalors.sharedledger.ui.components.SubActivityUiModel
 import com.ffocalors.sharedledger.ui.components.AddSubActivityButton
@@ -99,6 +98,7 @@ private fun LargeActivitySmokeTestScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
 ) {
+    val hazeState = rememberSharedLedgerHazeState()
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
@@ -107,6 +107,7 @@ private fun LargeActivitySmokeTestScreen(
                 title = "日本旅行",
                 showBackButton = true,
                 onBackClick = onBackClick,
+                hazeState = hazeState,
                 containerColor = MaterialTheme.colorScheme.background,
                 businessAction = {
                     ParticipantAvatarGroup(
@@ -119,25 +120,15 @@ private fun LargeActivitySmokeTestScreen(
             )
         },
         bottomBar = {
-            Box(
-                modifier = Modifier
-                    .navigationBarsPadding()
-                    .padding(
-                        start = SharedLedgerSpacing.Medium,
-                        top = SharedLedgerSpacing.Medium,
-                        end = SharedLedgerSpacing.Medium,
-                        bottom = SharedLedgerSpacing.Large,
-                    ),
-                contentAlignment = Alignment.TopCenter,
-            ) {
-                SharedLedgerBottomActionBar(
-                    actions = listOf(
-                        BottomActionItem("转账", Icons.Rounded.SwapHoriz, {}),
-                        BottomActionItem("预存", Icons.Rounded.AccountBalanceWallet, {}),
-                        BottomActionItem("收款", Icons.Rounded.RequestQuote, {}),
-                    ),
-                )
-            }
+            SharedLedgerBottomActionBar(
+                actions = listOf(
+                    BottomActionItem("转账", Icons.Rounded.SwapHoriz, {}),
+                    BottomActionItem("预存", Icons.Rounded.AccountBalanceWallet, {}),
+                    BottomActionItem("收款", Icons.Rounded.RequestQuote, {}),
+                ),
+                backgroundColor = MaterialTheme.colorScheme.background,
+                hazeState = hazeState,
+            )
         },
     ) { innerPadding ->
         Box(
@@ -147,8 +138,8 @@ private fun LargeActivitySmokeTestScreen(
             LazyColumn(
                 modifier = Modifier
                     .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
-                    .fillMaxWidth()
-                    .fillMaxHeight(),
+                    .fillMaxSize()
+                    .sharedLedgerHazeSource(hazeState),
                 contentPadding = PaddingValues(
                     start = SharedLedgerDimens.PageHorizontalPadding,
                     top = innerPadding.calculateTopPadding() + SharedLedgerSpacing.Medium,

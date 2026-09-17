@@ -4,9 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
 import androidx.compose.material.icons.rounded.AccountBalanceWallet
@@ -16,6 +20,7 @@ import androidx.compose.material.icons.rounded.RequestQuote
 import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -214,6 +219,59 @@ private fun CtaBottomBarPreview() = PreviewFrame {
             onClick = {},
             icon = Icons.Rounded.Save,
         )
+    }
+}
+
+@Preview(name = "滚动栏渐变过渡", showBackground = true, widthDp = 390, heightDp = 780)
+@Composable
+private fun ChromeTransitionPreview() {
+    SharedLedgerTheme {
+        Scaffold(
+            containerColor = MaterialTheme.colorScheme.background,
+            topBar = {
+                SharedLedgerTopBar(
+                    title = "周末旅行",
+                    showBackButton = true,
+                    onBackClick = {},
+                    showMoreButton = false,
+                )
+            },
+            bottomBar = {
+                SharedLedgerBottomActionBar(
+                    actions = listOf(
+                        BottomActionItem("转账", Icons.Rounded.SwapHoriz, {}),
+                        BottomActionItem("记一笔", Icons.Rounded.Edit, {}),
+                        BottomActionItem("收款", Icons.Rounded.RequestQuote, {}),
+                    ),
+                )
+            },
+        ) { innerPadding ->
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    start = SharedLedgerSpacing.Large,
+                    top = innerPadding.calculateTopPadding() + SharedLedgerSpacing.Small,
+                    end = SharedLedgerSpacing.Large,
+                    bottom = innerPadding.calculateBottomPadding() + SharedLedgerSpacing.Small,
+                ),
+                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+            ) {
+                items((1..12).toList()) { index ->
+                    ActivityCard(
+                        activity = ActivityCardUiModel(
+                            name = "行程 $index",
+                            kind = ActivityKind.Standard,
+                            participantCount = 3,
+                            status = ActivityStatus.InProgress,
+                            totalAmount = BigDecimal(index * 86),
+                            updatedAt = "今天",
+                            participants = PreviewParticipants,
+                        ),
+                        onClick = {},
+                    )
+                }
+            }
+        }
     }
 }
 

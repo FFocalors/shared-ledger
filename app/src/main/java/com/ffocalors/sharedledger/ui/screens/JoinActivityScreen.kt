@@ -77,6 +77,8 @@ import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonVariant
 import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
+import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 
 enum class JoinActivityStatus {
     Input,
@@ -171,6 +173,7 @@ fun JoinActivityScreen(
     val isConfirmState = state.status == JoinActivityStatus.ReadyToJoin ||
         state.status == JoinActivityStatus.Joining ||
         state.status == JoinActivityStatus.Joined
+    val hazeState = rememberSharedLedgerHazeState()
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -182,6 +185,7 @@ fun JoinActivityScreen(
                 onBackClick = onBackClick,
                 containerColor = AppBackground,
                 showMoreButton = false,
+                hazeState = hazeState,
             )
         },
         bottomBar = {
@@ -191,6 +195,7 @@ fun JoinActivityScreen(
                     onJoinActivity = onJoinActivity,
                     onCompleteJoinWithoutClaim = onCompleteJoinWithoutClaim,
                     onUnclaimActivity = onUnclaimActivity,
+                    hazeState = hazeState,
                 )
             }
         },
@@ -199,11 +204,14 @@ fun JoinActivityScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
+                .sharedLedgerHazeSource(hazeState)
                 .verticalScroll(rememberScrollState())
                 .padding(innerPadding)
                 .padding(
-                    horizontal = SharedLedgerDimens.PageHorizontalPadding,
-                    vertical = SharedLedgerSpacing.Medium,
+                    start = SharedLedgerDimens.PageHorizontalPadding,
+                    top = SharedLedgerSpacing.Medium,
+                    end = SharedLedgerDimens.PageHorizontalPadding,
+                    bottom = SharedLedgerSpacing.Medium,
                 )
                 .padding(bottom = SharedLedgerSpacing.Large),
             verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Large),
@@ -736,6 +744,7 @@ private fun JoinActivityBottomBar(
     onJoinActivity: (String) -> Unit,
     onCompleteJoinWithoutClaim: () -> Unit,
     onUnclaimActivity: () -> Unit,
+    hazeState: dev.chrisbanes.haze.HazeState,
 ) {
     val currentUserParticipant = state.preview.participants.firstOrNull {
         it.state == JoinParticipantState.ClaimedByCurrentUser
@@ -746,7 +755,7 @@ private fun JoinActivityBottomBar(
     val confirmationAction = resolveJoinConfirmationAction(state)
     val canJoin = confirmationAction != JoinConfirmationAction.Disabled
 
-    SharedLedgerCtaBottomBar(backgroundColor = AppBackground) {
+    SharedLedgerCtaBottomBar(backgroundColor = AppBackground, hazeState = hazeState) {
         SharedLedgerButton(
             text = when {
                 state.status == JoinActivityStatus.Joined -> "已加入"

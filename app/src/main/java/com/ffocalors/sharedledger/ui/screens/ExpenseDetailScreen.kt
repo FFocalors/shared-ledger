@@ -74,6 +74,8 @@ import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
+import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.ComponentSizes
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
@@ -209,6 +211,7 @@ fun ExpenseDetailScreen(
     var sheetVisible by rememberSaveable(uiState.expenseId) { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val snackbarHostState = androidx.compose.runtime.remember(uiState.expenseId) { SnackbarHostState() }
+    val hazeState = rememberSharedLedgerHazeState()
 
     LaunchedEffect(uiState.actionMessage) {
         uiState.actionMessage?.let { snackbarHostState.showSnackbar(it) }
@@ -231,6 +234,7 @@ fun ExpenseDetailScreen(
                  actionContentDescription = "编辑账单".takeIf { uiState.status == ExpenseDetailStatus.Active && onEdit != null },
                  onActionClick = onEdit?.let { callback -> { callback(uiState.expenseId) } }
                      .takeIf { uiState.status == ExpenseDetailStatus.Active },
+                hazeState = hazeState,
             )
         },
         bottomBar = {
@@ -249,6 +253,7 @@ fun ExpenseDetailScreen(
                     status = uiState.status,
                     onPrimaryAction = primaryAction,
                     onMore = { sheetVisible = true }.takeIf { hasMoreActions },
+                    hazeState = hazeState,
                 )
             }
         },
@@ -259,8 +264,9 @@ fun ExpenseDetailScreen(
         ) {
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .widthIn(max = SharedLedgerDimens.ContentMaxWidth),
+                    .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
+                    .fillMaxSize()
+                    .sharedLedgerHazeSource(hazeState),
                 contentPadding = PaddingValues(
                     start = SharedLedgerDimens.PageHorizontalPadding,
                     top = innerPadding.calculateTopPadding() + SharedLedgerSpacing.Medium,
@@ -675,8 +681,9 @@ private fun ExpenseDetailBottomBar(
     status: ExpenseDetailStatus,
     onPrimaryAction: (() -> Unit)?,
     onMore: (() -> Unit)?,
+    hazeState: dev.chrisbanes.haze.HazeState,
 ) {
-    SharedLedgerCtaBottomBar(backgroundColor = AppBackground) {
+    SharedLedgerCtaBottomBar(backgroundColor = AppBackground, hazeState = hazeState) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),

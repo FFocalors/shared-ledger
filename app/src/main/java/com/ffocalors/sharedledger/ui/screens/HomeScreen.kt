@@ -62,6 +62,8 @@ import com.ffocalors.sharedledger.ui.components.ErrorState
 import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatarGroup
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
+import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.components.StatusChip
 import com.ffocalors.sharedledger.ui.components.rememberPressScaleState
 import com.ffocalors.sharedledger.ui.demo.DemoData
@@ -102,6 +104,7 @@ fun HomeScreen(
     var selectedTab by rememberSaveable { mutableStateOf(HomeTab.InProgress) }
     var sheetVisible by rememberSaveable { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val hazeState = rememberSharedLedgerHazeState()
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -112,6 +115,7 @@ fun HomeScreen(
                 avatarName = userDisplayName,
                 onAvatarClick = onProfileClick,
                 containerColor = AppBackground,
+                hazeState = hazeState,
             )
         },
         floatingActionButton = {
@@ -157,10 +161,13 @@ fun HomeScreen(
             LazyColumn(
                 modifier = Modifier
                     .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
-                    .fillMaxWidth()
-                    .padding(innerPadding),
+                    .fillMaxSize()
+                    .sharedLedgerHazeSource(hazeState),
                 verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
-                contentPadding = PaddingValues(bottom = SharedLedgerDimens.FabClearance),
+                contentPadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding(),
+                    bottom = innerPadding.calculateBottomPadding() + SharedLedgerDimens.FabClearance,
+                ),
             ) {
             item {
                 HomeTabs(

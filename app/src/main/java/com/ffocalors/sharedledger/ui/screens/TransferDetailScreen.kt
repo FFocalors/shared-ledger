@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -63,8 +62,11 @@ import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
+import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerDialog
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
+import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.theme.Cream
 import com.ffocalors.sharedledger.ui.theme.IconContainerOrange
 import com.ffocalors.sharedledger.ui.theme.IconContainerSage
@@ -153,6 +155,7 @@ fun TransferDetailScreen(
 ) {
     val record = uiState.toFundRecord()
     var dialog by remember { mutableStateOf<DetailDialog?>(null) }
+    val hazeState = rememberSharedLedgerHazeState()
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = Cream,
@@ -168,6 +171,7 @@ fun TransferDetailScreen(
                 containerColor = Cream,
                 titleStyle = SharedLedgerTextStyles.PageTitle,
                 titleColor = MaterialTheme.colorScheme.primary,
+                hazeState = hazeState,
             )
         },
         bottomBar = {
@@ -179,17 +183,23 @@ fun TransferDetailScreen(
                 onVoid = onVoid?.let { { dialog = DetailDialog.VoidRecord } },
                 onRestore = onRestore?.let { { dialog = DetailDialog.RestoreRecord } },
                 onRecreate = onRecreateCorrectRecord?.let { callback -> { callback(record.transferId) } },
+                hazeState = hazeState,
             )
         },
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
                 .fillMaxWidth()
+                .sharedLedgerHazeSource(hazeState)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = SharedLedgerDimens.PageHorizontalPadding, vertical = SharedLedgerSpacing.Medium),
+                .padding(
+                    start = SharedLedgerDimens.PageHorizontalPadding,
+                    top = paddingValues.calculateTopPadding() + SharedLedgerSpacing.Medium,
+                    end = SharedLedgerDimens.PageHorizontalPadding,
+                    bottom = paddingValues.calculateBottomPadding() + SharedLedgerSpacing.Medium,
+                ),
             verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Large),
         ) {
             uiState.errorMessage?.let { message ->
@@ -450,26 +460,29 @@ private fun DetailActions(
     onVoid: (() -> Unit)?,
     onRestore: (() -> Unit)?,
     onRecreate: (() -> Unit)?,
+    hazeState: dev.chrisbanes.haze.HazeState,
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = SharedLedgerDimens.PageHorizontalPadding, vertical = SharedLedgerSpacing.Small),
-        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
-    ) {
-        if (record.isReadOnly) {
-            Text("预存自动扣款记录仅供查看", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        } else if (record.isVoided) {
-            onRestore?.let { SharedLedgerButton("恢复记录", it, tone = SharedLedgerButtonTone.Success, icon = Icons.Rounded.Restore) }
-            onRecreate?.let { SharedLedgerButton("恢复失败时重新创建", it, tone = SharedLedgerButtonTone.SoftPrimary, icon = Icons.Rounded.Refresh) }
-        } else if (record.hasUnresolvedDispute) {
-            val dispute = record.unresolvedDisputes.first()
-            onResolveDispute?.let { callback ->
-                SharedLedgerButton("取消争议", { callback(dispute.disputeId) }, tone = SharedLedgerButtonTone.Success, icon = Icons.Rounded.Flag)
+    SharedLedgerCtaBottomBar(backgroundColor = Cream, hazeState = hazeState) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+        ) {
+            if (record.isReadOnly) {
+                Text("预存自动扣款记录仅供查看", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            } else if (record.isVoided) {
+                onRestore?.let { SharedLedgerButton("恢复记录", it, tone = SharedLedgerButtonTone.Success, icon = Icons.Rounded.Restore) }
+                onRecreate?.let { SharedLedgerButton("恢复失败时重新创建", it, tone = SharedLedgerButtonTone.SoftPrimary, icon = Icons.Rounded.Refresh) }
+            } else if (record.hasUnresolvedDispute) {
+                val dispute = record.unresolvedDisputes.first()
+                onResolveDispute?.let { callback ->
+                    SharedLedgerButton("取消争议", { callback(dispute.disputeId) }, tone = SharedLedgerButtonTone.Success, icon = Icons.Rounded.Flag)
+                }
+            } else {
+                if (currentParticipantName != null && onAddDispute != null) {
+                    SharedLedgerButton("添加争议", onAddDispute, tone = SharedLedgerButtonTone.WarmSecondary, icon = Icons.Rounded.Flag)
+                }
+                onVoid?.let { SharedLedgerButton("作废记录", it, tone = SharedLedgerButtonTone.Danger, outlined = true, icon = Icons.Rounded.Block) }
             }
-        } else {
-            if (currentParticipantName != null && onAddDispute != null) {
-                SharedLedgerButton("添加争议", onAddDispute, tone = SharedLedgerButtonTone.WarmSecondary, icon = Icons.Rounded.Flag)
-            }
-            onVoid?.let { SharedLedgerButton("作废记录", it, tone = SharedLedgerButtonTone.Danger, outlined = true, icon = Icons.Rounded.Block) }
         }
     }
 }

@@ -13,6 +13,8 @@ object SharedLedgerDimens {
     val BottomActionBarPadding = 8.dp
     val BottomActionBarMaxWidth = 400.dp
     val TopBarActionSize = 48.dp
+    /** Short translucent edge used where scrolling content passes fixed chrome. */
+    val ChromeTransitionDepth = 28.dp
     val AvatarSmall = 32.dp
     val AvatarMedium = 40.dp
     val AvatarLarge = 48.dp
