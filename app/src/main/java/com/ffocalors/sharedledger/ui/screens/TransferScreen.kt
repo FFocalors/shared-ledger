@@ -1,17 +1,18 @@
 package com.ffocalors.sharedledger.ui.screens
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.KeyboardOptions
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.ArrowForward
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -38,16 +40,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.components.AmountDisplay
 import com.ffocalors.sharedledger.ui.components.AmountEmphasis
 import com.ffocalors.sharedledger.ui.components.AmountSize
+import com.ffocalors.sharedledger.ui.components.EmptyState
+import com.ffocalors.sharedledger.ui.components.ErrorState
+import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
-import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
+import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
+import com.ffocalors.sharedledger.ui.components.sharedLedgerButtonPaletteFor
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.theme.IconContainerOrange
@@ -155,6 +163,7 @@ fun TransferScreen(
     val isTransfer = mode == TransferMode.TRANSFER
     val title = if (isTransfer) "转账" else "收款"
     val isAmountValid = selected != null && isValidTransferAmount(amountText, selected.amount)
+    val isFormVisible = !state.isLoading && state.errorMessage == null && state.emptyMessage == null
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -167,19 +176,50 @@ fun TransferScreen(
                 containerColor = MaterialTheme.colorScheme.background,
             )
         },
+        bottomBar = {
+            if (isFormVisible && selected != null && onConfirm != null) {
+                SharedLedgerCtaBottomBar {
+                    CenteredCtaButton(
+                        text = if (selected.kind == SettlementCandidateKind.ON_BEHALF) {
+                            "确认代记已付款"
+                        } else if (isTransfer) {
+                            "确认已转账"
+                        } else {
+                            "确认已收款"
+                        },
+                        onClick = {
+                            onConfirm(
+                                TransferDraft(
+                                    activityId = activityId,
+                                    ledgerUnitId = ledgerUnitId,
+                                    mode = mode,
+                                    participantId = selected.participantId,
+                                    amount = amountText,
+                                    onBehalfOfParticipantId = selectedOnBehalfId,
+                                    candidateKey = selected.candidateKey,
+                                ),
+                            )
+                        },
+                        enabled = isAmountValid && !state.isSubmitting,
+                        loading = state.isSubmitting,
+                        loadingText = "提交中…",
+                        tone = if (isTransfer) SharedLedgerButtonTone.SoftPrimary else SharedLedgerButtonTone.WarmSecondary,
+                        icon = Icons.Rounded.ArrowForward,
+                    )
+                }
+            }
+        },
     ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .navigationBarsPadding()
-                .imePadding()
                 .padding(innerPadding),
             contentAlignment = Alignment.TopCenter,
         ) {
             when {
-                state.isLoading -> TransferStateMessage("正在加载真实债务…", onBack)
-                state.errorMessage != null -> TransferErrorMessage(state.errorMessage, onBack, onRetry)
-                state.emptyMessage != null -> TransferEmptyMessage(state.emptyMessage, onBack, onRetry)
+                state.isLoading -> LoadingState(message = "正在加载真实债务…")
+                state.errorMessage != null -> ErrorState(message = state.errorMessage, onRetry = onRetry)
+                state.emptyMessage != null -> EmptyState(title = state.emptyMessage, actionLabel = "刷新", onAction = onRetry)
                 else -> Column(
                     modifier = Modifier
                         .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
@@ -189,9 +229,9 @@ fun TransferScreen(
                             start = SharedLedgerDimens.PageHorizontalPadding,
                             top = SharedLedgerSpacing.Medium,
                             end = SharedLedgerDimens.PageHorizontalPadding,
-                            bottom = SharedLedgerSpacing.XLarge,
+                            bottom = SharedLedgerSpacing.Medium,
                         ),
-                    verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+                    verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Large),
                 ) {
                     if (state.canActOnBehalf) {
                         CandidateScopePicker(
@@ -241,26 +281,12 @@ fun TransferScreen(
                             amountText = amountText,
                             isAmountValid = isAmountValid,
                             currencyCode = state.baseCurrency,
-                            isSubmitting = state.isSubmitting,
                             canActOnBehalf = state.canActOnBehalf,
                             currentParticipantId = state.currentParticipantId,
                             onBehalfOptions = selected.onBehalfOptions,
                             selectedOnBehalfId = selectedOnBehalfId,
                             onBehalfOfParticipantIdChanged = { selectedOnBehalfId = it },
                             onAmountChange = { amountText = sanitizeCnyAmount(it) },
-                            onConfirm = onConfirm?.let { callback -> {
-                                callback(
-                                    TransferDraft(
-                                        activityId = activityId,
-                                        ledgerUnitId = ledgerUnitId,
-                                        mode = mode,
-                                        participantId = selected.participantId,
-                                        amount = amountText,
-                                        onBehalfOfParticipantId = selectedOnBehalfId,
-                                        candidateKey = selected.candidateKey,
-                                    ),
-                                )
-                            } },
                         )
                     }
                 }
@@ -280,17 +306,74 @@ private fun CandidateScopePicker(
     ) {
         TransferCandidateScope.entries.forEach { scope ->
             Surface(
-                modifier = Modifier.weight(1f).clickable { onSelected(scope) },
+                onClick = { onSelected(scope) },
+                modifier = Modifier
+                    .weight(1f)
+                    .heightIn(min = SharedLedgerDimens.TopBarActionSize),
                 shape = SharedLedgerRadius.Full,
                 color = if (selected == scope) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmLow,
                 border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant),
             ) {
-                Text(
-                    text = if (scope == TransferCandidateScope.PERSONAL) "我的结算" else "代记结算",
-                    modifier = Modifier.padding(SharedLedgerSpacing.Small),
-                    style = SharedLedgerTextStyles.Label,
-                    color = MaterialTheme.colorScheme.onSurface,
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = SharedLedgerSpacing.Medium, vertical = SharedLedgerSpacing.MediumSmall),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = if (scope == TransferCandidateScope.PERSONAL) "我的结算" else "代记结算",
+                        style = SharedLedgerTextStyles.Label,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CenteredCtaButton(
+    text: String,
+    onClick: () -> Unit,
+    enabled: Boolean,
+    loading: Boolean,
+    loadingText: String,
+    tone: SharedLedgerButtonTone,
+    icon: ImageVector?,
+    modifier: Modifier = Modifier,
+) {
+    val palette = sharedLedgerButtonPaletteFor(tone)
+    val isEnabled = enabled && !loading
+    Surface(
+        onClick = onClick,
+        enabled = isEnabled,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(SharedLedgerDimens.ButtonHeight),
+        shape = SharedLedgerRadius.Full,
+        color = if (isEnabled) palette.containerColor else MaterialTheme.colorScheme.surfaceVariant,
+        contentColor = if (isEnabled) palette.contentColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (loading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(SharedLedgerSpacing.MediumLarge),
+                    color = palette.contentColor,
+                    strokeWidth = 2.dp,
                 )
+                Spacer(Modifier.width(SharedLedgerSpacing.Small))
+                Text(text = loadingText, style = SharedLedgerTextStyles.Button)
+            } else {
+                if (icon != null) {
+                    Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(SharedLedgerDimens.IconSmall))
+                    Spacer(Modifier.width(SharedLedgerSpacing.Small))
+                }
+                Text(text = text, style = SharedLedgerTextStyles.Button)
             }
         }
     }
@@ -321,9 +404,9 @@ private fun ParticipantPicker(
             ) { index, item ->
                 val selected = index == selectedIndex
                 Surface(
+                    onClick = { onSelected(index) },
                     modifier = Modifier
-                        .width(cardWidth)
-                        .clickable { onSelected(index) },
+                        .width(cardWidth),
                     shape = SharedLedgerRadius.ExtraLarge,
                     color = if (selected) {
                         MaterialTheme.colorScheme.primaryContainer
@@ -339,7 +422,7 @@ private fun ParticipantPicker(
                         SharedLedgerDimens.OutlineWidth,
                         if (selected) Color.Transparent else MaterialTheme.colorScheme.outlineVariant,
                     ),
-                    shadowElevation = if (selected) SharedLedgerElevation.Card else 0.dp,
+                    shadowElevation = if (selected) SharedLedgerElevation.Card else SharedLedgerElevation.Flat,
                 ) {
                     Column(
                         modifier = Modifier.padding(SharedLedgerSpacing.Medium),
@@ -404,14 +487,12 @@ private fun TransferAmountCard(
     amountText: String,
     isAmountValid: Boolean,
     currencyCode: String,
-    isSubmitting: Boolean,
     canActOnBehalf: Boolean,
     currentParticipantId: String?,
     onBehalfOptions: List<SettlementParticipant>,
     selectedOnBehalfId: String?,
     onBehalfOfParticipantIdChanged: (String?) -> Unit,
     onAmountChange: (String) -> Unit,
-    onConfirm: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val isTransfer = mode == TransferMode.TRANSFER
@@ -485,23 +566,6 @@ private fun TransferAmountCard(
                     onSelected = onBehalfOfParticipantIdChanged,
                 )
             }
-            onConfirm?.let { callback ->
-                SharedLedgerButton(
-                    text = if (selected.kind == SettlementCandidateKind.ON_BEHALF) {
-                        "确认代记已付款"
-                    } else if (isTransfer) {
-                        "确认已转账"
-                    } else {
-                        "确认已收款"
-                    },
-                    onClick = callback,
-                    enabled = isAmountValid && !isSubmitting,
-                    loading = isSubmitting,
-                    loadingText = "提交中…",
-                    tone = if (isTransfer) SharedLedgerButtonTone.SoftPrimary else SharedLedgerButtonTone.WarmSecondary,
-                    icon = Icons.Rounded.ArrowForward,
-                )
-            }
         }
     }
 }
@@ -522,23 +586,25 @@ private fun OnBehalfPicker(
             if (currentParticipantId != null) {
                 item(key = "self") {
                     Surface(
-                        modifier = Modifier.clickable { onSelected(null) },
+                        onClick = { onSelected(null) },
+                        modifier = Modifier.heightIn(min = SharedLedgerDimens.TopBarActionSize),
                         shape = SharedLedgerRadius.Full,
                         color = if (selectedId == null) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmLow,
                         border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant),
                     ) {
-                        Text("本人", modifier = Modifier.padding(SharedLedgerSpacing.Small), style = SharedLedgerTextStyles.Label)
+                        Text("本人", modifier = Modifier.padding(horizontal = SharedLedgerSpacing.Medium, vertical = SharedLedgerSpacing.MediumSmall), style = SharedLedgerTextStyles.Label)
                     }
                 }
             }
             itemsIndexed(options) { _, option ->
                 Surface(
-                    modifier = Modifier.clickable { onSelected(option.participantId) },
+                    onClick = { onSelected(option.participantId) },
+                    modifier = Modifier.heightIn(min = SharedLedgerDimens.TopBarActionSize),
                     shape = SharedLedgerRadius.Full,
                     color = if (selectedId == option.participantId) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmLow,
                     border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant),
                 ) {
-                    Text(option.participantName, modifier = Modifier.padding(SharedLedgerSpacing.Small), style = SharedLedgerTextStyles.Label)
+                    Text(option.participantName, modifier = Modifier.padding(horizontal = SharedLedgerSpacing.Medium, vertical = SharedLedgerSpacing.MediumSmall), style = SharedLedgerTextStyles.Label)
                 }
             }
         }
@@ -568,45 +634,6 @@ private fun currencySymbol(currencyCode: String): String = when (currencyCode.up
     "GBP" -> "£"
     "JPY" -> "¥"
     else -> currencyCode.uppercase()
-}
-
-@Composable
-private fun TransferStateMessage(message: String, onBack: (() -> Unit)?) {
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(SharedLedgerSpacing.XLarge),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
-    ) {
-        androidx.compose.material3.CircularProgressIndicator()
-        Text(message, style = SharedLedgerTextStyles.BodySecondary)
-        onBack?.let { SharedLedgerButton("返回", it, tone = SharedLedgerButtonTone.Neutral) }
-    }
-}
-
-@Composable
-private fun TransferErrorMessage(message: String, onBack: (() -> Unit)?, onRetry: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(SharedLedgerSpacing.XLarge),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
-    ) {
-        Text(message, style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.error)
-        SharedLedgerButton("重试", onRetry, tone = SharedLedgerButtonTone.SoftPrimary)
-        onBack?.let { SharedLedgerButton("返回", it, tone = SharedLedgerButtonTone.Neutral) }
-    }
-}
-
-@Composable
-private fun TransferEmptyMessage(message: String, onBack: (() -> Unit)?, onRetry: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(SharedLedgerSpacing.XLarge),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
-    ) {
-        Text(message, style = SharedLedgerTextStyles.BodySecondary)
-        SharedLedgerButton("刷新", onRetry, tone = SharedLedgerButtonTone.SoftPrimary)
-        onBack?.let { SharedLedgerButton("返回", it, tone = SharedLedgerButtonTone.Neutral) }
-    }
 }
 
 @Preview(name = "转账", showBackground = true, widthDp = 390, heightDp = 844)

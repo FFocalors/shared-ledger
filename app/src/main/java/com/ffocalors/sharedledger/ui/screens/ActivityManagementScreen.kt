@@ -8,13 +8,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -32,7 +30,6 @@ import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material.icons.rounded.PersonAdd
 import androidx.compose.material.icons.rounded.ReceiptLong
 import androidx.compose.material.icons.rounded.Savings
 import androidx.compose.material.icons.rounded.Settings
@@ -40,11 +37,10 @@ import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -63,7 +59,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -73,6 +72,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ffocalors.sharedledger.ui.components.ErrorState
+import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonVariant
@@ -82,7 +83,6 @@ import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.AppSurface
 import com.ffocalors.sharedledger.ui.theme.AppSurfaceLow
 import com.ffocalors.sharedledger.ui.theme.AppSurfaceVariant
-import com.ffocalors.sharedledger.ui.theme.ErrorContainer
 import com.ffocalors.sharedledger.ui.theme.ErrorRed
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
@@ -91,6 +91,7 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
 import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
+import com.ffocalors.sharedledger.ui.util.UiDateTimeFormatter
 
 private val StitchSurfaceContainer = Color(0xFFEFEDED)
 private val StitchSurfaceContainerHigh = Color(0xFFEAE8E7)
@@ -178,6 +179,7 @@ fun ActivityManagementScreen(
     modifier: Modifier = Modifier,
     state: ActivityManagementUiState = ActivityManagementUiState(),
     isLoading: Boolean = false,
+    actionInProgress: Boolean = false,
     errorMessage: String? = null,
     message: String? = null,
     onMessageShown: () -> Unit = {},
@@ -347,38 +349,35 @@ fun ActivityManagementScreen(
                     onDeleteClick = { pendingConfirmation = ManagementConfirmation.Delete },
                 )
             }
+            if (actionInProgress && !isLoading && errorMessage == null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) { detectTapGestures { } },
+                )
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
+                        .padding(top = innerPadding.calculateTopPadding()),
+                )
+            }
             if (isLoading || errorMessage != null) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = AppBackground,
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(SharedLedgerSpacing.Large),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                    ) {
-                        if (isLoading) {
-                            CircularProgressIndicator()
-                            Text(
-                                text = "正在加载活动信息…",
-                                modifier = Modifier.padding(top = SharedLedgerSpacing.Medium),
-                                style = SharedLedgerTextStyles.BodySecondary,
-                            )
-                        } else {
-                            Text(
-                                text = errorMessage ?: "活动信息加载失败",
-                                style = SharedLedgerTextStyles.BodySecondary,
-                                color = MaterialTheme.colorScheme.error,
-                            )
-                            SharedLedgerButton(
-                                text = "重试",
-                                onClick = onRetry,
-                                modifier = Modifier.padding(top = SharedLedgerSpacing.Medium),
-                                variant = SharedLedgerButtonVariant.Primary,
-                            )
-                        }
+                    if (isLoading) {
+                        LoadingState(
+                            message = "正在加载活动信息…",
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    } else {
+                        ErrorState(
+                            message = errorMessage ?: "活动信息加载失败",
+                            onRetry = onRetry,
+                            modifier = Modifier.fillMaxSize(),
+                        )
                     }
                 }
             }
@@ -470,7 +469,7 @@ private fun DeletedSubActivitiesCard(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(item.name, style = SharedLedgerTextStyles.BodySecondary)
                         item.deletedAt?.let { timestamp ->
-                            Text("已删除 $timestamp", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("已删除 ${UiDateTimeFormatter.format(timestamp)}", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                     TextButton(onClick = { onRestore(item.ledgerUnitId) }) { Text("恢复") }
@@ -546,7 +545,7 @@ private fun JoinCodeRow(
         modifier = Modifier.fillMaxWidth(),
         shape = SharedLedgerRadius.Small,
         color = StitchSurfaceContainer,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
+        border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
     ) {
         Row(
             modifier = Modifier.padding(SharedLedgerSpacing.MediumSmall),
@@ -609,7 +608,7 @@ private fun ParticipantManagementCard(
                     Icon(
                         imageVector = Icons.Rounded.Lock,
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp),
+                        modifier = Modifier.size(SharedLedgerDimens.IconSmall),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
@@ -757,7 +756,7 @@ private fun ParticipantManagementRow(
                         Icon(
                             imageVector = Icons.Rounded.Delete,
                             contentDescription = null,
-                            modifier = Modifier.size(20.dp),
+                            modifier = Modifier.size(SharedLedgerDimens.ActionIcon),
                             tint = MaterialTheme.colorScheme.outline,
                         )
                     }
@@ -880,7 +879,7 @@ private fun ActivityMemberRow(
                     Icon(
                         imageVector = Icons.Rounded.Delete,
                         contentDescription = null,
-                        modifier = Modifier.size(20.dp),
+                        modifier = Modifier.size(SharedLedgerDimens.ActionIcon),
                         tint = MaterialTheme.colorScheme.outline,
                     )
                 }
@@ -920,7 +919,7 @@ private fun ActivitySettingsCard(
             Icon(
                 imageVector = Icons.Rounded.Settings,
                 contentDescription = null,
-                modifier = Modifier.size(22.dp),
+                modifier = Modifier.size(SharedLedgerDimens.IconMedium),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Column(modifier = Modifier.weight(1f)) {
@@ -964,6 +963,7 @@ private fun SettingsActionRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(SharedLedgerRadius.Medium)
             .clickable(onClick = onClick)
             .semantics {
                 this.contentDescription = contentDescription
@@ -976,7 +976,7 @@ private fun SettingsActionRow(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            modifier = Modifier.size(22.dp),
+            modifier = Modifier.size(SharedLedgerDimens.IconMedium),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
@@ -1028,13 +1028,13 @@ private fun ActivityStatusCard(
         ) {
             StatusMetric(
                 label = "未结债务",
-                value = state.outstandingDebt,
+                value = state.outstandingDebt.ifBlank { "—" },
                 icon = Icons.Rounded.ReceiptLong,
                 modifier = Modifier.weight(1f),
             )
             StatusMetric(
                 label = "剩余预存",
-                value = state.remainingPrepayment,
+                value = state.remainingPrepayment.ifBlank { "—" },
                 icon = Icons.Rounded.Savings,
                 modifier = Modifier.weight(1f),
             )
@@ -1093,7 +1093,7 @@ private fun StatusMetric(
         modifier = modifier,
         shape = SharedLedgerRadius.Small,
         color = AppBackground,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)),
+        border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)),
     ) {
         Column(
             modifier = Modifier.padding(SharedLedgerSpacing.Medium),
@@ -1106,7 +1106,7 @@ private fun StatusMetric(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    modifier = Modifier.size(14.dp),
+                    modifier = Modifier.size(SharedLedgerDimens.IconSmall),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
@@ -1141,13 +1141,13 @@ private fun StatusChip(status: ActivityManagementStatus) {
         contentColor = contentColor,
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = SharedLedgerSpacing.MediumSmall, vertical = 6.dp),
+            modifier = Modifier.padding(horizontal = SharedLedgerSpacing.MediumSmall, vertical = SharedLedgerSpacing.XSmall),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
         ) {
             Box(
                 modifier = Modifier
-                    .size(8.dp)
+                    .size(SharedLedgerSpacing.Small)
                     .background(contentColor, CircleShape),
             )
             Text(text = status.label, style = SharedLedgerTextStyles.Label)
@@ -1162,61 +1162,73 @@ private fun DangerZone(
     onLeaveClick: () -> Unit,
     onDeleteClick: () -> Unit,
 ) {
-    Column(
+    val errorColor = MaterialTheme.colorScheme.error
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = SharedLedgerSpacing.Medium),
-        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+        shape = SharedLedgerRadius.Medium,
+        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.25f),
+        border = BorderStroke(SharedLedgerDimens.OutlineWidth, errorColor.copy(alpha = SharedLedgerDimens.CardBorderAlpha)),
     ) {
-        DividerLine(color = ErrorRed.copy(alpha = 0.2f))
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+        Column(
+            modifier = Modifier.padding(SharedLedgerSpacing.MediumLarge),
+            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
         ) {
-            Icon(
-                imageVector = Icons.Rounded.Warning,
-                contentDescription = null,
-                tint = ErrorRed,
-            )
-            Text(
-                text = "危险区域",
-                style = SharedLedgerTextStyles.SectionTitle,
-                color = ErrorRed,
-                modifier = Modifier.semantics { heading() },
-            )
-        }
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = SharedLedgerRadius.Medium,
-            color = ErrorContainer.copy(alpha = 0.2f),
-            border = BorderStroke(1.dp, ErrorRed.copy(alpha = 0.3f)),
-            shadowElevation = SharedLedgerElevation.Card,
-        ) {
-            Column(
-                modifier = Modifier.padding(SharedLedgerSpacing.MediumLarge),
-                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
             ) {
-                Text(
-                    text = "删除后活动将从正常列表中移除并停止继续使用，相关历史记录仍由系统保留。",
-                    style = SharedLedgerTextStyles.BodySecondary,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                Icon(
+                    imageVector = Icons.Rounded.Warning,
+                    contentDescription = null,
+                    tint = errorColor,
                 )
-                if (showLeaveAction) {
-                    SharedLedgerButton(
-                        text = "退出活动",
-                        onClick = onLeaveClick,
-                        variant = SharedLedgerButtonVariant.Danger,
-                        outlined = true,
-                        icon = Icons.Rounded.Logout,
-                    )
-                }
-                if (showDeleteAction) {
-                    SharedLedgerButton(
-                        text = "删除活动",
-                        onClick = onDeleteClick,
-                        variant = SharedLedgerButtonVariant.Danger,
-                        icon = Icons.Rounded.DeleteForever,
-                    )
+                Text(
+                    text = "危险区域",
+                    style = SharedLedgerTextStyles.SectionTitle,
+                    color = errorColor,
+                    modifier = Modifier.semantics { heading() },
+                )
+            }
+            Text(
+                text = "删除后活动将从正常列表中移除并停止继续使用，相关历史记录仍由系统保留。",
+                style = SharedLedgerTextStyles.BodySecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (showLeaveAction) {
+                SharedLedgerButton(
+                    text = "退出活动",
+                    onClick = onLeaveClick,
+                    variant = SharedLedgerButtonVariant.Danger,
+                    outlined = true,
+                    icon = Icons.Rounded.Logout,
+                )
+            }
+            if (showDeleteAction) {
+                Button(
+                    onClick = onDeleteClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(SharedLedgerDimens.ButtonHeight)
+                        .semantics { contentDescription = "删除活动" },
+                    shape = SharedLedgerRadius.Full,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                    ),
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.DeleteForever,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                        )
+                        Text(text = "删除活动", style = SharedLedgerTextStyles.Button)
+                    }
                 }
             }
         }
@@ -1234,6 +1246,7 @@ private fun CompactActionRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(SharedLedgerRadius.Medium)
             .clickable(onClick = onClick)
             .semantics {
                 this.contentDescription = contentDescription
@@ -1250,7 +1263,7 @@ private fun CompactActionRow(
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(20.dp))
+                Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(SharedLedgerDimens.ActionIcon))
             }
         }
         Column(modifier = Modifier.weight(1f)) {
@@ -1297,7 +1310,7 @@ private fun InfoCell(
                 Icon(
                     imageVector = it,
                     contentDescription = null,
-                    modifier = Modifier.size(18.dp),
+                    modifier = Modifier.size(SharedLedgerDimens.IconSmall),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -1324,7 +1337,7 @@ private fun CardHeader(
             imageVector = icon,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(SharedLedgerDimens.IconMedium),
         )
         Text(
             text = title,
@@ -1344,7 +1357,7 @@ private fun ManagementCard(
         modifier = Modifier.fillMaxWidth(),
         shape = SharedLedgerRadius.Medium,
         color = AppSurface,
-        border = BorderStroke(1.dp, AppSurfaceVariant),
+        border = BorderStroke(SharedLedgerDimens.OutlineWidth, AppSurfaceVariant),
         shadowElevation = SharedLedgerElevation.Card,
     ) {
         Column(
@@ -1360,7 +1373,7 @@ private fun DividerLine(color: Color = AppSurfaceVariant.copy(alpha = 0.55f)) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(1.dp)
+            .height(SharedLedgerDimens.OutlineWidth)
             .background(color),
     )
 }

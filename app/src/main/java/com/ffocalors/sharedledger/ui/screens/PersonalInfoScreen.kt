@@ -1,7 +1,6 @@
 package com.ffocalors.sharedledger.ui.screens
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,14 +11,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.rounded.Badge
@@ -53,6 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.auth.PasswordChangeUiState
@@ -65,6 +65,7 @@ import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.IconTintOrange
 import com.ffocalors.sharedledger.ui.theme.IconTintSage
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
+import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
@@ -105,13 +106,17 @@ fun PersonalInfoScreen(
                 )
             },
         ) { padding ->
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.TopCenter,
+            ) {
             LazyColumn(
                 state = listState,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.widthIn(max = SharedLedgerDimens.ContentMaxWidth).fillMaxSize(),
                 contentPadding = PaddingValues(
-                    start = SharedLedgerSpacing.Medium,
+                    start = SharedLedgerDimens.PageHorizontalPadding,
                     top = padding.calculateTopPadding() + SharedLedgerSpacing.XSmall,
-                    end = SharedLedgerSpacing.Medium,
+                    end = SharedLedgerDimens.PageHorizontalPadding,
                     bottom = padding.calculateBottomPadding() + SharedLedgerSpacing.Large,
                 ),
                 verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
@@ -158,6 +163,7 @@ fun PersonalInfoScreen(
                     )
                 }
             }
+            }
         }
     }
     if (showPasswordDialog) {
@@ -189,20 +195,20 @@ private fun ProfileHeroCard(
             Box {
                 ParticipantAvatar(
                     name = displayName,
-                    size = 64.dp,
+                    size = SharedLedgerDimens.AvatarLarge,
                     backgroundColor = IconContainerOrange,
                 )
                 Surface(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .size(16.dp),
+                        .size(SharedLedgerDimens.IconMedium),
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.primary,
-                    border = BorderStroke(2.dp, MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(SharedLedgerDimens.AvatarBorder, MaterialTheme.colorScheme.surface),
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Surface(
-                            modifier = Modifier.size(6.dp),
+                            modifier = Modifier.size(SharedLedgerSpacing.Small),
                             shape = CircleShape,
                             color = MaterialTheme.colorScheme.onPrimary,
                         ) {}
@@ -251,7 +257,7 @@ private fun ProfileHeroCard(
                 Icon(
                     imageVector = Icons.Rounded.ChevronRight,
                     contentDescription = null,
-                    modifier = Modifier.size(16.dp),
+                    modifier = Modifier.size(SharedLedgerDimens.IconMedium),
                 )
             }
         }
@@ -275,7 +281,7 @@ private fun ProfileStats(state: PersonalOverviewUiState) {
                 modifier = Modifier.fillMaxWidth().padding(horizontal = SharedLedgerSpacing.XSmall),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
+                CircularProgressIndicator(modifier = Modifier.size(SharedLedgerDimens.IconSmall), strokeWidth = 2.dp)
                 Spacer(Modifier.width(SharedLedgerSpacing.Small))
                 Text(
                     text = if (state.isRefreshing) "正在刷新活动数据…" else "正在加载活动数据…",
@@ -295,17 +301,17 @@ private fun ProfileStatCard(label: String, value: String, icon: androidx.compose
         2 -> Color(0xFFFDF3E7) to IconTintOrange
         else -> Color(0xFFF0F4F8) to Color(0xFF2B6CB0)
     }
-    ProfileCard(modifier = modifier, padding = 14.dp) {
+    ProfileCard(modifier = modifier, padding = SharedLedgerSpacing.MediumSmall) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Surface(modifier = Modifier.size(40.dp), shape = RoundedCornerShape(16.dp), color = container) {
+            Surface(modifier = Modifier.size(SharedLedgerDimens.ActionIconContainer), shape = SharedLedgerRadius.Large, color = container) {
                 androidx.compose.foundation.layout.Box(contentAlignment = Alignment.Center) {
-                    Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(20.dp))
+                    Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(SharedLedgerDimens.ActionIcon))
                 }
             }
             Spacer(Modifier.width(SharedLedgerSpacing.MediumSmall))
             Column {
                 Text(label, style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(value, style = SharedLedgerTextStyles.CardTitle, modifier = Modifier.padding(top = 2.dp))
+                Text(value, style = SharedLedgerTextStyles.CardTitle, modifier = Modifier.padding(top = SharedLedgerSpacing.XSmall))
             }
         }
     }
@@ -323,7 +329,7 @@ private fun CollaborationIdentities(
             Spacer(Modifier.width(SharedLedgerSpacing.Small))
             Text("我的协作身份", modifier = Modifier.weight(1f), style = SharedLedgerTextStyles.CardTitle)
             if (state.isRefreshing) {
-                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                CircularProgressIndicator(modifier = Modifier.size(SharedLedgerDimens.IconSmall), strokeWidth = 2.dp)
             }
         }
         Surface(
@@ -332,7 +338,7 @@ private fun CollaborationIdentities(
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
         ) {
             Row(modifier = Modifier.padding(SharedLedgerSpacing.MediumSmall), verticalAlignment = Alignment.Top) {
-                Icon(Icons.Rounded.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                Icon(Icons.Rounded.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(SharedLedgerDimens.IconSmall))
                 Spacer(Modifier.width(SharedLedgerSpacing.Small))
                 Text("这里展示当前账号在每个活动中的成员角色与参与人绑定状态。", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
@@ -367,18 +373,7 @@ private fun CollaborationIdentities(
 
 @Composable
 private fun ProfileLoadingRow() {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = SharedLedgerSpacing.Medium),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-        Spacer(Modifier.width(SharedLedgerSpacing.Small))
-        Text(
-            "正在加载真实活动与协作身份…",
-            style = SharedLedgerTextStyles.BodySecondary,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
+    LoadingState(message = "正在加载真实活动与协作身份…", isRefreshing = true)
 }
 
 @Composable
@@ -403,7 +398,7 @@ private fun CollaborationIdentityRow(
     onOpenActivity: ((CollaborationIdentity) -> Unit)?,
 ) {
     val rowModifier = if (onOpenActivity != null) {
-        Modifier.clickable { onOpenActivity(identity) }
+        Modifier.clip(SharedLedgerRadius.Medium).clickable { onOpenActivity(identity) }
     } else {
         Modifier
     }
@@ -413,7 +408,7 @@ private fun CollaborationIdentityRow(
     ) {
         ParticipantAvatar(
             name = identity.participantName ?: identity.activityName,
-            size = 42.dp,
+            size = SharedLedgerDimens.AvatarMedium,
             backgroundColor = if (identity.isCreator) IconContainerSage else IconContainerOrange,
         )
         Spacer(Modifier.width(SharedLedgerSpacing.MediumSmall))
@@ -435,14 +430,14 @@ private fun CollaborationIdentityRow(
                     identity.isParticipantBound -> "已绑定参与人，信息待同步"
                     else -> "未绑定参与人"
                 },
-                modifier = Modifier.padding(top = 3.dp),
+                modifier = Modifier.padding(top = SharedLedgerSpacing.XSmall),
                 style = SharedLedgerTextStyles.Label,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             if (identity.isArchived) {
                 Text(
                     text = "已归档 · 只读",
-                    modifier = Modifier.padding(top = 3.dp),
+                    modifier = Modifier.padding(top = SharedLedgerSpacing.XSmall),
                     style = SharedLedgerTextStyles.Label,
                     color = MaterialTheme.colorScheme.error,
                 )
@@ -452,7 +447,7 @@ private fun CollaborationIdentityRow(
             Icon(
                 Icons.Rounded.ChevronRight,
                 contentDescription = "打开${identity.activityName}",
-                modifier = Modifier.size(18.dp),
+                modifier = Modifier.size(SharedLedgerDimens.IconSmall),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
@@ -494,7 +489,7 @@ private fun LogoutCard(onSignOut: () -> Unit) {
         modifier = Modifier.fillMaxWidth(),
         shape = SharedLedgerRadius.ExtraLarge,
         color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.35f),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.2f)),
+        border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.error.copy(alpha = 0.2f)),
     ) {
         Button(
             onClick = onSignOut,
@@ -520,10 +515,10 @@ private fun ProfileCard(
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(24.dp),
+        shape = SharedLedgerRadius.ExtraLarge,
         color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, AppOutlineVariant.copy(alpha = 0.55f)),
-        shadowElevation = 1.dp,
+        border = BorderStroke(SharedLedgerDimens.OutlineWidth, AppOutlineVariant.copy(alpha = 0.55f)),
+        shadowElevation = SharedLedgerElevation.Static,
     ) {
         Column(modifier = Modifier.padding(padding), content = content)
     }
@@ -532,7 +527,7 @@ private fun ProfileCard(
 @Composable
 private fun SectionHeading(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = SharedLedgerSpacing.Small)) {
-        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(SharedLedgerDimens.ActionIcon))
         Spacer(Modifier.width(SharedLedgerSpacing.Small))
         Text(title, style = SharedLedgerTextStyles.CardTitle)
     }
@@ -546,7 +541,7 @@ private fun SettingRow(label: String, value: String, trailingIcon: androidx.comp
     ) {
         Text(label, modifier = Modifier.weight(1f), style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(value, style = SharedLedgerTextStyles.BodySecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        trailingIcon?.let { Icon(it, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(start = SharedLedgerSpacing.XSmall).size(18.dp)) }
+        trailingIcon?.let { Icon(it, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(start = SharedLedgerSpacing.XSmall).size(SharedLedgerDimens.IconSmall)) }
     }
 }
 
@@ -557,16 +552,16 @@ private fun SettingActionRow(
     onClick: () -> Unit,
 ) {
     TextButton(onClick = onClick, modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(vertical = SharedLedgerSpacing.XSmall)) {
-        Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
+        Icon(icon, contentDescription = null, modifier = Modifier.size(SharedLedgerDimens.IconSmall))
         Text(label, modifier = Modifier.weight(1f).padding(start = SharedLedgerSpacing.Small), textAlign = androidx.compose.ui.text.style.TextAlign.Start)
-        Icon(Icons.Rounded.ChevronRight, contentDescription = null, modifier = Modifier.size(18.dp))
+        Icon(Icons.Rounded.ChevronRight, contentDescription = null, modifier = Modifier.size(SharedLedgerDimens.IconSmall))
     }
 }
 
 @Composable
 private fun ProfileTag(text: String, modifier: Modifier = Modifier) {
     Surface(modifier = modifier, shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer) {
-        Text(text, modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp), style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onPrimaryContainer)
+        Text(text, modifier = Modifier.padding(horizontal = SharedLedgerSpacing.Small, vertical = SharedLedgerSpacing.XSmall), style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onPrimaryContainer)
     }
 }
 

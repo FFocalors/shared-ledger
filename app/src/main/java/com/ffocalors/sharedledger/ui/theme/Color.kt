@@ -24,12 +24,12 @@ val AppOutlineVariant = Color(0xFFC5C8BB)
 val ErrorRed = Color(0xFFBA1A1A)
 val ErrorContainer = Color(0xFFFFDAD6)
 
-/** Button palette tokens from the Stitch color reference. */
-val SoftPrimary = Color(0xFFBDCFA2)
+/** Button palette tokens; aliases of the canonical colors above. */
+val SoftPrimary = SageGreenContainer
 val SoftPrimaryContent = Color(0xFF4A4A4A)
-val WarmSecondary = Color(0xFFDDB480)
+val WarmSecondary = WarmOrange
 val WarmSecondaryContent = Color(0xFF4A4A4A)
-val Neutral = Color(0xFFEBE4D6)
+val Neutral = Cream
 val NeutralContent = Color(0xFF4A4A4A)
 val Inverted = Color(0xFF4A4A4A)
 val InvertedContent = Color(0xFFEBE4D6)
@@ -91,14 +91,14 @@ fun hasAccessibleButtonContrast(
     minimumRatio: Double = 4.5,
 ): Boolean = sharedLedgerContrastRatio(palette.contentColor, palette.containerColor) >= minimumRatio
 
-// Semantic surfaces from the SharedLedger UI Concept Stitch design system.
-val SurfaceWarm = Color(0xFFFBF9F8)
-val SurfaceWarmLowest = Color(0xFFFFFFFF)
-val SurfaceWarmLow = Color(0xFFF5F3F3)
+// Stitch-named aliases kept for existing call sites; new code should use the canonical tokens above.
+val SurfaceWarm = AppBackground
+val SurfaceWarmLowest = AppSurface
+val SurfaceWarmLow = AppSurfaceLow
 val SurfaceWarmHigh = Color(0xFFEAE8E7)
 val SurfaceWarmContainer = Color(0xFFEFEDED)
-val SurfaceWarmHighest = Color(0xFFE4E2E2)
-val IconContainerSage = Color(0xFFD7E9BA)
+val SurfaceWarmHighest = AppSurfaceVariant
+val IconContainerSage = SageGreenSoft
 val IconContainerOrange = Color(0xFFFFDDB5)
 val IconContainerNeutral = Color(0xFFE9E2D4)
 val IconContainerNeutralTint = Color(0xFF575449)
@@ -106,10 +106,10 @@ val IconContainerTertiary = Color(0xFFCEC8BA)
 val IconTintSage = Color(0xFF121F03)
 val IconTintOrange = Color(0xFF2A1800)
 val IconTintNeutral = Color(0xFF1E1B13)
-val SubActivityBreakfastContainer = Color(0xFFFED39C)
-val TextPrimary = Color(0xFF1B1C1C)
-val TextSecondary = Color(0xFF45483E)
-val DividerSubtle = Color(0xFFC5C8BB)
+val SubActivityBreakfastContainer = WarmOrangeContainer
+val TextPrimary = DeepCharcoal
+val TextSecondary = SoftCharcoal
+val DividerSubtle = AppOutlineVariant
 
 @Immutable
 data class SharedLedgerSemanticColors(

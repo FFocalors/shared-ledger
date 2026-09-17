@@ -2,15 +2,12 @@ package com.ffocalors.sharedledger.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -28,15 +25,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.ffocalors.sharedledger.ui.components.AddSubActivityButton
 import com.ffocalors.sharedledger.ui.components.BottomActionItem
+import com.ffocalors.sharedledger.ui.components.EmptyState
+import com.ffocalors.sharedledger.ui.components.ErrorState
+import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatarGroup
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.QuickActionItem
@@ -60,7 +56,6 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
 import com.ffocalors.sharedledger.ui.theme.SubActivityBreakfastContainer
 import com.ffocalors.sharedledger.ui.theme.WarmBrown
 import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
-import com.ffocalors.sharedledger.ui.util.MoneyFormatter
 import com.ffocalors.sharedledger.ui.util.UiDateTimeFormatter
 import java.math.BigDecimal
 
@@ -155,17 +150,17 @@ fun LargeActivityScreen(
         SubActivityUiModel(
             name = ledgerUnit.name,
             amount = ledgerUnitAmounts[ledgerUnit.id] ?: BigDecimal.ZERO,
-            participantCount = displayParticipants.size,
+            participantCount = null,
             updatedAt = ledgerUnit.createdAt?.let(UiDateTimeFormatter::format) ?: "已创建",
             icon = icon,
             currencyCode = displayCurrency,
             iconContainerColor = if (index % 2 == 0) IconContainerSage else IconContainerTertiary,
             iconTint = if (index % 2 == 0) SageGreen else IconContainerNeutralTint,
             ledgerUnitId = ledgerUnit.id,
-            amountAvailable = participantBound ?: false,
+            amountAvailable = participantBound == true && ledgerUnitAmounts.containsKey(ledgerUnit.id),
         )
     } ?: subActivities
-    val outstandingDebt = activity?.summary?.totalDebt?.toBigDecimalOrNull() ?: BigDecimal("2480.0")
+    val outstandingDebt = activity?.summary?.totalDebt?.toBigDecimalOrNull()
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -188,24 +183,25 @@ fun LargeActivityScreen(
             )
         },
         bottomBar = {
-            Box(
-                modifier = Modifier
-                    .navigationBarsPadding()
-                    .padding(
-                        start = SharedLedgerSpacing.Medium,
-                        top = SharedLedgerSpacing.Medium,
-                        end = SharedLedgerSpacing.Medium,
-                        bottom = SharedLedgerSpacing.Large,
-                    ),
-                contentAlignment = Alignment.TopCenter,
-            ) {
-                SharedLedgerBottomActionBar(
-                    actions = listOf(
-                        onTransfer?.let { BottomActionItem("转账", Icons.Rounded.SwapHoriz, it) },
-                        onShowPrepayment?.let { BottomActionItem("预存", Icons.Rounded.AccountBalanceWallet, it) },
-                        onReceive?.let { BottomActionItem("收款", Icons.Rounded.RequestQuote, it) },
-                    ).filterNotNull(),
-                )
+            val bottomActions = listOfNotNull(
+                onTransfer?.let { BottomActionItem("转账", Icons.Rounded.SwapHoriz, it) },
+                onShowPrepayment?.let { BottomActionItem("预存", Icons.Rounded.AccountBalanceWallet, it) },
+                onReceive?.let { BottomActionItem("收款", Icons.Rounded.RequestQuote, it) },
+            )
+            if (bottomActions.isNotEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .padding(
+                            start = SharedLedgerDimens.PageHorizontalPadding,
+                            top = SharedLedgerSpacing.Medium,
+                            end = SharedLedgerDimens.PageHorizontalPadding,
+                            bottom = SharedLedgerSpacing.Large,
+                        ),
+                    contentAlignment = Alignment.TopCenter,
+                ) {
+                    SharedLedgerBottomActionBar(actions = bottomActions)
+                }
             }
         },
     ) { innerPadding ->
@@ -222,17 +218,17 @@ fun LargeActivityScreen(
                     start = SharedLedgerDimens.PageHorizontalPadding,
                     top = innerPadding.calculateTopPadding() + SharedLedgerSpacing.Medium,
                     end = SharedLedgerDimens.PageHorizontalPadding,
-                    bottom = innerPadding.calculateBottomPadding(),
+                    bottom = innerPadding.calculateBottomPadding() + SharedLedgerSpacing.Medium,
                 ),
-                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
             ) {
-                if (isLoading || errorMessage != null) {
+                if (isLoading) {
                     item(key = "activity-state") {
-                        LargeActivityStateMessage(
-                            isLoading = isLoading,
-                            errorMessage = errorMessage,
-                            onRetry = onRetry,
-                        )
+                        LoadingState(message = "正在加载活动…")
+                    }
+                } else if (errorMessage != null) {
+                    item(key = "activity-state") {
+                        ErrorState(message = errorMessage, onRetry = onRetry)
                     }
                 } else {
                     item(key = "summary") {
@@ -259,29 +255,33 @@ fun LargeActivityScreen(
                                 },
                                 QuickActionItem("资金记录", Icons.Rounded.AccountBalanceWallet, onClick = onFundRecords),
                             ),
-                            modifier = Modifier.padding(top = SharedLedgerSpacing.Medium),
+                            modifier = Modifier.padding(top = SharedLedgerSpacing.MediumSmall),
                         )
                     }
                     item(key = "sub-activities-header") {
                         Text(
                             text = "子活动列表",
-                            modifier = Modifier.padding(top = SharedLedgerSpacing.Large, start = SharedLedgerSpacing.XSmall),
+                            modifier = Modifier.padding(top = SharedLedgerSpacing.MediumSmall, start = SharedLedgerSpacing.XSmall),
                             style = SharedLedgerTextStyles.SectionTitle,
                             color = MaterialTheme.colorScheme.onBackground,
                         )
                     }
-                    items(displaySubActivities, key = { it.ledgerUnitId.ifBlank { it.name } }) { activity ->
-                        SubActivityCard(
-                            activity = activity,
-                            onClick = { onSubActivityClick(activity.ledgerUnitId) },
-                        )
+                    if (displaySubActivities.isEmpty()) {
+                        item(key = "sub-activities-empty") {
+                            EmptyState(title = "暂无子活动")
+                        }
+                    } else {
+                        items(displaySubActivities, key = { it.ledgerUnitId.ifBlank { it.name } }) { activity ->
+                            SubActivityCard(
+                                activity = activity,
+                                onClick = { onSubActivityClick(activity.ledgerUnitId) },
+                                modifier = Modifier.animateItem(),
+                            )
+                        }
                     }
                     onAddSubActivity?.let { callback ->
                         item(key = "add-sub-activity") {
-                            AddSubActivityButton(
-                                onClick = callback,
-                                modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
-                            )
+                            AddSubActivityButton(onClick = callback)
                         }
                     }
                 }
@@ -289,37 +289,6 @@ fun LargeActivityScreen(
         }
     }
 
-}
-
-@Composable
-private fun LargeActivityStateMessage(
-    isLoading: Boolean,
-    errorMessage: String?,
-    onRetry: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = SharedLedgerSpacing.XLarge),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
-    ) {
-        if (isLoading) {
-            androidx.compose.material3.CircularProgressIndicator()
-            Text("正在加载活动…", style = SharedLedgerTextStyles.BodySecondary)
-        } else {
-            Text(
-                text = errorMessage ?: "活动加载失败",
-                style = SharedLedgerTextStyles.BodySecondary,
-                color = MaterialTheme.colorScheme.error,
-            )
-            com.ffocalors.sharedledger.ui.components.SharedLedgerButton(
-                text = "重试",
-                onClick = onRetry,
-                tone = com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone.SoftPrimary,
-            )
-        }
-    }
 }
 
 @Preview(name = "大型活动详情页", showBackground = true, widthDp = 390, heightDp = 844)

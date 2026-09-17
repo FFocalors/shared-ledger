@@ -7,14 +7,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -27,8 +25,6 @@ import androidx.compose.material.icons.rounded.CurrencyExchange
 import androidx.compose.material.icons.rounded.FlightTakeoff
 import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.Restaurant
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -46,13 +42,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.components.ActivityKind
+import com.ffocalors.sharedledger.ui.components.ErrorBanner
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
+import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.theme.AppBackground
@@ -62,7 +60,6 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
-import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
 import com.ffocalors.sharedledger.data.exchange.SupportedExchangeCurrency
 
 /**
@@ -100,11 +97,16 @@ fun CreateActivityScreen(
             )
         },
         bottomBar = {
-            CreateActivityBottomBar(
-                onClick = { onCreate(activityName, selectedKind, multiCurrencyEnabled, selectedCurrency) },
-                enabled = activityName.isNotBlank() && !isLoading,
-                loading = isLoading,
-            )
+            SharedLedgerCtaBottomBar(backgroundColor = AppBackground) {
+                SharedLedgerButton(
+                    text = "创建活动",
+                    onClick = { onCreate(activityName, selectedKind, multiCurrencyEnabled, selectedCurrency) },
+                    enabled = activityName.isNotBlank() && !isLoading,
+                    loading = isLoading,
+                    loadingText = "正在创建",
+                    icon = Icons.Rounded.ArrowForward,
+                )
+            }
         },
     ) { innerPadding ->
         Box(
@@ -123,7 +125,7 @@ fun CreateActivityScreen(
                     )
                     .verticalScroll(rememberScrollState())
                     .imePadding(),
-                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XLarge),
+                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Large),
             ) {
                 CreateActivityNameSection(
                     value = activityName,
@@ -143,7 +145,7 @@ fun CreateActivityScreen(
                     onMultiCurrencyChange = { multiCurrencyEnabled = it },
                 )
                 if (errorMessage != null) {
-                    Text(errorMessage, color = MaterialTheme.colorScheme.error, style = SharedLedgerTextStyles.BodySecondary)
+                    ErrorBanner(errorMessage)
                 }
             }
         }
@@ -155,7 +157,7 @@ private fun CreateActivityNameSection(
     value: String,
     onValueChange: (String) -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
+    Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall)) {
         CreateSectionLabel(text = "活动名称")
         SharedLedgerTextField(
             value = value,
@@ -171,7 +173,7 @@ private fun CreateActivityTypeSection(
     selectedKind: ActivityKind,
     onKindSelected: (ActivityKind) -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
+    Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall)) {
         CreateSectionLabel(text = "活动类型")
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -225,9 +227,8 @@ private fun ActivityTypeCard(
         MaterialTheme.colorScheme.onSurfaceVariant
     }
     Surface(
-        modifier = modifier
-            .height(150.dp)
-            .clickable(onClick = onClick),
+        onClick = onClick,
+        modifier = modifier.height(150.dp),
         shape = SharedLedgerRadius.ExtraLarge,
         color = surfaceColor,
         border = BorderStroke(
@@ -249,13 +250,13 @@ private fun ActivityTypeCard(
                     contentColor = iconTint,
                 ) {
                     Box(
-                        modifier = Modifier.padding(10.dp),
+                        modifier = Modifier.padding(SharedLedgerSpacing.MediumSmall),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
-                            modifier = Modifier.width(20.dp),
+                            modifier = Modifier.size(SharedLedgerDimens.ActionIcon),
                         )
                     }
                 }
@@ -282,7 +283,7 @@ private fun ActivityTypeCard(
                     Icon(
                         imageVector = Icons.Rounded.Check,
                         contentDescription = "已选择${if (kind == ActivityKind.Standard) "普通活动" else "大型活动"}",
-                        modifier = Modifier.padding(3.dp),
+                        modifier = Modifier.padding(SharedLedgerSpacing.XSmall),
                     )
                 }
             }
@@ -300,7 +301,7 @@ private fun CreateActivitySettingsSection(
     multiCurrencyEnabled: Boolean,
     onMultiCurrencyChange: (Boolean) -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
+    Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall)) {
         CreateSectionLabel(text = "基础设置")
         Surface(
             modifier = Modifier.fillMaxWidth(),
@@ -316,6 +317,7 @@ private fun CreateActivitySettingsSection(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clip(SharedLedgerRadius.ExtraLarge)
                         .clickable { onCurrencyMenuVisibleChange(true) }
                         .padding(SharedLedgerSpacing.MediumLarge),
                     verticalAlignment = Alignment.CenterVertically,
@@ -399,13 +401,13 @@ private fun SettingsIcon(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
 ) {
     Surface(
-        modifier = Modifier.width(32.dp),
+        modifier = Modifier.size(SharedLedgerDimens.AvatarSmall),
         shape = CircleShape,
         color = MaterialTheme.colorScheme.surfaceVariant,
         contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
     ) {
         Box(
-            modifier = Modifier.padding(6.dp),
+            modifier = Modifier.padding(SharedLedgerSpacing.XSmall),
             contentAlignment = Alignment.Center,
         ) {
             Icon(imageVector = icon, contentDescription = null)
@@ -421,36 +423,6 @@ private fun CreateSectionLabel(text: String) {
         style = SharedLedgerTextStyles.BodySecondary,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
-}
-
-@Composable
-private fun CreateActivityBottomBar(onClick: () -> Unit, enabled: Boolean, loading: Boolean) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(Color.Transparent, AppBackground),
-                ),
-            )
-            .imePadding()
-            .navigationBarsPadding()
-            .padding(
-                start = SharedLedgerDimens.PageHorizontalPadding,
-                top = SharedLedgerSpacing.XLarge,
-                end = SharedLedgerDimens.PageHorizontalPadding,
-                bottom = SharedLedgerSpacing.Large,
-            ),
-    ) {
-        SharedLedgerButton(
-            text = "创建活动",
-            onClick = onClick,
-            enabled = enabled,
-            loading = loading,
-            loadingText = "正在创建",
-            icon = Icons.Rounded.ArrowForward,
-        )
-    }
 }
 
 @Preview(name = "创建活动", showBackground = true, widthDp = 390, heightDp = 844)

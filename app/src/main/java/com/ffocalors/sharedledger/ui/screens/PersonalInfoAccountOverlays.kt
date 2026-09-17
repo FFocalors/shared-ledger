@@ -5,10 +5,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -41,6 +41,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.auth.PasswordChangeUiState
+import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 
@@ -117,7 +118,7 @@ internal fun PasswordChangeDialog(
                 ) {
                     if (state.isSubmitting) {
                         CircularProgressIndicator(
-                            modifier = Modifier.height(18.dp),
+                            modifier = Modifier.size(SharedLedgerDimens.IconSmall),
                             strokeWidth = 2.dp,
                         )
                     } else {
@@ -223,7 +224,7 @@ internal fun PrivacyNoticeSheet(onDismiss: () -> Unit) {
                 title = "网络与会话",
                 body = "登录、同步账本、上传附件和修改密码需要网络连接。退出登录会结束当前设备上的登录会话；再次使用账号功能时需要重新登录。",
             )
-            Spacer(Modifier.height(SharedLedgerSpacing.Medium))
+            Spacer(Modifier.size(SharedLedgerSpacing.Medium))
             Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) { Text("我知道了") }
         }
     }

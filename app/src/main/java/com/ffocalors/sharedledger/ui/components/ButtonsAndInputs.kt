@@ -1,6 +1,9 @@
 package com.ffocalors.sharedledger.ui.components
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +21,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -25,6 +29,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.theme.AppSurface
+import com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerButtonColorPair
 import com.ffocalors.sharedledger.ui.theme.DefaultSharedLedgerButtonPalette
@@ -155,18 +160,26 @@ private fun SharedLedgerButtonContent(
     icon: ImageVector?,
     indicatorColor: androidx.compose.ui.graphics.Color,
 ) {
-    if (loading) {
-        CircularProgressIndicator(
-            modifier = Modifier.size(20.dp),
-            color = indicatorColor,
-            strokeWidth = 2.dp,
-        )
-        Spacer(Modifier.width(SharedLedgerSpacing.Small))
-    } else if (icon != null) {
-        Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(SharedLedgerDimens.IconSmall))
-        Spacer(Modifier.width(SharedLedgerSpacing.Small))
+    Crossfade(
+        targetState = loading,
+        animationSpec = tween(SharedLedgerMotion.Durations.Icon),
+        label = "buttonLoading",
+    ) { isLoading ->
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = indicatorColor,
+                    strokeWidth = 2.dp,
+                )
+                Spacer(Modifier.width(SharedLedgerSpacing.Small))
+            } else if (icon != null) {
+                Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(SharedLedgerDimens.IconSmall))
+                Spacer(Modifier.width(SharedLedgerSpacing.Small))
+            }
+            Text(text = text, style = SharedLedgerTextStyles.Button)
+        }
     }
-    Text(text = text, style = SharedLedgerTextStyles.Button)
 }
 
 @Composable
@@ -220,6 +233,7 @@ fun SharedLedgerTextField(
     trailingContent: (@Composable () -> Unit)? = null,
     error: String? = null,
     enabled: Boolean = true,
+    readOnly: Boolean = false,
     singleLine: Boolean = true,
     minLines: Int = 1,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
@@ -229,6 +243,7 @@ fun SharedLedgerTextField(
         onValueChange = onValueChange,
         modifier = modifier.defaultMinSize(minHeight = SharedLedgerDimens.TextFieldMinHeight),
         enabled = enabled,
+        readOnly = readOnly,
         label = label?.let { { Text(it) } },
         placeholder = placeholder?.let { { Text(it) } },
         leadingIcon = leadingIcon,

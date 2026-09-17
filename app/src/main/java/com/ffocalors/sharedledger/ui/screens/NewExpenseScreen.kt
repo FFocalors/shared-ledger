@@ -1,25 +1,21 @@
 package com.ffocalors.sharedledger.ui.screens
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
@@ -57,7 +53,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -68,9 +63,11 @@ import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.data.expense.ExpenseSplitMethod
 import com.ffocalors.sharedledger.data.exchange.SupportedExchangeCurrency
 import com.ffocalors.sharedledger.data.exchange.ExchangeRate
+import com.ffocalors.sharedledger.ui.components.ErrorBanner
 import com.ffocalors.sharedledger.ui.components.ParticipantAmountRow
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.SegmentedControl
+import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerPrimaryButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
@@ -149,12 +146,12 @@ internal fun createDefaultExpenseDraft(
         ?: participants.firstOrNull()?.id
     return ExpenseFormDraft(
     ledgerUnitId = ledgerUnitId,
-    title = "晚餐",
-    amount = "300.0",
+    title = "",
+    amount = "",
     currency = baseCurrency,
     fxRate = "1",
     payerIds = payerId?.let(::listOf).orEmpty(),
-    payerAmounts = payerId?.let { mapOf(it to "300.0") }.orEmpty(),
+    payerAmounts = emptyMap(),
     splitMethod = ExpenseSplitMethod.Aa,
     manualSplitAmounts = emptyMap(),
     aaParticipantIds = participants.map(ExpenseFormParticipant::id),
@@ -317,11 +314,7 @@ fun NewExpenseScreen(
         containerColor = AppBackground,
         topBar = { SharedLedgerTopBar(title = title, showBackButton = true, onBackClick = onBack, containerColor = AppBackground, showMoreButton = false) },
         bottomBar = {
-            Box(
-                modifier = Modifier.fillMaxWidth().background(Brush.verticalGradient(listOf(Color.Transparent, AppBackground)))
-                    .imePadding().navigationBarsPadding().padding(SharedLedgerDimens.PageHorizontalPadding, SharedLedgerSpacing.XLarge, SharedLedgerDimens.PageHorizontalPadding, SharedLedgerSpacing.Large),
-                contentAlignment = Alignment.TopCenter,
-            ) {
+            SharedLedgerCtaBottomBar(backgroundColor = AppBackground) {
                 SharedLedgerPrimaryButton(
                     text = when {
                         isSubmitting -> "保存中…"
@@ -335,53 +328,65 @@ fun NewExpenseScreen(
             }
         },
     ) { innerPadding ->
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.TopCenter,
+        ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize().widthIn(max = SharedLedgerDimens.ContentMaxWidth).imePadding(),
-            contentPadding = PaddingValues(SharedLedgerDimens.PageHorizontalPadding, innerPadding.calculateTopPadding() + SharedLedgerSpacing.Medium, SharedLedgerDimens.PageHorizontalPadding, innerPadding.calculateBottomPadding() + 112.dp),
-            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XLarge),
+            modifier = Modifier.fillMaxSize().widthIn(max = SharedLedgerDimens.ContentMaxWidth),
+            contentPadding = PaddingValues(SharedLedgerDimens.PageHorizontalPadding, innerPadding.calculateTopPadding() + SharedLedgerSpacing.Medium, SharedLedgerDimens.PageHorizontalPadding, innerPadding.calculateBottomPadding() + SharedLedgerSpacing.Medium),
+            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Large),
         ) {
             item("amount") {
                 FormSection {
                     if (mode != ExpenseFormMode.Refund) {
-                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
-                            Icon(Icons.Rounded.Restaurant, null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(SharedLedgerDimens.IconMedium))
-                            SharedLedgerTextField(draft.title, { draft = draft.copy(title = it) }, Modifier.weight(1f), placeholder = "消费名称")
-                        }
+                        SharedLedgerTextField(
+                            draft.title,
+                            { draft = draft.copy(title = it) },
+                            Modifier.fillMaxWidth(),
+                            placeholder = "消费名称",
+                            leadingIcon = {
+                                Icon(Icons.Rounded.Restaurant, null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(SharedLedgerDimens.IconMedium))
+                            },
+                        )
                     }
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        Text(currencySymbol(draft.currency), style = SharedLedgerTextStyles.CardTitle, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        SharedLedgerTextField(draft.amount, { draft = draft.copy(amount = it) }, Modifier.weight(1f), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
-                        if (multiCurrencyEnabled && mode != ExpenseFormMode.Refund) {
+                    SharedLedgerTextField(
+                        draft.amount,
+                        { draft = draft.copy(amount = it) },
+                        Modifier.fillMaxWidth(),
+                        placeholder = "0.0",
+                        leadingIcon = {
+                            Text(currencySymbol(draft.currency), style = SharedLedgerTextStyles.CardTitle, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        },
+                        trailingContent = {
                             Box {
                                 Surface(
-                                    modifier = Modifier
-                                        .widthIn(min = 112.dp, max = 176.dp)
-                                        .clickable { showCurrencyMenu = true },
-                                    shape = RoundedCornerShape(16.dp),
+                                    onClick = { if (multiCurrencyEnabled && mode != ExpenseFormMode.Refund) showCurrencyMenu = true },
+                                    shape = SharedLedgerRadius.Large,
                                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f),
                                     border = BorderStroke(
-                                        1.dp,
+                                        SharedLedgerDimens.OutlineWidth,
                                         MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.52f),
                                     ),
                                 ) {
-                                    val selected = currencyOptions.firstOrNull { it.code.equals(draft.currency, true) }
                                     Row(
                                         modifier = Modifier.padding(horizontal = SharedLedgerSpacing.MediumSmall, vertical = SharedLedgerSpacing.Small),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
                                     ) {
                                         Text(
-                                            selected?.let(::currencyOptionLabel) ?: draft.currency.uppercase(),
-                                            Modifier.weight(1f),
+                                            draft.currency.uppercase(),
                                             style = SharedLedgerTextStyles.Label,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
                                         )
-                                        Icon(
-                                            Icons.Rounded.KeyboardArrowDown,
-                                            contentDescription = "展开币种选择",
-                                            modifier = Modifier.size(18.dp),
-                                        )
+                                        if (multiCurrencyEnabled && mode != ExpenseFormMode.Refund) {
+                                            Icon(
+                                                Icons.Rounded.KeyboardArrowDown,
+                                                contentDescription = "展开币种选择",
+                                                modifier = Modifier.size(SharedLedgerDimens.IconSmall),
+                                            )
+                                        }
                                     }
                                 }
                                 DropdownMenu(
@@ -408,7 +413,7 @@ fun NewExpenseScreen(
                                                         tint = MaterialTheme.colorScheme.primary,
                                                     )
                                                 } else {
-                                                    androidx.compose.foundation.layout.Spacer(Modifier.size(24.dp))
+                                                    androidx.compose.foundation.layout.Spacer(Modifier.size(SharedLedgerDimens.IconMedium))
                                                 }
                                             },
                                             onClick = {
@@ -419,23 +424,21 @@ fun NewExpenseScreen(
                                                 onCurrencySelected?.invoke(currency.code)
                                                 showCurrencyMenu = false
                                             },
+                                            modifier = Modifier.defaultMinSize(minHeight = 48.dp),
                                         )
                                     }
                                 }
                             }
-                        } else {
-                            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceVariant) {
-                            Text(draft.currency, Modifier.padding(horizontal = SharedLedgerSpacing.MediumSmall, vertical = SharedLedgerSpacing.XSmall), style = SharedLedgerTextStyles.Label)
-                            }
-                        }
-                    }
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    )
                     if (mode != ExpenseFormMode.Refund && multiCurrencyEnabled && !draft.currency.equals(baseCurrency, ignoreCase = true)) {
                         Text(
                             text = when {
                                 (selectedExchangeRate?.rate?.toPlainString() ?: exchangeRate) != null -> {
                                     val rate = selectedExchangeRate?.rate?.toPlainString() ?: exchangeRate.orEmpty()
                                     val observedAt = selectedExchangeRate?.observedAt ?: exchangeRateObservedAt
-                                    "汇率 ${draft.currency} → $baseCurrency：$rate${observedAt?.let { "（ECB $it）" }.orEmpty()}"
+                                    "汇率 ${draft.currency} → $baseCurrency：$rate${observedAt?.let { "（ECB ${UiDateTimeFormatter.format(it)}）" }.orEmpty()}"
                                 }
                                 else -> "暂无 ${draft.currency} → $baseCurrency 汇率缓存，在线保存前请刷新"
                             },
@@ -479,7 +482,7 @@ fun NewExpenseScreen(
                     }
                     Surface(shape = CircleShape, color = if (splitTotal.compareTo(amount) == 0) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer) {
                         Row(Modifier.padding(horizontal = SharedLedgerSpacing.MediumSmall, vertical = SharedLedgerSpacing.XSmall), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Rounded.CheckCircle, null, Modifier.size(14.dp))
+                            Icon(Icons.Rounded.CheckCircle, null, Modifier.size(SharedLedgerDimens.IconSmall))
                             Text("已分配 ${currencySymbol(draft.currency)} ${splitTotal.toPlainString()} / ${currencySymbol(draft.currency)} ${amount.toPlainString()}", style = SharedLedgerTextStyles.Label)
                         }
                     }
@@ -490,7 +493,7 @@ fun NewExpenseScreen(
                             ParticipantAmountRow(participantUi, value.toBigDecimalOrNull() ?: BigDecimal.ZERO, currencyCode = draft.currency, editable = true, editableAmount = value, onAmountChange = { draft = draft.copy(manualSplitAmounts = draft.manualSplitAmounts + (participant.id to it)) })
                         } else {
                             val selected = participant.id in draft.aaParticipantIds
-                            Surface(Modifier.fillMaxWidth().clickable { draft = draft.copy(aaParticipantIds = if (selected) draft.aaParticipantIds - participant.id else draft.aaParticipantIds + participant.id) }, shape = SharedLedgerRadius.Large, color = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = .35f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .4f), border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant)) {
+                            Surface(onClick = { draft = draft.copy(aaParticipantIds = if (selected) draft.aaParticipantIds - participant.id else draft.aaParticipantIds + participant.id) }, modifier = Modifier.fillMaxWidth(), shape = SharedLedgerRadius.Large, color = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = .35f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .4f), border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant)) {
                                 Row(Modifier.padding(SharedLedgerSpacing.Medium), verticalAlignment = Alignment.CenterVertically) {
                                     Text(participant.name, Modifier.weight(1f), style = SharedLedgerTextStyles.Body)
                                     Text(if (selected) "已选择" else "未选择", style = SharedLedgerTextStyles.Label, color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
@@ -506,9 +509,9 @@ fun NewExpenseScreen(
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Rounded.Schedule, null)
                         Surface(
+                            onClick = { showDatePicker = true },
                             modifier = Modifier
-                                .weight(1f)
-                                .clickable { showDatePicker = true },
+                                .weight(1f),
                             shape = SharedLedgerRadius.Medium,
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
                         ) {
@@ -539,7 +542,7 @@ fun NewExpenseScreen(
                                 enabled = canAddExpenseAttachment(attachments.size) && !isSubmitting,
                                 contentPadding = PaddingValues(horizontal = SharedLedgerSpacing.Small),
                             ) {
-                                Icon(Icons.Rounded.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Icon(Icons.Rounded.Add, contentDescription = null, modifier = Modifier.size(SharedLedgerDimens.IconSmall))
                                 Text("添加")
                             }
                         }
@@ -561,7 +564,7 @@ fun NewExpenseScreen(
             if (!errorMessage.isNullOrBlank()) {
                 item("error") {
                     Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
-                        Text(errorMessage, color = MaterialTheme.colorScheme.error, style = SharedLedgerTextStyles.BodySecondary)
+                        ErrorBanner(errorMessage)
                         onRefreshConfirmation?.let { callback ->
                             TextButton(onClick = callback) {
                                 Icon(Icons.Rounded.Refresh, contentDescription = null)
@@ -571,6 +574,7 @@ fun NewExpenseScreen(
                     }
                 }
             }
+        }
         }
     }
 
@@ -675,11 +679,11 @@ private fun ExpenseAttachmentDraftRow(
 
 @Composable
 private fun PayerRow(participant: ExpenseFormParticipant, index: Int, selected: Boolean, amount: String, currency: String, onToggle: () -> Unit, onAmountChange: (String) -> Unit) {
-    Surface(Modifier.fillMaxWidth().clickable(onClick = onToggle), shape = SharedLedgerRadius.Medium, color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .52f), border = BorderStroke(SharedLedgerDimens.OutlineWidth, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = .5f))) {
+    Surface(onClick = onToggle, modifier = Modifier.fillMaxWidth(), shape = SharedLedgerRadius.Medium, color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .52f), border = BorderStroke(SharedLedgerDimens.OutlineWidth, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = .5f))) {
         Row(Modifier.padding(SharedLedgerSpacing.MediumSmall), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall)) {
             Surface(Modifier.size(SharedLedgerDimens.AvatarSmall), CircleShape, participantColor(index)) { Box(contentAlignment = Alignment.Center) { Text(participant.name.take(1), style = SharedLedgerTextStyles.Label) } }
             Text(participant.name, Modifier.weight(1f), style = SharedLedgerTextStyles.Body)
-            SharedLedgerTextField(amount, onAmountChange, Modifier.widthIn(min = 82.dp, max = 104.dp), placeholder = MoneyFormatter.format(BigDecimal.ZERO, currency), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+            SharedLedgerTextField(amount, onAmountChange, Modifier.widthIn(min = 82.dp, max = SharedLedgerDimens.ParticipantAmountFieldWidth), placeholder = MoneyFormatter.format(BigDecimal.ZERO, currency), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
         }
     }
 }
@@ -687,7 +691,7 @@ private fun PayerRow(participant: ExpenseFormParticipant, index: Int, selected: 
 @Composable
 private fun FormSection(content: @Composable ColumnScope.() -> Unit) {
     Surface(Modifier.fillMaxWidth(), shape = SharedLedgerRadius.ExtraLarge, color = MaterialTheme.colorScheme.surface, border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant.copy(alpha = .3f)), shadowElevation = SharedLedgerElevation.Card) {
-        Column(Modifier.padding(SharedLedgerSpacing.Large), verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium), content = content)
+        Column(Modifier.padding(SharedLedgerSpacing.Large), verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall), content = content)
     }
 }
 
@@ -696,12 +700,22 @@ private fun currencySymbol(code: String): String = when (code.uppercase()) { "EU
 
 internal fun currencyOptionLabel(currency: SupportedExchangeCurrency): String {
     val code = currency.code.uppercase()
-    val displayName = currency.displayName.trim()
-    return if (displayName.isBlank() || displayName.equals(code, ignoreCase = true)) {
-        code
-    } else {
-        "$code · $displayName"
-    }
+    val (flag, name) = currencyFlagAndName(code)
+    return if (name.isBlank()) code else "$flag $name $code"
+}
+
+private fun currencyFlagAndName(code: String): Pair<String, String> = when (code.uppercase()) {
+    "CNY" -> "🇨🇳" to "人民币"
+    "JPY" -> "🇯🇵" to "日元"
+    "USD" -> "🇺🇸" to "美元"
+    "EUR" -> "🇪🇺" to "欧元"
+    "HKD" -> "🇭🇰" to "港币"
+    "GBP" -> "🇬🇧" to "英镑"
+    "AUD" -> "🇦🇺" to "澳元"
+    "CAD" -> "🇨🇦" to "加元"
+    "KRW" -> "🇰🇷" to "韩元"
+    "SGD" -> "🇸🇬" to "新加坡元"
+    else -> "" to ""
 }
 
 @Preview(name = "新增消费", showBackground = true, widthDp = 390, heightDp = 844)

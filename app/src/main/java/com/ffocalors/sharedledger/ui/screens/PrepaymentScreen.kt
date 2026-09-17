@@ -1,10 +1,11 @@
 package com.ffocalors.sharedledger.ui.screens
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.AccountBalanceWallet
@@ -30,14 +30,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.data.financial.FinancialContext
 import com.ffocalors.sharedledger.data.financial.PrepaymentAccount
 import com.ffocalors.sharedledger.domain.financial.ParticipantInfo
 import com.ffocalors.sharedledger.ui.components.AmountDisplay
 import com.ffocalors.sharedledger.ui.components.AmountSize
+import com.ffocalors.sharedledger.ui.components.EmptyState
+import com.ffocalors.sharedledger.ui.components.ErrorState
+import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
+import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
@@ -116,6 +119,26 @@ fun PrepaymentScreen(
                 onBackClick = onBack,
             )
         },
+        bottomBar = {
+            val choice = selected
+            if (!isLoading && errorMessage == null && candidates.isNotEmpty() && choice != null) {
+                SharedLedgerCtaBottomBar {
+                    SharedLedgerButton(
+                        text = if (mode == PrepaymentMode.FUND) "确认新增预存" else "确认返还预存",
+                        onClick = {
+                            if (isValidPrepaymentDirection(choice)) {
+                                onSubmit(choice.ownerId, choice.custodianId, amount ?: BigDecimal.ZERO, selectedOnBehalfId)
+                            }
+                        },
+                        enabled = valid && actingPartyValid && !isSubmitting,
+                        loading = isSubmitting,
+                        loadingText = "提交中…",
+                        tone = if (mode == PrepaymentMode.FUND) SharedLedgerButtonTone.WarmSecondary else SharedLedgerButtonTone.SoftPrimary,
+                        icon = Icons.Rounded.ArrowForward,
+                    )
+                }
+            }
+        },
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding).widthIn(max = SharedLedgerDimens.ContentMaxWidth),
@@ -123,7 +146,7 @@ fun PrepaymentScreen(
                 horizontal = SharedLedgerDimens.PageHorizontalPadding,
                 vertical = SharedLedgerSpacing.Large,
             ),
-            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
         ) {
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
@@ -135,22 +158,27 @@ fun PrepaymentScreen(
                 }
             }
             if (isLoading) {
-                item { Text("正在读取预存余额…", style = SharedLedgerTextStyles.BodySecondary) }
+                item { LoadingState(message = "正在读取预存余额…") }
             } else if (errorMessage != null) {
-                item {
-                    Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
-                        Text(errorMessage, color = MaterialTheme.colorScheme.error)
-                        SharedLedgerButton("重试", onRetry, tone = SharedLedgerButtonTone.SoftPrimary)
-                    }
-                }
+                item { ErrorState(message = errorMessage, onRetry = onRetry) }
             } else if (candidates.isEmpty()) {
-                item { Text(if (mode == PrepaymentMode.RETURN) "暂无可返还的预存余额" else "当前账号尚未绑定参与人", style = SharedLedgerTextStyles.BodySecondary) }
+                item {
+                    EmptyState(
+                        title = if (mode == PrepaymentMode.RETURN) "暂无可返还的预存余额" else "当前账号尚未绑定参与人",
+                    )
+                }
             } else {
-                item { Text(if (mode == PrepaymentMode.FUND) "预存给" else "预存来源", style = SharedLedgerTextStyles.SectionTitle) }
+                item {
+                    Text(
+                        if (mode == PrepaymentMode.FUND) "预存给" else "预存来源",
+                        style = SharedLedgerTextStyles.SectionTitle,
+                        modifier = Modifier.padding(top = SharedLedgerSpacing.MediumSmall),
+                    )
+                }
                 items(candidates, key = { it.key }) { candidate ->
                     val selectedNow = candidate.key == selected?.key
                     Surface(
-                        modifier = Modifier.fillMaxWidth().clickable {
+                        onClick = {
                             selectedId = candidate.key
                             selectedOnBehalfId = null
                             amountText = if (mode == PrepaymentMode.RETURN) {
@@ -159,10 +187,11 @@ fun PrepaymentScreen(
                                 ""
                             }
                         },
-                        shape = RoundedCornerShape(18.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = SharedLedgerRadius.Large,
                         color = if (selectedNow) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmLowest,
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                        shadowElevation = if (selectedNow) SharedLedgerElevation.Card else 0.dp,
+                        border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant),
+                        shadowElevation = if (selectedNow) SharedLedgerElevation.Card else SharedLedgerElevation.Flat,
                     ) {
                         Row(
                             modifier = Modifier.padding(SharedLedgerSpacing.Medium),
@@ -190,7 +219,10 @@ fun PrepaymentScreen(
                 }
                 selected?.let { choice ->
                     item {
-                        Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
+                        Column(
+                            modifier = Modifier.padding(top = SharedLedgerSpacing.MediumSmall),
+                            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+                        ) {
                             SharedLedgerTextField(
                                 value = amountText,
                                 onValueChange = { value -> amountText = value.filter { it.isDigit() || it == '.' }.take(12) },
@@ -206,19 +238,6 @@ fun PrepaymentScreen(
                                     style = SharedLedgerTextStyles.Label,
                                 )
                             }
-                            SharedLedgerButton(
-                                text = if (mode == PrepaymentMode.FUND) "确认新增预存" else "确认返还预存",
-                                onClick = {
-                                    if (isValidPrepaymentDirection(choice)) {
-                                        onSubmit(choice.ownerId, choice.custodianId, amount ?: BigDecimal.ZERO, selectedOnBehalfId)
-                                    }
-                                },
-                                enabled = valid && actingPartyValid && !isSubmitting,
-                                loading = isSubmitting,
-                                loadingText = "提交中…",
-                                tone = if (mode == PrepaymentMode.FUND) SharedLedgerButtonTone.WarmSecondary else SharedLedgerButtonTone.SoftPrimary,
-                                icon = Icons.Rounded.ArrowForward,
-                            )
                             val currentIsParty = currentId != null &&
                                 (currentId == choice.ownerId || currentId == choice.custodianId)
                             if (context?.canActOnBehalf == true && choice.onBehalfOptions.isNotEmpty()) {
@@ -342,22 +361,43 @@ private fun PrepaymentOnBehalfPicker(
         LazyRow(horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
             if (showSelfOption) {
                 item(key = "self") {
-                    Surface(
-                        modifier = Modifier.clickable { onSelected(null) },
-                        shape = SharedLedgerRadius.Full,
-                        color = if (selectedId == null) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmLowest,
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                    ) { Text("本人", modifier = Modifier.padding(SharedLedgerSpacing.Small), style = SharedLedgerTextStyles.Label) }
+                    OnBehalfChip(
+                        label = "本人",
+                        selected = selectedId == null,
+                        onClick = { onSelected(null) },
+                    )
                 }
             }
             items(options, key = { it.participantId }) { option ->
-                Surface(
-                    modifier = Modifier.clickable { onSelected(option.participantId) },
-                    shape = SharedLedgerRadius.Full,
-                    color = if (selectedId == option.participantId) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmLowest,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                ) { Text(option.displayName, modifier = Modifier.padding(SharedLedgerSpacing.Small), style = SharedLedgerTextStyles.Label) }
+                OnBehalfChip(
+                    label = option.displayName,
+                    selected = selectedId == option.participantId,
+                    onClick = { onSelected(option.participantId) },
+                )
             }
+        }
+    }
+}
+
+@Composable
+private fun OnBehalfChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        shape = SharedLedgerRadius.Full,
+        color = if (selected) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmLowest,
+        border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant),
+    ) {
+        Box(
+            modifier = Modifier
+                .defaultMinSize(minHeight = SharedLedgerDimens.TopBarActionSize)
+                .padding(horizontal = SharedLedgerSpacing.Medium),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(label, style = SharedLedgerTextStyles.Label)
         }
     }
 }

@@ -1,38 +1,23 @@
 package com.ffocalors.sharedledger.ui.screens
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.CalendarToday
 import androidx.compose.material.icons.rounded.AccountBalanceWallet
 import androidx.compose.material.icons.rounded.DoneAll
 import androidx.compose.material.icons.rounded.Edit
-import androidx.compose.material.icons.rounded.Group
-import androidx.compose.material.icons.rounded.LocalTaxi
 import androidx.compose.material.icons.rounded.RequestQuote
-import androidx.compose.material.icons.rounded.CurrencyExchange
-import androidx.compose.material.icons.rounded.Restaurant
 import androidx.compose.material.icons.rounded.SwapHoriz
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,12 +27,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.components.BottomActionItem
+import com.ffocalors.sharedledger.ui.components.EmptyState
+import com.ffocalors.sharedledger.ui.components.ErrorState
 import com.ffocalors.sharedledger.ui.components.ExpenseCard
 import com.ffocalors.sharedledger.ui.components.ExpenseCardUiModel
 import com.ffocalors.sharedledger.ui.components.ExpenseActionSheet
-import com.ffocalors.sharedledger.ui.components.PaymentStatusCard
+import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatarGroup
 import com.ffocalors.sharedledger.ui.components.QuickActionItem
@@ -55,22 +41,14 @@ import com.ffocalors.sharedledger.ui.components.SettlementStatistic
 import com.ffocalors.sharedledger.ui.components.SettlementSummaryCard
 import com.ffocalors.sharedledger.ui.components.SharedLedgerActionItemsRow
 import com.ffocalors.sharedledger.ui.components.SharedLedgerBottomActionBar
-import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
-import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
-import com.ffocalors.sharedledger.ui.theme.AppBackground
-import com.ffocalors.sharedledger.ui.theme.DividerSubtle
 import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
-import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
-import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
-import com.ffocalors.sharedledger.ui.util.MoneyFormatter
 import com.ffocalors.sharedledger.data.activity.ActivityDetail
-import com.ffocalors.sharedledger.ui.expense.ExpenseListUiState
 import java.math.BigDecimal
 
 private val PreviewNormalActivityParticipants = listOf(
@@ -143,7 +121,7 @@ fun NormalActivityScreen(
         )
     } ?: emptyList()
     val displayCurrency = activity?.summary?.baseCurrency ?: "CNY"
-    val outstandingDebt = activity?.summary?.totalDebt?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val outstandingDebt = activity?.summary?.totalDebt?.toBigDecimalOrNull()
     var expenseActionSheetVisible by remember { mutableStateOf(false) }
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -166,28 +144,29 @@ fun NormalActivityScreen(
             )
         },
         bottomBar = {
-            Box(
-                modifier = Modifier
-                    .navigationBarsPadding()
-                    .padding(
-                        start = SharedLedgerDimens.PageHorizontalPadding,
-                        top = SharedLedgerSpacing.Medium,
-                        end = SharedLedgerDimens.PageHorizontalPadding,
-                        bottom = SharedLedgerSpacing.Large,
-                    ),
-                contentAlignment = Alignment.TopCenter,
-            ) {
-                SharedLedgerBottomActionBar(
-                    actions = listOf(
-                        onTransfer?.let { BottomActionItem("转账", Icons.Rounded.SwapHoriz, it) },
-                        if (onNewExpense != null || onRefund != null) {
-                            BottomActionItem("记一笔", Icons.Rounded.Edit) {
-                                expenseActionSheetVisible = true
-                            }
-                        } else null,
-                        onReceive?.let { BottomActionItem("收款", Icons.Rounded.RequestQuote, it) },
-                    ).filterNotNull(),
-                )
+            val bottomActions = listOfNotNull(
+                onTransfer?.let { BottomActionItem("转账", Icons.Rounded.SwapHoriz, it) },
+                if (onNewExpense != null || onRefund != null) {
+                    BottomActionItem("记一笔", Icons.Rounded.Edit) {
+                        expenseActionSheetVisible = true
+                    }
+                } else null,
+                onReceive?.let { BottomActionItem("收款", Icons.Rounded.RequestQuote, it) },
+            )
+            if (bottomActions.isNotEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .padding(
+                            start = SharedLedgerDimens.PageHorizontalPadding,
+                            top = SharedLedgerSpacing.Medium,
+                            end = SharedLedgerDimens.PageHorizontalPadding,
+                            bottom = SharedLedgerSpacing.Large,
+                        ),
+                    contentAlignment = Alignment.TopCenter,
+                ) {
+                    SharedLedgerBottomActionBar(actions = bottomActions)
+                }
             }
         },
     ) { innerPadding ->
@@ -205,15 +184,15 @@ fun NormalActivityScreen(
                     end = SharedLedgerDimens.PageHorizontalPadding,
                     bottom = innerPadding.calculateBottomPadding() + SharedLedgerSpacing.Medium,
                 ),
-                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
             ) {
-                if (isLoading || errorMessage != null || expenseLoading || expenseErrorMessage != null) {
+                if (isLoading) {
                     item(key = "activity-state") {
-                        ActivityDetailStateMessage(
-                            isLoading = isLoading || expenseLoading,
-                            errorMessage = errorMessage ?: expenseErrorMessage,
-                            onRetry = if (errorMessage != null) onRetry else onExpenseRetry,
-                        )
+                        LoadingState(message = "正在加载活动…")
+                    }
+                } else if (errorMessage != null) {
+                    item(key = "activity-state") {
+                        ErrorState(message = errorMessage, onRetry = onRetry)
                     }
                 } else {
                     item(key = "summary") {
@@ -245,11 +224,34 @@ fun NormalActivityScreen(
                             ),
                         )
                     }
-                    item(key = "expenses") {
-                        ExpenseTimeline(
-                            expenses = expenses,
-                            onExpenseClick = onExpenseClick,
+                    item(key = "expenses-header") {
+                        Text(
+                            text = "活动明细",
+                            modifier = Modifier.padding(top = SharedLedgerSpacing.MediumSmall, start = SharedLedgerSpacing.XSmall),
+                            style = SharedLedgerTextStyles.SectionTitle,
+                            color = MaterialTheme.colorScheme.onBackground,
                         )
+                    }
+                    if (expenseLoading) {
+                        item(key = "expenses-state") {
+                            LoadingState(message = "正在加载账单…")
+                        }
+                    } else if (expenseErrorMessage != null) {
+                        item(key = "expenses-state") {
+                            ErrorState(message = expenseErrorMessage, onRetry = onExpenseRetry)
+                        }
+                    } else if (expenses.isEmpty()) {
+                        item(key = "expenses-empty") {
+                            EmptyState(title = "暂无账单")
+                        }
+                    } else {
+                        items(expenses, key = { it.expenseId.ifBlank { it.name } }) { expense ->
+                            ExpenseCard(
+                                expense = expense,
+                                onClick = { onExpenseClick(expense.expenseId) },
+                                modifier = Modifier.animateItem(),
+                            )
+                        }
                     }
                 }
             }
@@ -260,142 +262,6 @@ fun NormalActivityScreen(
             onDismiss = { expenseActionSheetVisible = false },
             onNewExpense = onNewExpense,
             onRefund = onRefund,
-        )
-    }
-}
-
-@Composable
-private fun ActivityDetailStateMessage(
-    isLoading: Boolean,
-    errorMessage: String?,
-    onRetry: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = SharedLedgerSpacing.XLarge),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
-    ) {
-        if (isLoading) {
-            androidx.compose.material3.CircularProgressIndicator()
-            Text("正在加载活动…", style = SharedLedgerTextStyles.BodySecondary)
-        } else {
-            Text(
-                text = errorMessage ?: "活动加载失败",
-                style = SharedLedgerTextStyles.BodySecondary,
-                color = MaterialTheme.colorScheme.error,
-            )
-            SharedLedgerButton(
-                text = "重试",
-                onClick = onRetry,
-                tone = SharedLedgerButtonTone.SoftPrimary,
-            )
-        }
-    }
-}
-
-@Composable
-private fun ExpenseTimeline(
-    expenses: List<ExpenseCardUiModel>,
-    onExpenseClick: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = "活动明细",
-            modifier = Modifier.padding(horizontal = SharedLedgerSpacing.XSmall),
-            style = SharedLedgerTextStyles.SectionTitle,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        Spacer(Modifier.height(SharedLedgerSpacing.Medium))
-        if (expenses.isEmpty()) {
-            Text("暂无账单", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        } else {
-            TimelineDateHeader()
-            expenses.forEachIndexed { index, expense ->
-                TimelineExpense(
-                    expense = expense,
-                    icon = if (index == 0) Icons.Rounded.Restaurant else Icons.Rounded.LocalTaxi,
-                    onClick = { onExpenseClick(expense.expenseId) },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun TimelineDateHeader(modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
-    ) {
-        Surface(
-            modifier = Modifier.size(SharedLedgerDimens.AvatarMedium),
-            shape = SharedLedgerRadius.Full,
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            border = BorderStroke(SharedLedgerDimens.AvatarBorder, AppBackground),
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = Icons.Rounded.CalendarToday,
-                    contentDescription = null,
-                    modifier = Modifier.size(SharedLedgerDimens.IconSmall),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-        Surface(
-            shape = SharedLedgerRadius.Full,
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            tonalElevation = SharedLedgerElevation.Card,
-        ) {
-            Text(
-                text = "今天",
-                modifier = Modifier.padding(
-                    horizontal = SharedLedgerSpacing.MediumSmall,
-                    vertical = SharedLedgerSpacing.XSmall,
-                ),
-                style = SharedLedgerTextStyles.Label,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-}
-
-@Composable
-private fun TimelineExpense(
-    expense: ExpenseCardUiModel,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            modifier = Modifier
-                .width(SharedLedgerDimens.AvatarMedium)
-                .height(132.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Box(
-                modifier = Modifier
-                    .width(1.dp)
-                    .fillMaxHeight()
-                    .background(DividerSubtle.copy(alpha = 0.8f)),
-            )
-        }
-        ExpenseCard(
-            expense = expense,
-            icon = icon,
-            onClick = onClick,
-            modifier = Modifier
-                .weight(1f)
-                .padding(vertical = SharedLedgerSpacing.Small),
         )
     }
 }

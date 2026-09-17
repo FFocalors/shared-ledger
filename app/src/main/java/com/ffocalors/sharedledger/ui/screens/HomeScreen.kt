@@ -1,5 +1,8 @@
 package com.ffocalors.sharedledger.ui.screens
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,12 +26,11 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.FlightTakeoff
 import androidx.compose.material.icons.rounded.GroupAdd
 import androidx.compose.material.icons.rounded.Restaurant
-import androidx.compose.material.icons.rounded.TaskAlt
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -46,7 +48,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -56,22 +57,26 @@ import com.ffocalors.sharedledger.ui.components.ActivityCardUiModel
 import com.ffocalors.sharedledger.ui.components.AmountDisplay
 import com.ffocalors.sharedledger.ui.components.AmountEmphasis
 import com.ffocalors.sharedledger.ui.components.AmountSize
+import com.ffocalors.sharedledger.ui.components.EmptyState
+import com.ffocalors.sharedledger.ui.components.ErrorState
+import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatarGroup
-import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
-import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.StatusChip
+import com.ffocalors.sharedledger.ui.components.rememberPressScaleState
 import com.ffocalors.sharedledger.ui.demo.DemoData
 import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.DeepCharcoal
+import com.ffocalors.sharedledger.ui.theme.IconTintOrange
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
+import com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import com.ffocalors.sharedledger.ui.theme.SurfaceWarmHighest
 import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLowest
 import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
-import com.ffocalors.sharedledger.ui.theme.sharedLedgerColors
 
 /**
  * 首页活动流。
@@ -128,8 +133,8 @@ fun HomeScreen(
                             onFabClick()
                             sheetVisible = true
                         },
-                        containerColor = FabOrange,
-                        contentColor = Color.White,
+                        containerColor = WarmOrangeContainer,
+                        contentColor = IconTintOrange,
                         shape = CircleShape,
                         elevation = androidx.compose.material3.FloatingActionButtonDefaults.elevation(
                             defaultElevation = SharedLedgerElevation.Floating,
@@ -138,7 +143,7 @@ fun HomeScreen(
                         Icon(
                             imageVector = Icons.Rounded.Add,
                             contentDescription = "添加活动",
-                            modifier = Modifier.size(28.dp),
+                            modifier = Modifier.size(SharedLedgerDimens.IconMedium),
                         )
                     }
                 }
@@ -154,7 +159,8 @@ fun HomeScreen(
                     .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
                     .fillMaxWidth()
                     .padding(innerPadding),
-                contentPadding = PaddingValues(bottom = 96.dp),
+                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+                contentPadding = PaddingValues(bottom = SharedLedgerDimens.FabClearance),
             ) {
             item {
                 HomeTabs(
@@ -164,53 +170,46 @@ fun HomeScreen(
                 )
             }
 
-            item {
-                Spacer(Modifier.height(SharedLedgerSpacing.Large))
-            }
-
             if (isLoading) {
-                item { androidx.compose.material3.CircularProgressIndicator(modifier = Modifier.padding(SharedLedgerDimens.PageHorizontalPadding)) }
+                item { LoadingState() }
             } else if (errorMessage != null) {
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
-                    ) {
-                        Text(errorMessage, color = MaterialTheme.colorScheme.error)
-                        SharedLedgerButton(
-                            text = "重试",
-                            onClick = onRetry,
-                            tone = SharedLedgerButtonTone.SoftPrimary,
-                        )
-                    }
-                }
+                item { ErrorState(message = errorMessage, onRetry = onRetry) }
             } else if (selectedTab == HomeTab.InProgress) {
                 val visibleActivities = activities.filter { it.status != ActivityStatus.Archived }
                 if (visibleActivities.isEmpty()) {
-                    item { EmptyArchivedState(modifier = Modifier.padding(horizontal = SharedLedgerDimens.PageHorizontalPadding)) }
+                    item {
+                        EmptyState(
+                            title = "暂无进行中的活动",
+                            description = "点击右下角按钮创建或加入一个活动。",
+                        )
+                    }
                 } else {
                     items(visibleActivities, key = { it.activityId }) { activity ->
                         HomeActivityCard(
                             activity = activity,
                             onClick = { onActivityClick(activity) },
-                            modifier = Modifier.padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
+                            modifier = Modifier
+                                .animateItem()
+                                .padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
                             showAmount = true,
                         )
                     }
                 }
             } else {
                 val archivedActivities = activities.filter { it.status == ActivityStatus.Archived }
-                if (archivedActivities.isEmpty()) item { EmptyArchivedState(modifier = Modifier.padding(horizontal = SharedLedgerDimens.PageHorizontalPadding)) }
-                else items(archivedActivities, key = { it.activityId }) { activity ->
-                    HomeActivityCard(
-                        activity = activity,
-                        onClick = { onActivityClick(activity) },
-                        showAmount = false,
-                        modifier = Modifier.padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
-                    )
+                if (archivedActivities.isEmpty()) {
+                    item { EmptyState(title = "暂无已归档活动") }
+                } else {
+                    items(archivedActivities, key = { it.activityId }) { activity ->
+                        HomeActivityCard(
+                            activity = activity,
+                            onClick = { onActivityClick(activity) },
+                            showAmount = false,
+                            modifier = Modifier
+                                .animateItem()
+                                .padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
+                        )
+                    }
                 }
             }
             }
@@ -273,7 +272,7 @@ private fun HomeTabs(
                 onClick = { onSelected(HomeTab.Archived) },
             )
         }
-        Divider(color = MaterialTheme.colorScheme.surfaceVariant)
+        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
     }
 }
 
@@ -284,15 +283,35 @@ private fun HomeTabButton(
     onClick: () -> Unit,
 ) {
     val indicatorColor = MaterialTheme.colorScheme.primary
+    val indicatorAlpha by animateFloatAsState(
+        targetValue = if (selected) 1f else 0f,
+        animationSpec = tween(
+            durationMillis = SharedLedgerMotion.Durations.TabIndicator,
+            easing = SharedLedgerMotion.Easing.Position,
+        ),
+        label = "tabIndicator",
+    )
+    val textColor by animateColorAsState(
+        targetValue = if (selected) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        },
+        animationSpec = tween(
+            durationMillis = SharedLedgerMotion.Durations.TabIndicator,
+            easing = SharedLedgerMotion.Easing.Position,
+        ),
+        label = "tabText",
+    )
     Column(
         modifier = Modifier
             .clickable(onClick = onClick)
-            .padding(top = 1.dp)
+            .padding(top = SharedLedgerSpacing.MediumSmall)
             .drawBehind {
-                if (selected) {
+                if (indicatorAlpha > 0f) {
                     val indicatorHeight = (SharedLedgerSpacing.XSmall / 2).toPx()
                     drawRect(
-                        color = indicatorColor,
+                        color = indicatorColor.copy(alpha = indicatorAlpha),
                         topLeft = Offset(0f, size.height - indicatorHeight),
                         size = Size(size.width, indicatorHeight),
                     )
@@ -303,15 +322,11 @@ private fun HomeTabButton(
         Text(
             text = label,
             style = SharedLedgerTextStyles.CardTitle,
-            color = if (selected) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            },
+            color = textColor,
             maxLines = 1,
             softWrap = false,
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(SharedLedgerSpacing.MediumSmall))
     }
 }
 
@@ -323,12 +338,17 @@ private fun HomeActivityCard(
     showAmount: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val pressScale = rememberPressScaleState()
     Card(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
+        modifier = pressScale.modifier.then(modifier).fillMaxWidth(),
+        interactionSource = pressScale.interactionSource,
         shape = SharedLedgerRadius.ExtraLarge,
         colors = CardDefaults.cardColors(containerColor = SurfaceWarmLowest),
-        border = BorderStroke(1.dp, SurfaceWarmHighest.copy(alpha = 0.25f)),
+        border = BorderStroke(
+            SharedLedgerDimens.OutlineWidth,
+            SurfaceWarmHighest.copy(alpha = SharedLedgerDimens.CardBorderAlpha),
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = SharedLedgerElevation.Card),
     ) {
         Column(
@@ -346,10 +366,12 @@ private fun HomeActivityCard(
                         text = activity.name,
                         style = SharedLedgerTextStyles.CardTitle,
                         color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
                     ) {
                         Icon(
                             imageVector = if (activity.kind == ActivityKind.Large) {
@@ -365,10 +387,12 @@ private fun HomeActivityCard(
                             text = activity.kind.label() + " · ${activity.participantCount}人",
                             style = SharedLedgerTextStyles.Label,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                 }
-                HomeStatusBadge(status = activity.status)
+                StatusChip(activity.status)
             }
 
             if (showAmount) {
@@ -397,7 +421,7 @@ private fun HomeActivityCard(
                 Spacer(Modifier.height(SharedLedgerSpacing.Medium))
             }
 
-            Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -421,47 +445,6 @@ private fun HomeActivityCard(
 }
 
 @Composable
-private fun HomeStatusBadge(
-    status: ActivityStatus,
-    modifier: Modifier = Modifier,
-) {
-    val semantic = MaterialTheme.sharedLedgerColors
-    val isSettled = status == ActivityStatus.Settled
-    Surface(
-        modifier = modifier,
-        shape = CircleShape,
-        color = if (isSettled) semantic.successContainer else MaterialTheme.colorScheme.errorContainer,
-        contentColor = if (isSettled) semantic.onSuccessContainer else MaterialTheme.colorScheme.onErrorContainer,
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            if (isSettled) {
-                Icon(
-                    imageVector = Icons.Rounded.TaskAlt,
-                    contentDescription = null,
-                    modifier = Modifier.size(14.dp),
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(6.dp),
-                ) {
-                    Surface(
-                        modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colorScheme.error,
-                        shape = CircleShape,
-                    ) {}
-                }
-            }
-            Text(text = if (isSettled) "已结清" else "待结算", style = SharedLedgerTextStyles.Label)
-        }
-    }
-}
-
-@Composable
 private fun AddActivitySheetOption(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
@@ -472,12 +455,15 @@ private fun AddActivitySheetOption(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = SharedLedgerDimens.PageHorizontalPadding, vertical = 12.dp),
+            .padding(
+                horizontal = SharedLedgerDimens.PageHorizontalPadding,
+                vertical = SharedLedgerSpacing.MediumSmall,
+            ),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
     ) {
         Surface(
-            modifier = Modifier.size(48.dp),
+            modifier = Modifier.size(SharedLedgerDimens.IconContainerLarge),
             shape = CircleShape,
             color = WarmOrangeContainer,
             contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -497,30 +483,10 @@ private fun AddActivitySheetOption(
     }
 }
 
-@Composable
-private fun EmptyArchivedState(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 72.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = "暂无已归档活动",
-            style = SharedLedgerTextStyles.BodySecondary,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-    }
-}
-
 private fun ActivityKind.label(): String = when (this) {
     ActivityKind.Standard -> "普通活动"
     ActivityKind.Large -> "大型活动"
 }
-
-private val FabOrange = Color(0xFFFF9800)
 
 @Preview(showBackground = true, widthDp = 390, heightDp = 844)
 @Composable

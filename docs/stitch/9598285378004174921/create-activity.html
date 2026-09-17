@@ -1,0 +1,265 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>创建活动 - SharedLedger</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom toggle switch styling */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: theme('colors.primary');
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: theme('colors.primary');
+        }
+        .toggle-checkbox:checked + .toggle-label:after {
+            transform: translateX(100%);
+            border-color: white;
+        }
+    </style>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-tint": "#54643f",
+                    "surface-variant": "#e4e2e2",
+                    "primary": "#54643f",
+                    "on-surface-variant": "#45483e",
+                    "secondary-container": "#fed39c",
+                    "on-primary-fixed": "#121f03",
+                    "tertiary": "#625e53",
+                    "surface-container-high": "#eae8e7",
+                    "on-primary-fixed-variant": "#3d4b29",
+                    "error": "#ba1a1a",
+                    "primary-fixed-dim": "#bbcda0",
+                    "outline-variant": "#c5c8bb",
+                    "on-surface": "#1b1c1c",
+                    "on-background": "#1b1c1c",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#575449",
+                    "on-secondary-fixed": "#2a1800",
+                    "surface-dim": "#dbd9d9",
+                    "inverse-on-surface": "#f2f0f0",
+                    "on-tertiary-fixed": "#1e1b13",
+                    "on-secondary-fixed-variant": "#5e4118",
+                    "tertiary-fixed-dim": "#ccc6b8",
+                    "surface-bright": "#fbf9f8",
+                    "surface-container-low": "#f5f3f3",
+                    "primary-container": "#bdcfa2",
+                    "on-primary-container": "#495935",
+                    "on-error-container": "#93000a",
+                    "background": "#fbf9f8",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed": "#e9e2d4",
+                    "surface": "#fbf9f8",
+                    "surface-container-highest": "#e4e2e2",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed": "#d7e9ba",
+                    "on-secondary-container": "#79592d",
+                    "secondary-fixed-dim": "#e9bf8b",
+                    "surface-container": "#efeded",
+                    "inverse-surface": "#303030",
+                    "secondary-fixed": "#ffddb5",
+                    "secondary": "#78582d",
+                    "error-container": "#ffdad6",
+                    "on-secondary": "#ffffff",
+                    "tertiary-container": "#cec8ba",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed-variant": "#4a473c",
+                    "outline": "#75786e",
+                    "inverse-primary": "#bbcda0"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-lg": "32px",
+                    "stack-md": "16px",
+                    "gutter-card": "16px",
+                    "stack-sm": "8px",
+                    "base": "4px",
+                    "margin-page": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"],
+                    "display-amount": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "title-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["28px", {"lineHeight": "34px", "fontWeight": "600"}],
+                    "display-amount": ["40px", {"lineHeight": "48px", "letterSpacing": "-1px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500"}],
+                    "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "500"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "30px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-lg overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top App Bar (Transactional variant - Back Button instead of Avatar) -->
+<header class="sticky top-0 z-40 bg-background/80 backdrop-blur-md">
+<div class="flex justify-between items-center px-margin-page py-4 w-full max-w-[480px] mx-auto">
+<button aria-label="返回" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-highest transition-colors active:scale-90">
+<span class="material-symbols-outlined text-on-surface">arrow_back</span>
+</button>
+<h1 class="text-title-md font-title-md text-on-surface">创建活动</h1>
+<div class="w-10 h-10"></div> <!-- Placeholder to center headline -->
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full max-w-[480px] mx-auto px-margin-page pt-4 pb-32 flex flex-col gap-stack-lg">
+<!-- Activity Name Input -->
+<section class="flex flex-col gap-stack-sm">
+<label class="text-body-md font-body-md text-on-surface-variant ml-1" for="activity-name">活动名称</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-[18px] px-5 py-4 text-body-lg font-body-lg text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow shadow-sm" id="activity-name" placeholder="例如：毕业旅行" type="text">
+</section>
+<!-- Activity Type Selection Cards -->
+<section class="flex flex-col gap-stack-sm">
+<label class="text-body-md font-body-md text-on-surface-variant ml-1">活动类型</label>
+<div class="grid grid-cols-2 gap-4">
+<!-- Normal Activity Card -->
+<button class="type-card relative flex flex-col items-start p-5 rounded-[24px] bg-surface-container-lowest border-2 border-primary ring-4 ring-primary/10 transition-all text-left overflow-hidden group shadow-[0_4px_12px_rgba(0,0,0,0.05)]" onclick="selectType(this)" type="button">
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center mb-4 transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">restaurant</span>
+</div>
+<h3 class="text-title-md font-title-md text-on-surface mb-1">普通活动</h3>
+<p class="text-label-md font-label-md text-on-surface-variant">适合聚餐、短途游，按笔结算。</p>
+<!-- Active Indicator -->
+<div class="absolute top-4 right-4 w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+</button>
+<!-- Large Activity Card -->
+<button class="type-card relative flex flex-col items-start p-5 rounded-[24px] bg-surface-container-low border-2 border-transparent hover:bg-surface-container transition-all text-left overflow-hidden group shadow-sm" onclick="selectType(this)" type="button">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center mb-4 transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">flight_takeoff</span>
+</div>
+<h3 class="text-title-md font-title-md text-on-surface mb-1">大型活动</h3>
+<p class="text-label-md font-label-md text-on-surface-variant">适合长途旅行，支持多阶段记账。</p>
+<!-- Active Indicator (Hidden by default) -->
+<div class="indicator hidden absolute top-4 right-4 w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+</button>
+</div>
+</section>
+<!-- Settings Section -->
+<section class="flex flex-col gap-stack-sm">
+<label class="text-body-md font-body-md text-on-surface-variant ml-1">基础设置</label>
+<div class="bg-surface-container-lowest rounded-[24px] overflow-hidden border border-outline-variant/30 shadow-sm">
+<!-- Base Currency -->
+<div class="flex items-center justify-between p-5 border-b border-surface-container-highest active:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+</div>
+<span class="text-body-lg font-body-lg text-on-surface">主货币</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="text-body-md font-body-md">CNY 人民币</span>
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</div>
+</div>
+<!-- Multi-currency Toggle -->
+<div class="flex items-center justify-between p-5 hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">currency_exchange</span>
+</div>
+<div class="flex flex-col">
+<span class="text-body-lg font-body-lg text-on-surface">开启多币种</span>
+<span class="text-label-md font-label-md text-outline">支持在活动中记录不同货币</span>
+</div>
+</div>
+<!-- Toggle Switch -->
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-surface-container appearance-none cursor-pointer z-10 top-0 left-0 transition-transform duration-300 ease-in-out" id="currency-toggle" name="toggle" type="checkbox">
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-container cursor-pointer transition-colors duration-300 ease-in-out" for="currency-toggle"></label>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Action Area (Fixed) -->
+<div class="fixed bottom-0 left-0 right-0 w-full z-50 bg-gradient-to-t from-background via-background to-transparent pt-8 pb-8 px-margin-page">
+<div class="max-w-[480px] mx-auto">
+<!-- Using secondary-container for a warmer orange-ish tone as requested, while staying within the theme -->
+<button class="w-full bg-secondary-container hover:bg-[#ffc680] text-on-secondary-container font-title-md text-title-md py-4 rounded-[20px] shadow-[0_8px_24px_rgba(254,211,156,0.25)] transition-all active:scale-95 flex items-center justify-center gap-2">
+<span>创建活动</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Script for interactive elements -->
+<script>
+        function selectType(selectedCard) {
+            const cards = document.querySelectorAll('.type-card');
+            
+            cards.forEach(card => {
+                // Reset to inactive state
+                card.classList.remove('border-primary', 'bg-surface-container-lowest', 'ring-4', 'ring-primary/10', 'shadow-[0_4px_12px_rgba(0,0,0,0.05)]');
+                card.classList.add('border-transparent', 'bg-surface-container-low', 'shadow-sm');
+                
+                // Reset icons colors
+                const iconContainer = card.querySelector('div.rounded-full');
+                iconContainer.classList.remove('bg-primary-container', 'text-on-primary-container');
+                iconContainer.classList.add('bg-surface-container-highest', 'text-on-surface-variant');
+
+                // Hide indicator
+                const indicator = card.querySelector('.indicator, .absolute.top-4');
+                if(indicator) indicator.classList.add('hidden');
+            });
+
+            // Set active state on clicked card
+            selectedCard.classList.remove('border-transparent', 'bg-surface-container-low', 'shadow-sm');
+            selectedCard.classList.add('border-primary', 'bg-surface-container-lowest', 'ring-4', 'ring-primary/10', 'shadow-[0_4px_12px_rgba(0,0,0,0.05)]');
+            
+            // Set active icon colors
+            const activeIconContainer = selectedCard.querySelector('div.rounded-full');
+            activeIconContainer.classList.remove('bg-surface-container-highest', 'text-on-surface-variant');
+            activeIconContainer.classList.add('bg-primary-container', 'text-on-primary-container');
+
+            // Show indicator
+            const activeIndicator = selectedCard.querySelector('.indicator, .absolute.top-4');
+            if(activeIndicator) activeIndicator.classList.remove('hidden');
+        }
+
+        // Custom toggle logic for smoother animation mapping
+        const toggle = document.getElementById('currency-toggle');
+        toggle.addEventListener('change', function() {
+            const label = this.nextElementSibling;
+            if(this.checked) {
+                this.style.transform = 'translateX(100%)';
+                this.style.borderColor = 'white';
+                label.classList.remove('bg-surface-container');
+                label.classList.add('bg-primary');
+            } else {
+                this.style.transform = 'translateX(0)';
+                this.style.borderColor = 'theme("colors.surface-container")';
+                label.classList.add('bg-surface-container');
+                label.classList.remove('bg-primary');
+            }
+        });
+    </script>
+</body></html>

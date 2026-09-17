@@ -1,0 +1,322 @@
+<!DOCTYPE html><html lang="zh-CN" style="width: 390px; height: 964px; overflow: hidden; position: relative;"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>周末聚餐 - 账单详情</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "surface-container-highest": "#e4e2e2",
+                "on-primary-fixed": "#121f03",
+                "on-secondary": "#ffffff",
+                "on-secondary-fixed": "#2a1800",
+                "tertiary-container": "#cec8ba",
+                "on-primary-fixed-variant": "#3d4b29",
+                "inverse-surface": "#303030",
+                "on-tertiary-container": "#575449",
+                "on-error-container": "#93000a",
+                "primary-fixed-dim": "#bbcda0",
+                "on-secondary-fixed-variant": "#5e4118",
+                "background": "#fbf9f8",
+                "secondary-fixed": "#ffddb5",
+                "on-surface-variant": "#45483e",
+                "error-container": "#ffdad6",
+                "primary": "#54643f",
+                "on-tertiary": "#ffffff",
+                "surface-variant": "#e4e2e2",
+                "secondary-fixed-dim": "#e9bf8b",
+                "inverse-on-surface": "#f2f0f0",
+                "on-background": "#1b1c1c",
+                "on-primary": "#ffffff",
+                "surface-bright": "#fbf9f8",
+                "inverse-primary": "#bbcda0",
+                "on-tertiary-fixed": "#1e1b13",
+                "primary-fixed": "#d7e9ba",
+                "surface-container-lowest": "#ffffff",
+                "on-tertiary-fixed-variant": "#4a473c",
+                "error": "#ba1a1a",
+                "outline": "#75786e",
+                "surface-tint": "#54643f",
+                "primary-container": "#bdcfa2",
+                "surface-container": "#efeded",
+                "outline-variant": "#c5c8bb",
+                "surface-container-high": "#eae8e7",
+                "tertiary-fixed-dim": "#ccc6b8",
+                "surface-dim": "#dbd9d9",
+                "surface-container-low": "#f5f3f3",
+                "secondary-container": "#fed39c",
+                "on-secondary-container": "#79592d",
+                "surface": "#fbf9f8",
+                "on-primary-container": "#495935",
+                "on-error": "#ffffff",
+                "secondary": "#78582d",
+                "tertiary": "#625e53",
+                "on-surface": "#1b1c1c",
+                "tertiary-fixed": "#e9e2d4"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+        },
+        "spacing": {
+                "gutter-card": "16px",
+                "stack-md": "16px",
+                "stack-sm": "8px",
+                "base": "4px",
+                "margin-page": "24px",
+                "stack-lg": "32px"
+        },
+        "fontFamily": {
+                "body-lg": [
+                        "Inter"
+                ],
+                "display-amount": [
+                        "Inter"
+                ],
+                "body-md": [
+                        "Inter"
+                ],
+                "headline-lg": [
+                        "Inter"
+                ],
+                "headline-lg-mobile": [
+                        "Inter"
+                ],
+                "label-md": [
+                        "Inter"
+                ],
+                "title-md": [
+                        "Inter"
+                ]
+        },
+        "fontSize": {
+                "body-lg": [
+                        "16px",
+                        {
+                                "lineHeight": "24px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "display-amount": [
+                        "40px",
+                        {
+                                "lineHeight": "48px",
+                                "letterSpacing": "-1px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body-md": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-lg": [
+                        "28px",
+                        {
+                                "lineHeight": "34px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "headline-lg-mobile": [
+                        "24px",
+                        {
+                                "lineHeight": "30px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "label-md": [
+                        "12px",
+                        {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.5px",
+                                "fontWeight": "500"
+                        }
+                ],
+                "title-md": [
+                        "18px",
+                        {
+                                "lineHeight": "24px",
+                                "fontWeight": "500"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+        /* Custom scrollbar for webkit to keep it clean */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e4e2e2;
+            border-radius: 4px;
+        }
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-surface-container-highest min-h-screen flex justify-center font-body-md text-on-background">
+<!-- Mobile Container (Max 480px width) -->
+<div class="w-full max-w-[480px] h-screen bg-background relative flex flex-col overflow-hidden shadow-2xl">
+<!-- Header (Contextual, No Global Nav Shell) -->
+<header class="flex justify-between items-center px-margin-page py-4 sticky top-0 bg-background/90 backdrop-blur-md z-40 border-b border-surface-variant/50">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high active:scale-95 transition-all text-on-surface">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-title-md font-title-md text-on-surface">周末聚餐</h1>
+<div class="flex items-center gap-1">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high active:scale-95 transition-all text-on-surface">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">group</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high active:scale-95 transition-all text-on-surface">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Main Scrollable Content -->
+<main class="flex-1 overflow-y-auto px-margin-page py-stack-md flex flex-col gap-stack-lg pb-32">
+<!-- Top Section (Overview) -->
+<section class="flex flex-col gap-stack-md animate-fade-in-up">
+<!-- Large Display Card -->
+<div class="bg-surface-container-lowest rounded-xl p-6 border border-surface-variant shadow-sm relative overflow-hidden">
+<!-- Subtle background decoration -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-primary-fixed opacity-30 rounded-full blur-2xl"></div>
+<p class="text-label-md font-label-md text-on-surface-variant mb-2">当前待结算</p>
+<h2 class="text-display-amount font-display-amount text-on-surface mb-6">¥320.0</h2>
+<div class="pt-4 border-t border-surface-variant/60 flex justify-between items-center">
+<span class="text-body-md font-body-md text-on-surface-variant">总消费</span>
+<span class="text-body-lg font-body-lg text-on-surface font-medium">¥860.0</span>
+</div>
+</div>
+<!-- My Status Card (Highlighted) -->
+<div class="bg-secondary-fixed rounded-xl p-4 flex items-center gap-4 shadow-[0_4px_24px_rgba(255,221,181,0.2)] border border-secondary-fixed-dim transform transition hover:-translate-y-0.5">
+<div class="w-12 h-12 rounded-full bg-surface-container-lowest flex items-center justify-center text-secondary shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+<div class="flex-1">
+<p class="text-body-md font-body-md text-on-secondary-fixed-variant">你需要支付给 <span class="font-medium text-on-secondary-fixed">张三</span></p>
+<p class="text-title-md font-title-md text-on-secondary-fixed mt-0.5">¥120.0</p>
+</div>
+<button class="w-8 h-8 flex items-center justify-center rounded-full bg-surface-container-lowest/50 text-on-secondary-fixed hover:bg-surface-container-lowest transition-colors">
+<span class="material-symbols-outlined text-sm">arrow_forward_ios</span>
+</button>
+</div>
+</section>
+<!-- Timeline Section -->
+<section class="flex flex-col">
+<h3 class="text-title-md font-title-md text-on-surface mb-stack-md px-1">活动明细</h3>
+<div class="relative">
+<!-- Timeline Vertical Line -->
+<div class="absolute left-[19px] top-8 bottom-4 w-px bg-surface-variant/80 z-0"></div>
+<!-- Date Group: 今天 -->
+<div class="flex flex-col gap-0">
+<!-- Date Header -->
+<div class="flex items-center gap-3 z-10 bg-background py-2 sticky top-[72px]">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center border-[4px] border-background">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">calendar_today</span>
+</div>
+<span class="text-label-md font-label-md text-on-surface bg-surface-container-high px-3 py-1.5 rounded-full shadow-sm">今天</span>
+</div>
+<!-- Timeline Item 1: 晚餐 -->
+<div class="flex gap-4 py-4 pl-12 relative z-10 group cursor-pointer">
+<div class="flex-1 bg-surface-container-lowest border border-surface-variant/60 rounded-xl p-4 hover:bg-surface-container-low transition-colors shadow-sm">
+<div class="flex justify-between items-start mb-3">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">restaurant</span>
+</div>
+<span class="text-body-lg font-body-lg text-on-surface font-medium">晚餐</span>
+</div>
+<span class="text-title-md font-title-md text-on-surface">¥560.0</span>
+</div>
+<div class="flex justify-between items-end">
+<div class="flex flex-col gap-1.5">
+<span class="text-label-md font-label-md text-on-surface-variant">张三付款</span>
+<!-- Avatar Stack -->
+<div class="flex items-center -space-x-2">
+<img class="w-7 h-7 rounded-full border-2 border-surface-container-lowest object-cover" data-alt="A small circular portrait of a young man smiling warmly in a well-lit modern cafe, wearing a casual shirt. The image is soft, bright, and fits a premium light-mode UI aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAg97U3Y96MSkWOR8bEzlj1lnbwl-sVacFrotthlr-1z6MLgp1YWwjyHzNmPYfZpJ5Fjwlu6ewK2TD7CkZWyMbpCDPBFZwNjOLrfRmKgvERmDAWFhnK9dKNT7EOZSqhKUPYMSZMwNxFCWaKaExsoN7mHxyQSnbg-a1lfXaAfNJ6LXeOjyimM2_s8LpMOcVwYy1YaoWThithGv0kIoULa0cudmQUpWNQ_Mn3lVd-bfzkpFTmKYThTqdw">
+<img class="w-7 h-7 rounded-full border-2 border-surface-container-lowest object-cover" data-alt="A small circular portrait of a young woman with short hair and glasses, looking cheerful outdoors. Soft natural lighting, highly detailed, clean modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCh_4KndfILs0bijgVD9YAHpXmwI1XTau0qkPGCqxp1orSKyMCjv7b5ZZghCfUULjhLlYdxf6bWj3qKhp0z-rdy3eJjAUSgLtoqNDK0Y-kd14uzyLETVZ3_imATcfUaYI7AG-2MNgCuB5kGCkBjen_Dp-iZViBcMa4_3ij6OpB6RdQgZhHaqJ8GbP00zUu5uSh7guu93W2ri11iA17h70YuBA2S7qn50y8M_BvCH4D4hSVLFzWiizY5">
+<div class="w-7 h-7 rounded-full border-2 border-surface-container-lowest bg-surface-container text-on-surface-variant flex items-center justify-center text-[10px] font-medium z-10">+3</div>
+</div>
+</div>
+<div class="bg-primary-fixed/50 text-on-primary-fixed-variant px-2.5 py-1 rounded-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">group</span>
+<span class="text-label-md font-label-md">5人参与</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline Item 2: 打车 -->
+<div class="flex gap-4 py-4 pl-12 relative z-10 group cursor-pointer">
+<div class="flex-1 bg-surface-container-lowest border border-surface-variant/60 rounded-xl p-4 hover:bg-surface-container-low transition-colors shadow-sm">
+<div class="flex justify-between items-start mb-3">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">local_taxi</span>
+</div>
+<span class="text-body-lg font-body-lg text-on-surface font-medium">打车</span>
+</div>
+<span class="text-title-md font-title-md text-on-surface">¥100.0</span>
+</div>
+<div class="flex justify-between items-end">
+<div class="flex flex-col gap-1.5">
+<span class="text-label-md font-label-md text-on-surface-variant">李四付款</span>
+<!-- Avatar Stack -->
+<div class="flex items-center -space-x-2">
+<img class="w-7 h-7 rounded-full border-2 border-surface-container-lowest object-cover" data-alt="A small circular portrait of an older man with a gentle smile, studio lighting against a clean white background. High resolution, premium look for a modern organic UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPm2aa33tmQGp2-z2_gTZgbgfj9j-LCQg1JD2OCXpLHMnQZiuZWoqc8hlPz_DJRWhKm224qQTyZz2XSAZSYCrvgHCSgDb1EA1sjJzvXIq0pEPxVqPbHSQ96n1tdnqnY1WxENRzz_DHJtGYL_f4cgePqSrvIkfLiPLxfyvtUMTArfwRuY0ivO4vLQsxJLFlvnOWmREfmTOyqCc5BXg8YD5ADuWe8N9I72_dqHofyHnup9fOqdd6NdWm">
+</div>
+</div>
+<div class="bg-surface-container text-on-surface-variant px-2.5 py-1 rounded-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">pie_chart</span>
+<span class="text-label-md font-label-md">均摊</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Action Bar (Contextual Floating Pill) -->
+<div class="absolute bottom-0 left-0 right-0 p-margin-page pb-8 bg-gradient-to-t from-background via-background/90 to-transparent z-50 flex justify-center">
+<div class="bg-surface-container-highest/90 backdrop-blur-md rounded-[32px] p-2 flex items-center justify-between w-full shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-surface-variant">
+<!-- Secondary Action -->
+<button class="flex-1 py-3 text-center text-body-md font-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-full transition-all active:scale-95">
+                    转账
+                </button>
+<!-- Primary Prominent Action (Warm Orange / Secondary Fixed) -->
+<button class="bg-secondary-fixed text-on-secondary-fixed-variant px-8 py-3.5 rounded-full text-body-lg font-body-lg flex items-center justify-center gap-2 hover:bg-secondary-fixed-dim transition-all active:scale-95 shadow-[0_4px_16px_rgba(255,221,181,0.5)] mx-2 relative overflow-hidden group">
+<span class="material-symbols-outlined text-[20px]">edit_document</span>
+<span class="font-medium whitespace-nowrap">+ 记一笔</span>
+<div class="absolute inset-0 bg-white/20 opacity-0 group-active:opacity-100 transition-opacity"></div>
+</button>
+<!-- Secondary Action -->
+<button class="flex-1 py-3 text-center text-body-md font-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-full transition-all active:scale-95">
+                    收款
+                </button>
+</div>
+</div>
+</div>
+<div id="snapdom-sandbox" data-snapdom-sandbox="true" aria-hidden="true" style="position: absolute; left: -9999px; top: -9999px; width: 0px; height: 0px; overflow: hidden;"></div></body></html>

@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,11 +20,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
@@ -61,7 +58,10 @@ import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.AppOutlineVariant
 import com.ffocalors.sharedledger.ui.theme.AppSurfaceLow
+import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
+import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
+import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
 import com.ffocalors.sharedledger.ui.theme.Neutral
@@ -148,7 +148,7 @@ fun AuthScreen(
             .navigationBarsPadding()
             .imePadding()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+            .padding(SharedLedgerSpacing.Medium),
         // Center the Stitch-sized card when it fits; verticalScroll keeps every field reachable
         // after the IME reduces the available viewport.
         contentAlignment = Alignment.Center,
@@ -156,21 +156,21 @@ fun AuthScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .widthIn(max = 480.dp)
+                .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
                 .shadow(
-                    elevation = 8.dp,
+                    elevation = SharedLedgerElevation.Floating,
                     shape = SharedLedgerRadius.ExtraLarge,
                     clip = false,
                 )
                 .clip(SharedLedgerRadius.ExtraLarge)
                 .background(AppSurfaceLow)
-                .padding(horizontal = 24.dp, vertical = 32.dp),
-            verticalArrangement = Arrangement.spacedBy(32.dp),
+                .padding(horizontal = SharedLedgerSpacing.Large, vertical = SharedLedgerSpacing.XLarge),
+            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XLarge),
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
             ) {
                 Text(
                     text = "SharedLedger",
@@ -405,11 +405,11 @@ private fun AuthModeSelector(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(48.dp),
+            .height(SharedLedgerDimens.TopBarActionSize),
         shape = SharedLedgerRadius.Full,
         color = Neutral,
     ) {
-        Row(modifier = Modifier.padding(4.dp)) {
+        Row(modifier = Modifier.padding(SharedLedgerSpacing.XSmall)) {
             AuthModeTab(
                 text = "登录",
                 selected = mode == AuthMode.Login,
@@ -438,7 +438,7 @@ private fun AuthModeTab(
 ) {
     Surface(
         modifier = modifier
-            .height(40.dp)
+            .height(SharedLedgerDimens.ActionIconContainer)
             .semantics {
                 contentDescription = if (selected) "$text（当前）" else text
             },
@@ -446,7 +446,7 @@ private fun AuthModeTab(
         enabled = enabled,
         shape = SharedLedgerRadius.Full,
         color = if (selected) SoftPrimary else Color.Transparent,
-        shadowElevation = if (selected) 1.dp else 0.dp,
+        shadowElevation = if (selected) SharedLedgerElevation.Static else SharedLedgerElevation.Flat,
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(
@@ -472,7 +472,7 @@ private fun PasswordRecoveryForm(
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
     ) {
         Text(
             text = "设置新密码",
@@ -533,7 +533,7 @@ private fun LoginForm(
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
     ) {
         AuthFormError(message = formError)
         AuthTextField(
@@ -608,7 +608,7 @@ private fun RegisterForm(
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
     ) {
         AuthFormError(message = formError)
         AuthTextField(
@@ -668,7 +668,7 @@ private fun AuthFormError(message: String?) {
             text = message,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = SharedLedgerSpacing.Medium)
                 .semantics { liveRegion = LiveRegionMode.Polite },
             style = SharedLedgerTextStyles.Label,
             color = MaterialTheme.colorScheme.error,
@@ -686,7 +686,7 @@ private fun AuthTextField(
     keyboardType: KeyboardType = KeyboardType.Text,
     enabled: Boolean,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall)) {
         AuthBasicTextField(
             value = value,
             onValueChange = onValueChange,
@@ -712,7 +712,7 @@ private fun AuthPasswordField(
     onToggleVisibility: () -> Unit,
     enabled: Boolean,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall)) {
         AuthBasicTextField(
             value = value,
             onValueChange = onValueChange,
@@ -771,7 +771,7 @@ private fun AuthBasicTextField(
         onValueChange = onValueChange,
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 56.dp)
+            .heightIn(min = SharedLedgerDimens.TextFieldMinHeight)
             .onFocusChanged { focused = it.isFocused }
             .semantics { contentDescription = fieldDescription },
         enabled = enabled,
@@ -783,12 +783,12 @@ private fun AuthBasicTextField(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-                    .background(SurfaceWarmLowest, RoundedCornerShape(12.dp))
+                    .border(SharedLedgerDimens.OutlineWidth, borderColor, SharedLedgerRadius.Medium)
+                    .background(SurfaceWarmLowest, SharedLedgerRadius.Medium)
                     .padding(
-                        horizontal = 24.dp,
+                        horizontal = SharedLedgerSpacing.Large,
                         // Keep the 48dp password affordance inside the same 56dp field shell.
-                        vertical = if (trailingContent == null) 16.dp else 4.dp,
+                        vertical = if (trailingContent == null) SharedLedgerSpacing.Medium else SharedLedgerSpacing.XSmall,
                     ),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -809,7 +809,7 @@ private fun AuthFieldError(errorText: String?) {
     if (errorText != null) {
         Text(
             text = errorText,
-            modifier = Modifier.padding(start = 16.dp),
+            modifier = Modifier.padding(start = SharedLedgerSpacing.Medium),
             style = SharedLedgerTextStyles.Label,
             color = MaterialTheme.colorScheme.error,
         )

@@ -15,6 +15,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.semantics.Role
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.MoreVert
@@ -80,15 +86,16 @@ fun SharedLedgerTopBar(
                     .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
                     .fillMaxWidth()
                     .height(SharedLedgerDimens.TopBarHeight)
-                    .padding(horizontal = SharedLedgerDimens.PageHorizontalPadding, vertical = SharedLedgerSpacing.Medium),
+                    .padding(horizontal = SharedLedgerDimens.PageHorizontalPadding, vertical = SharedLedgerSpacing.MediumSmall),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (showBackButton && onBackClick != null) {
                     Box(
                         modifier = Modifier
                             .size(SharedLedgerDimens.TopBarActionSize)
+                            .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), CircleShape)
-                            .clickable(onClick = onBackClick),
+                            .clickable(role = Role.Button, onClick = onBackClick),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
@@ -125,7 +132,8 @@ fun SharedLedgerTopBar(
                     Box(
                         modifier = Modifier
                             .size(SharedLedgerDimens.TopBarActionSize)
-                            .clickable(onClick = onActionClick),
+                            .clip(CircleShape)
+                            .clickable(role = Role.Button, onClick = onActionClick),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
@@ -140,8 +148,9 @@ fun SharedLedgerTopBar(
                     Box(
                         modifier = Modifier
                             .size(SharedLedgerDimens.TopBarActionSize)
+                            .clip(CircleShape)
                             .background(moreButtonContainerColor, CircleShape)
-                            .clickable(onClick = onMoreClick),
+                            .clickable(role = Role.Button, onClick = onMoreClick),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
@@ -212,9 +221,8 @@ private fun RowScope.BottomAction(
         MaterialTheme.colorScheme.onSurface
     }
     Surface(
-        modifier = Modifier
-            .weight(if (emphasized) 1.25f else 1f)
-            .clickable(onClick = action.onClick),
+        onClick = action.onClick,
+        modifier = Modifier.weight(if (emphasized) 1.25f else 1f),
         shape = SharedLedgerRadius.Full,
         color = containerColor,
         contentColor = contentColor,
@@ -306,15 +314,15 @@ private fun SharedLedgerActionItem(
     modifier: Modifier = Modifier,
 ) {
     val containerColor = SurfaceWarmLow
-    val borderAlpha = 0.3f
     Surface(
-        modifier = modifier.clickable(onClick = item.onClick),
+        onClick = item.onClick,
+        modifier = modifier,
         shape = SharedLedgerRadius.Large,
         color = containerColor,
         contentColor = MaterialTheme.colorScheme.onSurface,
         border = androidx.compose.foundation.BorderStroke(
             SharedLedgerDimens.OutlineWidth,
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = borderAlpha),
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = SharedLedgerDimens.CardBorderAlpha),
         ),
         shadowElevation = SharedLedgerElevation.Card,
     ) {
@@ -347,5 +355,43 @@ private fun SharedLedgerActionItem(
                 softWrap = false,
             )
         }
+    }
+}
+
+/**
+ * Standard bottom bar for form pages: gradient scrim around a full-width CTA slot.
+ * Scrollable content only needs `innerPadding bottom + Spacing.Medium` — no per-page guesses.
+ */
+@Composable
+fun SharedLedgerCtaBottomBar(
+    modifier: Modifier = Modifier,
+    backgroundColor: Color = MaterialTheme.colorScheme.background,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                Brush.verticalGradient(
+                    0f to backgroundColor.copy(alpha = 0f),
+                    0.4f to backgroundColor,
+                ),
+            )
+            .imePadding()
+            .navigationBarsPadding(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Column(
+            modifier = Modifier
+                .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
+                .fillMaxWidth()
+                .padding(
+                    start = SharedLedgerDimens.PageHorizontalPadding,
+                    top = SharedLedgerSpacing.XLarge,
+                    end = SharedLedgerDimens.PageHorizontalPadding,
+                    bottom = SharedLedgerSpacing.Large,
+                ),
+            content = content,
+        )
     }
 }

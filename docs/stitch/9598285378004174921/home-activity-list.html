@@ -1,0 +1,194 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>SharedLedger - Activity List</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#54643f",
+                        "surface-variant": "#e4e2e2",
+                        "primary": "#54643f",
+                        "on-surface-variant": "#45483e",
+                        "secondary-container": "#fed39c",
+                        "on-primary-fixed": "#121f03",
+                        "tertiary": "#625e53",
+                        "surface-container-high": "#eae8e7",
+                        "on-primary-fixed-variant": "#3d4b29",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#bbcda0",
+                        "outline-variant": "#c5c8bb",
+                        "on-surface": "#1b1c1c",
+                        "on-background": "#1b1c1c",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#575449",
+                        "on-secondary-fixed": "#2a1800",
+                        "surface-dim": "#dbd9d9",
+                        "inverse-on-surface": "#f2f0f0",
+                        "on-tertiary-fixed": "#1e1b13",
+                        "on-secondary-fixed-variant": "#5e4118",
+                        "tertiary-fixed-dim": "#ccc6b8",
+                        "surface-bright": "#fbf9f8",
+                        "surface-container-low": "#f5f3f3",
+                        "primary-container": "#bdcfa2",
+                        "on-primary-container": "#495935",
+                        "on-error-container": "#93000a",
+                        "background": "#fbf9f8",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed": "#e9e2d4",
+                        "surface": "#fbf9f8",
+                        "surface-container-highest": "#e4e2e2",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed": "#d7e9ba",
+                        "on-secondary-container": "#79592d",
+                        "secondary-fixed-dim": "#e9bf8b",
+                        "surface-container": "#efeded",
+                        "inverse-surface": "#303030",
+                        "secondary-fixed": "#ffddb5",
+                        "secondary": "#78582d",
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#cec8ba",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#4a473c",
+                        "outline": "#75786e",
+                        "inverse-primary": "#bbcda0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "24": "24px"
+                    },
+                    "spacing": {
+                        "stack-lg": "32px",
+                        "stack-md": "16px",
+                        "gutter-card": "16px",
+                        "stack-sm": "8px",
+                        "base": "4px",
+                        "margin-page": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "display-amount": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "title-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["28px", { "lineHeight": "34px", "fontWeight": "600" }],
+                        "display-amount": ["40px", { "lineHeight": "48px", "letterSpacing": "-1px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }],
+                        "title-md": ["18px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+</head>
+<body class="bg-[#Fdfbf7] text-on-background font-body-md min-h-screen relative pb-32">
+<!-- TopAppBar -->
+<header class="bg-[#Fdfbf7] sticky top-0 z-40">
+<div class="flex justify-between items-center px-margin-page py-4 w-full max-w-[480px] mx-auto">
+<div class="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-outline-variant/30">
+<img class="w-full h-full object-cover" data-alt="A close-up portrait of a young person smiling warmly, outdoors in soft natural morning light, cinematic and modern, shallow depth of field." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqYTBKTszWU8b8fn45jn2kLmVvRHoOIjIbBf0HFHsbW3hZ1RDJdeRpjSwiacTsUX-LMPSrAplhVECXqtTQM019CHEL89fUYnzEKHXvNDj3CiIAd3lrT0cKpuL44u4Zn7kCVLqqZnvEnMYObXvoMjqTVlAxqocstCaJerlx5bmZM_94wGkC20hBkNdrxwKf-4qUNmh9KdrXOUafT1gLnH9o_FXv20bg8H6Je3GcAe4ixwOdcKaTaqyS">
+</div>
+<h1 class="text-headline-lg-mobile font-headline-lg-mobile font-semibold text-primary text-center flex-1 mx-4">SharedLedger</h1>
+<button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors rounded-full active:scale-90 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Tabs -->
+<nav class="w-full max-w-[480px] mx-auto px-margin-page">
+<div class="flex gap-stack-lg border-b border-surface-variant">
+<button class="text-title-md font-title-md text-primary border-b-2 border-primary pb-stack-sm -mb-[1px]">进行中</button>
+<button class="text-title-md font-title-md text-on-surface-variant pb-stack-sm -mb-[1px] hover:text-on-surface transition-colors">已归档</button>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-[480px] mx-auto px-margin-page py-stack-lg flex flex-col gap-stack-lg">
+<!-- Large Activity Card -->
+<article class="bg-surface-container-lowest rounded-24 p-stack-md shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+<header class="flex justify-between items-start mb-stack-lg">
+<div>
+<h2 class="text-title-md font-title-md text-on-surface">日本旅行</h2>
+<p class="text-label-md font-label-md text-on-surface-variant mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">flight_takeoff</span>
+                        大型活动 · 6人
+                    </p>
+</div>
+<div class="bg-error-container text-on-error-container px-3 py-1 rounded-full text-label-md font-label-md flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                    待结算
+                </div>
+</header>
+<div class="mb-stack-lg">
+<p class="text-label-md font-label-md text-on-surface-variant mb-1 uppercase tracking-wider">总金额</p>
+<p class="text-display-amount font-display-amount text-primary">¥1,240.5</p>
+</div>
+<footer class="flex justify-between items-end border-t border-surface-variant/50 pt-stack-sm mt-auto">
+<p class="text-label-md font-label-md text-outline">更新于 12:30</p>
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-surface-container-lowest object-cover z-30" data-alt="A small circular avatar showing a person wearing a sun hat, bright sunny outdoor lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0USJiLPmKBCpdS7kWR8JhihT1np3qkh-LBlvXyCgd7d26AQWBh1EK18IoijJobxJAm0HirjNtWXhay0-jmOwEeXkuQl4lsvJ44IRb5O0F5fWT14yl9BctmElPd5P46Bx0gcd0UgwGQE9Dwr_jQJ3XOhtBt-IcxYy9N-fcOL1VSukUmlREIyYGkwxDlcE8rmqbnN3dh-bF5MdKOIvkOsHvn9cyO7aI7_nLCdtYscWR3ovJWH485qbd">
+<img class="w-8 h-8 rounded-full border-2 border-surface-container-lowest object-cover z-20" data-alt="A small circular avatar showing a person with glasses reading a book, cozy indoor lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuATZmPu6Kw40SoFp2WlHavqo-xa3lGNx_oDh4lJRvRHdikhb_WAqDHHgn6pl2W5IhfPajZAHUXi4SlpBmWSOQmPvNv-uDT1z3kT6yFh_1qmN4818A0LaRzeqlqh77dAzSzGus1gp8uy1uojeEY5cGZGIy-ApzUaBVhO2pRHp2gFMBNuMCiHL42YDLBJGSCVPkd7VHR9CLGwE4a1Gp9Ln0IodMbCLiu2No-YPoKZbCmwRj-B1cmIrC0S">
+<img class="w-8 h-8 rounded-full border-2 border-surface-container-lowest object-cover z-10" data-alt="A small circular avatar showing a person looking sideways, urban street background, shallow depth of field." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvaDd4TPGVvMoHesuvepQ4v8MhKjjHCLeWaCrI79b396Zq-qzt9yKpBXIRfWB55mDqwJEBAs8MGECcTp8BY-vVgxkH5ZqvO89frjIRx9JqPLGeEqrfL235uvQi_fFh8Cvz4l2DCEuEb8R-nutjBENneVYEJDbf6W9CI1wkqAGGyY08Ujf58lAvULKXjJ7ye5h7-E5V3fCYka4qRr2e19LZDtyPd8KX_8xJD_E_CnekQrwOYeeQXrvk">
+<div class="w-8 h-8 rounded-full border-2 border-surface-container-lowest bg-surface-container flex items-center justify-center z-0">
+<span class="text-label-md font-label-md text-on-surface-variant">+3</span>
+</div>
+</div>
+</footer>
+</article>
+<!-- Normal Activity Card -->
+<article class="bg-surface-container-lowest rounded-24 p-stack-md shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+<header class="flex justify-between items-start mb-stack-md">
+<div>
+<h2 class="text-title-md font-title-md text-on-surface">周末聚餐</h2>
+<p class="text-label-md font-label-md text-on-surface-variant mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">restaurant</span>
+                        普通活动 · 5人
+                    </p>
+</div>
+<div class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-label-md font-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                    已结清
+                </div>
+</header>
+<footer class="flex justify-between items-center border-t border-surface-variant/50 pt-stack-sm mt-auto">
+<p class="text-label-md font-label-md text-outline">更新于 昨天</p>
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-surface-container-lowest object-cover z-20" data-alt="A small circular avatar showing a person enjoying coffee, cafe setting, warm lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlZjthRQm1UascClHZwwLZe3Rzflg9qTErkJzolPWzfevJlSVIQBsGGibQ_VA-g3b6_s7T1U3oI3WYZbDlDFzkDzBFGIkgDyE_pwIW0qbdQBEb8cdDJP4wCM5c-5Ec5CphfoEI45JCHr2wSS_mn8W_jKBjJ7CuwC7KmGXmoR2oXGcs-9QR2o-fDG8CXUoacflQG9H6U_kO5rK5g6mNgcenmyd7cB8n-oQnhwFZ3_Dtz526CARt1sQj">
+<div class="w-8 h-8 rounded-full border-2 border-surface-container-lowest bg-secondary-container text-on-secondary-container flex items-center justify-center z-10 text-[10px] font-medium">王</div>
+</div>
+</footer>
+</article>
+</main>
+<!-- Contextual FAB -->
+<div class="fixed bottom-margin-page right-margin-page w-full max-w-[480px] left-1/2 -translate-x-1/2 pointer-events-none z-50 flex justify-end px-margin-page">
+<button class="w-14 h-14 bg-[#FF9800] text-white rounded-full flex items-center justify-center shadow-lg hover:opacity-90 transition-opacity active:scale-90 pointer-events-auto">
+<span class="material-symbols-outlined" style="font-size: 28px; font-variation-settings: 'FILL' 1;">add</span>
+</button>
+</div>
+</body></html>

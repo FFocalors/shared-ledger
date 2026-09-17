@@ -5,6 +5,11 @@ import android.content.ClipboardManager
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.DisposableEffect
@@ -97,10 +102,55 @@ import com.ffocalors.sharedledger.ui.cache.SessionQueryCache
 import com.ffocalors.sharedledger.data.exchange.ExchangeRateRepositoryFactory
 import com.ffocalors.sharedledger.ui.profile.PersonalOverview
 import com.ffocalors.sharedledger.data.realtime.ActivityRealtimeDomain
+import com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import java.time.Instant
 import kotlinx.coroutines.launch
+
+/**
+ * 进入详情类页面的转场：200ms 内 fade + 轻微横向位移（约 1/8 屏宽）。
+ * 仅作用于有层级关系的详情路由；route、参数与回调语义不变。
+ */
+private val DetailEnterTransition = fadeIn(
+    animationSpec = tween(
+        durationMillis = SharedLedgerMotion.Durations.Content,
+        easing = SharedLedgerMotion.Easing.Position,
+    ),
+) + slideInHorizontally(
+    animationSpec = tween(
+        durationMillis = SharedLedgerMotion.Durations.Content,
+        easing = SharedLedgerMotion.Easing.Position,
+    ),
+    initialOffsetX = { it / 8 },
+)
+
+private val DetailExitTransition = fadeOut(
+    animationSpec = tween(
+        durationMillis = SharedLedgerMotion.Durations.Content,
+        easing = SharedLedgerMotion.Easing.Position,
+    ),
+)
+
+private val DetailPopEnterTransition = fadeIn(
+    animationSpec = tween(
+        durationMillis = SharedLedgerMotion.Durations.Content,
+        easing = SharedLedgerMotion.Easing.Position,
+    ),
+)
+
+private val DetailPopExitTransition = fadeOut(
+    animationSpec = tween(
+        durationMillis = SharedLedgerMotion.Durations.Content,
+        easing = SharedLedgerMotion.Easing.Position,
+    ),
+) + slideOutHorizontally(
+    animationSpec = tween(
+        durationMillis = SharedLedgerMotion.Durations.Content,
+        easing = SharedLedgerMotion.Easing.Position,
+    ),
+    targetOffsetX = { it / 8 },
+)
 
 @Composable
 fun SharedLedgerApp(
@@ -431,6 +481,10 @@ private fun AuthenticatedNavHost(
         composable(
             route = SharedLedgerRoutes.NORMAL_ACTIVITY_PATTERN,
             arguments = listOf(navArgument("activityId") { type = NavType.StringType }),
+            enterTransition = { DetailEnterTransition },
+            exitTransition = { DetailExitTransition },
+            popEnterTransition = { DetailPopEnterTransition },
+            popExitTransition = { DetailPopExitTransition },
         ) { backStackEntry ->
             val activityId = backStackEntry.arguments?.getString("activityId").orEmpty()
             val routeError = "活动路由参数缺失".takeIf { activityId.isBlank() }
@@ -547,6 +601,10 @@ private fun AuthenticatedNavHost(
         composable(
             route = SharedLedgerRoutes.LARGE_ACTIVITY_PATTERN,
             arguments = listOf(navArgument("activityId") { type = NavType.StringType }),
+            enterTransition = { DetailEnterTransition },
+            exitTransition = { DetailExitTransition },
+            popEnterTransition = { DetailPopEnterTransition },
+            popExitTransition = { DetailPopExitTransition },
         ) { backStackEntry ->
             val activityId = backStackEntry.arguments?.getString("activityId").orEmpty()
             val detailState by activityViewModel.detail(activityId).collectAsState()
@@ -685,6 +743,10 @@ private fun AuthenticatedNavHost(
                 navArgument("activityId") { type = NavType.StringType },
                 navArgument("ledgerUnitId") { type = NavType.StringType },
             ),
+            enterTransition = { DetailEnterTransition },
+            exitTransition = { DetailExitTransition },
+            popEnterTransition = { DetailPopEnterTransition },
+            popExitTransition = { DetailPopExitTransition },
         ) { backStackEntry ->
             val activityId = backStackEntry.arguments?.getString("activityId").orEmpty()
             val ledgerUnitId = backStackEntry.arguments?.getString("ledgerUnitId").orEmpty()
@@ -1291,7 +1353,8 @@ private fun AuthenticatedNavHost(
                     activityId = activityId,
                     state = managementState
                         ?: com.ffocalors.sharedledger.ui.screens.ActivityManagementUiState(),
-                    isLoading = detailState.isLoading || managementState == null || actionLoading,
+                    isLoading = detailState.isLoading || managementState == null,
+                    actionInProgress = actionLoading,
                     errorMessage = detailState.errorMessage,
                     message = managementMessage,
                     onMessageShown = activityViewModel::clearMessage,
@@ -1387,6 +1450,10 @@ private fun AuthenticatedNavHost(
                 navArgument("activityId") { type = NavType.StringType; nullable = true; defaultValue = null },
                 navArgument("ledgerUnitId") { type = NavType.StringType; nullable = true; defaultValue = null },
             ),
+            enterTransition = { DetailEnterTransition },
+            exitTransition = { DetailExitTransition },
+            popEnterTransition = { DetailPopEnterTransition },
+            popExitTransition = { DetailPopExitTransition },
         ) { backStackEntry ->
             val expenseId = backStackEntry.arguments?.getString("expenseId").orEmpty()
             val routeActivityId = backStackEntry.arguments?.getString("activityId")
@@ -1532,6 +1599,10 @@ private fun AuthenticatedNavHost(
                     defaultValue = null
                 },
             ),
+            enterTransition = { DetailEnterTransition },
+            exitTransition = { DetailExitTransition },
+            popEnterTransition = { DetailPopEnterTransition },
+            popExitTransition = { DetailPopExitTransition },
         ) { backStackEntry ->
             val activityId = backStackEntry.arguments?.getString("activityId").orEmpty()
             val ledgerUnitId = backStackEntry.arguments?.getString("ledgerUnitId")

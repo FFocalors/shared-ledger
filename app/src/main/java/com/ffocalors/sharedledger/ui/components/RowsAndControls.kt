@@ -1,7 +1,8 @@
 package com.ffocalors.sharedledger.ui.components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,11 +16,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
@@ -56,6 +59,7 @@ fun AmountDisplay(
         style = style,
         color = color,
         maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
     )
 }
 
@@ -172,16 +176,24 @@ private fun RowScope.Segment(
     enabled: Boolean,
     onClick: () -> Unit,
 ) {
-    Surface(
-        modifier = Modifier
-            .weight(1f)
-            .clickable(enabled = enabled, onClick = onClick),
-        shape = SharedLedgerRadius.Full,
-        color = if (selected) {
+    val containerColor by animateColorAsState(
+        targetValue = if (selected) {
             MaterialTheme.colorScheme.primaryContainer
         } else {
             Color.Transparent
         },
+        animationSpec = tween(
+            durationMillis = SharedLedgerMotion.Durations.TabIndicator,
+            easing = SharedLedgerMotion.Easing.Position,
+        ),
+        label = "segmentColor",
+    )
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.weight(1f),
+        enabled = enabled,
+        shape = SharedLedgerRadius.Full,
+        color = containerColor,
         contentColor = if (selected) {
             MaterialTheme.colorScheme.onPrimaryContainer
         } else {

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -29,10 +28,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
+import com.ffocalors.sharedledger.ui.components.ErrorBanner
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
-import com.ffocalors.sharedledger.ui.components.SharedLedgerPrimaryButton
+import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
+import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.demo.DemoData
@@ -80,35 +82,30 @@ fun CreateSubActivityScreen(
             )
         },
         bottomBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .imePadding()
-                    .padding(
-                        horizontal = SharedLedgerSpacing.Large,
-                        vertical = SharedLedgerSpacing.Medium,
-                    ),
-                contentAlignment = Alignment.TopCenter,
-            ) {
-                SharedLedgerPrimaryButton(
+            SharedLedgerCtaBottomBar(backgroundColor = MaterialTheme.colorScheme.background) {
+                SharedLedgerButton(
                     text = "创建子活动",
                     onClick = { onCreate(activityName.trim()) },
                     enabled = activityName.isNotBlank() && !isLoading,
-                    modifier = Modifier.widthIn(max = SharedLedgerDimens.ContentMaxWidth),
+                    loading = isLoading,
+                    loadingText = "正在创建",
                 )
             }
         },
     ) { innerPadding ->
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.TopCenter,
+        ) {
         Column(
             modifier = Modifier
                 .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
                 .fillMaxSize()
                 .padding(
-                    start = SharedLedgerSpacing.Large,
+                    start = SharedLedgerDimens.PageHorizontalPadding,
                     top = innerPadding.calculateTopPadding() + SharedLedgerSpacing.Medium,
-                    end = SharedLedgerSpacing.Large,
-                    bottom = innerPadding.calculateBottomPadding() + SharedLedgerSpacing.Large,
+                    end = SharedLedgerDimens.PageHorizontalPadding,
+                    bottom = innerPadding.calculateBottomPadding() + SharedLedgerSpacing.Medium,
                 )
                 .verticalScroll(rememberScrollState())
                 .imePadding(),
@@ -151,8 +148,7 @@ fun CreateSubActivityScreen(
             FormSection(
                 title = "参与人",
                 trailing = "已选择 ${selectedNames.size} 人",
-            ) {
-                Surface(
+            ) {                Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = SharedLedgerRadius.ExtraLarge,
                     color = MaterialTheme.colorScheme.surface,
@@ -163,6 +159,7 @@ fun CreateSubActivityScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .clip(SharedLedgerRadius.Medium)
                                     .clickable {
                                         val nextNames = selectedNames.toMutableSet().apply {
                                             if (selected) remove(participant.name) else add(participant.name)
@@ -211,14 +208,6 @@ fun CreateSubActivityScreen(
                 }
             }
 
-            if (errorMessage != null) {
-                Text(
-                    text = errorMessage,
-                    style = SharedLedgerTextStyles.BodySecondary,
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
-
             FormSection(title = "基准币") {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
@@ -244,8 +233,9 @@ fun CreateSubActivityScreen(
                 }
             }
             if (errorMessage != null) {
-                Text(errorMessage, color = MaterialTheme.colorScheme.error, style = SharedLedgerTextStyles.BodySecondary)
+                ErrorBanner(errorMessage)
             }
+        }
         }
     }
 }
@@ -256,7 +246,7 @@ private fun FormSection(
     trailing: String? = null,
     content: @Composable () -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
+    Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,

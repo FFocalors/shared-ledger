@@ -20,6 +20,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.Image
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
@@ -52,7 +54,10 @@ fun ParticipantAvatar(
                 contentScale = ContentScale.Crop,
             )
         } else {
-            Box(contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.semantics { contentDescription = "$name 的头像" },
+                contentAlignment = Alignment.Center,
+            ) {
                 Text(
                     text = name.trim().take(1).ifEmpty { "账" },
                     style = SharedLedgerTextStyles.Label,

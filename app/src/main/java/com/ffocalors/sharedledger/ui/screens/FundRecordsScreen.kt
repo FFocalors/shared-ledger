@@ -1,39 +1,28 @@
 package com.ffocalors.sharedledger.ui.screens
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.AccountBalanceWallet
 import androidx.compose.material.icons.rounded.ArrowForward
-import androidx.compose.material.icons.rounded.Block
-import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.ChevronRight
-import androidx.compose.material.icons.rounded.ErrorOutline
-import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Sort
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -50,15 +39,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ffocalors.sharedledger.data.financial.FinancialReadResult
 import com.ffocalors.sharedledger.data.financial.FinancialRecordRepository
@@ -70,28 +56,28 @@ import com.ffocalors.sharedledger.ui.components.AmountDisplay
 import com.ffocalors.sharedledger.ui.components.AmountEmphasis
 import com.ffocalors.sharedledger.ui.components.AmountSize
 import com.ffocalors.sharedledger.ui.financial.FinancialReadViewModel
+import com.ffocalors.sharedledger.ui.components.EmptyState
+import com.ffocalors.sharedledger.ui.components.ErrorState
+import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
+import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.AppOutlineVariant
-import com.ffocalors.sharedledger.ui.theme.Cream
 import com.ffocalors.sharedledger.ui.theme.DeepCharcoal
 import com.ffocalors.sharedledger.ui.theme.ErrorContainer
 import com.ffocalors.sharedledger.ui.theme.ErrorRed
-import com.ffocalors.sharedledger.ui.theme.IconContainerOrange
 import com.ffocalors.sharedledger.ui.theme.SageGreen
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
-import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
 import com.ffocalors.sharedledger.ui.theme.SurfaceWarmContainer
 import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLowest
 import com.ffocalors.sharedledger.ui.theme.TextSecondary
 import com.ffocalors.sharedledger.ui.theme.WarmBrown
 import com.ffocalors.sharedledger.ui.util.UiDateTimeFormatter
-import java.math.BigDecimal
 import java.time.Instant
 
 enum class FundRecordSortOrder(val label: String, val nextActionLabel: String) {
@@ -206,15 +192,33 @@ fun FundRecordsScreen(
     onPrepayment: (() -> Unit)? = null,
     onPrepaymentReturn: (() -> Unit)? = null,
 ) {
-    Scaffold(modifier = modifier.fillMaxSize(), containerColor = AppBackground) { paddingValues ->
-        Column(
-            modifier = Modifier.fillMaxSize().padding(paddingValues).widthIn(max = SharedLedgerDimens.ContentMaxWidth).fillMaxWidth(),
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        containerColor = AppBackground,
+        topBar = {
+            SharedLedgerTopBar(
+                title = "统一资金记录",
+                containerColor = AppBackground,
+                titleStyle = SharedLedgerTextStyles.PageTitle,
+                titleColor = SageGreen,
+                showBackButton = onBack != null,
+                onBackClick = onBack,
+                showMoreButton = onRefresh != null,
+                onMoreClick = onRefresh,
+            )
+        },
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier.fillMaxSize().padding(paddingValues),
+            contentAlignment = Alignment.TopCenter,
         ) {
-            UnifiedTopBar(onBack = onBack, onMore = onRefresh)
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
+                modifier = Modifier
+                    .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
+                    .fillMaxWidth()
+                    .padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
                 contentPadding = PaddingValues(bottom = SharedLedgerSpacing.Large),
-                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
             ) {
                 item(key = "filters") {
                     FilterSection(selectedFilter, onFilterSelected, sortOrder, onSortOrderChanged)
@@ -234,33 +238,24 @@ fun FundRecordsScreen(
                 // Kept for the repository/ViewModel contract; the Stitch surface does not expose a source label.
                 dataSourceLabel?.let { _ -> }
                 when (uiState) {
-                    FundRecordsUiState.Loading -> item(key = "loading") { LoadingState() }
+                    FundRecordsUiState.Loading -> item(key = "loading") { LoadingState(message = "正在加载资金记录…") }
                     is FundRecordsUiState.Content -> items(
                         sortFundRecords(uiState.records, sortOrder),
                         key = { it.transferId },
                     ) { RecordCard(it, onRecordClick) }
-                    FundRecordsUiState.Empty -> item(key = "empty") { StateMessage(Icons.Rounded.AccountBalanceWallet, "暂无资金记录", "切换筛选条件，或刷新查看最新记录。", "刷新", onRefresh) }
-                    is FundRecordsUiState.Error -> item(key = "error") { StateMessage(Icons.Rounded.ErrorOutline, "加载失败", uiState.message, "重试", onRetry) }
+                    FundRecordsUiState.Empty -> item(key = "empty") {
+                        EmptyState(
+                            title = "暂无资金记录",
+                            icon = Icons.Rounded.AccountBalanceWallet,
+                            description = "切换筛选条件，或刷新查看最新记录。",
+                            actionLabel = if (onRefresh != null) "刷新" else null,
+                            onAction = onRefresh,
+                        )
+                    }
+                    is FundRecordsUiState.Error -> item(key = "error") {
+                        ErrorState(message = uiState.message, onRetry = onRetry)
+                    }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun UnifiedTopBar(onBack: (() -> Unit)?, onMore: (() -> Unit)?) {
-    Surface(modifier = Modifier.fillMaxWidth(), color = AppBackground) {
-        Row(
-            modifier = Modifier.fillMaxWidth().height(64.dp).padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            IconButton(onClick = { onBack?.invoke() }) {
-                Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "返回", tint = TextSecondary)
-            }
-            Text("统一资金记录", style = SharedLedgerTextStyles.PageTitle, color = SageGreen)
-            IconButton(onClick = { onMore?.invoke() }) {
-                Icon(Icons.Rounded.MoreVert, contentDescription = "更多", tint = TextSecondary)
             }
         }
     }
@@ -274,32 +269,42 @@ private fun FilterSection(
     onSortOrderChanged: ((FundRecordSortOrder) -> Unit)?,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth().padding(top = SharedLedgerSpacing.Small, bottom = SharedLedgerSpacing.Large),
+        modifier = Modifier.fillMaxWidth().padding(top = SharedLedgerSpacing.Small),
         verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
     ) {
-        Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
-            listOf(FundRecordFilter.ALL, FundRecordFilter.SETTLEMENT, FundRecordFilter.PREPAYMENT).forEach { filter ->
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
+        ) {
+            FundRecordFilter.entries.forEach { filter ->
                 FilterPill(filter, selected == filter, onSelected)
             }
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Row(modifier = Modifier.weight(1f).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
-                listOf(FundRecordFilter.PREPAYMENT_RETURN, FundRecordFilter.FINAL_SETTLEMENT, FundRecordFilter.AUTO_PREPAYMENT_USAGE, FundRecordFilter.REFUND).forEach { filter ->
-                    FilterPill(filter, selected == filter, onSelected)
-                }
-            }
-            Text(sortOrder.label, style = SharedLedgerTextStyles.Label, color = TextSecondary)
-            IconButton(
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+        ) {
+            Surface(
                 onClick = { onSortOrderChanged?.invoke(sortOrder.toggled()) },
                 enabled = onSortOrderChanged != null,
+                shape = SharedLedgerRadius.Full,
+                color = Color.Transparent,
                 modifier = Modifier.semantics { stateDescription = sortOrder.label },
             ) {
-                Icon(
-                    Icons.Rounded.Sort,
-                    contentDescription = "${sortOrder.label}，${sortOrder.nextActionLabel}",
-                    tint = TextSecondary,
-                    modifier = Modifier.size(18.dp),
-                )
+                Row(
+                    modifier = Modifier.padding(horizontal = SharedLedgerSpacing.Small, vertical = SharedLedgerSpacing.XSmall),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
+                ) {
+                    Text(sortOrder.label, style = SharedLedgerTextStyles.Label, color = TextSecondary)
+                    Icon(
+                        Icons.Rounded.Sort,
+                        contentDescription = "${sortOrder.label}，${sortOrder.nextActionLabel}",
+                        tint = TextSecondary,
+                        modifier = Modifier.size(SharedLedgerDimens.IconSmall),
+                    )
+                }
             }
         }
     }
@@ -308,56 +313,100 @@ private fun FilterSection(
 @Composable
 private fun FilterPill(filter: FundRecordFilter, selected: Boolean, onSelected: ((FundRecordFilter) -> Unit)?) {
     Surface(
-        modifier = Modifier.clickable(enabled = onSelected != null) { onSelected?.invoke(filter) },
+        onClick = { onSelected?.invoke(filter) },
+        enabled = onSelected != null,
         shape = SharedLedgerRadius.Full,
         color = if (selected) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmContainer,
         contentColor = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
     ) {
-        Text(filter.label, style = SharedLedgerTextStyles.Label, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+        Box(
+            modifier = Modifier
+                .heightIn(min = SharedLedgerDimens.ActionIconContainer)
+                .padding(horizontal = SharedLedgerSpacing.Medium),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(filter.label, style = SharedLedgerTextStyles.Label)
+        }
     }
 }
 
 @Composable
 private fun RecordCard(record: FundRecord, onRecordClick: ((FundRecord) -> Unit)?) {
     val voided = record.isVoided
+    val cardColor = if (voided) SurfaceWarmLowest.copy(alpha = 0.5f) else SurfaceWarmLowest
+    val cardBorder = BorderStroke(
+        SharedLedgerDimens.OutlineWidth,
+        AppOutlineVariant.copy(alpha = if (voided) 0.2f else SharedLedgerDimens.CardBorderAlpha),
+    )
+    val cardElevation = if (voided) SharedLedgerElevation.Flat else SharedLedgerElevation.Card
+    if (onRecordClick != null) {
+        Surface(
+            onClick = { onRecordClick(record) },
+            modifier = Modifier.fillMaxWidth(),
+            shape = SharedLedgerRadius.Large,
+            color = cardColor,
+            shadowElevation = cardElevation,
+            border = cardBorder,
+        ) {
+            RecordCardContent(record, voided, showChevron = !voided)
+        }
+    } else {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = SharedLedgerRadius.Large,
+            color = cardColor,
+            shadowElevation = cardElevation,
+            border = cardBorder,
+        ) {
+            RecordCardContent(record, voided, showChevron = false)
+        }
+    }
+}
+
+@Composable
+private fun RecordCardContent(record: FundRecord, voided: Boolean, showChevron: Boolean) {
     val disputed = record.hasUnresolvedDispute
-    val interaction = onRecordClick?.let { callback -> Modifier.clickable(role = Role.Button) { callback(record) }.semantics { role = Role.Button } } ?: Modifier
-    Surface(
-        modifier = Modifier.fillMaxWidth().then(interaction),
-        shape = RoundedCornerShape(16.dp),
-        color = if (voided) SurfaceWarmLowest.copy(alpha = 0.5f) else SurfaceWarmLowest,
-        shadowElevation = if (voided) 0.dp else SharedLedgerElevation.Card,
-        border = BorderStroke(1.dp, AppOutlineVariant.copy(alpha = if (voided) 0.2f else 0.3f)),
-    ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Surface(modifier = Modifier.size(8.dp), shape = SharedLedgerRadius.Full, color = typeColor(record.type, voided)) {}
-                    Text(record.type.displayName, style = SharedLedgerTextStyles.Label, color = TextSecondary)
-                }
-                StatusPill(record, disputed)
+    Column(modifier = Modifier.padding(SharedLedgerDimens.CardPadding), verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
+                Surface(modifier = Modifier.size(SharedLedgerSpacing.Small), shape = SharedLedgerRadius.Full, color = typeColor(record.type, voided)) {}
+                Text(record.type.displayName, style = SharedLedgerTextStyles.Label, color = TextSecondary)
             }
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(record.from.displayName, style = SharedLedgerTextStyles.CardTitle.copy(textDecoration = if (voided) TextDecoration.LineThrough else TextDecoration.None), color = if (voided) TextSecondary.copy(alpha = 0.5f) else DeepCharcoal)
-                Icon(Icons.Rounded.ArrowForward, contentDescription = "资金流向", tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(16.dp))
-                Text(record.to.displayName, style = SharedLedgerTextStyles.CardTitle.copy(textDecoration = if (voided) TextDecoration.LineThrough else TextDecoration.None), color = if (voided) TextSecondary.copy(alpha = 0.5f) else DeepCharcoal)
-            }
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
-                Text(UiDateTimeFormatter.format(record.occurredAt), style = SmallMetaStyle, color = TextSecondary)
-                Spacer(Modifier.weight(1f))
-                AmountDisplay(record.amount, currencyCode = record.currency, size = AmountSize.Small, emphasis = if (voided) AmountEmphasis.Muted else if (record.type == FundRecordType.PREPAYMENT) AmountEmphasis.Warning else AmountEmphasis.Primary)
-            }
-            Text(componentSummary(record), style = SmallMetaStyle, color = TextSecondary.copy(alpha = 0.7f), modifier = Modifier.fillMaxWidth().padding(top = 2.dp))
-            HorizontalDivider(color = AppOutlineVariant.copy(alpha = 0.2f))
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(if (record.onBehalfOf == null) "记录人：${record.recordedBy.displayName}" else "${record.onBehalfOf.displayName} 代记", style = SmallMetaStyle, color = TextSecondary.copy(alpha = 0.5f), modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                if (!voided && onRecordClick != null) Icon(Icons.Rounded.ChevronRight, contentDescription = "查看详情", tint = TextSecondary.copy(alpha = 0.5f), modifier = Modifier.size(16.dp))
-            }
-            if (voided) {
-                record.voidMetadata?.let {
-                    val prefix = if (record.source == com.ffocalors.sharedledger.domain.financial.FundRecordSource.REFUND_EXPENSE) "删除状态" else "作废原因"
-                    Text("$prefix：${it.reason}", style = SmallMetaStyle, color = TextSecondary.copy(alpha = 0.5f))
-                }
+            StatusPill(record, disputed)
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
+            Text(
+                record.from.displayName,
+                modifier = Modifier.weight(1f, fill = false),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = SharedLedgerTextStyles.CardTitle.copy(textDecoration = if (voided) TextDecoration.LineThrough else TextDecoration.None),
+                color = if (voided) TextSecondary.copy(alpha = 0.5f) else DeepCharcoal,
+            )
+            Icon(Icons.Rounded.ArrowForward, contentDescription = "资金流向", tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(SharedLedgerDimens.IconSmall))
+            Text(
+                record.to.displayName,
+                modifier = Modifier.weight(1f, fill = false),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = SharedLedgerTextStyles.CardTitle.copy(textDecoration = if (voided) TextDecoration.LineThrough else TextDecoration.None),
+                color = if (voided) TextSecondary.copy(alpha = 0.5f) else DeepCharcoal,
+            )
+        }
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
+            Text(UiDateTimeFormatter.format(record.occurredAt), style = SmallMetaStyle, color = TextSecondary)
+            Spacer(Modifier.weight(1f))
+            AmountDisplay(record.amount, currencyCode = record.currency, size = AmountSize.Small, emphasis = if (voided) AmountEmphasis.Muted else if (record.type == FundRecordType.PREPAYMENT) AmountEmphasis.Warning else AmountEmphasis.Primary)
+        }
+        Text(componentSummary(record), style = SmallMetaStyle, color = TextSecondary.copy(alpha = 0.7f), modifier = Modifier.fillMaxWidth().padding(top = SharedLedgerSpacing.XSmall))
+        HorizontalDivider(color = AppOutlineVariant.copy(alpha = 0.2f))
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(if (record.onBehalfOf == null) "记录人：${record.recordedBy.displayName}" else "${record.onBehalfOf.displayName} 代记", style = SmallMetaStyle, color = TextSecondary.copy(alpha = 0.5f), modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (showChevron) Icon(Icons.Rounded.ChevronRight, contentDescription = "查看详情", tint = TextSecondary.copy(alpha = 0.5f), modifier = Modifier.size(SharedLedgerDimens.IconSmall))
+        }
+        if (voided && record.source == com.ffocalors.sharedledger.domain.financial.FundRecordSource.REFUND_EXPENSE) {
+            record.voidMetadata?.let {
+                Text("删除状态：${it.reason}", style = SmallMetaStyle, color = TextSecondary.copy(alpha = 0.5f))
             }
         }
     }
@@ -382,8 +431,8 @@ private fun StatusPill(record: FundRecord, disputed: Boolean) {
         disputed -> Triple("存在争议", ErrorContainer.copy(alpha = 0.5f), ErrorRed)
         else -> Triple("有效", MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f), MaterialTheme.colorScheme.onPrimaryContainer)
     }
-    Surface(shape = RoundedCornerShape(4.dp), color = background, contentColor = foreground) {
-        Text(label, style = SharedLedgerTextStyles.Label, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+    Surface(shape = SharedLedgerRadius.Small, color = background, contentColor = foreground) {
+        Text(label, style = SharedLedgerTextStyles.Label, modifier = Modifier.padding(horizontal = SharedLedgerSpacing.Small, vertical = SharedLedgerSpacing.XSmall))
     }
 }
 
@@ -393,26 +442,4 @@ private fun componentSummary(record: FundRecord): String = when {
     record.isVoided -> record.voidMetadata?.let { "作废原因：${it.reason}" } ?: "已作废"
     record.components.isEmpty() -> "暂无资金构成"
     else -> record.components.joinToString(" + ") { component -> "${component.type.displayName} ${com.ffocalors.sharedledger.ui.util.MoneyFormatter.format(component.amount, record.currency)}" }
-}
-
-@Composable
-private fun LoadingState() {
-    Box(Modifier.fillMaxWidth().height(220.dp), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium)) {
-            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-            Text("正在加载资金记录…", style = SharedLedgerTextStyles.BodySecondary)
-        }
-    }
-}
-
-@Composable
-private fun StateMessage(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, message: String, actionLabel: String, onAction: (() -> Unit)?) {
-    Box(Modifier.fillMaxWidth().height(260.dp), contentAlignment = Alignment.Center) {
-        Column(modifier = Modifier.padding(SharedLedgerSpacing.Large), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium)) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
-            Text(title, style = SharedLedgerTextStyles.SectionTitle)
-            Text(message, style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            onAction?.let { SharedLedgerButton(actionLabel, it, tone = SharedLedgerButtonTone.SoftPrimary, icon = Icons.Rounded.Refresh) }
-        }
-    }
 }

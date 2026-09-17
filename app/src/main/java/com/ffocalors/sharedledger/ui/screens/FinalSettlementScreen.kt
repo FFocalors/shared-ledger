@@ -6,10 +6,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,7 +18,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,14 +26,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.components.AmountDisplay
 import com.ffocalors.sharedledger.ui.components.AmountSize
+import com.ffocalors.sharedledger.ui.components.EmptyState
+import com.ffocalors.sharedledger.ui.components.ErrorState
+import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
-import com.ffocalors.sharedledger.ui.components.WarningCard
 import com.ffocalors.sharedledger.ui.theme.IconContainerOrange
 import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
@@ -46,7 +45,6 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
 import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLow
 import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLowest
-import com.ffocalors.sharedledger.ui.theme.WarmBrown
 import java.math.BigDecimal
 
 data class FinalSettlementRequest(
@@ -202,8 +200,6 @@ fun FinalSettlementScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .navigationBarsPadding()
-                .imePadding()
                 .padding(innerPadding),
             contentAlignment = Alignment.TopCenter,
         ) {
@@ -217,7 +213,7 @@ fun FinalSettlementScreen(
                     end = SharedLedgerDimens.PageHorizontalPadding,
                     bottom = SharedLedgerSpacing.XLarge,
                 ),
-                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
             ) {
                 item(key = "header") {
                     Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
@@ -234,16 +230,19 @@ fun FinalSettlementScreen(
                     }
                 }
                 when {
-                    isLoading -> item(key = "loading") { Text("正在读取最新结算方案…", style = SharedLedgerTextStyles.BodySecondary) }
+                    isLoading -> item(key = "loading") { LoadingState(message = "正在读取最新结算方案…") }
                     errorMessage != null -> item(key = "error") {
-                        Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
-                            Text(errorMessage, color = MaterialTheme.colorScheme.error)
-                            onRetry?.let { SharedLedgerButton("重新读取方案", it, tone = SharedLedgerButtonTone.SoftPrimary) }
-                        }
+                        ErrorState(message = errorMessage, onRetry = onRetry, retryLabel = "重新读取方案")
                     }
-                    suggestions.isEmpty() -> item(key = "empty") { Text("当前没有待执行的结算项", style = SharedLedgerTextStyles.BodySecondary) }
+                    suggestions.isEmpty() -> item(key = "empty") { EmptyState(title = "当前没有待执行的结算项") }
                     else -> {
-                        item(key = "suggested-header") { SettlementSectionHeader("建议转账 (${suggestions.size}笔)", "待处理") }
+                        item(key = "suggested-header") {
+                            SettlementSectionHeader(
+                                "建议转账 (${suggestions.size}笔)",
+                                "待处理",
+                                modifier = Modifier.padding(top = SharedLedgerSpacing.MediumSmall),
+                            )
+                        }
                         items(suggestions, key = { it.id }) { suggestion ->
                             SettlementSuggestionCard(suggestion, onFinalize?.let { callback -> { behalfId -> callback(suggestion.toRequest(activityId, behalfId)) } })
                         }
@@ -335,13 +334,9 @@ private fun SettlementSuggestionCard(
                         amount = suggestion.amount,
                         currencyCode = suggestion.currency,
                         fractionDigitsOverride = 1,
-                        size = AmountSize.Small,
+                        size = AmountSize.Medium,
                     )
-                    Text(
-                        "账务版本 v${suggestion.sourceFinancialVersion}",
-                        style = SharedLedgerTextStyles.Label,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    SuggestionBadge("待转账")
                 }
             }
             if (suggestion.onBehalfOptions.isNotEmpty()) {
@@ -351,26 +346,58 @@ private fun SettlementSuggestionCard(
                         style = SharedLedgerTextStyles.Label,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall)) {
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
                         items(suggestion.onBehalfOptions, key = { it.participantId }) { option ->
-                            TextButton(onClick = { selectedOnBehalfId = option.participantId }) {
-                                Text(if (selectedOnBehalfId == option.participantId) "✓ ${option.participantName}" else option.participantName)
-                            }
+                            OnBehalfChip(
+                                label = option.participantName,
+                                selected = selectedOnBehalfId == option.participantId,
+                                onClick = { selectedOnBehalfId = option.participantId },
+                            )
                         }
                     }
                 }
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                if (onExecute == null) {
+            if (onExecute == null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     SuggestionBadge("只读方案 · v${suggestion.sourceFinancialVersion}")
-                } else {
-                    TextButton(onClick = { onExecute(selectedOnBehalfId) }) { Text("记录已转账") }
                 }
+            } else {
+                SharedLedgerButton(
+                    text = "记录已转账",
+                    onClick = { onExecute(selectedOnBehalfId) },
+                    tone = SharedLedgerButtonTone.SoftPrimary,
+                )
             }
+        }
+    }
+}
+
+@Composable
+private fun OnBehalfChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        shape = SharedLedgerRadius.Full,
+        color = if (selected) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmLowest,
+        border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant),
+    ) {
+        Box(
+            modifier = Modifier
+                .defaultMinSize(minHeight = SharedLedgerDimens.TopBarActionSize)
+                .padding(horizontal = SharedLedgerSpacing.Medium),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = if (selected) "✓ $label" else label,
+                style = SharedLedgerTextStyles.Label,
+            )
         }
     }
 }

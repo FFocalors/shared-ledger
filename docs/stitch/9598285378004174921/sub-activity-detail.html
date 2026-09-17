@@ -1,0 +1,248 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>LedgerUnit Detail - SharedLedger</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#54643f",
+                        "on-background": "#1b1c1c",
+                        "error": "#ba1a1a",
+                        "outline": "#75786e",
+                        "surface-dim": "#dbd9d9",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#121f03",
+                        "surface-container-highest": "#e4e2e2",
+                        "on-primary-container": "#495935",
+                        "outline-variant": "#c5c8bb",
+                        "on-tertiary-fixed": "#1e1b13",
+                        "surface-variant": "#e4e2e2",
+                        "surface-bright": "#fbf9f8",
+                        "surface-tint": "#54643f",
+                        "background": "#fbf9f8",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#1b1c1c",
+                        "on-surface-variant": "#45483e",
+                        "on-secondary-container": "#79592d",
+                        "tertiary-container": "#cec8ba",
+                        "surface-container-high": "#eae8e7",
+                        "inverse-surface": "#303030",
+                        "secondary-fixed-dim": "#e9bf8b",
+                        "primary-fixed-dim": "#bbcda0",
+                        "on-secondary-fixed": "#2a1800",
+                        "secondary-fixed": "#ffddb5",
+                        "on-tertiary-fixed-variant": "#4a473c",
+                        "inverse-primary": "#bbcda0",
+                        "inverse-on-surface": "#f2f0f0",
+                        "tertiary-fixed-dim": "#ccc6b8",
+                        "surface": "#fbf9f8",
+                        "tertiary": "#625e53",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#5e4118",
+                        "error-container": "#ffdad6",
+                        "primary-container": "#bdcfa2",
+                        "on-primary-fixed-variant": "#3d4b29",
+                        "secondary-container": "#fed39c",
+                        "on-primary": "#ffffff",
+                        "primary-fixed": "#d7e9ba",
+                        "on-tertiary-container": "#575449",
+                        "surface-container": "#efeded",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f5f3f3",
+                        "secondary": "#78582d",
+                        "tertiary-fixed": "#e9e2d4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "card": "24px"
+                    },
+                    "spacing": {
+                        "stack-md": "16px",
+                        "margin-page": "24px",
+                        "gutter-card": "16px",
+                        "stack-sm": "8px",
+                        "base": "4px",
+                        "stack-lg": "32px",
+                        "nav-bottom": "88px"
+                    },
+                    "fontFamily": {
+                        "display-amount": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "title-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-amount": ["40px", { "lineHeight": "48px", "letterSpacing": "-1px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "title-md": ["18px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg": ["28px", { "lineHeight": "34px", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #EBE4D6; /* Cream override for modern organic feel per guidelines */
+            /* Using a specific hex for the body background to match the "Cream" base described in styles */
+        }
+        .bg-cream { background-color: #EBE4D6; }
+        .text-cream { color: #EBE4D6; }
+        .shadow-ambient {
+            box-shadow: 0 4px 24px rgba(0,0,0, 0.08);
+        }
+        .shadow-ambient-orange {
+            box-shadow: 0 4px 24px rgba(254, 211, 156, 0.4); /* Based on secondary-container/warm orange */
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface antialiased min-h-screen pb-nav-bottom">
+<!-- TopAppBar -->
+<header class="bg-background dark:bg-background docked full-width top-0 flat no shadows flex justify-between items-center px-margin-page py-4 w-full max-w-[480px] mx-auto z-40 sticky">
+<button class="text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors scale-95 active:scale-90 transition-transform p-2 -ml-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 0;">arrow_back</span>
+</button>
+<div class="flex flex-col items-center">
+<h1 class="text-title-md font-title-md text-on-surface font-semibold">门票</h1>
+
+</div>
+<div class="flex gap-2">
+<button class="text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors scale-95 active:scale-90 transition-transform p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 0;">group</span>
+</button>
+<button class="text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors scale-95 active:scale-90 transition-transform p-2 -mr-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 0;">more_vert</span>
+</button>
+</div>
+</header>
+<main class="w-full max-w-[480px] mx-auto px-margin-page pt-4 pb-12 flex flex-col gap-stack-lg">
+<!-- Top Overview Card (Level 1 Surface) -->
+<section class="flex flex-col gap-stack-md">
+<div class="bg-surface-container-lowest rounded-xl p-6 border border-surface-variant shadow-sm relative overflow-hidden">
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-primary-fixed opacity-30 rounded-full blur-2xl"></div>
+<p class="text-label-md font-label-md text-on-surface-variant mb-2">消费合计</p>
+<h2 class="text-display-amount font-display-amount text-on-surface mb-6">¥2,450.00</h2>
+<div class="pt-4 border-t border-surface-variant/60 flex justify-between items-center">
+<span class="text-body-md font-body-md text-on-surface-variant">待结算</span>
+<span class="text-body-lg font-body-lg text-on-surface font-medium">日本旅行 / 门票</span>
+</div>
+</div>
+<div class="bg-secondary-fixed rounded-xl p-4 flex items-center gap-4 shadow-ambient-orange border border-secondary-fixed-dim transform transition hover:-translate-y-0.5">
+<div class="w-12 h-12 rounded-full bg-surface-container-lowest flex items-center justify-center text-secondary shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+<div class="flex-1">
+<p class="text-body-md font-body-md text-on-secondary-fixed-variant">你需要支付给 <span class="font-medium text-on-secondary-fixed">张三</span></p>
+<p class="text-title-md font-title-md text-on-secondary-fixed mt-0.5">¥120.0</p>
+</div>
+<button class="w-8 h-8 flex items-center justify-center rounded-full bg-surface-container-lowest/50 text-on-secondary-fixed hover:bg-surface-container-lowest transition-colors">
+<span class="material-symbols-outlined text-sm">arrow_forward_ios</span>
+</button>
+</div>
+</section>
+<!-- Ledger Timeline List -->
+<section class="flex flex-col gap-stack-md">
+<h2 class="text-title-md font-title-md text-on-surface font-semibold sticky top-[72px] bg-[#EBE4D6]/90 backdrop-blur-sm py-2 z-10">今天</h2>
+<div class="flex flex-col gap-stack-sm">
+<!-- Expense Row 1 -->
+<div class="bg-surface-container-lowest rounded-[16px] p-4 shadow-ambient border border-outline-variant/20 flex items-center justify-between hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-[40px] h-[40px] rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-title-md font-semibold shrink-0">
+                            A
+                        </div>
+<div class="flex flex-col">
+<span class="text-body-lg font-body-lg text-on-surface font-medium">东京塔门票</span>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="text-label-md font-label-md">Alice 付款</span>
+<span class="text-[10px]">•</span>
+<span class="text-label-md font-label-md">3人参与</span>
+</div>
+</div>
+</div>
+<div class="text-title-md font-title-md text-on-surface font-semibold">
+                        €120
+                    </div>
+</div>
+<!-- Expense Row 2 -->
+<div class="bg-surface-container-lowest rounded-[16px] p-4 shadow-ambient border border-outline-variant/20 flex items-center justify-between hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-[40px] h-[40px] rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-title-md font-semibold shrink-0">
+                            B
+                        </div>
+<div class="flex flex-col">
+<span class="text-body-lg font-body-lg text-on-surface font-medium">浅草寺导览</span>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="text-label-md font-label-md">Bob 付款</span>
+<span class="text-[10px]">•</span>
+<span class="text-label-md font-label-md">所有人参与</span>
+</div>
+</div>
+</div>
+<div class="text-title-md font-title-md text-on-surface font-semibold">
+                        ¥8,500
+                    </div>
+</div>
+</div>
+</section>
+<section class="flex flex-col gap-stack-md mt-4">
+<h2 class="text-title-md font-title-md text-on-surface font-semibold sticky top-[72px] bg-[#EBE4D6]/90 backdrop-blur-sm py-2 z-10">昨天</h2>
+<div class="flex flex-col gap-stack-sm">
+<!-- Expense Row 3 -->
+<div class="bg-surface-container-lowest rounded-[16px] p-4 shadow-ambient border border-outline-variant/20 flex items-center justify-between hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-[40px] h-[40px] rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center font-title-md font-semibold shrink-0">
+                            我
+                        </div>
+<div class="flex flex-col">
+<span class="text-body-lg font-body-lg text-on-surface font-medium">迪士尼快速通票</span>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="text-label-md font-label-md">你 付款</span>
+<span class="text-[10px]">•</span>
+<span class="text-label-md font-label-md">2人参与</span>
+</div>
+</div>
+</div>
+<div class="text-title-md font-title-md text-primary font-semibold">
+                        ¥1,200
+                    </div>
+</div>
+</div>
+</section>
+</main>
+<!-- Contextual Bottom Action Bar -->
+<div class="fixed bottom-0 left-0 right-0 w-full z-50 flex justify-center pb-6 pt-4 px-4 pointer-events-none">
+<div class="bg-surface-container-lowest shadow-ambient border border-outline-variant/20 rounded-full flex items-center p-2 gap-2 pointer-events-auto max-w-[400px] w-full mx-auto">
+<button class="flex-1 flex flex-col items-center justify-center py-2 text-on-surface hover:bg-surface-container-low rounded-full transition-colors group">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" style="font-variation-settings: &quot;FILL&quot; 0;">swap_horiz</span>
+<span class="text-label-md font-label-md mt-1">转账</span>
+</button>
+<!-- Custom FAB style integrated into nav -->
+<button class="bg-secondary-container hover:bg-[#ffc985] text-on-secondary-container px-6 py-3 rounded-full flex items-center gap-2 shadow-ambient-orange transition-all scale-100 active:scale-95 mx-2 font-title-md font-semibold shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">add</span>
+                记一笔
+            </button>
+<button class="flex-1 flex flex-col items-center justify-center py-2 text-on-surface hover:bg-surface-container-low rounded-full transition-colors group">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" style="font-variation-settings: &quot;FILL&quot; 0;">request_quote</span>
+<span class="text-label-md font-label-md mt-1">收款</span>
+</button>
+</div>
+</div>
+</body></html>

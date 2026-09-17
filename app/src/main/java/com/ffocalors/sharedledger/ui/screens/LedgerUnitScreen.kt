@@ -1,7 +1,6 @@
 package com.ffocalors.sharedledger.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,18 +12,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
+import androidx.compose.material.icons.rounded.AccountBalanceWallet
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Group
-import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.RequestQuote
 import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material.icons.rounded.CurrencyExchange
 import androidx.compose.material.icons.rounded.SwapHoriz
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,19 +40,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.components.BottomActionItem
+import com.ffocalors.sharedledger.ui.components.EmptyState
+import com.ffocalors.sharedledger.ui.components.ErrorState
 import com.ffocalors.sharedledger.ui.components.ExpenseCard
 import com.ffocalors.sharedledger.ui.components.ExpenseCardUiModel
 import com.ffocalors.sharedledger.ui.components.ExpenseActionSheet
-import com.ffocalors.sharedledger.ui.components.PaymentStatusCard
+import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatarGroup
+import com.ffocalors.sharedledger.ui.components.QuickActionItem
 import com.ffocalors.sharedledger.ui.components.SettlementStatistic
 import com.ffocalors.sharedledger.ui.components.SettlementSummaryCard
+import com.ffocalors.sharedledger.ui.components.SharedLedgerActionItemsRow
 import com.ffocalors.sharedledger.ui.components.SharedLedgerBottomActionBar
-import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
-import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
-import com.ffocalors.sharedledger.ui.theme.Cream
 import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
@@ -165,15 +163,16 @@ fun LedgerUnitScreen(
     var deleteConfirmationVisible by remember { mutableStateOf(false) }
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        // Stitch’s LedgerUnit frame uses the warm cream layer outside the cards.
-        containerColor = Cream,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             SharedLedgerTopBar(
                 title = displayTitle,
                 showBackButton = true,
                 onBackClick = onBack,
-                onMoreClick = onDeleteSubActivity?.let { { deleteConfirmationVisible = true } },
-                containerColor = Cream,
+                actionIcon = onDeleteSubActivity?.let { Icons.Rounded.Delete },
+                actionContentDescription = "删除子活动",
+                onActionClick = onDeleteSubActivity?.let { { deleteConfirmationVisible = true } },
+                containerColor = MaterialTheme.colorScheme.background,
                 businessAction = {
                     ParticipantAvatarGroup(
                         participants = displayUsers,
@@ -185,28 +184,29 @@ fun LedgerUnitScreen(
             )
         },
         bottomBar = {
-            Box(
-                modifier = Modifier
-                    .navigationBarsPadding()
-                    .padding(
-                        start = SharedLedgerDimens.PageHorizontalPadding,
-                        top = SharedLedgerSpacing.Medium,
-                        end = SharedLedgerDimens.PageHorizontalPadding,
-                        bottom = SharedLedgerSpacing.Large,
-                    ),
-                contentAlignment = Alignment.TopCenter,
-            ) {
-                SharedLedgerBottomActionBar(
-                    actions = listOf(
-                        onTransfer?.let { BottomActionItem("转账", Icons.Rounded.SwapHoriz, it) },
-                        if (onNewExpense != null || onRefund != null) {
-                            BottomActionItem("记一笔", Icons.Rounded.Add) {
-                                expenseActionSheetVisible = true
-                            }
-                        } else null,
-                        onReceive?.let { BottomActionItem("收款", Icons.Rounded.RequestQuote, it) },
-                    ).filterNotNull(),
-                )
+            val bottomActions = listOfNotNull(
+                onTransfer?.let { BottomActionItem("转账", Icons.Rounded.SwapHoriz, it) },
+                if (onNewExpense != null || onRefund != null) {
+                    BottomActionItem("记一笔", Icons.Rounded.Edit) {
+                        expenseActionSheetVisible = true
+                    }
+                } else null,
+                onReceive?.let { BottomActionItem("收款", Icons.Rounded.RequestQuote, it) },
+            )
+            if (bottomActions.isNotEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .padding(
+                            start = SharedLedgerDimens.PageHorizontalPadding,
+                            top = SharedLedgerSpacing.Medium,
+                            end = SharedLedgerDimens.PageHorizontalPadding,
+                            bottom = SharedLedgerSpacing.Large,
+                        ),
+                    contentAlignment = Alignment.TopCenter,
+                ) {
+                    SharedLedgerBottomActionBar(actions = bottomActions)
+                }
             }
         },
     ) { innerPadding ->
@@ -224,40 +224,42 @@ fun LedgerUnitScreen(
                     end = SharedLedgerDimens.PageHorizontalPadding,
                     bottom = innerPadding.calculateBottomPadding() + SharedLedgerSpacing.Medium,
                 ),
-                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
             ) {
-                if (isLoading || errorMessage != null || expenseLoading || expenseErrorMessage != null) {
+                if (isLoading) {
                     item(key = "ledger-state") {
-                        LedgerUnitStateMessage(
-                            isLoading = isLoading || expenseLoading,
-                            errorMessage = errorMessage ?: expenseErrorMessage,
-                            onRetry = if (errorMessage != null) onRetry else onExpenseRetry,
-                        )
+                        LoadingState(message = "正在加载子活动…")
+                    }
+                } else if (errorMessage != null) {
+                    item(key = "ledger-state") {
+                        ErrorState(message = errorMessage, onRetry = onRetry)
                     }
                 } else {
                     item(key = "overview") {
                         Column(
-                            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+                            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
                         ) {
                             SettlementSummaryCard(
                                 title = "实际消费",
                                 primaryAmount = displayTotal?.takeIf { participantBound },
                                 secondaryTitle = "待结算",
-                                secondaryAmount = activity?.summary?.totalDebt?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
+                                secondaryAmount = activity?.summary?.totalDebt?.toBigDecimalOrNull(),
                                 currencyCode = activity?.summary?.baseCurrency ?: "CNY",
                                 statistics = listOf(
                                     SettlementStatistic(
                                         "参与人",
-                                        "${activity?.participants?.size ?: 0} 人",
+                                        activity?.participants?.size?.let { "$it 人" } ?: "—",
                                     ),
                                 ),
                             )
-                            SharedLedgerButton(
-                                text = "资金记录",
-                                onClick = onFundRecords,
-                                tone = SharedLedgerButtonTone.Neutral,
-                                icon = Icons.Rounded.History,
-                                modifier = Modifier.fillMaxWidth(),
+                            SharedLedgerActionItemsRow(
+                                items = listOf(
+                                    QuickActionItem(
+                                        "资金记录",
+                                        Icons.Rounded.AccountBalanceWallet,
+                                        onClick = onFundRecords,
+                                    ),
+                                ),
                             )
                             LedgerUnitAttachments(
                                 attachments = attachments,
@@ -271,12 +273,34 @@ fun LedgerUnitScreen(
                             }
                         }
                     }
-                    item(key = "today") {
-                        LedgerUnitExpenseSection(
-                            title = "今天",
-                            expenses = expenses,
-                            onExpenseClick = onExpenseClick,
+                    item(key = "expenses-header") {
+                        Text(
+                            text = "活动明细",
+                            modifier = Modifier.padding(top = SharedLedgerSpacing.MediumSmall, start = SharedLedgerSpacing.XSmall),
+                            style = SharedLedgerTextStyles.SectionTitle,
+                            color = MaterialTheme.colorScheme.onBackground,
                         )
+                    }
+                    if (expenseLoading) {
+                        item(key = "expenses-state") {
+                            LoadingState(message = "正在加载账单…")
+                        }
+                    } else if (expenseErrorMessage != null) {
+                        item(key = "expenses-state") {
+                            ErrorState(message = expenseErrorMessage, onRetry = onExpenseRetry)
+                        }
+                    } else if (expenses.isEmpty()) {
+                        item(key = "expenses-empty") {
+                            EmptyState(title = "暂无账单")
+                        }
+                    } else {
+                        items(expenses, key = { it.expenseId.ifBlank { it.name } }) { expense ->
+                            ExpenseCard(
+                                expense = expense,
+                                onClick = { onExpenseClick(expense.expenseId) },
+                                modifier = Modifier.animateItem(),
+                            )
+                        }
                     }
                 }
             }
@@ -357,13 +381,8 @@ private fun LedgerAttachmentRow(
     onDelete: (() -> Unit)?,
     onRetry: (() -> Unit)?,
 ) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .then(onClick?.let { Modifier.clickable(onClick = it) } ?: Modifier),
-        shape = com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius.Medium,
-        color = MaterialTheme.colorScheme.surface,
-    ) {
+    val shape = com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius.Medium
+    val rowContent: @Composable () -> Unit = {
         Row(
             modifier = Modifier.padding(SharedLedgerSpacing.MediumSmall),
             verticalAlignment = Alignment.CenterVertically,
@@ -381,74 +400,34 @@ private fun LedgerAttachmentRow(
             }
             if (attachment.status == LedgerAttachmentStatus.Failed) {
                 onRetry?.let { callback ->
-                    IconButton(onClick = callback, modifier = Modifier.size(36.dp)) {
+                    IconButton(onClick = callback, modifier = Modifier.size(SharedLedgerDimens.TopBarActionSize)) {
                         Icon(Icons.Rounded.Refresh, contentDescription = "重试上传${attachment.fileName}", modifier = Modifier.size(18.dp))
                     }
                 }
             }
             onDelete?.let { callback ->
-                IconButton(onClick = callback, modifier = Modifier.size(36.dp)) {
+                IconButton(onClick = callback, modifier = Modifier.size(SharedLedgerDimens.TopBarActionSize)) {
                     Icon(Icons.Rounded.Delete, contentDescription = "删除${attachment.fileName}", modifier = Modifier.size(18.dp))
                 }
             }
         }
     }
-}
-
-@Composable
-private fun LedgerUnitStateMessage(
-    isLoading: Boolean,
-    errorMessage: String?,
-    onRetry: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = SharedLedgerSpacing.XLarge),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
-    ) {
-        if (isLoading) {
-            androidx.compose.material3.CircularProgressIndicator()
-            Text("正在加载子活动…", style = SharedLedgerTextStyles.BodySecondary)
-        } else {
-            Text(errorMessage ?: "子活动加载失败", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.error)
-            SharedLedgerButton(
-                text = "重试",
-                onClick = onRetry,
-                tone = SharedLedgerButtonTone.SoftPrimary,
-            )
+    if (onClick != null) {
+        Surface(
+            onClick = onClick,
+            modifier = Modifier.fillMaxWidth(),
+            shape = shape,
+            color = MaterialTheme.colorScheme.surface,
+        ) {
+            rowContent()
         }
-    }
-}
-
-@Composable
-private fun LedgerUnitExpenseSection(
-    title: String,
-    expenses: List<ExpenseCardUiModel>,
-    onExpenseClick: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
-    ) {
-        Text(
-            text = title,
-            style = SharedLedgerTextStyles.SectionTitle,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(horizontal = SharedLedgerSpacing.XSmall),
-        )
-        if (expenses.isEmpty()) {
-            Text("暂无账单", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        } else {
-            expenses.forEach { expense ->
-                ExpenseCard(
-                    expense = expense,
-                    icon = Icons.AutoMirrored.Rounded.ReceiptLong,
-                    onClick = { onExpenseClick(expense.expenseId) },
-                )
-            }
+    } else {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = shape,
+            color = MaterialTheme.colorScheme.surface,
+        ) {
+            rowContent()
         }
     }
 }

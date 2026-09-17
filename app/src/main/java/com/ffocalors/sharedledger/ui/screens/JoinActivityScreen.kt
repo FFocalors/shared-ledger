@@ -3,33 +3,26 @@ package com.ffocalors.sharedledger.ui.screens
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.CheckCircle
@@ -38,14 +31,9 @@ import androidx.compose.material.icons.rounded.FlightTakeoff
 import androidx.compose.material.icons.rounded.Group
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.PersonRemove
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -75,7 +63,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.R
 import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.AppSurfaceLow
@@ -88,8 +75,8 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonVariant
-
-private val ActivityBottomBarColor = Color(0xFFEFEDED)
+import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
+import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 
 enum class JoinActivityStatus {
     Input,
@@ -189,7 +176,13 @@ fun JoinActivityScreen(
         modifier = modifier.fillMaxSize(),
         containerColor = AppBackground,
         topBar = {
-            JoinActivityTopBar(onBackClick = onBackClick)
+            SharedLedgerTopBar(
+                title = "加入活动",
+                showBackButton = true,
+                onBackClick = onBackClick,
+                containerColor = AppBackground,
+                showMoreButton = false,
+            )
         },
         bottomBar = {
             if (isConfirmState) {
@@ -213,7 +206,7 @@ fun JoinActivityScreen(
                     vertical = SharedLedgerSpacing.Medium,
                 )
                 .padding(bottom = SharedLedgerSpacing.Large),
-            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XLarge),
+            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Large),
         ) {
             if (isConfirmState) {
                 JoinActivityConfirmation(
@@ -227,48 +220,6 @@ fun JoinActivityScreen(
                     onValidateInviteCode = onValidateInviteCode,
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun JoinActivityTopBar(onBackClick: () -> Unit) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = AppBackground.copy(alpha = 0.94f),
-    ) {
-        Row(
-            modifier = Modifier
-                .statusBarsPadding()
-                .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
-                .fillMaxWidth()
-                .height(64.dp)
-                .padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IconButton(
-                onClick = onBackClick,
-                modifier = Modifier
-                    .size(SharedLedgerDimens.TopBarActionSize)
-                    .semantics { contentDescription = "返回" },
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.ArrowBack,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-            Box(
-                modifier = Modifier.weight(1f),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = "加入活动",
-                    style = SharedLedgerTextStyles.CardTitle,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-            Spacer(modifier = Modifier.size(SharedLedgerDimens.TopBarActionSize))
         }
     }
 }
@@ -365,7 +316,8 @@ private fun InviteCodeInput(
                             .borderForInviteCode(
                                 color = if (isFocused) MaterialTheme.colorScheme.primary
                                 else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
-                                width = if (isFocused) 2.dp else 1.dp,
+                                width = if (isFocused) SharedLedgerDimens.AddSubActivityBorderWidth
+                                else SharedLedgerDimens.OutlineWidth,
                             )
                     ),
                 contentAlignment = Alignment.Center,
@@ -471,7 +423,7 @@ private fun JoinActivityMessage(
             horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(20.dp))
+            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(SharedLedgerDimens.ActionIcon))
             Text(text = text, style = SharedLedgerTextStyles.BodySecondary)
         }
     }
@@ -484,7 +436,7 @@ private fun JoinActivityConfirmation(
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XLarge),
+        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Large),
     ) {
         ActivityPreviewCard(preview = state.preview)
 
@@ -521,10 +473,10 @@ private fun JoinActivityConfirmation(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = SharedLedgerSpacing.XSmall),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = SharedLedgerRadius.ExtraLarge,
                     color = AppSurfaceLow,
                     border = BorderStroke(
-                        1.dp,
+                        SharedLedgerDimens.OutlineWidth,
                         MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
                     ),
                 ) {
@@ -551,7 +503,7 @@ private fun ActivityPreviewCard(preview: JoinActivityPreview) {
         shape = SharedLedgerRadius.ExtraLarge,
         color = AppSurfaceLow,
         border = BorderStroke(
-            1.dp,
+            SharedLedgerDimens.OutlineWidth,
             MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
         ),
         shadowElevation = SharedLedgerElevation.Card,
@@ -560,8 +512,8 @@ private fun ActivityPreviewCard(preview: JoinActivityPreview) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .offset(x = 40.dp, y = (-40).dp)
-                    .size(128.dp)
+                    .offset(x = SharedLedgerDimens.SummaryDecorativeOffset, y = -SharedLedgerDimens.SummaryDecorativeOffset)
+                    .size(SharedLedgerDimens.SummaryDecorativeSize)
                     .background(
                         brush = Brush.radialGradient(
                             colors = listOf(
@@ -604,7 +556,7 @@ private fun ActivityPreviewCard(preview: JoinActivityPreview) {
                         Icon(
                             imageVector = Icons.Rounded.CalendarMonth,
                             contentDescription = "活动日期",
-                            modifier = Modifier.size(16.dp),
+                            modifier = Modifier.size(SharedLedgerDimens.IconMedium),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
@@ -615,8 +567,8 @@ private fun ActivityPreviewCard(preview: JoinActivityPreview) {
                     }
                 }
                 Surface(
-                    modifier = Modifier.size(48.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.size(SharedLedgerDimens.IconContainerLarge),
+                    shape = SharedLedgerRadius.Large,
                     color = MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                 ) {
@@ -648,13 +600,13 @@ private fun ActivityChip(
         Row(
             modifier = Modifier.padding(
                 horizontal = SharedLedgerSpacing.Small,
-                vertical = 2.dp,
+                vertical = SharedLedgerSpacing.XSmall,
             ),
             horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (icon != null) {
-                Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(12.dp))
+                Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(SharedLedgerDimens.IconSmall))
             }
             Text(text = text, style = SharedLedgerTextStyles.Label)
         }
@@ -701,10 +653,10 @@ private fun ParticipantIdentityRow(
 
     Surface(
         modifier = rowModifier,
-        shape = RoundedCornerShape(20.dp),
+        shape = SharedLedgerRadius.ExtraLarge,
         color = rowColor,
         contentColor = MaterialTheme.colorScheme.onSurface,
-        border = BorderStroke(1.dp, borderColor),
+        border = BorderStroke(SharedLedgerDimens.OutlineWidth, borderColor),
     ) {
         Row(
             modifier = Modifier
@@ -720,7 +672,7 @@ private fun ParticipantIdentityRow(
                 } else {
                     null
                 },
-                modifier = Modifier.size(40.dp),
+                modifier = Modifier.size(SharedLedgerDimens.AvatarMedium),
                 backgroundColor = if (isCurrentUser) MaterialTheme.colorScheme.primaryContainer
                 else MaterialTheme.colorScheme.surfaceVariant,
             )
@@ -773,7 +725,7 @@ private fun ParticipantStatus(
         horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(18.dp), tint = color)
+        Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(SharedLedgerDimens.IconSmall), tint = color)
         Text(text = text, style = SharedLedgerTextStyles.Label, color = color)
     }
 }
@@ -794,54 +746,35 @@ private fun JoinActivityBottomBar(
     val confirmationAction = resolveJoinConfirmationAction(state)
     val canJoin = confirmationAction != JoinConfirmationAction.Disabled
 
-    Box(
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Surface(
-            modifier = Modifier
-                .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
-                .fillMaxWidth()
-                .navigationBarsPadding(),
-            shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
-            color = ActivityBottomBarColor,
-            shadowElevation = SharedLedgerElevation.Floating,
-        ) {
-            SharedLedgerButton(
-                text = when {
-                    state.status == JoinActivityStatus.Joined -> "已加入"
-                    currentUserClaimed -> "解除认领"
-                    else -> "确认加入"
-                },
-                onClick = {
-                    when (confirmationAction) {
-                        JoinConfirmationAction.UnclaimCurrentParticipant -> onUnclaimActivity()
-                        JoinConfirmationAction.ClaimSelectedParticipant -> identityId?.let(onJoinActivity)
-                        JoinConfirmationAction.CompleteWithoutClaim -> onCompleteJoinWithoutClaim()
-                        JoinConfirmationAction.Disabled -> Unit
-                    }
-                },
-                enabled = canJoin,
-                variant = if (currentUserClaimed) {
-                    SharedLedgerButtonVariant.Neutral
-                } else if (state.status == JoinActivityStatus.Joined) {
-                    SharedLedgerButtonVariant.Success
-                } else {
-                    SharedLedgerButtonVariant.Primary
-                },
-                loading = state.status == JoinActivityStatus.Joining,
-                loadingText = "正在加入",
-                icon = if (currentUserClaimed) Icons.Rounded.PersonRemove
-                else if (state.status == JoinActivityStatus.Joined) Icons.Rounded.CheckCircle
-                else Icons.Rounded.ArrowForward,
-                modifier = Modifier.padding(
-                    start = SharedLedgerDimens.PageHorizontalPadding,
-                    top = SharedLedgerSpacing.Medium,
-                    end = SharedLedgerDimens.PageHorizontalPadding,
-                    bottom = SharedLedgerSpacing.Large,
-                ),
-            )
-        }
+    SharedLedgerCtaBottomBar(backgroundColor = AppBackground) {
+        SharedLedgerButton(
+            text = when {
+                state.status == JoinActivityStatus.Joined -> "已加入"
+                currentUserClaimed -> "解除认领"
+                else -> "确认加入"
+            },
+            onClick = {
+                when (confirmationAction) {
+                    JoinConfirmationAction.UnclaimCurrentParticipant -> onUnclaimActivity()
+                    JoinConfirmationAction.ClaimSelectedParticipant -> identityId?.let(onJoinActivity)
+                    JoinConfirmationAction.CompleteWithoutClaim -> onCompleteJoinWithoutClaim()
+                    JoinConfirmationAction.Disabled -> Unit
+                }
+            },
+            enabled = canJoin,
+            variant = if (currentUserClaimed) {
+                SharedLedgerButtonVariant.Neutral
+            } else if (state.status == JoinActivityStatus.Joined) {
+                SharedLedgerButtonVariant.Success
+            } else {
+                SharedLedgerButtonVariant.Primary
+            },
+            loading = state.status == JoinActivityStatus.Joining,
+            loadingText = "正在加入",
+            icon = if (currentUserClaimed) Icons.Rounded.PersonRemove
+            else if (state.status == JoinActivityStatus.Joined) Icons.Rounded.CheckCircle
+            else Icons.Rounded.ArrowForward,
+        )
     }
 }
 

@@ -187,6 +187,36 @@ private fun ComponentShowcasePreview() = PreviewFrame {
     }
 }
 
+@Preview(name = "状态组件", showBackground = true, widthDp = 390, heightDp = 980)
+@Composable
+private fun StateViewsPreview() = PreviewFrame {
+    Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium)) {
+        SectionHeader(
+            title = "账单",
+            trailing = { StatusChip(ActivityStatus.InProgress) },
+        )
+        LoadingState()
+        EmptyState(
+            title = "暂无账单",
+            description = "记录第一笔消费后，这里会显示账单。",
+        )
+        ErrorState(message = "网络连接失败，请稍后重试。", onRetry = {})
+        ErrorBanner(message = "保存失败，请检查网络后重试。")
+    }
+}
+
+@Preview(name = "CTA 底栏", showBackground = true, widthDp = 390)
+@Composable
+private fun CtaBottomBarPreview() = PreviewFrame {
+    SharedLedgerCtaBottomBar {
+        SharedLedgerPrimaryButton(
+            text = "保存",
+            onClick = {},
+            icon = Icons.Rounded.Save,
+        )
+    }
+}
+
 @Composable
 private fun PreviewFrame(content: @Composable () -> Unit) {
     SharedLedgerTheme {

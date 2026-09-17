@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,9 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AccountBalanceWallet
 import androidx.compose.material.icons.rounded.CurrencyExchange
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
@@ -68,12 +65,14 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.R
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
+import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
@@ -265,9 +264,9 @@ fun ExpenseDetailScreen(
                     start = SharedLedgerDimens.PageHorizontalPadding,
                     top = innerPadding.calculateTopPadding() + SharedLedgerSpacing.Medium,
                     end = SharedLedgerDimens.PageHorizontalPadding,
-                    bottom = innerPadding.calculateBottomPadding() + 24.dp,
+                    bottom = innerPadding.calculateBottomPadding() + SharedLedgerSpacing.Large,
                 ),
-                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XLarge),
+                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Large),
             ) {
                 onRefreshConfirmation?.let { callback ->
                     item(key = "refresh-confirmation") {
@@ -384,22 +383,22 @@ private fun ExpenseHeroCard(uiState: ExpenseDetailUiState) {
                     Text(
                         text = "已删除",
                         style = SharedLedgerTextStyles.Label,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        modifier = Modifier.padding(horizontal = SharedLedgerSpacing.MediumSmall, vertical = SharedLedgerSpacing.XSmall),
                     )
                 }
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(SharedLedgerSpacing.MediumSmall))
             }
             Surface(
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.size(SharedLedgerDimens.IconContainerLarge),
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(Icons.Rounded.Restaurant, contentDescription = "餐饮", modifier = Modifier.size(32.dp))
+                    Icon(Icons.Rounded.Restaurant, contentDescription = "餐饮", modifier = Modifier.size(SharedLedgerDimens.IconLarge))
                 }
             }
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(SharedLedgerSpacing.Medium))
             Text(
                 text = if (uiState.merchant.isBlank()) uiState.title else "${uiState.title} (${uiState.merchant})",
                 style = SharedLedgerTextStyles.CardTitle,
@@ -407,7 +406,7 @@ private fun ExpenseHeroCard(uiState: ExpenseDetailUiState) {
             )
             Text(
                 text = formatExpenseDetailAmount(uiState.amount, uiState.currencyCode),
-                modifier = Modifier.padding(top = 2.dp),
+                modifier = Modifier.padding(top = SharedLedgerSpacing.XSmall),
                 style = SharedLedgerTextStyles.AmountLarge,
                 color = MaterialTheme.colorScheme.primary,
             )
@@ -417,17 +416,17 @@ private fun ExpenseHeroCard(uiState: ExpenseDetailUiState) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Row(
-                modifier = Modifier.padding(top = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
+                horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(Icons.Rounded.Schedule, contentDescription = "消费时间", modifier = Modifier.size(16.dp))
+                Icon(Icons.Rounded.Schedule, contentDescription = "消费时间", modifier = Modifier.size(SharedLedgerDimens.IconSmall))
                 Text(uiState.occurredAt, style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             if (uiState.note.isNotBlank()) {
                 Text(
                     text = "\"${uiState.note}\"",
-                    modifier = Modifier.padding(top = 8.dp),
+                    modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
                     style = SharedLedgerTextStyles.BodySecondary,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -445,17 +444,17 @@ private fun ExpenseSection(
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier.padding(bottom = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(bottom = SharedLedgerSpacing.Medium),
+            horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+            Icon(icon, contentDescription = null, modifier = Modifier.size(SharedLedgerDimens.ActionIcon), tint = MaterialTheme.colorScheme.primary)
             Text(title, style = SharedLedgerTextStyles.SectionTitle, color = MaterialTheme.colorScheme.primary)
             if (badge != null) {
-                Surface(shape = RoundedCornerShape(4.dp), color = WarmOrangeContainer) {
+                Surface(shape = SharedLedgerRadius.Small, color = WarmOrangeContainer) {
                     Text(
                         badge,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                        modifier = Modifier.padding(horizontal = SharedLedgerSpacing.Small, vertical = SharedLedgerSpacing.XSmall),
                         style = SharedLedgerTextStyles.Label,
                         color = WarmBrown,
                     )
@@ -477,7 +476,7 @@ private fun expenseAvatarRes(name: String, isPayer: Boolean = false): Int = when
 @Composable
 private fun PaymentCard(uiState: ExpenseDetailUiState) {
     DetailCard {
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium)) {
             uiState.payments.forEachIndexed { index, payment ->
                 if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 Row(
@@ -489,11 +488,13 @@ private fun PaymentCard(uiState: ExpenseDetailUiState) {
                         image = painterResource(expenseAvatarRes(payment.participant, isPayer = true)),
                         size = SharedLedgerDimens.AvatarMedium,
                     )
-                    Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
+                    Column(modifier = Modifier.padding(start = SharedLedgerSpacing.MediumSmall).weight(1f)) {
                         Text(
                             text = payment.participant + if (payment.isCurrentUser) "（我）" else "",
                             style = SharedLedgerTextStyles.Body,
                             fontWeight = FontWeight.Medium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                         )
                         Text("垫付方", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
@@ -510,6 +511,7 @@ private fun PaymentCard(uiState: ExpenseDetailUiState) {
 }
 
 internal fun formatExpenseDetailAmount(amount: String, currencyCode: String): String {
+    if (amount.isBlank()) return "—"
     val normalizedCode = currencyCode.trim().uppercase()
     val decimal = amount.toBigDecimalOrNull()
     return if (decimal != null) {
@@ -522,7 +524,7 @@ internal fun formatExpenseDetailAmount(amount: String, currencyCode: String): St
 @Composable
 private fun SplitCard(splits: List<ExpenseSplitUiState>, currencyCode: String) {
     DetailCard {
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium)) {
             splits.forEachIndexed { index, split ->
                 if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 SplitRow(split, currencyCode)
@@ -533,7 +535,7 @@ private fun SplitCard(splits: List<ExpenseSplitUiState>, currencyCode: String) {
 
 @Composable
 private fun SplitRow(split: ExpenseSplitUiState, currencyCode: String) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             ParticipantAvatar(
                 name = split.participant,
@@ -541,14 +543,21 @@ private fun SplitRow(split: ExpenseSplitUiState, currencyCode: String) {
                 size = SharedLedgerDimens.AvatarMedium,
             )
             Row(
-                modifier = Modifier.padding(start = 12.dp),
+                modifier = Modifier.padding(start = SharedLedgerSpacing.MediumSmall).weight(1f),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
             ) {
-                Text(split.participant + if (split.isCurrentUser) "（我）" else "", style = SharedLedgerTextStyles.Body, fontWeight = FontWeight.Medium)
+                Text(
+                    split.participant + if (split.isCurrentUser) "（我）" else "",
+                    modifier = Modifier.weight(1f, fill = false),
+                    style = SharedLedgerTextStyles.Body,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
                 if (split.isPayer) {
-                    Surface(shape = RoundedCornerShape(4.dp), color = SurfaceWarmHigh) {
-                        Text("垫付方", modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp), style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Surface(shape = SharedLedgerRadius.Small, color = SurfaceWarmHigh) {
+                        Text("垫付方", modifier = Modifier.padding(horizontal = SharedLedgerSpacing.Small, vertical = SharedLedgerSpacing.XSmall), style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -570,7 +579,7 @@ private fun SplitRow(split: ExpenseSplitUiState, currencyCode: String) {
         }
         Text(
             text = detail,
-            modifier = Modifier.padding(start = 52.dp),
+            modifier = Modifier.padding(start = SharedLedgerDimens.AvatarMedium + SharedLedgerSpacing.MediumSmall),
             style = SharedLedgerTextStyles.BodySecondary,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -590,7 +599,7 @@ private fun AttachmentsRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
         ) {
             attachments.forEach { attachment ->
                 AttachmentCard(
@@ -622,15 +631,15 @@ private fun AttachmentCard(
         shadowElevation = SharedLedgerElevation.Card,
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.fillMaxSize().padding(SharedLedgerSpacing.MediumSmall),
+            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Rounded.Image, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                Text(attachment.fileName, modifier = Modifier.weight(1f), maxLines = 1, style = SharedLedgerTextStyles.Label)
+                Text(attachment.fileName, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, style = SharedLedgerTextStyles.Label)
                 onDelete?.let { callback ->
-                    IconButton(onClick = callback, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Rounded.Delete, contentDescription = "删除${attachment.fileName}", modifier = Modifier.size(18.dp))
+                    IconButton(onClick = callback, modifier = Modifier.size(SharedLedgerDimens.TopBarActionSize)) {
+                        Icon(Icons.Rounded.Delete, contentDescription = "删除${attachment.fileName}", modifier = Modifier.size(SharedLedgerDimens.IconSmall))
                     }
                 }
             }
@@ -654,7 +663,7 @@ private fun DetailCard(content: @Composable () -> Unit) {
         border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant),
         elevation = CardDefaults.cardElevation(SharedLedgerElevation.Card),
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(SharedLedgerDimens.CardPadding)) {
             content()
         }
     }
@@ -666,23 +675,10 @@ private fun ExpenseDetailBottomBar(
     onPrimaryAction: (() -> Unit)?,
     onMore: (() -> Unit)?,
 ) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = com.ffocalors.sharedledger.ui.theme.SurfaceWarmContainer.copy(alpha = 0.9f),
-        shadowElevation = 8.dp,
-        shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
-        border = BorderStroke(
-            width = SharedLedgerDimens.OutlineWidth,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.75f),
-        ),
-    ) {
+    SharedLedgerCtaBottomBar(backgroundColor = AppBackground) {
         Row(
-            modifier = Modifier
-                .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             onPrimaryAction?.let { callback ->
@@ -702,11 +698,10 @@ private fun ExpenseDetailBottomBar(
                 IconButton(
                     onClick = callback,
                     modifier = Modifier
-                        .size(52.dp)
-                        .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
-                        .semantics { contentDescription = "更多账单操作" },
+                        .size(SharedLedgerDimens.TopBarActionSize)
+                        .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
                 ) {
-                    Icon(Icons.Rounded.MoreVert, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    Icon(Icons.Rounded.MoreVert, contentDescription = "更多账单操作", tint = MaterialTheme.colorScheme.primary)
                 }
             }
         }
@@ -723,8 +718,8 @@ private fun ExpenseActionSheet(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+            .padding(start = SharedLedgerSpacing.Large, end = SharedLedgerSpacing.Large, bottom = SharedLedgerSpacing.Large),
+        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
     ) {
         Box(
             modifier = Modifier
@@ -732,7 +727,7 @@ private fun ExpenseActionSheet(
                 .size(width = 48.dp, height = 6.dp)
                 .background(MaterialTheme.colorScheme.outlineVariant, CircleShape),
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(SharedLedgerSpacing.Small))
         if (status == ExpenseDetailStatus.Active) {
             onEdit?.let { callback -> ActionSheetButton(Icons.Rounded.Edit, "编辑账单", SharedLedgerButtonTone.Neutral, outlined = true, onClick = callback) }
             onAddRefund?.let { callback -> ActionSheetButton(Icons.Rounded.CurrencyExchange, "添加退款", SharedLedgerButtonTone.WarmSecondary, onClick = callback) }

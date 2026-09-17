@@ -21,12 +21,7 @@ object SharedLedgerTextStyles {
         lineHeight = 24.sp,
         fontWeight = FontWeight.Medium,
     )
-    val CardTitle = TextStyle(
-        fontFamily = SharedLedgerFontFamily,
-        fontSize = 18.sp,
-        lineHeight = 24.sp,
-        fontWeight = FontWeight.Medium,
-    )
+    val CardTitle = SectionTitle
     val Body = TextStyle(
         fontFamily = SharedLedgerFontFamily,
         fontSize = 16.sp,
@@ -47,13 +42,7 @@ object SharedLedgerTextStyles {
         fontWeight = FontWeight.Medium,
     )
     val SummaryLabel = Label
-    val SummaryAmount = TextStyle(
-        fontFamily = SharedLedgerFontFamily,
-        fontSize = 40.sp,
-        lineHeight = 48.sp,
-        letterSpacing = (-1).sp,
-        fontWeight = FontWeight.SemiBold,
-    )
+    val SummaryAmount: TextStyle get() = AmountLarge
     val SummaryCurrency = TextStyle(
         fontFamily = SharedLedgerFontFamily,
         fontSize = 24.sp,

@@ -1,7 +1,6 @@
 package com.ffocalors.sharedledger.ui.components
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -123,7 +122,7 @@ fun SettlementSummaryCard(
                         )
                     } else {
                         Text(
-                            text = "未绑定参与人",
+                            text = "—",
                             style = SharedLedgerTextStyles.SummaryAmount,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
@@ -185,7 +184,7 @@ private fun SummaryMetric(
         Text(title, style = SharedLedgerTextStyles.SummaryLabel, color = MaterialTheme.colorScheme.onSurfaceVariant)
         if (amount == null) {
             Text(
-                "未绑定",
+                "—",
                 style = SharedLedgerTextStyles.CardTitle,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = SharedLedgerSpacing.Small),
@@ -223,7 +222,7 @@ fun PaymentStatusCard(
         colors = CardDefaults.cardColors(containerColor = resolvedContainer),
         border = BorderStroke(
             SharedLedgerDimens.OutlineWidth,
-            MaterialTheme.colorScheme.secondary.copy(alpha = 0.25f),
+            MaterialTheme.colorScheme.secondary.copy(alpha = SharedLedgerDimens.CardBorderAlpha),
         ),
         elevation = CardDefaults.cardElevation(SharedLedgerElevation.Card),
     ) {
@@ -309,7 +308,7 @@ fun ActivityCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(
             SharedLedgerDimens.OutlineWidth,
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f),
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = SharedLedgerDimens.CardBorderAlpha),
         ),
         elevation = CardDefaults.cardElevation(SharedLedgerElevation.Card),
     ) {
@@ -397,14 +396,16 @@ fun SubActivityCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val pressScale = rememberPressScaleState()
     Card(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
+        modifier = pressScale.modifier.then(modifier).fillMaxWidth(),
+        interactionSource = pressScale.interactionSource,
         shape = SharedLedgerRadius.Large,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(
             SharedLedgerDimens.OutlineWidth,
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = SharedLedgerDimens.CardBorderAlpha),
         ),
         elevation = CardDefaults.cardElevation(SharedLedgerElevation.Card),
     ) {
@@ -444,19 +445,21 @@ fun SubActivityCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
                 ) {
-                    Surface(
-                        shape = SharedLedgerRadius.Full,
-                        color = SurfaceWarmHigh,
-                    ) {
-                        Text(
-                            text = "${activity.participantCount}人参与",
-                            modifier = Modifier.padding(
-                                horizontal = SharedLedgerSpacing.Small,
-                                vertical = SharedLedgerSpacing.XSmall / 2,
-                            ),
-                            style = SharedLedgerTextStyles.ActionLabel,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                    if (activity.participantCount != null) {
+                        Surface(
+                            shape = SharedLedgerRadius.Full,
+                            color = SurfaceWarmHigh,
+                        ) {
+                            Text(
+                                text = "${activity.participantCount}人参与",
+                                modifier = Modifier.padding(
+                                    horizontal = SharedLedgerSpacing.Small,
+                                    vertical = SharedLedgerSpacing.XSmall / 2,
+                                ),
+                                style = SharedLedgerTextStyles.ActionLabel,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
                     Text(
                         text = activity.updatedAt,
@@ -474,7 +477,7 @@ fun SubActivityCard(
                 )
             } else {
                 Text(
-                    text = "未绑定参与人",
+                    text = "—",
                     style = SharedLedgerTextStyles.Label,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -490,15 +493,15 @@ fun AddSubActivityButton(
 ) {
     val borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
     Surface(
+        onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
             .drawWithContent {
                 drawContent()
                 drawRoundRect(
                     color = borderColor,
                     cornerRadius = androidx.compose.ui.geometry.CornerRadius(
-                        SharedLedgerDimens.AddSubActivityCornerRadius.toPx(),
+                        SharedLedgerRadius.LargeCorner.toPx(),
                     ),
                     style = androidx.compose.ui.graphics.drawscope.Stroke(
                         width = SharedLedgerDimens.AddSubActivityBorderWidth.toPx(),
@@ -538,20 +541,24 @@ fun ExpenseCard(
     icon: ImageVector = Icons.AutoMirrored.Rounded.ReceiptLong,
     onClick: () -> Unit = {},
 ) {
+    val pressScale = rememberPressScaleState()
     Card(
         onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .semantics {
-                if (expense.isDeleted) stateDescription = "已删除，不计入统计"
-            },
+        modifier = pressScale.modifier.then(
+            modifier
+                .fillMaxWidth()
+                .semantics {
+                    if (expense.isDeleted) stateDescription = "已删除，不计入统计"
+                },
+        ),
+        interactionSource = pressScale.interactionSource,
         shape = SharedLedgerRadius.Large,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
         ),
         border = BorderStroke(
             SharedLedgerDimens.OutlineWidth,
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f),
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = SharedLedgerDimens.CardBorderAlpha),
         ),
         elevation = CardDefaults.cardElevation(SharedLedgerElevation.Card),
     ) {
@@ -645,7 +652,7 @@ fun ExpenseCard(
                 )
             } else {
                 Text(
-                    text = "未绑定参与人",
+                    text = "—",
                     style = SharedLedgerTextStyles.Label,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

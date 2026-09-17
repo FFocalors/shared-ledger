@@ -65,7 +65,7 @@ data class ActivityCardUiModel(
 data class SubActivityUiModel(
     val name: String,
     val amount: BigDecimal,
-    val participantCount: Int,
+    val participantCount: Int?,
     val updatedAt: String,
     val icon: ImageVector,
     val currencyCode: String = "CNY",
