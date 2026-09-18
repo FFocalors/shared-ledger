@@ -46,7 +46,12 @@ import java.time.Instant
 
 enum class ExpenseFormMode { Create, Edit, Refund }
 
-data class ExpenseFormParticipant(val id: String, val name: String)
+data class ExpenseFormParticipant(
+    val id: String,
+    val name: String,
+    val claimedUserId: String? = null,
+    val avatarStyle: String? = null,
+)
 
 data class ExpenseFormDraft(
     val ledgerUnitId: String,
@@ -620,8 +625,12 @@ internal fun Expense.toExpenseCardUiModel(
     isDeleted = isDeleted,
 )
 
-fun ExpenseDetail.toUiState(currentParticipantId: String? = null): ExpenseDetailUiState {
+fun ExpenseDetail.toUiState(
+    currentParticipantId: String? = null,
+    activityParticipants: List<com.ffocalors.sharedledger.data.activity.Participant> = emptyList(),
+): ExpenseDetailUiState {
     val names = participants.associateBy { it.id }
+    val avatarParticipants = activityParticipants.associateBy { it.id }
     val nonZeroPayments = payments.filter { it.amount.compareTo(BigDecimal.ZERO) != 0 }
     val payerIds = nonZeroPayments.mapTo(mutableSetOf()) { it.participantId }
     return ExpenseDetailUiState(
@@ -637,9 +646,12 @@ fun ExpenseDetail.toUiState(currentParticipantId: String? = null): ExpenseDetail
         note = expense.note.orEmpty(),
         payments = nonZeroPayments.map { payment ->
             ExpensePaymentUiState(
+                participantId = payment.participantId,
                 participant = names[payment.participantId]?.name ?: payment.participantId,
                 amount = (payment.baseAmount ?: payment.amount.multiply(expense.fxRate)).toPlainString(),
                 isCurrentUser = payment.participantId == currentParticipantId,
+                claimedUserId = avatarParticipants[payment.participantId]?.claimedUserId,
+                avatarStyle = avatarParticipants[payment.participantId]?.avatarStyle,
             )
         },
         splitMethod = when (expense.splitMethod) {
@@ -651,6 +663,7 @@ fun ExpenseDetail.toUiState(currentParticipantId: String? = null): ExpenseDetail
                 .filter { it.debtorParticipantId == split.participantId }
                 .fold(BigDecimal.ZERO) { total, debt -> total + debt.remainingAmount }
             ExpenseSplitUiState(
+                participantId = split.participantId,
                 participant = names[split.participantId]?.name ?: split.participantId,
                 owedAmount = (split.baseAmount ?: split.amount.multiply(expense.fxRate)).abs().toPlainString(),
                 settlement = if (remainingDebt <= BigDecimal.ZERO) ExpenseSettlement.Paid else ExpenseSettlement.Pending,
@@ -658,6 +671,8 @@ fun ExpenseDetail.toUiState(currentParticipantId: String? = null): ExpenseDetail
                 netAdvance = null,
                 isCurrentUser = split.participantId == currentParticipantId,
                 isPayer = split.participantId in payerIds,
+                claimedUserId = avatarParticipants[split.participantId]?.claimedUserId,
+                avatarStyle = avatarParticipants[split.participantId]?.avatarStyle,
             )
         },
         attachments = emptyList(),

@@ -38,6 +38,8 @@ data class TransferCandidateUi(
     val kind: SettlementCandidateKind = SettlementCandidateKind.PERSONAL,
     val onBehalfOptions: List<SettlementParticipant> = emptyList(),
     val candidateKey: String = "${kind.name}:$fromParticipantId->$toParticipantId",
+    val claimedUserId: String? = null,
+    val avatarStyle: String? = null,
 )
 
 data class TransferUiState(
@@ -200,6 +202,8 @@ class TransferViewModel(
         toParticipantName = candidate.toParticipantName,
         kind = candidate.kind,
         onBehalfOptions = candidate.onBehalfOptions,
+        claimedUserId = candidate.claimedUserId,
+        avatarStyle = candidate.avatarStyle,
     )
 
     private fun toUiState(

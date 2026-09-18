@@ -56,14 +56,13 @@ import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
 import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
-import com.ffocalors.sharedledger.ui.theme.IconContainerOrange
-import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
+import com.ffocalors.sharedledger.ui.theme.AvatarBackground
 import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLow
 import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLowest
 import com.ffocalors.sharedledger.ui.util.MoneyFormatter
@@ -124,13 +123,14 @@ fun TransferScreen(
         TransferCandidateScope.PERSONAL -> state.candidates
         TransferCandidateScope.ON_BEHALF -> state.onBehalfCandidates
     }
-    val participants = activeCandidates.mapIndexed { index, candidate ->
+    val participants = activeCandidates.map { candidate ->
         TransferParticipant(
             candidateKey = candidate.candidateKey,
             participantId = candidate.participantId,
             participant = ParticipantUiModel(
                 candidate.participantName,
-                if (index % 2 == 0) IconContainerSage else IconContainerOrange,
+                if (candidate.claimedUserId != null) AvatarBackground.Bound(candidate.avatarStyle, candidate.claimedUserId)
+                else AvatarBackground.Unbound(candidate.participantId),
             ),
             amount = candidate.amount,
             fromParticipantName = candidate.fromParticipantName,
@@ -400,7 +400,7 @@ private fun ParticipantPicker(
                         ) {
                             ParticipantAvatar(
                                 name = item.participant.name,
-                                backgroundColor = item.participant.backgroundColor,
+                                background = item.participant.avatarBackground,
                                 size = SharedLedgerDimens.AvatarLarge,
                             )
                             if (selected) {

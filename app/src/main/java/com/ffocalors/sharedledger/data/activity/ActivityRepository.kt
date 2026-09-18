@@ -84,10 +84,15 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
         val activities = client.from("activities").select().decodeList<ActivityRowDto>()
             .filterNot { it.isDeleted }
         mapConcurrentlyPreservingOrder(activities, MAX_CONCURRENT_ACTIVITY_READS) { activity ->
-            // Keep each card's two reads together so at most four activity cards are loading.
-            val participants = loadParticipants(activity.id)
-            val status = loadFinancialStatus(activity.id)
-            toSummary(activity, participants, status)
+            coroutineScope {
+                val participantsRequest = async { loadParticipants(activity.id) }
+                val statusRequest = async { loadFinancialStatus(activity.id) }
+                val claimsRequest = async { loadClaims(activity.id) }
+                val participants = participantsRequest.await()
+                val claims = claimsRequest.await()
+                val profiles = loadProfiles(claims.map { it.userId })
+                toSummary(activity, participants, statusRequest.await(), claims, profiles)
+            }
         }
     }.mapFailure()
 
@@ -116,14 +121,15 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
                 ActivityMember(
                     id = member.id,
                     userId = member.userId,
-                    displayName = profiles[member.userId].orEmpty().ifBlank { "用户 ${member.userId.take(6)}" },
+                    displayName = profiles[member.userId]?.displayName.orEmpty().ifBlank { "用户 ${member.userId.take(6)}" },
+                    avatarStyle = profiles[member.userId]?.avatarStyle,
                     isCreator = member.userId == activity.createdBy,
                     claimedParticipantId = claim?.participantId,
                 )
             }
             val role = if (activity.createdBy == client.auth.currentSessionOrNull()?.user?.id) ActivityRole.Creator else ActivityRole.Member
             ActivityDetail(
-                summary = toSummary(activity, participants, financialStatus),
+                summary = toSummary(activity, participants, financialStatus, claims, profiles),
                 members = members,
                 participants = participants.map { participant ->
                     val claim = claims.firstOrNull { it.participantId == participant.id }
@@ -133,7 +139,8 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
                         name = participant.name,
                         order = participant.participantOrder,
                         claimedUserId = claim?.userId,
-                        claimedUserName = claim?.userId?.let { profiles[it] },
+                        claimedUserName = claim?.userId?.let { profiles[it]?.displayName.orEmpty() },
+                        avatarStyle = claim?.userId?.let { profiles[it]?.avatarStyle },
                     )
                 }.sortedBy { it.order },
                 ledgerUnits = units.filterNot { it.isDeleted }.map(::toLedgerUnit),
@@ -346,11 +353,11 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
         deletedBy = row.deletedBy,
     )
 
-    private suspend fun loadProfiles(userIds: List<String>): Map<String, String> {
+    private suspend fun loadProfiles(userIds: List<String>): Map<String, ProfileRowDto> {
         if (userIds.isEmpty()) return emptyMap()
         return client.from("profiles").select {
             filter { isIn("id", userIds) }
-        }.decodeList<ProfileRowDto>().associate { it.id to it.displayName.orEmpty() }
+        }.decodeList<ProfileRowDto>().associateBy { it.id }
     }
 
     private suspend fun loadFinancialStatus(activityId: String): FinancialStatusRowDto =
@@ -359,7 +366,13 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
         }.decodeList<FinancialStatusRowDto>().firstOrNull()
             ?: FinancialStatusRowDto(activityId, "active", false, null, null, 0)
 
-    private fun toSummary(activity: ActivityRowDto, participants: List<ParticipantRowDto>, status: FinancialStatusRowDto) = ActivitySummary(
+    private fun toSummary(
+        activity: ActivityRowDto,
+        participants: List<ParticipantRowDto>,
+        status: FinancialStatusRowDto,
+        claims: List<ParticipantClaimRowDto> = emptyList(),
+        profiles: Map<String, ProfileRowDto> = emptyMap(),
+    ) = ActivitySummary(
         id = activity.id,
         name = activity.name,
         type = if (activity.type.equals("large", true)) ActivityType.Large else ActivityType.Normal,
@@ -371,6 +384,15 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
         participantsLockedAt = activity.participantsLockedAt,
         participantCount = participants.size,
         participantNames = participants.sortedBy { it.participantOrder }.map { it.name },
+        participantAvatars = participants.sortedBy { it.participantOrder }.map { participant ->
+            val claim = claims.firstOrNull { it.participantId == participant.id }
+            ParticipantAvatarSummary(
+                participantId = participant.id,
+                name = participant.name,
+                claimedUserId = claim?.userId,
+                avatarStyle = claim?.userId?.let { profiles[it]?.avatarStyle },
+            )
+        },
         status = if (status.completed) ActivityFinancialStatus.Completed else ActivityFinancialStatus.Active,
         totalDebt = status.totalDebt.toDecimalText(),
         totalPrepayment = status.totalPrepayment.toDecimalText(),

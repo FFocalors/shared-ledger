@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicLong
 @Serializable
 private data class ProfileDto(
     @SerialName("display_name") val displayName: String? = null,
+    @SerialName("avatar_style") val avatarStyle: String? = null,
 )
 
 class SupabaseAuthRepository(
@@ -159,6 +160,23 @@ class SupabaseAuthRepository(
         AuthResult.Failure(AuthErrorMapper.toPasswordUpdateMessage(error))
     }
 
+    override suspend fun updateAvatarStyle(styleId: String): AuthResult = try {
+        val userId = client.auth.currentSessionOrNull()?.user?.id
+            ?: return AuthResult.Failure("登录状态已失效，请重新登录")
+        client.from("profiles").update({
+            set("avatar_style", styleId)
+        }) {
+            filter { eq("id", userId) }
+        }
+        val current = mutableAuthState.value
+        if (current is AuthState.Authenticated) {
+            mutableAuthState.value = AuthState.Authenticated(current.user.copy(avatarStyle = styleId))
+        }
+        AuthResult.Success
+    } catch (error: Throwable) {
+        AuthResult.Failure(AuthErrorMapper.toUserMessage(error))
+    }
+
     override suspend fun handlePasswordRecovery(deepLink: String): AuthResult {
         val uri = runCatching { Uri.parse(deepLink) }.getOrNull()
         if (uri == null || uri.scheme != "sharedledger" || uri.host != "auth") {
@@ -219,6 +237,7 @@ class SupabaseAuthRepository(
                 id = user.id,
                 email = user.email.orEmpty(),
                 displayName = profile?.displayName?.takeIf(String::isNotBlank) ?: user.email.orEmpty(),
+                avatarStyle = profile?.avatarStyle,
             ),
         )
     }
@@ -249,6 +268,7 @@ class UnavailableAuthRepository(
     override suspend fun signUp(nickname: String, email: String, password: String) = AuthResult.Failure(message)
     override suspend fun requestPasswordReset(email: String, redirectUrl: String) = AuthResult.Failure(message)
     override suspend fun updatePassword(newPassword: String) = AuthResult.Failure(message)
+    override suspend fun updateAvatarStyle(styleId: String) = AuthResult.Failure(message)
     override suspend fun handlePasswordRecovery(deepLink: String) = AuthResult.Failure(message)
     override suspend fun signOut(): AuthResult {
         mutableAuthState.value = AuthState.Unauthenticated

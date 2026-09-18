@@ -48,6 +48,14 @@ object ComponentSizes {
     val DropdownItemMinHeight = 48.dp
     /** 分段控件（如"手动分摊/AA均摊"）的最大宽度。 */
     val SegmentedControlMaxWidth = 172.dp
+    /** 分段控件上下采用较小的光学 inset，使胶囊曲面处的可见留白与左右一致。 */
+    val SegmentedControlVerticalInset = 2.dp
+    /**
+     * 分段按钮的可见高度。Material3 可点击 Surface 会补足 48dp 触控区：
+     * 44dp 可见高度 + 上下各 2dp 触控补偿，再叠加外层 2dp inset，
+     * 可见边距最终与左右 4dp 一致。
+     */
+    val SegmentHeight = 44.dp
     /** 消费凭证附件缩略图的宽度。 */
     val AttachmentCardWidth = 180.dp
     /** 消费凭证附件缩略图的高度。 */

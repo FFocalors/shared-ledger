@@ -95,6 +95,14 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         val participants = participantsRequest.await()
         val currency = currencyRequest.await()
         val claims = claimsRequest.await()
+        val profiles = loadClaimedProfiles(claims)
+        val participantsWithAvatars = participants.map { participant ->
+            val claim = claims.firstOrNull { it.participantId == participant.participantId }
+            participant.copy(
+                claimedUserId = claim?.userId,
+                avatarStyle = claim?.userId?.let { profiles[it]?.avatarStyle },
+            )
+        }
         val currentParticipantId = claims.firstOrNull { it.userId == userId }?.participantId
         val claimedParticipantIds = claims.map { it.participantId }.toSet()
         val canActOnBehalf = currency.createdBy == userId
@@ -109,8 +117,8 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
             }.decodeList<FinancialPrepaymentUsageRowDto>()
         }
         val accounts = accountsRequest.await().mapNotNull { row ->
-            val owner = participants.firstOrNull { it.participantId == row.ownerParticipantId }
-            val custodian = participants.firstOrNull { it.participantId == row.custodianParticipantId }
+            val owner = participantsWithAvatars.firstOrNull { it.participantId == row.ownerParticipantId }
+            val custodian = participantsWithAvatars.firstOrNull { it.participantId == row.custodianParticipantId }
             if (owner == null || custodian == null) null else PrepaymentAccount(
                 accountId = row.id,
                 owner = owner,
@@ -126,11 +134,11 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         FinancialContext(
             activityId = activityId,
             currency = currency.baseCurrency.trim().uppercase(),
-            participants = participants,
+            participants = participantsWithAvatars,
             currentParticipantId = currentParticipantId,
             accounts = accountsWithUsage,
             canActOnBehalf = canActOnBehalf,
-            unclaimedParticipants = participants.filterNot { it.participantId in claimedParticipantIds },
+            unclaimedParticipants = participantsWithAvatars.filterNot { it.participantId in claimedParticipantIds },
         )
     }
 
@@ -143,7 +151,7 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         val participantNamesRequest = async {
             client.from("participants").select {
                 filter { eq("activity_id", activityId); eq("is_deleted", false) }
-            }.decodeList<FinancialParticipantRowDto>().associate { it.id to it.toParticipant() }
+            }.decodeList<FinancialParticipantRowDto>().let { rows -> enrichParticipants(activityId, rows) }
         }
         val rows = rowsRequest.await()
         val participantNames = participantNamesRequest.await()
@@ -315,7 +323,7 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         val participantsRequest = async {
             client.from("participants").select {
                 filter { eq("activity_id", activityId); eq("is_deleted", false) }
-            }.decodeList<FinancialParticipantRowDto>().associate { it.id to it.toParticipant() }
+            }.decodeList<FinancialParticipantRowDto>().let { rows -> enrichParticipants(activityId, rows) }
         }
         val componentsRequest = async {
             client.from("transfer_components").select {
@@ -369,7 +377,7 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         val participantsRequest = async {
             client.from("participants").select {
                 filter { eq("activity_id", activityId); eq("is_deleted", false) }
-            }.decodeList<FinancialParticipantRowDto>().associate { it.id to it.toParticipant() }
+            }.decodeList<FinancialParticipantRowDto>().let { rows -> enrichParticipants(activityId, rows) }
         }
         val currencyRequest = async {
             client.from("activities").select {
@@ -423,7 +431,7 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         val participantsRequest = async {
             client.from("participants").select {
                 filter { eq("activity_id", activityId) }
-            }.decodeList<FinancialParticipantRowDto>().associate { it.id to it.toParticipant() }
+            }.decodeList<FinancialParticipantRowDto>().let { rows -> enrichParticipants(activityId, rows) }
         }
         val profilesRequest = async {
             if (userIds.isEmpty()) emptyMap() else client.from("profiles").select {
@@ -444,6 +452,33 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
                 originalExpenseTitle = refund.originalExpenseId?.let(originalTitles::get),
             )
         }
+    }
+
+    private suspend fun enrichParticipants(
+        activityId: String,
+        rows: List<FinancialParticipantRowDto>,
+    ): Map<String, ParticipantInfo> {
+        val claims = client.from("participant_claims").select {
+            filter { eq("activity_id", activityId) }
+        }.decodeList<FinancialClaimRowDto>()
+        val profiles = loadClaimedProfiles(claims)
+        return rows.associate { row ->
+            val claim = claims.firstOrNull { it.participantId == row.id }
+            row.id to row.toParticipant().copy(
+                claimedUserId = claim?.userId,
+                avatarStyle = claim?.userId?.let { profiles[it]?.avatarStyle },
+            )
+        }
+    }
+
+    private suspend fun loadClaimedProfiles(
+        claims: List<FinancialClaimRowDto>,
+    ): Map<String, FinancialProfileRowDto> {
+        val userIds = claims.mapNotNull { it.userId }.distinct()
+        if (userIds.isEmpty()) return emptyMap()
+        return client.from("profiles").select {
+            filter { isIn("id", userIds) }
+        }.decodeList<FinancialProfileRowDto>().associateBy { it.id }
     }
 }
 

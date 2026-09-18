@@ -24,7 +24,11 @@ internal fun JsonElement?.toFinancialBigDecimal(): BigDecimal = when (this) {
 
 internal fun FinancialParticipantRowDto.toParticipant(): ParticipantInfo = ParticipantInfo(id, name)
 
-internal fun FinancialProfileRowDto.toRecorder(): RecorderInfo = RecorderInfo(id, displayName?.takeIf { it.isNotBlank() } ?: "未命名用户")
+internal fun FinancialProfileRowDto.toRecorder(): RecorderInfo = RecorderInfo(
+    id,
+    displayName?.takeIf { it.isNotBlank() } ?: "未命名用户",
+    avatarStyle,
+)
 
 internal fun aggregatePrepaymentUsageAmounts(
     usages: List<FinancialPrepaymentUsageRowDto>,

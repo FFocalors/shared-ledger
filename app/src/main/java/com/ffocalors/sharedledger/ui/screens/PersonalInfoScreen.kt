@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,11 +20,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.zIndex
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.rounded.Badge
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Diversity3
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Flag
 import androidx.compose.material.icons.rounded.Groups
 import androidx.compose.material.icons.rounded.Info
@@ -43,6 +48,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -58,11 +64,15 @@ import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
 import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.auth.PasswordChangeUiState
+import com.ffocalors.sharedledger.data.auth.AuthResult
+import com.ffocalors.sharedledger.ui.components.ErrorBanner
+import com.ffocalors.sharedledger.ui.components.SharedLedgerDialog
 import com.ffocalors.sharedledger.ui.profile.CollaborationIdentity
 import com.ffocalors.sharedledger.ui.profile.PersonalOverviewUiState
 import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.AppOutlineVariant
-import com.ffocalors.sharedledger.ui.theme.IconContainerOrange
+import com.ffocalors.sharedledger.ui.theme.AvatarGradientPalette
+import com.ffocalors.sharedledger.ui.theme.AvatarBackground
 import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.IconTintOrange
 import com.ffocalors.sharedledger.ui.theme.IconTintSage
@@ -80,6 +90,7 @@ private const val AccountSettingsItemIndex = 3
 fun PersonalInfoScreen(
     displayName: String,
     email: String,
+    userId: String = "",
     onBack: () -> Unit,
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier,
@@ -89,12 +100,17 @@ fun PersonalInfoScreen(
     overviewState: PersonalOverviewUiState = PersonalOverviewUiState(),
     onRetryOverview: () -> Unit = {},
     onOpenActivity: ((CollaborationIdentity) -> Unit)? = null,
+    avatarStyle: String? = null,
+    onSelectAvatarStyle: suspend (String) -> AuthResult = { AuthResult.Success },
 ) {
     val safeName = displayName.trim().ifBlank { email.trim().ifBlank { "用户" } }
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     var showPasswordDialog by rememberSaveable { mutableStateOf(false) }
     var showPrivacyNotice by rememberSaveable { mutableStateOf(false) }
+    var showAvatarPicker by rememberSaveable { mutableStateOf(false) }
+    var isSavingAvatar by remember { mutableStateOf(false) }
+    var avatarError by remember { mutableStateOf<String?>(null) }
     val hazeState = rememberSharedLedgerHazeState()
     Surface(modifier = modifier.fillMaxSize(), color = AppBackground) {
         androidx.compose.material3.Scaffold(
@@ -129,6 +145,9 @@ fun PersonalInfoScreen(
                     ProfileHeroCard(
                         displayName = safeName,
                         email = email,
+                        userId = userId,
+                        avatarStyle = avatarStyle,
+                        onAvatarClick = { showAvatarPicker = true },
                         onEditProfile = {
                             coroutineScope.launch {
                                 listState.animateScrollToItem(AccountSettingsItemIndex)
@@ -140,6 +159,8 @@ fun PersonalInfoScreen(
                 item {
                     CollaborationIdentities(
                         state = overviewState,
+                        userId = userId,
+                        avatarStyle = avatarStyle,
                         onRetry = onRetryOverview,
                         onOpenActivity = onOpenActivity,
                     )
@@ -186,36 +207,76 @@ fun PersonalInfoScreen(
     if (showPrivacyNotice) {
         PrivacyNoticeSheet(onDismiss = { showPrivacyNotice = false })
     }
+    if (showAvatarPicker) {
+        AvatarStylePickerDialog(
+            currentStyleId = avatarStyle,
+            previewName = safeName,
+            isSaving = isSavingAvatar,
+            errorMessage = avatarError,
+            onSelect = { styleId ->
+                if (isSavingAvatar) return@AvatarStylePickerDialog
+                coroutineScope.launch {
+                    isSavingAvatar = true
+                    avatarError = null
+                    when (val result = onSelectAvatarStyle(styleId)) {
+                        AuthResult.Success -> showAvatarPicker = false
+                        is AuthResult.Failure -> avatarError = result.message
+                        is AuthResult.NeedsEmailConfirmation -> avatarError = result.message
+                    }
+                    isSavingAvatar = false
+                }
+            },
+            onDismiss = { if (!isSavingAvatar) showAvatarPicker = false },
+        )
+    }
 }
 
 @Composable
 private fun ProfileHeroCard(
     displayName: String,
     email: String,
+    userId: String,
+    avatarStyle: String?,
+    onAvatarClick: () -> Unit,
     onEditProfile: () -> Unit,
 ) {
     ProfileCard {
         Row(verticalAlignment = Alignment.Top) {
-            Box {
-                ParticipantAvatar(
-                    name = displayName,
-                    size = SharedLedgerDimens.AvatarLarge,
-                    backgroundColor = IconContainerOrange,
-                )
+            Box(
+                modifier = Modifier
+                    .size(SharedLedgerDimens.AvatarLarge + SharedLedgerSpacing.XSmall),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(SharedLedgerDimens.AvatarLarge)
+                        .clip(CircleShape)
+                        .clickable(onClick = onAvatarClick)
+                        .semantics { contentDescription = "更换头像背景" },
+                ) {
+                    ParticipantAvatar(
+                        name = displayName,
+                        background = AvatarBackground.Bound(avatarStyle, userId),
+                        size = SharedLedgerDimens.AvatarLarge,
+                    )
+                }
                 Surface(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .size(SharedLedgerDimens.IconMedium),
+                        .zIndex(1f)
+                        .size(SharedLedgerDimens.IconMedium)
+                        .clip(CircleShape)
+                        .clickable(onClick = onAvatarClick),
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.primary,
                     border = BorderStroke(SharedLedgerDimens.AvatarBorder, MaterialTheme.colorScheme.surface),
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Surface(
-                            modifier = Modifier.size(SharedLedgerSpacing.Small),
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                        ) {}
+                        Icon(
+                            imageVector = Icons.Rounded.Edit,
+                            contentDescription = "编辑头像背景",
+                            modifier = Modifier.size(SharedLedgerDimens.IconSmall),
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                        )
                     }
                 }
             }
@@ -324,6 +385,8 @@ private fun ProfileStatCard(label: String, value: String, icon: androidx.compose
 @Composable
 private fun CollaborationIdentities(
     state: PersonalOverviewUiState,
+    userId: String,
+    avatarStyle: String?,
     onRetry: () -> Unit,
     onOpenActivity: ((CollaborationIdentity) -> Unit)?,
 ) {
@@ -367,7 +430,7 @@ private fun CollaborationIdentities(
                                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f),
                             )
                         }
-                        CollaborationIdentityRow(identity, onOpenActivity)
+                        CollaborationIdentityRow(identity, userId, avatarStyle, onOpenActivity)
                     }
                 }
             }
@@ -399,6 +462,8 @@ private fun ProfileLoadError(message: String, onRetry: () -> Unit) {
 @Composable
 private fun CollaborationIdentityRow(
     identity: CollaborationIdentity,
+    userId: String,
+    avatarStyle: String?,
     onOpenActivity: ((CollaborationIdentity) -> Unit)?,
 ) {
     val rowModifier = if (onOpenActivity != null) {
@@ -412,8 +477,9 @@ private fun CollaborationIdentityRow(
     ) {
         ParticipantAvatar(
             name = identity.participantName ?: identity.activityName,
+            background = if (identity.isParticipantBound) AvatarBackground.Bound(avatarStyle, userId)
+            else AvatarBackground.Unbound(identity.activityId),
             size = SharedLedgerDimens.AvatarMedium,
-            backgroundColor = if (identity.isCreator) IconContainerSage else IconContainerOrange,
         )
         Spacer(Modifier.width(SharedLedgerSpacing.MediumSmall))
         Column(modifier = Modifier.weight(1f)) {
@@ -567,6 +633,77 @@ private fun ProfileTag(text: String, modifier: Modifier = Modifier) {
     Surface(modifier = modifier, shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer) {
         Text(text, modifier = Modifier.padding(horizontal = SharedLedgerSpacing.Small, vertical = SharedLedgerSpacing.XSmall), style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onPrimaryContainer)
     }
+}
+
+@Composable
+private fun AvatarStylePickerDialog(
+    currentStyleId: String?,
+    previewName: String,
+    isSaving: Boolean,
+    errorMessage: String?,
+    onSelect: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    SharedLedgerDialog(
+        onDismiss = onDismiss,
+        title = "选择头像背景",
+        dismissText = "取消",
+        dismissEnabled = !isSaving,
+        textContent = {
+            Column {
+                Text(
+                    text = "为头像挑选一个渐变背景，点选后立即生效。",
+                    style = SharedLedgerTextStyles.BodySecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth().padding(top = SharedLedgerSpacing.Medium),
+                    horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+                    verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+                ) {
+                    AvatarGradientPalette.forEach { gradient ->
+                        val selected = gradient.id.equals(currentStyleId, ignoreCase = true)
+                        Surface(
+                            shape = CircleShape,
+                            color = Color.Transparent,
+                            border = if (selected) {
+                                BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+                            } else {
+                                BorderStroke(SharedLedgerDimens.OutlineWidth, Color.Transparent)
+                            },
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .clickable(enabled = !isSaving) { onSelect(gradient.id) },
+                            ) {
+                                ParticipantAvatar(
+                                    name = previewName,
+                                    background = AvatarBackground.Bound(gradient.id),
+                                    size = 48.dp,
+                                    animateBackground = false,
+                                )
+                            }
+                        }
+                    }
+                }
+                if (isSaving) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(top = SharedLedgerSpacing.Medium),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(SharedLedgerDimens.IconSmall), strokeWidth = 2.dp)
+                        Spacer(Modifier.width(SharedLedgerSpacing.Small))
+                        Text("正在保存…", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                errorMessage?.let {
+                    ErrorBanner(message = it, modifier = Modifier.padding(top = SharedLedgerSpacing.Medium))
+                }
+            }
+        },
+    )
 }
 
 @Preview(name = "个人信息", showBackground = true, widthDp = 390, heightDp = 844)

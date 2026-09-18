@@ -20,6 +20,13 @@ internal data class TransferParticipantRowDto(
 @Serializable
 internal data class TransferClaimRowDto(
     @SerialName("participant_id") val participantId: String,
+    @SerialName("user_id") val userId: String? = null,
+)
+
+@Serializable
+internal data class TransferProfileRowDto(
+    val id: String,
+    @SerialName("avatar_style") val avatarStyle: String? = null,
 )
 
 @Serializable

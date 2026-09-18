@@ -68,9 +68,8 @@ import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
 import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.theme.Cream
-import com.ffocalors.sharedledger.ui.theme.IconContainerOrange
-import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
+import com.ffocalors.sharedledger.ui.theme.AvatarBackground
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
@@ -89,14 +88,14 @@ data class TransferDetailUiState(
     val activityId: String = "",
     val ledgerUnitId: String? = null,
     val direction: TransferDetailDirection = TransferDetailDirection.TRANSFER,
-    val payer: ParticipantUiModel = ParticipantUiModel("张三", IconContainerSage),
-    val recipient: ParticipantUiModel = ParticipantUiModel("李四", IconContainerOrange),
+    val payer: ParticipantUiModel = ParticipantUiModel("张三", AvatarBackground.Bound("sage")),
+    val recipient: ParticipantUiModel = ParticipantUiModel("李四", AvatarBackground.Bound("terracotta")),
     val flowLabel: String = "最终结算",
     val totalAmount: BigDecimal = BigDecimal("320.00"),
     val currencyCode: String = "CNY",
     val occurredAt: String = "2026-09-02 09:00",
     val recordedAt: String = "2026-09-02 09:01",
-    val recordedBy: ParticipantUiModel = ParticipantUiModel("", IconContainerSage),
+    val recordedBy: ParticipantUiModel = ParticipantUiModel("", AvatarBackground.Bound("sage")),
     val recordMethod: String = "",
     val disputed: Boolean = false,
     val debtRepayment: BigDecimal = BigDecimal("200.00"),
@@ -314,7 +313,7 @@ private fun RecordHero(record: FundRecord) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
         ) {
-            PersonWithName(record.from, IconContainerSage)
+            PersonWithName(record.from)
             Column(
                 modifier = Modifier.padding(horizontal = SharedLedgerSpacing.Medium),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -323,7 +322,7 @@ private fun RecordHero(record: FundRecord) {
                 Text(componentFlowLabel(record), style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Icon(Icons.AutoMirrored.Rounded.ArrowForward, contentDescription = "资金流向", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
             }
-            PersonWithName(record.to, IconContainerOrange)
+            PersonWithName(record.to)
         }
         Column(
             modifier = Modifier.fillMaxWidth().padding(top = SharedLedgerSpacing.Large),
@@ -351,9 +350,14 @@ private fun RecordHero(record: FundRecord) {
 }
 
 @Composable
-private fun PersonWithName(person: ParticipantInfo, backgroundColor: Color) {
+private fun PersonWithName(person: ParticipantInfo) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
-        ParticipantAvatar(name = person.displayName, backgroundColor = backgroundColor, size = 56.dp)
+        ParticipantAvatar(
+            name = person.displayName,
+            background = if (person.claimedUserId != null) AvatarBackground.Bound(person.avatarStyle, person.claimedUserId)
+            else AvatarBackground.Unbound(person.participantId),
+            size = 56.dp,
+        )
         Text(person.displayName, style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurface)
     }
 }

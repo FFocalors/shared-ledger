@@ -188,6 +188,8 @@ fun SharedLedgerApp(
                     currentUserId = authState.user.id,
                     currentUserDisplayName = authState.user.displayName,
                     currentUserEmail = authState.user.email,
+                    currentUserAvatarStyle = authState.user.avatarStyle,
+                    onSelectAvatarStyle = { styleId -> authRepository.updateAvatarStyle(styleId) },
                     onSignOut = authViewModel::signOut,
                     passwordChangeState = authUiState.passwordChange,
                     onChangePassword = authViewModel::changeAccountPassword,
@@ -264,6 +266,8 @@ private fun AuthenticatedNavHost(
     currentUserId: String,
     currentUserDisplayName: String,
     currentUserEmail: String,
+    currentUserAvatarStyle: String?,
+    onSelectAvatarStyle: suspend (String) -> com.ffocalors.sharedledger.data.auth.AuthResult,
     onSignOut: () -> Unit,
     passwordChangeState: PasswordChangeUiState,
     onChangePassword: (String, String) -> Unit,
@@ -381,6 +385,8 @@ private fun AuthenticatedNavHost(
                 onCreateActivity = { navController.navigate(SharedLedgerRoutes.CREATE_ACTIVITY) },
                 onJoinActivity = { navController.navigate(SharedLedgerRoutes.JOIN_ACTIVITY) },
                 userDisplayName = currentUserDisplayName,
+                userAvatarStyle = currentUserAvatarStyle,
+                userId = currentUserId,
                 onProfileClick = { navController.navigate(SharedLedgerRoutes.PERSONAL_INFO) },
             )
         }
@@ -400,6 +406,9 @@ private fun AuthenticatedNavHost(
             PersonalInfoScreen(
                 displayName = currentUserDisplayName,
                 email = currentUserEmail,
+                userId = currentUserId,
+                avatarStyle = currentUserAvatarStyle,
+                onSelectAvatarStyle = onSelectAvatarStyle,
                 onBack = { navController.navigateUp() },
                 onSignOut = onSignOut,
                 passwordChangeState = passwordChangeState,
@@ -1044,7 +1053,9 @@ private fun AuthenticatedNavHost(
             val resolvedLedgerUnitId = routeLedgerUnitId
                 ?: detailExpenseState.detail?.ledgerUnit?.id
                 ?: activityDetail?.ledgerUnits?.firstOrNull { it.type.equals("default", true) || it.type.equals("root", true) }?.id
-            val participants = activityDetail?.participants?.map { ExpenseFormParticipant(it.id, it.name) }
+            val participants = activityDetail?.participants?.map {
+                ExpenseFormParticipant(it.id, it.name, it.claimedUserId, it.avatarStyle)
+            }
                 ?: detailExpenseState.detail?.participants?.map { ExpenseFormParticipant(it.id, it.name) }.orEmpty()
             val currentParticipantId = activityDetail?.members
                 ?.firstOrNull { it.userId == currentUserId }
@@ -1532,7 +1543,7 @@ private fun AuthenticatedNavHost(
                     ?.firstOrNull { it.userId == currentUserId }
                     ?.claimedParticipantId
                 ExpenseDetailScreen(
-                    uiState = detail.toUiState(currentParticipantId).copy(
+                    uiState = detail.toUiState(currentParticipantId, activityState.detail?.participants.orEmpty()).copy(
                         actionMessage = state.actionMessage,
                         attachments = attachmentState.toExpenseDetailUiState { item -> canDeleteAttachment(item, activityState.detail, currentUserId) },
                         attachmentMessage = attachmentMessage
@@ -1784,8 +1795,16 @@ private fun AuthenticatedNavHost(
                             id = item.id,
                             fromParticipantId = item.from.participantId,
                             toParticipantId = item.to.participantId,
-                            from = com.ffocalors.sharedledger.ui.components.ParticipantUiModel(item.from.displayName),
-                            to = com.ffocalors.sharedledger.ui.components.ParticipantUiModel(item.to.displayName),
+                            from = com.ffocalors.sharedledger.ui.components.ParticipantUiModel(
+                                item.from.displayName,
+                                if (item.from.claimedUserId != null) com.ffocalors.sharedledger.ui.theme.AvatarBackground.Bound(item.from.avatarStyle, item.from.claimedUserId)
+                                else com.ffocalors.sharedledger.ui.theme.AvatarBackground.Unbound(item.from.participantId),
+                            ),
+                            to = com.ffocalors.sharedledger.ui.components.ParticipantUiModel(
+                                item.to.displayName,
+                                if (item.to.claimedUserId != null) com.ffocalors.sharedledger.ui.theme.AvatarBackground.Bound(item.to.avatarStyle, item.to.claimedUserId)
+                                else com.ffocalors.sharedledger.ui.theme.AvatarBackground.Unbound(item.to.participantId),
+                            ),
                             amount = item.amount,
                             currency = item.currency,
                             ordinaryAmount = item.ordinaryAmount,

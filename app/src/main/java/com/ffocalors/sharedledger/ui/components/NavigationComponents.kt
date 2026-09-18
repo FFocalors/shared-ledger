@@ -42,6 +42,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.CircleShape
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
+import com.ffocalors.sharedledger.ui.theme.AvatarBackground
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
@@ -69,6 +70,8 @@ fun SharedLedgerTopBar(
     containerColor: Color = MaterialTheme.colorScheme.background,
     showBackButton: Boolean = false,
     avatarName: String = "我",
+    avatarStyle: String? = null,
+    avatarStableKey: String? = null,
     onAvatarClick: (() -> Unit)? = null,
     onBackClick: (() -> Unit)? = null,
     onMoreClick: (() -> Unit)? = null,
@@ -138,6 +141,7 @@ fun SharedLedgerTopBar(
                 } else {
                     val avatarModifier = if (onAvatarClick != null) {
                         Modifier
+                            .clip(CircleShape)
                             .clickable(onClick = onAvatarClick)
                             .semantics { contentDescription = "打开个人信息" }
                     } else {
@@ -146,6 +150,7 @@ fun SharedLedgerTopBar(
                     ParticipantAvatar(
                         name = avatarName,
                         modifier = avatarModifier,
+                        background = AvatarBackground.Bound(avatarStyle, avatarStableKey),
                         size = SharedLedgerDimens.AvatarMedium,
                     )
                 }

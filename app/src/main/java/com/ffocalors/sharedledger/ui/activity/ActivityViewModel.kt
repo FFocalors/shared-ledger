@@ -23,9 +23,8 @@ import com.ffocalors.sharedledger.data.exchange.SupportedExchangeCurrency
 import com.ffocalors.sharedledger.ui.components.ActivityCardUiModel
 import com.ffocalors.sharedledger.ui.components.ActivityStatus
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
+import com.ffocalors.sharedledger.ui.theme.AvatarBackground
 import com.ffocalors.sharedledger.ui.components.SubActivityUiModel
-import com.ffocalors.sharedledger.ui.theme.IconContainerSage
-import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
 import com.ffocalors.sharedledger.ui.util.UiDateTimeFormatter
 import com.ffocalors.sharedledger.ui.screens.JoinActivityParticipant
 import com.ffocalors.sharedledger.ui.screens.JoinActivityPreview
@@ -196,7 +195,9 @@ class ActivityViewModel(
                         isBound = participant.claimedUserId != null,
                         participantId = participant.id,
                         boundUserName = participant.claimedUserName,
+                        boundUserId = participant.claimedUserId,
                         isBoundToCurrentUser = participant.claimedUserId == currentUserId,
+                        avatarStyle = participant.avatarStyle,
                     )
                 },
                 members = detail.members.map { member ->
@@ -209,6 +210,7 @@ class ActivityViewModel(
                         } ?: "未绑定参与人",
                         isCreator = member.isCreator,
                         memberId = member.userId,
+                        avatarStyle = member.avatarStyle,
                     )
                 },
                 deletedSubActivities = if (detail.summary.type == ActivityType.Large) {
@@ -717,7 +719,21 @@ class ActivityViewModel(
         totalAmount = shares?.activityTotalBaseAmount,
         currencyCode = summary.baseCurrency,
         updatedAt = summary.archivedAt?.let(UiDateTimeFormatter::format) ?: "刚刚更新",
-        participants = summary.participantNames.mapIndexed { index, name -> ParticipantUiModel(name, if (index % 2 == 0) IconContainerSage else WarmOrangeContainer) },
+        participants = if (summary.participantAvatars.isNotEmpty()) {
+            summary.participantAvatars.map { participant ->
+                ParticipantUiModel(
+                    participant.name,
+                    if (participant.claimedUserId != null) {
+                        AvatarBackground.Bound(participant.avatarStyle, participant.claimedUserId)
+                    }
+                    else AvatarBackground.Unbound(participant.participantId),
+                )
+            }
+        } else {
+            summary.participantNames.mapIndexed { index, name ->
+                ParticipantUiModel(name, AvatarBackground.Unbound("${summary.id}:$index:$name"))
+            }
+        },
         activityId = summary.id,
         amountAvailable = shares?.isBound == true,
     )
@@ -739,6 +755,8 @@ class ActivityViewModel(
                         else -> com.ffocalors.sharedledger.ui.screens.JoinParticipantState.Available
                     },
                     participantId = participant.id,
+                    claimedUserId = participant.claimedUserId,
+                    avatarStyle = participant.avatarStyle,
                 )
             },
         ),

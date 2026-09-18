@@ -37,9 +37,8 @@ import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
 import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
-import com.ffocalors.sharedledger.ui.theme.IconContainerOrange
-import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
+import com.ffocalors.sharedledger.ui.theme.AvatarBackground
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
@@ -125,7 +124,7 @@ private val SettlementSuggestions = listOf(
         id = "zhang-san-wang-wu",
         fromParticipantId = "fake-alice",
         toParticipantId = "fake-bob",
-        from = ParticipantUiModel("张三", IconContainerSage),
+        from = ParticipantUiModel("张三", AvatarBackground.Bound("sage")),
         to = ParticipantUiModel("王五"),
         amount = BigDecimal("320.0"),
         currency = "CNY",
@@ -137,7 +136,7 @@ private val SettlementSuggestions = listOf(
         id = "li-si-zhao-liu",
         fromParticipantId = "fake-bob",
         toParticipantId = "fake-carol",
-        from = ParticipantUiModel("李四", IconContainerOrange),
+        from = ParticipantUiModel("李四", AvatarBackground.Bound("terracotta")),
         to = ParticipantUiModel("赵六"),
         amount = BigDecimal("180.0"),
         currency = "CNY",
@@ -150,7 +149,7 @@ private val SettlementSuggestions = listOf(
         fromParticipantId = "fake-carol",
         toParticipantId = "fake-alice",
         from = ParticipantUiModel("王五"),
-        to = ParticipantUiModel("张三", IconContainerSage),
+        to = ParticipantUiModel("张三", AvatarBackground.Bound("sage")),
         amount = BigDecimal("60.0"),
         currency = "CNY",
         ordinaryAmount = BigDecimal("60.0"),
@@ -163,8 +162,8 @@ private val DepositReturn = FinalSettlementSuggestionUi(
     id = "zhang-san-li-si-return",
     fromParticipantId = "fake-alice",
     toParticipantId = "fake-bob",
-    from = ParticipantUiModel("张三", IconContainerSage),
-    to = ParticipantUiModel("李四", IconContainerOrange),
+    from = ParticipantUiModel("张三", AvatarBackground.Bound("sage")),
+    to = ParticipantUiModel("李四", AvatarBackground.Bound("terracotta")),
     amount = BigDecimal("200.0"),
     currency = "CNY",
     ordinaryAmount = BigDecimal.ZERO,

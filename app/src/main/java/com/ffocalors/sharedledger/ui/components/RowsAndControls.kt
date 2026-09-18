@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
@@ -22,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import com.ffocalors.sharedledger.ui.theme.ComponentSizes
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
@@ -90,7 +92,7 @@ fun ParticipantAmountRow(
         ) {
             ParticipantAvatar(
                 name = participant.name,
-                backgroundColor = participant.backgroundColor,
+                background = participant.avatarBackground,
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -155,7 +157,10 @@ fun SegmentedControl(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(SharedLedgerSpacing.XSmall),
+                .padding(
+                    horizontal = SharedLedgerSpacing.XSmall,
+                    vertical = ComponentSizes.SegmentedControlVerticalInset,
+                ),
         ) {
             options.forEachIndexed { index, label ->
                 Segment(
@@ -201,10 +206,10 @@ private fun RowScope.Segment(
         },
     ) {
         Box(
-            modifier = Modifier.padding(
-                horizontal = SharedLedgerSpacing.Medium,
-                vertical = SharedLedgerSpacing.MediumSmall,
-            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(ComponentSizes.SegmentHeight)
+                .padding(horizontal = SharedLedgerSpacing.Small),
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -212,7 +217,6 @@ private fun RowScope.Segment(
                 style = SharedLedgerTextStyles.BodySecondary,
                 maxLines = 1,
                 softWrap = false,
-                overflow = TextOverflow.Clip,
             )
         }
     }

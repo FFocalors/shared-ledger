@@ -34,6 +34,7 @@ internal data class FinancialParticipantRowDto(
 internal data class FinancialProfileRowDto(
     val id: String,
     @SerialName("display_name") val displayName: String? = null,
+    @SerialName("avatar_style") val avatarStyle: String? = null,
 )
 
 @Serializable

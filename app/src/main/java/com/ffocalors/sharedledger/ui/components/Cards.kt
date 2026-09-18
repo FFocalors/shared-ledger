@@ -1,5 +1,11 @@
 package com.ffocalors.sharedledger.ui.components
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,8 +33,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
@@ -66,6 +74,7 @@ fun SettlementSummaryCard(
     secondaryAmount: BigDecimal? = null,
     statusContent: (@Composable () -> Unit)? = null,
 ) {
+    val breathing = rememberSummaryBreathing()
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = SharedLedgerRadius.ExtraLarge,
@@ -81,16 +90,15 @@ fun SettlementSummaryCard(
                 .fillMaxWidth()
                 .clip(SharedLedgerRadius.ExtraLarge)
                 .drawBehind {
-                    val decorativeDiameter = SharedLedgerDimens.SummaryDecorativeSize.toPx()
-                    val decorativeOffset = SharedLedgerDimens.SummaryDecorativeOffset.toPx()
+                    val decorativeDiameter = SharedLedgerDimens.SummaryDecorativeSize.toPx() * breathing.scale
                     val gradientCenter = Offset(
-                        x = size.width - decorativeDiameter / 2f + decorativeOffset,
-                        y = decorativeDiameter / 2f - decorativeOffset,
+                        x = size.width * breathing.centerXFraction,
+                        y = size.height * breathing.centerYFraction,
                     )
                     drawRect(
                         brush = Brush.radialGradient(
                             colors = listOf(
-                                IconContainerSage.copy(alpha = 0.3f),
+                                IconContainerSage.copy(alpha = breathing.intensity),
                                 Color.Transparent,
                             ),
                             center = gradientCenter,
@@ -171,6 +179,64 @@ fun SettlementSummaryCard(
             }
         }
     }
+}
+
+private data class SummaryBreathing(
+    val scale: Float,
+    val centerXFraction: Float,
+    val centerYFraction: Float,
+    val intensity: Float,
+)
+
+/** Slow breathing for the summary card's decorative gradient; static in previews. */
+@Composable
+private fun rememberSummaryBreathing(): SummaryBreathing {
+    if (LocalInspectionMode.current) {
+        return SummaryBreathing(scale = 1f, centerXFraction = 0.82f, centerYFraction = 0.2f, intensity = 0.3f)
+    }
+    val transition = rememberInfiniteTransition(label = "summaryBreathing")
+    val scale by transition.animateFloat(
+        initialValue = 0.75f,
+        targetValue = 1.35f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 5200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "summaryBreathingScale",
+    )
+    val centerXFraction by transition.animateFloat(
+        initialValue = 0.15f,
+        targetValue = 0.88f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 7300, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "summaryBreathingX",
+    )
+    val centerYFraction by transition.animateFloat(
+        initialValue = 0.1f,
+        targetValue = 0.85f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 6100, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "summaryBreathingY",
+    )
+    val intensity by transition.animateFloat(
+        initialValue = 0.15f,
+        targetValue = 0.5f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 4600, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "summaryBreathingIntensity",
+    )
+    return SummaryBreathing(
+        scale = scale,
+        centerXFraction = centerXFraction,
+        centerYFraction = centerYFraction,
+        intensity = intensity,
+    )
 }
 
 @Composable

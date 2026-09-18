@@ -59,7 +59,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
@@ -77,6 +76,7 @@ import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
 import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.theme.AppBackground
+import com.ffocalors.sharedledger.ui.theme.AvatarBackground
 import com.ffocalors.sharedledger.ui.theme.ComponentSizes
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
@@ -117,6 +117,9 @@ data class ExpensePaymentUiState(
     val participant: String,
     val amount: String,
     val isCurrentUser: Boolean = false,
+    val participantId: String = "",
+    val claimedUserId: String? = null,
+    val avatarStyle: String? = null,
 )
 
 @Immutable
@@ -128,6 +131,9 @@ data class ExpenseSplitUiState(
     val netAdvance: String? = null,
     val isCurrentUser: Boolean = false,
     val isPayer: Boolean = false,
+    val participantId: String = "",
+    val claimedUserId: String? = null,
+    val avatarStyle: String? = null,
 )
 
 enum class ExpenseSplitMethodUi {
@@ -472,14 +478,6 @@ private fun ExpenseSection(
     }
 }
 
-private fun expenseAvatarRes(name: String, isPayer: Boolean = false): Int = when {
-    name == "Alice" && isPayer -> R.drawable.alice_split_avatar
-    name == "Alice" -> R.drawable.alice_avatar
-    name == "Bob" -> R.drawable.bob_avatar
-    name == "Carol" -> R.drawable.carol_avatar
-    else -> R.drawable.alice_avatar
-}
-
 @Composable
 private fun PaymentCard(uiState: ExpenseDetailUiState) {
     DetailCard {
@@ -492,7 +490,8 @@ private fun PaymentCard(uiState: ExpenseDetailUiState) {
                 ) {
                     ParticipantAvatar(
                         name = payment.participant,
-                        image = painterResource(expenseAvatarRes(payment.participant, isPayer = true)),
+                        background = if (payment.claimedUserId != null) AvatarBackground.Bound(payment.avatarStyle, payment.claimedUserId)
+                        else AvatarBackground.Unbound(payment.participantId.ifBlank { payment.participant }),
                         size = SharedLedgerDimens.AvatarMedium,
                     )
                     Column(modifier = Modifier.padding(start = SharedLedgerSpacing.MediumSmall).weight(1f)) {
@@ -546,7 +545,8 @@ private fun SplitRow(split: ExpenseSplitUiState, currencyCode: String) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             ParticipantAvatar(
                 name = split.participant,
-                image = painterResource(expenseAvatarRes(split.participant, split.isPayer)),
+                background = if (split.claimedUserId != null) AvatarBackground.Bound(split.avatarStyle, split.claimedUserId)
+                else AvatarBackground.Unbound(split.participantId.ifBlank { split.participant }),
                 size = SharedLedgerDimens.AvatarMedium,
             )
             Row(

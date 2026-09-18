@@ -45,11 +45,14 @@ enum class FundRecordComponentType(
 data class ParticipantInfo(
     val participantId: String,
     val displayName: String,
+    val claimedUserId: String? = null,
+    val avatarStyle: String? = null,
 )
 
 data class RecorderInfo(
     val userId: String,
     val displayName: String,
+    val avatarStyle: String? = null,
 )
 
 data class OnBehalfInfo(

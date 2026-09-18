@@ -62,6 +62,7 @@ import com.ffocalors.sharedledger.data.exchange.ExchangeRate
 import com.ffocalors.sharedledger.ui.components.CurrencyFlag
 import com.ffocalors.sharedledger.ui.components.ErrorBanner
 import com.ffocalors.sharedledger.ui.components.ParticipantAmountRow
+import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.SegmentedControl
 import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
@@ -75,9 +76,7 @@ import com.ffocalors.sharedledger.ui.expense.ExpenseFormDraft
 import com.ffocalors.sharedledger.ui.expense.ExpenseFormMode
 import com.ffocalors.sharedledger.ui.expense.ExpenseFormParticipant
 import com.ffocalors.sharedledger.ui.theme.AppBackground
-import com.ffocalors.sharedledger.ui.theme.IconContainerOrange
-import com.ffocalors.sharedledger.ui.theme.IconContainerSage
-import com.ffocalors.sharedledger.ui.theme.IconContainerTertiary
+import com.ffocalors.sharedledger.ui.theme.AvatarBackground
 import com.ffocalors.sharedledger.ui.theme.ComponentSizes
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
@@ -477,7 +476,11 @@ fun NewExpenseScreen(
                         }
                     }
                     safeParticipants.forEachIndexed { index, participant ->
-                        val participantUi = ParticipantUiModel(participant.name, participantColor(index))
+                        val participantUi = ParticipantUiModel(
+                            participant.name,
+                            if (participant.claimedUserId != null) AvatarBackground.Bound(participant.avatarStyle, participant.claimedUserId)
+                            else AvatarBackground.Unbound(participant.id),
+                        )
                         if (draft.splitMethod == ExpenseSplitMethod.Manual) {
                             val value = draft.manualSplitAmounts[participant.id].orEmpty()
                             ParticipantAmountRow(participantUi, value.toBigDecimalOrNull() ?: BigDecimal.ZERO, currencyCode = draft.currency, editable = true, editableAmount = value, onAmountChange = { draft = draft.copy(manualSplitAmounts = draft.manualSplitAmounts + (participant.id to it)) })
@@ -671,7 +674,12 @@ private fun ExpenseAttachmentDraftRow(
 private fun PayerRow(participant: ExpenseFormParticipant, index: Int, selected: Boolean, amount: String, currency: String, onToggle: () -> Unit, onAmountChange: (String) -> Unit) {
     Surface(onClick = onToggle, modifier = Modifier.fillMaxWidth(), shape = SharedLedgerRadius.Medium, color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .52f), border = BorderStroke(SharedLedgerDimens.OutlineWidth, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = .5f))) {
         Row(Modifier.padding(SharedLedgerSpacing.MediumSmall), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall)) {
-            Surface(Modifier.size(SharedLedgerDimens.AvatarSmall), CircleShape, participantColor(index)) { Box(contentAlignment = Alignment.Center) { Text(participant.name.take(1), style = SharedLedgerTextStyles.Label) } }
+            ParticipantAvatar(
+                name = participant.name,
+                background = if (participant.claimedUserId != null) AvatarBackground.Bound(participant.avatarStyle, participant.claimedUserId)
+                else AvatarBackground.Unbound(participant.id),
+                size = SharedLedgerDimens.AvatarSmall,
+            )
             Text(participant.name, Modifier.weight(1f), style = SharedLedgerTextStyles.Body)
             SharedLedgerTextField(amount, onAmountChange, Modifier.widthIn(min = 82.dp, max = SharedLedgerDimens.ParticipantAmountFieldWidth), placeholder = MoneyFormatter.format(BigDecimal.ZERO, currency), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
         }
@@ -685,7 +693,6 @@ private fun FormSection(content: @Composable ColumnScope.() -> Unit) {
     }
 }
 
-private fun participantColor(index: Int): Color = when (index % 3) { 0 -> IconContainerOrange; 1 -> IconContainerTertiary; else -> IconContainerSage }
 private fun currencySymbol(code: String): String = when (code.uppercase()) { "EUR" -> "€"; "USD" -> "$"; else -> "¥" }
 
 internal fun currencyOptionLabel(currency: SupportedExchangeCurrency): String {

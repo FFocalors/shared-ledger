@@ -92,6 +92,7 @@ data class LedgerUnitRowDto(
 data class ProfileRowDto(
     val id: String,
     @SerialName("display_name") val displayName: String? = null,
+    @SerialName("avatar_style") val avatarStyle: String? = null,
 )
 
 @Serializable
@@ -172,11 +173,19 @@ data class ActivitySummary(
     val archivedAt: String?,
     val participantCount: Int,
     val participantNames: List<String> = emptyList(),
+    val participantAvatars: List<ParticipantAvatarSummary> = emptyList(),
     val status: ActivityFinancialStatus,
     val totalDebt: String,
     val totalPrepayment: String,
     val financialVersion: Long = 0,
     val participantsLockedAt: String? = null,
+)
+
+data class ParticipantAvatarSummary(
+    val participantId: String,
+    val name: String,
+    val claimedUserId: String? = null,
+    val avatarStyle: String? = null,
 )
 
 data class ActivityMember(
@@ -185,6 +194,7 @@ data class ActivityMember(
     val displayName: String,
     val isCreator: Boolean,
     val claimedParticipantId: String? = null,
+    val avatarStyle: String? = null,
 )
 
 data class Participant(
@@ -194,6 +204,7 @@ data class Participant(
     val order: Int,
     val claimedUserId: String? = null,
     val claimedUserName: String? = null,
+    val avatarStyle: String? = null,
 )
 
 data class LedgerUnit(

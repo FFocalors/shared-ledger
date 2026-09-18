@@ -56,11 +56,10 @@ import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
 import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.components.isTerminalActivityError
-import com.ffocalors.sharedledger.ui.theme.IconContainerSage
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
+import com.ffocalors.sharedledger.ui.theme.AvatarBackground
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
-import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
 import java.math.BigDecimal
 import com.ffocalors.sharedledger.data.activity.ActivityDetail
@@ -81,8 +80,8 @@ enum class LedgerAttachmentStatus {
 }
 
 private val PreviewLedgerUnitParticipants = listOf(
-    ParticipantUiModel("张三", IconContainerSage),
-    ParticipantUiModel("李四", WarmOrangeContainer),
+    ParticipantUiModel("张三", AvatarBackground.Bound("sage")),
+    ParticipantUiModel("李四", AvatarBackground.Bound("terracotta")),
     ParticipantUiModel("王五"),
 )
 
@@ -155,10 +154,11 @@ fun LedgerUnitScreen(
         ?: activity?.ledgerUnits?.firstOrNull { it.id == ledgerUnitId }?.name
         ?: "子活动"
     val displayTotal = totalBaseAmount
-    val displayUsers = activity?.members?.mapIndexed { index, member ->
+    val displayUsers = activity?.members?.map { member ->
+        val identity = member.claimedParticipantId?.let { id -> activity.participants.firstOrNull { it.id == id } }
         ParticipantUiModel(
-            name = member.displayName,
-            backgroundColor = if (index % 2 == 0) IconContainerSage else WarmOrangeContainer,
+            name = identity?.name ?: member.displayName,
+            avatarBackground = AvatarBackground.Bound(member.avatarStyle, member.userId),
         )
     } ?: emptyList()
     var expenseActionSheetVisible by remember { mutableStateOf(false) }

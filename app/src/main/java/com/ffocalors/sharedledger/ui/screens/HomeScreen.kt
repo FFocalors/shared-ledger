@@ -99,6 +99,8 @@ fun HomeScreen(
     onCreateActivity: () -> Unit = {},
     onJoinActivity: () -> Unit = {},
     userDisplayName: String = "我",
+    userAvatarStyle: String? = null,
+    userId: String = "",
     onProfileClick: (() -> Unit)? = null,
 ) {
     var selectedTab by rememberSaveable { mutableStateOf(HomeTab.InProgress) }
@@ -113,6 +115,8 @@ fun HomeScreen(
             SharedLedgerTopBar(
                 title = "SharedLedger",
                 avatarName = userDisplayName,
+                avatarStyle = userAvatarStyle,
+                avatarStableKey = userId,
                 onAvatarClick = onProfileClick,
                 containerColor = AppBackground,
                 hazeState = hazeState,

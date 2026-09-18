@@ -3,7 +3,7 @@ package com.ffocalors.sharedledger.ui.components
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.ffocalors.sharedledger.ui.theme.SageGreenContainer
+import com.ffocalors.sharedledger.ui.theme.AvatarBackground
 import java.math.BigDecimal
 
 enum class ActivityKind {
@@ -44,7 +44,7 @@ enum class ParticipantAmountStatus {
 @Immutable
 data class ParticipantUiModel(
     val name: String,
-    val backgroundColor: Color = SageGreenContainer,
+    val avatarBackground: AvatarBackground = AvatarBackground.Unbound(name),
 )
 
 @Immutable

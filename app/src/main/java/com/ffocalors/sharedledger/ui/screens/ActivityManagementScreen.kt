@@ -88,16 +88,15 @@ import com.ffocalors.sharedledger.ui.theme.AppSurfaceLow
 import com.ffocalors.sharedledger.ui.theme.AppSurfaceVariant
 import com.ffocalors.sharedledger.ui.theme.ErrorRed
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
+import com.ffocalors.sharedledger.ui.theme.AvatarBackground
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
-import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
 import com.ffocalors.sharedledger.ui.util.UiDateTimeFormatter
 
 private val StitchSurfaceContainer = Color(0xFFEFEDED)
-private val StitchSurfaceContainerHigh = Color(0xFFEAE8E7)
 
 /** The state shown by the activity-management screen. The host owns this state. */
 @Immutable
@@ -148,7 +147,9 @@ data class ActivityManagementParticipant(
     val isBound: Boolean,
     val participantId: String = "",
     val boundUserName: String? = null,
+    val boundUserId: String? = null,
     val isBoundToCurrentUser: Boolean = false,
+    val avatarStyle: String? = null,
 )
 
 @Immutable
@@ -160,6 +161,7 @@ data class ActivityManagementMember(
     val isCreator: Boolean = false,
     val canRemove: Boolean = !isCreator,
     val memberId: String = "",
+    val avatarStyle: String? = null,
 )
 
 /** Ownership can only be transferred to a named, non-creator member. */
@@ -698,11 +700,11 @@ private fun ParticipantManagementRow(
             horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
         ) {
             ParticipantAvatar(
-                name = participant.initial,
-                backgroundColor = if (index % 2 == 0) {
-                    WarmOrangeContainer
+                name = participant.name,
+                background = if (participant.isBound) {
+                    AvatarBackground.Bound(participant.avatarStyle, participant.boundUserId)
                 } else {
-                    MaterialTheme.colorScheme.tertiaryContainer
+                    AvatarBackground.Unbound(participant.participantId.ifBlank { participant.name })
                 },
             )
             Column(modifier = Modifier.weight(1f)) {
@@ -810,12 +812,8 @@ private fun ActivityMemberRow(
             horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
         ) {
             ParticipantAvatar(
-                name = member.initial,
-                backgroundColor = if (index == 0) {
-                    WarmOrangeContainer
-                } else {
-                    StitchSurfaceContainerHigh
-                },
+                name = member.name,
+                background = AvatarBackground.Bound(member.avatarStyle, member.memberId),
             )
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {

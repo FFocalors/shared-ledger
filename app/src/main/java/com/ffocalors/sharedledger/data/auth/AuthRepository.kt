@@ -24,6 +24,10 @@ interface AuthRepository {
     /** Imports the session carried by the Supabase recovery deep link. */
     suspend fun handlePasswordRecovery(deepLink: String): AuthResult =
         AuthResult.Failure("重置链接无效或已过期")
+
+    /** Persists the user's chosen avatar gradient style. */
+    suspend fun updateAvatarStyle(styleId: String): AuthResult =
+        AuthResult.Failure("请求失败，请稍后重试")
 }
 
 object AuthRedirects {

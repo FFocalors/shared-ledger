@@ -41,6 +41,7 @@ import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
 import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.demo.DemoData
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
+import com.ffocalors.sharedledger.ui.theme.AvatarBackground
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
@@ -64,7 +65,11 @@ fun CreateSubActivityScreen(
 ) {
     val displayParentActivityName = activity?.summary?.name ?: parentActivityName
     val displayParticipants = activity?.participants?.map { participant ->
-        ParticipantUiModel(participant.name)
+        ParticipantUiModel(
+            participant.name,
+            if (participant.claimedUserId != null) AvatarBackground.Bound(participant.avatarStyle, participant.claimedUserId)
+            else AvatarBackground.Unbound(participant.id),
+        )
     } ?: participants
     var activityName by rememberSaveable { mutableStateOf("") }
     var selectedNamesCsv by rememberSaveable(displayParticipants.joinToString("|")) {
@@ -182,7 +187,7 @@ fun CreateSubActivityScreen(
                             ) {
                                 ParticipantAvatar(
                                     name = participant.name,
-                                    backgroundColor = participant.backgroundColor,
+                                    background = participant.avatarBackground,
                                     size = SharedLedgerDimens.AvatarMedium,
                                 )
                                 Text(

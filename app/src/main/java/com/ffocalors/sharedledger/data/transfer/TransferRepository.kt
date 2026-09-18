@@ -37,6 +37,14 @@ class SupabaseTransferRepository(private val client: SupabaseClient) : TransferR
         val claims = client.from("participant_claims").select {
             filter { eq("activity_id", activityId) }
         }.decodeList<TransferClaimRowDto>()
+        val userIds = claims.mapNotNull { it.userId }.distinct()
+        val profiles = if (userIds.isEmpty()) emptyMap() else client.from("profiles").select {
+            filter { isIn("id", userIds) }
+        }.decodeList<TransferProfileRowDto>().associateBy { it.id }
+        val avatarInfo = claims.mapNotNull { claim ->
+            val claimedUserId = claim.userId ?: return@mapNotNull null
+            claim.participantId to SettlementAvatarInfo(claimedUserId, profiles[claimedUserId]?.avatarStyle)
+        }.toMap()
         val currentClaim = client.from("participant_claims").select {
             filter {
                 eq("activity_id", activityId)
@@ -54,6 +62,7 @@ class SupabaseTransferRepository(private val client: SupabaseClient) : TransferR
             direction = direction,
             debts = debts,
             participantNames = names,
+            participantAvatars = avatarInfo,
         )
         val onBehalfCandidates = selectOnBehalfSettlementCandidates(
             currentParticipantId = currentClaim?.participantId,
@@ -62,6 +71,7 @@ class SupabaseTransferRepository(private val client: SupabaseClient) : TransferR
             participantNames = names,
             canActOnBehalf = canActOnBehalf,
             claimedParticipantIds = claimedParticipantIds,
+            participantAvatars = avatarInfo,
         )
         SettlementContext(
             activityId = activityId,
@@ -121,6 +131,7 @@ internal fun selectSettlementCandidates(
     direction: SettlementDirection,
     debts: List<BilateralDebtRowDto>,
     participantNames: Map<String, String>,
+    participantAvatars: Map<String, SettlementAvatarInfo> = emptyMap(),
 ): List<SettlementCandidate> = currentParticipantId?.let { currentId ->
     debts.mapNotNull { debt ->
         val candidateId = when (direction) {
@@ -141,6 +152,8 @@ internal fun selectSettlementCandidates(
                     fromParticipantName = participantNames[fromId] ?: return@let null,
                     toParticipantId = toId,
                     toParticipantName = participantNames[toId] ?: return@let null,
+                    claimedUserId = participantAvatars[id]?.claimedUserId,
+                    avatarStyle = participantAvatars[id]?.avatarStyle,
                 )
             } else null
         }
@@ -154,6 +167,7 @@ internal fun selectOnBehalfSettlementCandidates(
     participantNames: Map<String, String>,
     canActOnBehalf: Boolean,
     claimedParticipantIds: Set<String>,
+    participantAvatars: Map<String, SettlementAvatarInfo> = emptyMap(),
 ): List<SettlementCandidate> {
     if (!canActOnBehalf) return emptyList()
     return debts.mapNotNull { debt ->
@@ -184,6 +198,8 @@ internal fun selectOnBehalfSettlementCandidates(
             toParticipantName = toName,
             kind = SettlementCandidateKind.ON_BEHALF,
             onBehalfOptions = listOf(SettlementParticipant(actingParticipantId, participantNames.getValue(actingParticipantId))),
+            claimedUserId = participantAvatars[id]?.claimedUserId,
+            avatarStyle = participantAvatars[id]?.avatarStyle,
         )
     }
 }

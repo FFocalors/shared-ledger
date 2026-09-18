@@ -53,7 +53,6 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -68,6 +67,7 @@ import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.AppSurfaceLow
 import com.ffocalors.sharedledger.ui.theme.AppSurfaceVariant
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
+import com.ffocalors.sharedledger.ui.theme.AvatarBackground
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
@@ -101,6 +101,8 @@ data class JoinActivityParticipant(
     val name: String,
     val state: JoinParticipantState = JoinParticipantState.Available,
     val participantId: String = "",
+    val claimedUserId: String? = null,
+    val avatarStyle: String? = null,
 )
 
 data class JoinActivityPreview(
@@ -675,14 +677,9 @@ private fun ParticipantIdentityRow(
         ) {
             com.ffocalors.sharedledger.ui.components.ParticipantAvatar(
                 name = participant.name,
-                image = if (participant.participantId == "demo-participant-wangwu") {
-                    painterResource(R.drawable.join_participant_avatar)
-                } else {
-                    null
-                },
+                background = if (participant.claimedUserId != null) AvatarBackground.Bound(participant.avatarStyle, participant.claimedUserId)
+                else AvatarBackground.Unbound(participant.participantId.ifBlank { participant.name }),
                 modifier = Modifier.size(SharedLedgerDimens.AvatarMedium),
-                backgroundColor = if (isCurrentUser) MaterialTheme.colorScheme.primaryContainer
-                else MaterialTheme.colorScheme.surfaceVariant,
             )
             Text(
                 text = if (isCurrentUser) "我 (${participant.name})" else participant.name,

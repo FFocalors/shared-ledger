@@ -22,6 +22,8 @@ data class SettlementCandidate(
     val toParticipantName: String,
     val kind: SettlementCandidateKind = SettlementCandidateKind.PERSONAL,
     val onBehalfOptions: List<SettlementParticipant> = emptyList(),
+    val claimedUserId: String? = null,
+    val avatarStyle: String? = null,
 ) {
     /** Stable identity for one directed bilateral debt, even when the target repeats. */
     val candidateKey: String
@@ -41,6 +43,11 @@ data class SettlementContext(
     val candidates: List<SettlementCandidate> = emptyList(),
     val onBehalfCandidates: List<SettlementCandidate> = emptyList(),
     val canActOnBehalf: Boolean = false,
+)
+
+data class SettlementAvatarInfo(
+    val claimedUserId: String,
+    val avatarStyle: String?,
 )
 
 data class CreateSettlementTransferInput(

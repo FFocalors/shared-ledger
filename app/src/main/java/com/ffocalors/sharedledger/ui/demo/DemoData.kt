@@ -4,8 +4,7 @@ import com.ffocalors.sharedledger.ui.components.ActivityCardUiModel
 import com.ffocalors.sharedledger.ui.components.ActivityKind
 import com.ffocalors.sharedledger.ui.components.ActivityStatus
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
-import com.ffocalors.sharedledger.ui.theme.IconContainerSage
-import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
+import com.ffocalors.sharedledger.ui.theme.AvatarBackground
 import java.math.BigDecimal
 
 /** Stable IDs used only by Compose previews and UI tests; these are not domain entities. */
@@ -52,11 +51,11 @@ object DemoData {
         activityId = DemoRouteIds.LARGE_ACTIVITY,
         participants = listOf(
             ParticipantUiModel("张三"),
-            ParticipantUiModel("李四", WarmOrangeContainer),
+            ParticipantUiModel("李四", AvatarBackground.Bound("honey")),
             ParticipantUiModel("王五"),
-            ParticipantUiModel("赵六", IconContainerSage),
+            ParticipantUiModel("赵六", AvatarBackground.Bound("sage")),
             ParticipantUiModel("陈七"),
-            ParticipantUiModel("周八", WarmOrangeContainer),
+            ParticipantUiModel("周八", AvatarBackground.Bound("honey")),
         ),
     )
 
@@ -69,7 +68,7 @@ object DemoData {
         updatedAt = "昨天",
         activityId = DemoRouteIds.NORMAL_ACTIVITY,
         participants = listOf(
-            ParticipantUiModel("王五", WarmOrangeContainer),
+            ParticipantUiModel("王五", AvatarBackground.Bound("honey")),
             ParticipantUiModel("李四"),
         ),
     )
