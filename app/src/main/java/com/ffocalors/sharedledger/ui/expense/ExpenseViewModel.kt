@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.ffocalors.sharedledger.data.expense.CreateExpenseInput
 import com.ffocalors.sharedledger.data.expense.Expense
 import com.ffocalors.sharedledger.data.expense.ExpenseDetail
+import com.ffocalors.sharedledger.data.expense.ExpenseIconKey
 import com.ffocalors.sharedledger.data.expense.ExpenseErrorMapper
 import com.ffocalors.sharedledger.data.expense.ExpenseOperationException
 import com.ffocalors.sharedledger.data.expense.ExpenseRepository
@@ -67,6 +68,7 @@ data class ExpenseFormDraft(
     val aaParticipantIds: List<String>,
     val occurredAt: String,
     val note: String,
+    val iconKey: String = ExpenseIconKey.MONEY,
 )
 
 data class ExpenseListUiState(
@@ -243,6 +245,7 @@ class ExpenseViewModel(
                         occurredAt = input.create.occurredAt,
                         note = input.create.note,
                         originalExpenseId = input.create.originalExpenseId,
+                        iconKey = input.create.iconKey,
                     ),
                 )
                 ExpenseFormMode.Refund -> repository.refundWrite(
@@ -259,6 +262,7 @@ class ExpenseViewModel(
                         occurredAt = input.create.occurredAt,
                         note = input.create.note,
                         originalExpenseId = input.create.originalExpenseId,
+                        iconKey = input.create.iconKey,
                     ),
                 )
             }
@@ -543,6 +547,7 @@ class ExpenseViewModel(
                 occurredAt = occurredAt.trim(),
                 note = note.trim().ifBlank { null },
                 originalExpenseId = originalExpenseId,
+                iconKey = ExpenseIconKey.normalize(iconKey),
             ),
         )
     }
@@ -606,6 +611,7 @@ fun ExpenseDetail.toFormDraft(mode: ExpenseFormMode): ExpenseFormDraft {
         aaParticipantIds = splitAmounts.keys.toList(),
         occurredAt = if (mode == ExpenseFormMode.Refund) Instant.now().toString() else expense.occurredAt,
         note = expense.note.orEmpty(),
+        iconKey = ExpenseIconKey.normalize(expense.iconKey),
     )
 }
 
@@ -623,6 +629,7 @@ internal fun Expense.toExpenseCardUiModel(
     expenseId = id,
     amountAvailable = amountAvailable,
     isDeleted = isDeleted,
+    iconKey = ExpenseIconKey.normalize(iconKey),
 )
 
 fun ExpenseDetail.toUiState(
@@ -644,6 +651,7 @@ fun ExpenseDetail.toUiState(
         occurredAt = UiDateTimeFormatter.format(expense.occurredAt),
         ledgerUnit = ledgerUnit.name,
         note = expense.note.orEmpty(),
+        iconKey = ExpenseIconKey.normalize(expense.iconKey),
         payments = nonZeroPayments.map { payment ->
             ExpensePaymentUiState(
                 participantId = payment.participantId,

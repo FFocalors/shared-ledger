@@ -43,7 +43,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -72,7 +71,10 @@ import com.ffocalors.sharedledger.R
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
+import com.ffocalors.sharedledger.ui.components.SharedLedgerSnackbarHost
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.expenseIconLabel
+import com.ffocalors.sharedledger.ui.components.expenseIconVector
 import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
 import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.theme.AppBackground
@@ -110,6 +112,7 @@ data class ExpenseDetailUiState(
     val status: ExpenseDetailStatus = ExpenseDetailStatus.Deleted,
     val actionMessage: String? = null,
     val attachmentMessage: String? = null,
+    val iconKey: String = com.ffocalors.sharedledger.data.expense.ExpenseIconKey.MONEY,
 )
 
 @Immutable
@@ -226,7 +229,7 @@ fun ExpenseDetailScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = AppBackground,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { SharedLedgerSnackbarHost(snackbarHostState) },
         topBar = {
             SharedLedgerTopBar(
                 title = "账单详情",
@@ -408,7 +411,11 @@ private fun ExpenseHeroCard(uiState: ExpenseDetailUiState) {
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(Icons.Rounded.Restaurant, contentDescription = "餐饮", modifier = Modifier.size(SharedLedgerDimens.IconLarge))
+                    Icon(
+                        imageVector = expenseIconVector(uiState.iconKey),
+                        contentDescription = expenseIconLabel(uiState.iconKey),
+                        modifier = Modifier.size(SharedLedgerDimens.IconLarge),
+                    )
                 }
             }
             Spacer(Modifier.height(SharedLedgerSpacing.Medium))

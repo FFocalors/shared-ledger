@@ -44,7 +44,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -77,6 +76,7 @@ import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonVariant
 import com.ffocalors.sharedledger.ui.components.SharedLedgerDialog
+import com.ffocalors.sharedledger.ui.components.SharedLedgerSnackbarHost
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
@@ -236,7 +236,7 @@ fun ActivityManagementScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = AppBackground,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { SharedLedgerSnackbarHost(snackbarHostState) },
         topBar = {
             SharedLedgerTopBar(
                 title = "SharedLedger",

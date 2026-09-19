@@ -3,6 +3,7 @@ package com.ffocalors.sharedledger.ui.components
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.ffocalors.sharedledger.data.expense.ExpenseIconKey
 import com.ffocalors.sharedledger.ui.theme.AvatarBackground
 import java.math.BigDecimal
 
@@ -88,6 +89,7 @@ data class ExpenseCardUiModel(
     val expenseId: String = "",
     val amountAvailable: Boolean = true,
     val isDeleted: Boolean = false,
+    val iconKey: String = ExpenseIconKey.MONEY,
 )
 
 @Immutable

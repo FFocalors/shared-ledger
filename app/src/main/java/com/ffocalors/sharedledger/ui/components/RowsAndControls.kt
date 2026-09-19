@@ -75,6 +75,7 @@ fun ParticipantAmountRow(
     editableAmount: String = amount.toPlainString(),
     onAmountChange: (String) -> Unit = {},
     status: ParticipantAmountStatus = ParticipantAmountStatus.None,
+    keypad: NumericKeypadState? = null,
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -106,7 +107,16 @@ fun ParticipantAmountRow(
                 SharedLedgerTextField(
                     value = editableAmount,
                     onValueChange = onAmountChange,
-                    modifier = Modifier.width(SharedLedgerDimens.ParticipantAmountFieldWidth),
+                    modifier = Modifier
+                        .width(SharedLedgerDimens.ParticipantAmountFieldWidth)
+                        .then(
+                            if (keypad != null) {
+                                Modifier.numericKeypadTarget(keypad, { editableAmount }, onAmountChange)
+                            } else {
+                                Modifier
+                            },
+                        ),
+                    readOnly = keypad != null,
                     leadingIcon = {
                         Text(
                             text = MoneyFormatter.format(BigDecimal.ZERO, currencyCode)

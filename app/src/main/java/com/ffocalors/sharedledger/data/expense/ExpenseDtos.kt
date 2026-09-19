@@ -25,6 +25,7 @@ data class ExpenseRowDto(
     @SerialName("is_deleted") val isDeleted: Boolean = false,
     @SerialName("fx_rate_source") val fxRateSource: String = "legacy_manual",
     @SerialName("fx_rate_observed_at") val fxRateObservedAt: String? = null,
+    @SerialName("icon_key") val iconKey: String = ExpenseIconKey.MONEY,
 )
 
 @Serializable

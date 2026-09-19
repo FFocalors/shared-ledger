@@ -605,7 +605,7 @@ fun AddSubActivityButton(
 fun ExpenseCard(
     expense: ExpenseCardUiModel,
     modifier: Modifier = Modifier,
-    icon: ImageVector = Icons.AutoMirrored.Rounded.ReceiptLong,
+    icon: ImageVector? = null,
     onClick: () -> Unit = {},
 ) {
     val pressScale = rememberPressScaleState()
@@ -645,7 +645,7 @@ fun ExpenseCard(
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
-                        imageVector = icon,
+                        imageVector = icon ?: expenseIconVector(expense.iconKey),
                         contentDescription = null,
                         modifier = Modifier.size(SharedLedgerDimens.IconMedium),
                         tint = MaterialTheme.colorScheme.onSecondaryContainer,

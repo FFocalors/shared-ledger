@@ -31,6 +31,7 @@ class ExpensePayloadTest {
                 ),
                 occurredAt = "2026-09-05T12:00:00Z",
                 note = null,
+                iconKey = ExpenseIconKey.DINING,
             ),
         )
 
@@ -38,7 +39,7 @@ class ExpensePayloadTest {
             setOf(
                 "ledger_unit_id", "title", "original_amount", "original_currency", "fx_rate",
                 "split_method", "payments", "manual_splits", "aa_participant_ids", "occurred_at",
-                "note", "original_expense_id",
+                "note", "original_expense_id", "icon_key",
             ),
             payload.keys,
         )
@@ -47,6 +48,7 @@ class ExpensePayloadTest {
         assertEquals("CNY", payload["original_currency"]!!.jsonPrimitive.content)
         assertEquals(JsonNull, payload["note"])
         assertEquals(JsonNull, payload["original_expense_id"])
+        assertEquals(ExpenseIconKey.DINING, payload["icon_key"]!!.jsonPrimitive.content)
         assertTrue(payload["aa_participant_ids"]!!.jsonArray.isEmpty())
         assertEquals(setOf("participant_id", "amount"), payload["payments"]!!.jsonArray.single().jsonObject.keys)
         assertFalse(payload.toString().contains("base_amount"))
@@ -93,5 +95,26 @@ class ExpensePayloadTest {
         )
 
         assertEquals(expenseId, payload["expense_id"]!!.jsonPrimitive.content)
+    }
+
+    @Test
+    fun payloadFallsBackToStableMoneyKeyForUnknownIcon() {
+        val payload = ExpenseRpcPayloadBuilder.createAutoRate(
+            CreateExpenseInput(
+                ledgerUnitId = "unit",
+                title = "Unknown icon",
+                originalAmount = BigDecimal.ONE,
+                originalCurrency = "CNY",
+                fxRate = BigDecimal.ONE,
+                splitMethod = ExpenseSplitMethod.Aa,
+                payments = emptyList(),
+                aaParticipantIds = listOf(participantA),
+                occurredAt = "2026-09-05T12:00:00Z",
+                iconKey = "MaterialIcons.Restaurant",
+            ),
+        )
+
+        assertEquals(ExpenseIconKey.MONEY, payload["icon_key"]!!.jsonPrimitive.content)
+        assertFalse(payload.containsKey("fx_rate"))
     }
 }

@@ -25,6 +25,7 @@ object ExpenseRpcPayloadBuilder {
             occurredAt = input.occurredAt,
             note = input.note,
             originalExpenseId = input.originalExpenseId,
+            iconKey = input.iconKey,
         ),
         expenseId = input.expenseId,
     )
@@ -46,6 +47,7 @@ object ExpenseRpcPayloadBuilder {
             occurredAt = input.occurredAt,
             note = input.note,
             originalExpenseId = input.originalExpenseId,
+            iconKey = input.iconKey,
         ),
         expenseId = input.expenseId,
     )
@@ -64,6 +66,7 @@ object ExpenseRpcPayloadBuilder {
         put("occurred_at", input.occurredAt)
         input.note?.let { put("note", it) } ?: put("note", JsonNull)
         input.originalExpenseId?.let { put("original_expense_id", it) } ?: put("original_expense_id", JsonNull)
+        put("icon_key", ExpenseIconKey.normalize(input.iconKey))
     }
 
     private fun autoRatePayload(input: CreateExpenseInput, expenseId: String? = null) = buildJsonObject {
@@ -79,6 +82,7 @@ object ExpenseRpcPayloadBuilder {
         put("occurred_at", input.occurredAt)
         input.note?.let { put("note", it) } ?: put("note", JsonNull)
         input.originalExpenseId?.let { put("original_expense_id", it) } ?: put("original_expense_id", JsonNull)
+        put("icon_key", ExpenseIconKey.normalize(input.iconKey))
     }
 
     private fun List<PaymentInput>.toPaymentJsonArray(): JsonArray = buildJsonArray {

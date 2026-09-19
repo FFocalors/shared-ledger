@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.CheckCircle
@@ -24,7 +23,6 @@ import androidx.compose.material.icons.rounded.EditNote
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material.icons.rounded.Restaurant
 import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material3.DatePicker
@@ -52,7 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -61,17 +59,23 @@ import com.ffocalors.sharedledger.data.exchange.SupportedExchangeCurrency
 import com.ffocalors.sharedledger.data.exchange.ExchangeRate
 import com.ffocalors.sharedledger.ui.components.CurrencyFlag
 import com.ffocalors.sharedledger.ui.components.ErrorBanner
+import com.ffocalors.sharedledger.ui.components.ExpenseIconPickerSheet
 import com.ffocalors.sharedledger.ui.components.ParticipantAmountRow
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.SegmentedControl
 import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerFluidCurrencyPicker
+import com.ffocalors.sharedledger.ui.components.SharedLedgerNumericKeypad
 import com.ffocalors.sharedledger.ui.components.SharedLedgerPrimaryButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
+import com.ffocalors.sharedledger.ui.components.NumericKeypadState
+import com.ffocalors.sharedledger.ui.components.numericKeypadTarget
 import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
 import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
+import com.ffocalors.sharedledger.ui.components.expenseIconLabel
+import com.ffocalors.sharedledger.ui.components.expenseIconVector
 import com.ffocalors.sharedledger.ui.expense.ExpenseFormDraft
 import com.ffocalors.sharedledger.ui.expense.ExpenseFormMode
 import com.ffocalors.sharedledger.ui.expense.ExpenseFormParticipant
@@ -84,6 +88,7 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
+import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
 import com.ffocalors.sharedledger.ui.util.MoneyFormatter
 import com.ffocalors.sharedledger.ui.util.UiDateTimeFormatter
 import java.math.BigDecimal
@@ -255,6 +260,7 @@ fun NewExpenseScreen(
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     var showCurrencyMenu by remember { mutableStateOf(false) }
+    var showIconPicker by remember { mutableStateOf(false) }
     val currencyOptions = remember(supportedCurrencies, baseCurrency) {
         // Keep the activity base currency first, but do not use its code as a
         // display name. That was the source of labels such as "CNY CNY".
@@ -316,9 +322,12 @@ fun NewExpenseScreen(
         ExpenseSplitMethod.Manual -> draft.manualSplitAmounts.values.sumOf { it.toBigDecimalOrNull() ?: BigDecimal.ZERO }
         ExpenseSplitMethod.Aa -> amount
     }
+    val keypad = remember { NumericKeypadState() }
+    val focusManager = LocalFocusManager.current
 
+    Box(modifier = modifier.fillMaxSize()) {
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         containerColor = AppBackground,
         topBar = { SharedLedgerTopBar(title = title, showBackButton = true, onBackClick = onBack, containerColor = AppBackground, showMoreButton = false, hazeState = hazeState) },
         bottomBar = {
@@ -354,7 +363,29 @@ fun NewExpenseScreen(
                             Modifier.fillMaxWidth(),
                             placeholder = "消费名称",
                             leadingIcon = {
-                                Icon(Icons.Rounded.Restaurant, null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(SharedLedgerDimens.IconMedium))
+                                IconButton(
+                                    onClick = { showIconPicker = true },
+                                    modifier = Modifier
+                                        .size(SharedLedgerDimens.TopBarActionSize)
+                                        .semantics {
+                                            contentDescription = "选择消费图标，当前为${expenseIconLabel(draft.iconKey)}"
+                                        },
+                                ) {
+                                    Surface(
+                                        modifier = Modifier.size(SharedLedgerDimens.ActionIconContainer),
+                                        shape = SharedLedgerRadius.Full,
+                                        color = WarmOrangeContainer.copy(alpha = 0.85f),
+                                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Icon(
+                                                imageVector = expenseIconVector(draft.iconKey),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(SharedLedgerDimens.ActionIcon),
+                                            )
+                                        }
+                                    }
+                                }
                             },
                         )
                     }
@@ -362,8 +393,11 @@ fun NewExpenseScreen(
                         SharedLedgerTextField(
                             draft.amount,
                             { draft = draft.copy(amount = it) },
-                            Modifier.fillMaxWidth(),
+                            Modifier
+                                .fillMaxWidth()
+                                .numericKeypadTarget(keypad, { draft.amount }, { draft = draft.copy(amount = it) }),
                             placeholder = "0.0",
+                            readOnly = true,
                             leadingIcon = {
                                 Text(currencySymbol(draft.currency), style = SharedLedgerTextStyles.CardTitle, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             },
@@ -387,7 +421,6 @@ fun NewExpenseScreen(
                                     )
                                 }
                             },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         )
                     }
                     if (mode != ExpenseFormMode.Refund && multiCurrencyEnabled && !draft.currency.equals(baseCurrency, ignoreCase = true)) {
@@ -422,7 +455,7 @@ fun NewExpenseScreen(
                         }
                         safeParticipants.forEachIndexed { index, participant ->
                             val selected = participant.id in draft.payerIds
-                            PayerRow(participant, index, selected, draft.payerAmounts[participant.id].orEmpty(), draft.currency, {
+                            PayerRow(participant, index, selected, draft.payerAmounts[participant.id].orEmpty(), draft.currency, keypad, {
                                 val next = if (selected) draft.payerIds - participant.id else draft.payerIds + participant.id
                                 draft = draft.copy(payerIds = next, payerAmounts = draft.payerAmounts + (participant.id to (draft.payerAmounts[participant.id] ?: "0")))
                             }, { draft = draft.copy(payerAmounts = draft.payerAmounts + (participant.id to it)) })
@@ -452,7 +485,7 @@ fun NewExpenseScreen(
                         )
                         if (draft.splitMethod == ExpenseSplitMethod.Manual) {
                             val value = draft.manualSplitAmounts[participant.id].orEmpty()
-                            ParticipantAmountRow(participantUi, value.toBigDecimalOrNull() ?: BigDecimal.ZERO, currencyCode = draft.currency, editable = true, editableAmount = value, onAmountChange = { draft = draft.copy(manualSplitAmounts = draft.manualSplitAmounts + (participant.id to it)) })
+                            ParticipantAmountRow(participantUi, value.toBigDecimalOrNull() ?: BigDecimal.ZERO, currencyCode = draft.currency, editable = true, editableAmount = value, onAmountChange = { draft = draft.copy(manualSplitAmounts = draft.manualSplitAmounts + (participant.id to it)) }, keypad = keypad)
                         } else {
                             val selected = participant.id in draft.aaParticipantIds
                             Surface(onClick = { draft = draft.copy(aaParticipantIds = if (selected) draft.aaParticipantIds - participant.id else draft.aaParticipantIds + participant.id) }, modifier = Modifier.fillMaxWidth(), shape = SharedLedgerRadius.Large, color = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = .35f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .4f), border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant)) {
@@ -538,6 +571,20 @@ fun NewExpenseScreen(
             }
         }
         }
+    }
+        SharedLedgerNumericKeypad(
+            state = keypad,
+            onDismiss = { focusManager.clearFocus() },
+            modifier = Modifier.matchParentSize(),
+        )
+    }
+
+    if (showIconPicker) {
+        ExpenseIconPickerSheet(
+            selectedKey = draft.iconKey,
+            onSelected = { iconKey -> draft = draft.copy(iconKey = iconKey) },
+            onDismissRequest = { showIconPicker = false },
+        )
     }
 
     if (showDatePicker) {
@@ -640,7 +687,7 @@ private fun ExpenseAttachmentDraftRow(
 }
 
 @Composable
-private fun PayerRow(participant: ExpenseFormParticipant, index: Int, selected: Boolean, amount: String, currency: String, onToggle: () -> Unit, onAmountChange: (String) -> Unit) {
+private fun PayerRow(participant: ExpenseFormParticipant, index: Int, selected: Boolean, amount: String, currency: String, keypad: NumericKeypadState, onToggle: () -> Unit, onAmountChange: (String) -> Unit) {
     Surface(onClick = onToggle, modifier = Modifier.fillMaxWidth(), shape = SharedLedgerRadius.Medium, color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .52f), border = BorderStroke(SharedLedgerDimens.OutlineWidth, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = .5f))) {
         Row(Modifier.padding(SharedLedgerSpacing.MediumSmall), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall)) {
             ParticipantAvatar(
@@ -650,7 +697,7 @@ private fun PayerRow(participant: ExpenseFormParticipant, index: Int, selected: 
                 size = SharedLedgerDimens.AvatarSmall,
             )
             Text(participant.name, Modifier.weight(1f), style = SharedLedgerTextStyles.Body)
-            SharedLedgerTextField(amount, onAmountChange, Modifier.widthIn(min = 82.dp, max = SharedLedgerDimens.ParticipantAmountFieldWidth), placeholder = MoneyFormatter.format(BigDecimal.ZERO, currency), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+            SharedLedgerTextField(amount, onAmountChange, Modifier.widthIn(min = 82.dp, max = SharedLedgerDimens.ParticipantAmountFieldWidth).numericKeypadTarget(keypad, { amount }, onAmountChange), placeholder = MoneyFormatter.format(BigDecimal.ZERO, currency), readOnly = true)
         }
     }
 }

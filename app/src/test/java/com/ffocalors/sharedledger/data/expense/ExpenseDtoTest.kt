@@ -34,6 +34,29 @@ class ExpenseDtoTest {
         assertTrue(expense.hasExpectedDeletionState(false))
         assertFalse(expense.hasExpectedDeletionState(true))
         assertTrue(expense.hasExpectedDeletionState(null))
+        assertEquals(ExpenseIconKey.MONEY, expense.iconKey)
+    }
+
+    @Test
+    fun mapperKeepsSupportedIconAndFallsBackForUnknownData() {
+        val base = ExpenseRowDto(
+            id = "expense",
+            ledgerUnitId = "unit",
+            title = "Dinner",
+            originalAmount = JsonPrimitive("10"),
+            originalCurrency = "CNY",
+            fxRate = JsonPrimitive("1"),
+            baseAmount = JsonPrimitive("10.0"),
+            splitMethod = "aa",
+            occurredAt = "2026-09-05T12:00:00Z",
+            createdBy = "user",
+            updatedBy = "user",
+            version = 1,
+            iconKey = ExpenseIconKey.DINING,
+        )
+
+        assertEquals(ExpenseIconKey.DINING, ExpenseDtoMappers.expense(base).iconKey)
+        assertEquals(ExpenseIconKey.MONEY, ExpenseDtoMappers.expense(base.copy(iconKey = "legacy-resource-id")).iconKey)
     }
 
     @Test

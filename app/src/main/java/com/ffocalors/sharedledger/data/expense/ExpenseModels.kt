@@ -45,6 +45,7 @@ data class Expense(
     val isDeleted: Boolean,
     val fxRateSource: String = "legacy_manual",
     val fxRateObservedAt: String? = null,
+    val iconKey: String = ExpenseIconKey.MONEY,
 )
 
 data class ExpenseLedgerUnit(
@@ -104,6 +105,7 @@ data class CreateExpenseInput(
     val occurredAt: String,
     val note: String? = null,
     val originalExpenseId: String? = null,
+    val iconKey: String = ExpenseIconKey.MONEY,
 )
 
 data class UpdateExpenseInput(
@@ -120,6 +122,7 @@ data class UpdateExpenseInput(
     val occurredAt: String,
     val note: String? = null,
     val originalExpenseId: String? = null,
+    val iconKey: String = ExpenseIconKey.MONEY,
 )
 
 data class RefundExpenseInput(
@@ -135,6 +138,7 @@ data class RefundExpenseInput(
     val occurredAt: String,
     val note: String? = null,
     val originalExpenseId: String? = null,
+    val iconKey: String = ExpenseIconKey.MONEY,
 ) {
     fun toCreateInput(originalExpenseId: String? = this.originalExpenseId): CreateExpenseInput {
         val refundAmount = amount.abs().negate()
@@ -151,6 +155,7 @@ data class RefundExpenseInput(
             occurredAt = occurredAt,
             note = note,
             originalExpenseId = originalExpenseId,
+            iconKey = ExpenseIconKey.normalize(iconKey),
         )
     }
 }

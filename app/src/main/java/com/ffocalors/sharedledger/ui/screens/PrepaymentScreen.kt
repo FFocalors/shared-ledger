@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import com.ffocalors.sharedledger.data.financial.FinancialContext
 import com.ffocalors.sharedledger.data.financial.PrepaymentAccount
 import com.ffocalors.sharedledger.domain.financial.ParticipantInfo
@@ -41,7 +42,10 @@ import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
+import com.ffocalors.sharedledger.ui.components.SharedLedgerNumericKeypad
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
+import com.ffocalors.sharedledger.ui.components.NumericKeypadState
+import com.ffocalors.sharedledger.ui.components.numericKeypadTarget
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
 import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
@@ -69,6 +73,8 @@ fun PrepaymentScreen(
     var selectedId by remember(context, mode) { mutableStateOf<String?>(null) }
     var amountText by remember(context, mode) { mutableStateOf("") }
     var selectedOnBehalfId by remember(context, mode) { mutableStateOf<String?>(null) }
+    val keypad = remember { NumericKeypadState() }
+    val focusManager = LocalFocusManager.current
     val currentId = context?.currentParticipantId
     val candidates = when {
         context == null -> emptyList()
@@ -113,7 +119,9 @@ fun PrepaymentScreen(
     } == true
     val hazeState = rememberSharedLedgerHazeState()
 
+    Box(modifier = Modifier.fillMaxSize()) {
     Scaffold(
+        modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             SharedLedgerTopBar(
@@ -144,6 +152,7 @@ fun PrepaymentScreen(
             }
         },
     ) { padding ->
+        Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.widthIn(max = SharedLedgerDimens.ContentMaxWidth).fillMaxSize().sharedLedgerHazeSource(hazeState),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(
@@ -233,7 +242,10 @@ fun PrepaymentScreen(
                                 value = amountText,
                                 onValueChange = { value -> amountText = value.filter { it.isDigit() || it == '.' }.take(12) },
                                 label = "金额（${context?.currency ?: "CNY"}）",
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .numericKeypadTarget(keypad, { amountText }, { value -> amountText = value.filter { it.isDigit() || it == '.' }.take(12) }),
+                                readOnly = true,
                             )
                             max?.let { Text("最多可返还 ${it.toPlainString()}", style = SharedLedgerTextStyles.Label) }
                             if (amountText.isNotBlank() && !valid) Text("请输入有效金额${max?.let { "，且不超过 ${it.toPlainString()}" } ?: ""}", color = MaterialTheme.colorScheme.error, style = SharedLedgerTextStyles.Label)
@@ -260,6 +272,13 @@ fun PrepaymentScreen(
                 }
             }
         }
+        }
+    }
+        SharedLedgerNumericKeypad(
+            state = keypad,
+            onDismiss = { focusManager.clearFocus() },
+            modifier = Modifier.matchParentSize(),
+        )
     }
 }
 

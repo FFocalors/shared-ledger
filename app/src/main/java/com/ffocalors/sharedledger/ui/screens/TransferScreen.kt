@@ -33,12 +33,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.ffocalors.sharedledger.ui.components.AmountDisplay
@@ -52,6 +54,9 @@ import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
 import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
+import com.ffocalors.sharedledger.ui.components.SharedLedgerNumericKeypad
+import com.ffocalors.sharedledger.ui.components.NumericKeypadState
+import com.ffocalors.sharedledger.ui.components.numericKeypadTarget
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
@@ -119,6 +124,8 @@ fun TransferScreen(
     var amountText by rememberSaveable(mode) { mutableStateOf("") }
     var selectedOnBehalfId by rememberSaveable(mode) { mutableStateOf<String?>(null) }
     var candidateScope by rememberSaveable(mode) { mutableStateOf(TransferCandidateScope.PERSONAL) }
+    val keypad = remember { NumericKeypadState() }
+    val focusManager = LocalFocusManager.current
     val activeCandidates = when (candidateScope) {
         TransferCandidateScope.PERSONAL -> state.candidates
         TransferCandidateScope.ON_BEHALF -> state.onBehalfCandidates
@@ -164,8 +171,9 @@ fun TransferScreen(
     val isFormVisible = !state.isLoading && state.errorMessage == null && state.emptyMessage == null
     val hazeState = rememberSharedLedgerHazeState()
 
+    Box(modifier = modifier.fillMaxSize()) {
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             SharedLedgerTopBar(
@@ -299,11 +307,18 @@ fun TransferScreen(
                             selectedOnBehalfId = selectedOnBehalfId,
                             onBehalfOfParticipantIdChanged = { selectedOnBehalfId = it },
                             onAmountChange = { amountText = sanitizeCnyAmount(it) },
+                            keypad = keypad,
                         )
                     }
                 }
             }
         }
+    }
+        SharedLedgerNumericKeypad(
+            state = keypad,
+            onDismiss = { focusManager.clearFocus() },
+            modifier = Modifier.matchParentSize(),
+        )
     }
 }
 
@@ -459,6 +474,7 @@ private fun TransferAmountCard(
     onBehalfOfParticipantIdChanged: (String?) -> Unit,
     onAmountChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    keypad: NumericKeypadState? = null,
 ) {
     val isTransfer = mode == TransferMode.TRANSFER
     Surface(
@@ -489,9 +505,18 @@ private fun TransferAmountCard(
             SharedLedgerTextField(
                 value = amountText,
                 onValueChange = onAmountChange,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(
+                        if (keypad != null) {
+                            Modifier.numericKeypadTarget(keypad, { amountText }, onAmountChange)
+                        } else {
+                            Modifier
+                        },
+                    ),
                 label = "金额（$currencyCode）",
                 placeholder = "0.0",
+                readOnly = keypad != null,
                 leadingIcon = {
                     Text(
                         text = currencySymbol(currencyCode),
