@@ -66,6 +66,7 @@ import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
 import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.components.StatusChip
 import com.ffocalors.sharedledger.ui.components.rememberPressScaleState
+import com.ffocalors.sharedledger.ui.components.pressInnerShadow
 import com.ffocalors.sharedledger.ui.demo.DemoData
 import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.DeepCharcoal
@@ -352,7 +353,8 @@ private fun HomeActivityCard(
     val pressScale = rememberPressScaleState()
     Card(
         onClick = onClick,
-        modifier = pressScale.modifier.then(modifier).fillMaxWidth(),
+        modifier = pressScale.modifier.then(modifier).fillMaxWidth()
+            .pressInnerShadow(SharedLedgerRadius.ExtraLarge, pressScale.shadowAlpha),
         interactionSource = pressScale.interactionSource,
         shape = SharedLedgerRadius.ExtraLarge,
         colors = CardDefaults.cardColors(containerColor = SurfaceWarmLowest),

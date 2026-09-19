@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.CurrencyExchange
 import androidx.compose.material.icons.rounded.FlightTakeoff
 import androidx.compose.material.icons.rounded.Payments
@@ -44,13 +45,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.components.ActivityKind
 import com.ffocalors.sharedledger.ui.components.CurrencyFlag
 import com.ffocalors.sharedledger.ui.components.ErrorBanner
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
-import com.ffocalors.sharedledger.ui.components.SharedLedgerCurrencyDropdownMenu
+import com.ffocalors.sharedledger.ui.components.SharedLedgerFluidCurrencyPicker
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
@@ -320,47 +322,58 @@ private fun CreateActivitySettingsSection(
             shadowElevation = SharedLedgerElevation.Card,
         ) {
             Column {
-                Box {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(SharedLedgerRadius.ExtraLarge)
-                            .clickable { onCurrencyMenuVisibleChange(true) }
-                            .padding(SharedLedgerSpacing.MediumLarge),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
-                    ) {
-                        SettingsIcon(icon = Icons.Rounded.Payments)
-                        Text(
-                            text = "主货币",
-                            modifier = Modifier.weight(1f),
-                            style = SharedLedgerTextStyles.Body,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                        CurrencyFlag(selectedCurrency)
-                        Text(
-                            text = currencyOptions.firstOrNull { it.code == selectedCurrency }
-                                ?.let { "${currencyNameZh(it.code).ifBlank { it.displayName.ifBlank { it.code } }} ${it.code}" }
-                                ?: selectedCurrency,
-                            style = SharedLedgerTextStyles.BodySecondary,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Icon(
-                            imageVector = Icons.Rounded.ChevronRight,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    SharedLedgerCurrencyDropdownMenu(
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(SharedLedgerSpacing.MediumLarge),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
+                ) {
+                    SettingsIcon(icon = Icons.Rounded.Payments)
+                    Text(
+                        text = "主货币",
+                        modifier = Modifier.weight(1f),
+                        style = SharedLedgerTextStyles.Body,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    SharedLedgerFluidCurrencyPicker(
                         expanded = currencyMenuVisible,
-                        onDismissRequest = { onCurrencyMenuVisibleChange(false) },
+                        onExpandedChange = onCurrencyMenuVisibleChange,
                         currencyCodes = currencyOptions.map { it.code },
                         selectedCode = selectedCurrency,
-                        onCurrencySelected = { code ->
+                        onSelected = { code ->
                             onCurrencySelected(code)
-                            onCurrencyMenuVisibleChange(false)
                         },
-                    )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .height(40.dp)
+                                .padding(horizontal = SharedLedgerSpacing.Medium),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
+                        ) {
+                            CurrencyFlag(selectedCurrency)
+                            Text(
+                                text = currencyOptions.firstOrNull { it.code == selectedCurrency }
+                                    ?.let {
+                                        currencyNameZh(it.code).ifBlank {
+                                            it.displayName.ifBlank { it.code }
+                                        }
+                                    }
+                                    ?: selectedCurrency,
+                                style = SharedLedgerTextStyles.BodySecondary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Icon(
+                                imageVector = Icons.Rounded.KeyboardArrowDown,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(SharedLedgerDimens.IconSmall),
+                            )
+                        }
+                    }
                 }
                 Box(
                     modifier = Modifier

@@ -465,7 +465,8 @@ fun SubActivityCard(
     val pressScale = rememberPressScaleState()
     Card(
         onClick = onClick,
-        modifier = pressScale.modifier.then(modifier).fillMaxWidth(),
+        modifier = pressScale.modifier.then(modifier).fillMaxWidth()
+            .pressInnerShadow(SharedLedgerRadius.Large, pressScale.shadowAlpha),
         interactionSource = pressScale.interactionSource,
         shape = SharedLedgerRadius.Large,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -615,7 +616,8 @@ fun ExpenseCard(
                 .fillMaxWidth()
                 .semantics {
                     if (expense.isDeleted) stateDescription = "已删除，不计入统计"
-                },
+                }
+                .pressInnerShadow(SharedLedgerRadius.Large, pressScale.shadowAlpha),
         ),
         interactionSource = pressScale.interactionSource,
         shape = SharedLedgerRadius.Large,

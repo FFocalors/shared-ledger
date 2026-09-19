@@ -66,7 +66,7 @@ import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.SegmentedControl
 import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
-import com.ffocalors.sharedledger.ui.components.SharedLedgerCurrencyDropdownMenu
+import com.ffocalors.sharedledger.ui.components.SharedLedgerFluidCurrencyPicker
 import com.ffocalors.sharedledger.ui.components.SharedLedgerPrimaryButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
@@ -371,54 +371,23 @@ fun NewExpenseScreen(
                                 Box(
                                     modifier = Modifier.padding(end = SharedLedgerSpacing.Small),
                                 ) {
-                                    Surface(
-                                        onClick = { if (mode != ExpenseFormMode.Refund) showCurrencyMenu = true },
-                                        shape = SharedLedgerRadius.Large,
-                                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f),
-                                        border = BorderStroke(
-                                            SharedLedgerDimens.OutlineWidth,
-                                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.52f),
-                                        ),
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.padding(horizontal = SharedLedgerSpacing.MediumSmall, vertical = SharedLedgerSpacing.Small),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
-                                        ) {
-                                            CurrencyFlag(draft.currency)
-                                            Text(
-                                                draft.currency.uppercase(),
-                                                style = SharedLedgerTextStyles.Label,
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis,
+                                    SharedLedgerFluidCurrencyPicker(
+                                        expanded = showCurrencyMenu,
+                                        onExpandedChange = { showCurrencyMenu = it },
+                                        currencyCodes = selectableCurrencyOptions.map { it.code },
+                                        selectedCode = draft.currency,
+                                        onSelected = { code ->
+                                            draft = draft.copy(
+                                                currency = code,
+                                                fxRate = if (code.equals(baseCurrency, true)) "1" else draft.fxRate,
                                             )
-                                            if (mode != ExpenseFormMode.Refund) {
-                                                Icon(
-                                                    Icons.Rounded.KeyboardArrowDown,
-                                                    contentDescription = "展开币种选择",
-                                                    modifier = Modifier.size(SharedLedgerDimens.IconSmall),
-                                                )
-                                            }
-                                        }
-                                    }
+                                            onCurrencySelected?.invoke(code)
+                                        },
+                                        enabled = mode != ExpenseFormMode.Refund,
+                                    )
                                 }
                             },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        )
-                        SharedLedgerCurrencyDropdownMenu(
-                            expanded = showCurrencyMenu,
-                            onDismissRequest = { showCurrencyMenu = false },
-                            currencyCodes = selectableCurrencyOptions.map { it.code },
-                            selectedCode = draft.currency,
-                            onCurrencySelected = { code ->
-                                draft = draft.copy(
-                                    currency = code,
-                                    fxRate = if (code.equals(baseCurrency, true)) "1" else draft.fxRate,
-                                )
-                                onCurrencySelected?.invoke(code)
-                                showCurrencyMenu = false
-                            },
-                            modifier = Modifier.align(Alignment.TopEnd),
                         )
                     }
                     if (mode != ExpenseFormMode.Refund && multiCurrencyEnabled && !draft.currency.equals(baseCurrency, ignoreCase = true)) {

@@ -2,6 +2,9 @@ package com.ffocalors.sharedledger.ui.theme
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.SpringSpec
+import androidx.compose.animation.core.spring
 import androidx.compose.ui.unit.dp
 
 /**
@@ -27,10 +30,42 @@ object SharedLedgerMotion {
         /** 图标/内容 crossfade（loading↔普通、复制反馈等）。 */
         const val Icon = 160
 
-        /** 按下缩放反馈：按下 80ms，回弹 120ms。 */
-        const val PressScale = 80
+        /** 弹窗内容延迟出现/淡出（ms）。 */
         const val PressReturn = 120
     }
+
+    /**
+     * 弹簧曲线（阶段 E 增补）。
+     *
+     * - [FluidMorph]：胶囊→面板流体形态变换，高阻尼、无弹跳、丝滑减速。
+     * - [PressDown]：按压下压，临界阻尼（damping 1）、快而稳，无弹跳。
+     * - [PressUp]：按压回弹，轻微超调（damping 0.7）后稳定，幅度克制。
+     */
+    object Springs {
+        val FluidMorph: SpringSpec<androidx.compose.ui.unit.Dp> =
+            spring(dampingRatio = 0.92f, stiffness = 260f)
+
+        val PressDown: SpringSpec<Float> = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = 1000f,
+        )
+
+        val PressUp: SpringSpec<Float> = spring(
+            dampingRatio = 0.7f,
+            stiffness = 500f,
+        )
+    }
+
+    /** 卡片按下时的缩放比例（0.96，比旧值 0.98 更有按压深度）。 */
+    const val PressScale = 0.96f
+
+    /**
+     * 按下深度内阴影 token。Compose 无原生 inner shadow，卡片在内容上层绘制
+     * 一个从上边缘向下渐隐的深色渐变 overlay。深色文字卡片上若显得过重，
+     * 可调低 [PressInnerShadowAlpha]（建议区间 0.10~0.15）。
+     */
+    const val PressInnerShadowAlpha = 0.13f
+    const val PressInnerShadowHeightFraction = 1f / 3f
 
     /** 统一缓动。 */
     object Easing {
@@ -40,9 +75,6 @@ object SharedLedgerMotion {
         /** 位置移动（指示器、转场位移）：线性起步慢出。 */
         val Position = LinearOutSlowInEasing
     }
-
-    /** 卡片按下时的缩放比例（轻微、非弹跳）。 */
-    const val PressScale = 0.98f
 
     /** 转场/展开位移上限。 */
     val MaxSlide = 8.dp

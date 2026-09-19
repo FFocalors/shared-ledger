@@ -440,7 +440,6 @@ private fun SharedLedgerBottomChrome(
     hazeState: HazeState?,
     content: @Composable () -> Unit,
 ) {
-    val insetModifier = if (imeAware) Modifier.imePadding() else Modifier
     val chromeModifier = if (hazeState != null) {
         Modifier.hazeEffect(
             state = hazeState,
@@ -457,9 +456,7 @@ private fun SharedLedgerBottomChrome(
     }
     Box(
         modifier = modifier
-            .fillMaxWidth()
-            .then(insetModifier)
-            .navigationBarsPadding(),
+            .fillMaxWidth(),
         contentAlignment = Alignment.TopCenter,
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -473,6 +470,12 @@ private fun SharedLedgerBottomChrome(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(backgroundColor)
+                    // Insets belong to the opaque lower chrome, not to its
+                    // transparent parent. This keeps the bar visually joined
+                    // to the physical screen/IME edge and prevents scrolling
+                    // content from showing through beneath the CTA.
+                    .navigationBarsPadding()
+                    .then(if (imeAware) Modifier.imePadding() else Modifier)
                     .padding(
                         start = SharedLedgerDimens.PageHorizontalPadding,
                         end = SharedLedgerDimens.PageHorizontalPadding,
