@@ -1,17 +1,23 @@
 package com.ffocalors.sharedledger.ui.transfer
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.ffocalors.sharedledger.data.transfer.CreateSettlementTransferInput
+import com.ffocalors.sharedledger.data.transfer.InMemoryTransferRequestStore
+import com.ffocalors.sharedledger.data.transfer.PendingTransferRequest
 import com.ffocalors.sharedledger.data.transfer.SettlementCandidate
 import com.ffocalors.sharedledger.data.transfer.SettlementCandidateKind
+import com.ffocalors.sharedledger.data.transfer.SettlementCurrencyOption
 import com.ffocalors.sharedledger.data.transfer.SettlementDirection
 import com.ffocalors.sharedledger.data.transfer.SettlementTransferResult
 import com.ffocalors.sharedledger.data.transfer.SettlementParticipant
 import com.ffocalors.sharedledger.data.transfer.TransferErrorMapper
 import com.ffocalors.sharedledger.data.transfer.TransferRepository
 import com.ffocalors.sharedledger.data.transfer.TransferRepositoryFactory
+import com.ffocalors.sharedledger.data.transfer.TransferRequestStore
+import com.ffocalors.sharedledger.data.transfer.PreferencesTransferRequestStore
 import com.ffocalors.sharedledger.data.transfer.TransferWriteState
 import com.ffocalors.sharedledger.data.common.ReadFailureKind
 import com.ffocalors.sharedledger.data.common.readFailureKind
@@ -22,6 +28,7 @@ import com.ffocalors.sharedledger.ui.cache.QueryCacheState
 import com.ffocalors.sharedledger.ui.cache.SessionQueryCache
 import java.math.BigDecimal
 import java.time.Instant
+import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,6 +44,7 @@ data class TransferCandidateUi(
     val toParticipantName: String,
     val kind: SettlementCandidateKind = SettlementCandidateKind.PERSONAL,
     val onBehalfOptions: List<SettlementParticipant> = emptyList(),
+    val currencyOptions: List<SettlementCurrencyOption> = emptyList(),
     val candidateKey: String = "${kind.name}:$fromParticipantId->$toParticipantId",
     val claimedUserId: String? = null,
     val avatarStyle: String? = null,
@@ -46,6 +54,7 @@ data class TransferUiState(
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     val baseCurrency: String = "CNY",
+    val multiCurrencyEnabled: Boolean = false,
     val currentParticipantId: String? = null,
     val canActOnBehalf: Boolean = false,
     val candidates: List<TransferCandidateUi> = emptyList(),
@@ -56,11 +65,14 @@ data class TransferUiState(
     val submissionBlocked: Boolean = false,
     val writeState: TransferWriteState? = null,
     val failureKind: ReadFailureKind? = null,
+    val pendingRequest: PendingTransferRequest? = null,
 )
 
 class TransferViewModel(
     private val repository: TransferRepository,
     private val queryCache: SessionQueryCache = SessionQueryCache(),
+    private val currentUserId: String = "",
+    private val requestStore: TransferRequestStore = InMemoryTransferRequestStore(),
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(TransferUiState())
     val uiState: StateFlow<TransferUiState> = _uiState.asStateFlow()
@@ -74,6 +86,11 @@ class TransferViewModel(
             _uiState.value = toUiState(cached.value, direction)
             loadedActivityId = activityId
             loadedDirection = direction
+            viewModelScope.launch {
+                _uiState.value = _uiState.value.copy(
+                    pendingRequest = readPendingRequest(activityId, direction),
+                )
+            }
             return
         }
         loadedActivityId = activityId
@@ -85,7 +102,11 @@ class TransferViewModel(
             queryCache.getOrLoad(key, forceRefresh = true) {
                 repository.loadContext(activityId, direction)
             }.fold(
-                onSuccess = { _uiState.value = toUiState(it, direction) },
+                onSuccess = {
+                    _uiState.value = toUiState(it, direction).copy(
+                        pendingRequest = readPendingRequest(activityId, direction),
+                    )
+                },
                 onFailure = { error ->
                     val kind = error.readFailureKind()
                     if (kind.shouldRemoveCachedRead()) queryCache.remove(key)
@@ -111,7 +132,7 @@ class TransferViewModel(
 
     fun submit(draft: TransferDraft, onSuccess: (SettlementTransferResult) -> Unit = {}) {
         val state = _uiState.value
-        if (state.isSubmitting || state.submissionBlocked) return
+        if (state.isSubmitting) return
         val amount = draft.amount.toBigDecimalOrNull()
         val allCandidates = state.candidates + state.onBehalfCandidates
         val candidate = draft.candidateKey?.let { key ->
@@ -122,26 +143,56 @@ class TransferViewModel(
                 setError("当前用户尚未绑定参与人，请先选择代记参与人")
             candidate == null -> setError("请选择当前仍有债务的参与人")
             amount == null || amount <= BigDecimal.ZERO -> setError("请输入大于 0 的金额")
-            amount > candidate.amount -> setError("金额不能超过当前债务 ${candidate.amount.toPlainString()}")
+            selectedCurrencyOption(candidate, draft.currency, state.baseCurrency)?.let { option ->
+                amount > option.amount
+            } != false -> setError(
+                "金额不能超过当前债务 ${selectedCurrencyOption(candidate, draft.currency, state.baseCurrency)?.amount?.toPlainString() ?: candidate.amount.toPlainString()}"
+            )
             !isValidActingParty(state, candidate, draft.onBehalfOfParticipantId) -> setError("请选择有效的代记参与人")
             else -> {
                 _uiState.value = state.copy(isSubmitting = true, errorMessage = null)
                 viewModelScope.launch {
+                    val currency = draft.currency.ifBlank { state.baseCurrency }.trim().uppercase()
+                    val direction = loadedDirection ?: when (draft.mode) {
+                        com.ffocalors.sharedledger.ui.screens.TransferMode.TRANSFER -> SettlementDirection.TRANSFER
+                        com.ffocalors.sharedledger.ui.screens.TransferMode.RECEIVE -> SettlementDirection.RECEIVE
+                    }
+                    val pending = try {
+                        resolvePendingRequest(
+                            draft = draft,
+                            candidate = candidate,
+                            amount = amount,
+                            currency = currency,
+                            direction = direction,
+                        )
+                    } catch (_: Throwable) {
+                        _uiState.value = _uiState.value.copy(
+                            isSubmitting = false,
+                            errorMessage = "无法保存转账重试凭据，请稍后重试",
+                            writeState = TransferWriteState.FAILED,
+                        )
+                        return@launch
+                    }
+                    _uiState.value = _uiState.value.copy(pendingRequest = pending)
                     val input = CreateSettlementTransferInput(
                         activityId = draft.activityId,
-                        fromParticipantId = candidate.fromParticipantId,
-                        toParticipantId = candidate.toParticipantId,
+                        fromParticipantId = pending.fromParticipantId,
+                        toParticipantId = pending.toParticipantId,
                         amount = amount,
-                        occurredAt = Instant.now().toString(),
-                        onBehalfOfParticipantId = draft.onBehalfOfParticipantId,
+                        occurredAt = pending.occurredAt,
+                        onBehalfOfParticipantId = pending.onBehalfOfParticipantId,
+                        currency = pending.currency,
+                        requestId = pending.requestId,
                     )
                     val result = repository.createSettlementWrite(input)
                     if (result.isSuccess && result.value != null) {
+                        removePendingRequest(pending)
                         queryCache.invalidatePrefix("transfer-query:${draft.activityId}:")
                         invalidateFinancialReadCaches(draft.activityId)
-                        _uiState.value = _uiState.value.copy(isSubmitting = false)
+                        _uiState.value = _uiState.value.copy(isSubmitting = false, pendingRequest = null)
                         onSuccess(result.value)
                     } else {
+                        if (!result.isUnknown) removePendingRequest(pending)
                         if (result.isUnknown) {
                             queryCache.invalidatePrefix("transfer-query:${draft.activityId}:")
                             invalidateFinancialReadCaches(draft.activityId)
@@ -149,8 +200,9 @@ class TransferViewModel(
                         _uiState.value = _uiState.value.copy(
                             isSubmitting = false,
                             errorMessage = result.errorMessage ?: "转账失败",
-                            submissionBlocked = result.isUnknown,
+                            submissionBlocked = false,
                             writeState = result.state,
+                            pendingRequest = pending.takeIf { result.isUnknown },
                         )
                     }
                 }
@@ -202,6 +254,7 @@ class TransferViewModel(
         toParticipantName = candidate.toParticipantName,
         kind = candidate.kind,
         onBehalfOptions = candidate.onBehalfOptions,
+        currencyOptions = candidate.currencyOptions,
         claimedUserId = candidate.claimedUserId,
         avatarStyle = candidate.avatarStyle,
     )
@@ -212,6 +265,7 @@ class TransferViewModel(
     ) = TransferUiState(
         isLoading = false,
         baseCurrency = context.baseCurrency,
+        multiCurrencyEnabled = context.multiCurrencyEnabled,
         currentParticipantId = context.currentParticipantId,
         canActOnBehalf = context.canActOnBehalf,
         candidates = context.candidates.map(::toUi),
@@ -250,6 +304,79 @@ class TransferViewModel(
         }
     }
 
+    private fun selectedCurrencyOption(
+        candidate: TransferCandidateUi,
+        requestedCurrency: String,
+        baseCurrency: String,
+    ): SettlementCurrencyOption? {
+        val currency = requestedCurrency.trim().uppercase().ifBlank { baseCurrency }
+        return candidate.currencyOptions.firstOrNull { it.normalizedCurrencyCode == currency }
+            ?: candidate.currencyOptions.firstOrNull { it.normalizedCurrencyCode == baseCurrency }
+            ?: candidate.currencyOptions.firstOrNull()
+            ?: SettlementCurrencyOption(baseCurrency, candidate.amount)
+    }
+
+    private suspend fun resolvePendingRequest(
+        draft: TransferDraft,
+        candidate: TransferCandidateUi,
+        amount: BigDecimal,
+        currency: String,
+        direction: SettlementDirection,
+    ): PendingTransferRequest {
+        val type = "settlement"
+        val stored = requestStore.read(currentUserId, draft.activityId, direction)
+            .asReversed()
+            .firstOrNull { pending ->
+                pending.matches(
+                    activityId = draft.activityId,
+                    direction = direction,
+                    fromParticipantId = candidate.fromParticipantId,
+                    toParticipantId = candidate.toParticipantId,
+                    amount = amount,
+                    currency = currency,
+                    type = type,
+                    onBehalfOfParticipantId = draft.onBehalfOfParticipantId,
+                    occurredAt = draft.occurredAt,
+                )
+            }
+        if (stored != null) return stored
+
+        // A changed payload always gets a new id. Reusing a caller-supplied id
+        // here could replay a previously submitted payload after an edit.
+        val requestId = UUID.randomUUID().toString()
+        val request = PendingTransferRequest(
+            requestId = requestId,
+            activityId = draft.activityId,
+            direction = direction,
+            fromParticipantId = candidate.fromParticipantId,
+            toParticipantId = candidate.toParticipantId,
+            amount = amount.stripTrailingZeros().toPlainString(),
+            currency = currency,
+            type = type,
+            occurredAt = draft.occurredAt?.trim().takeUnless { it.isNullOrBlank() }
+                ?: Instant.now().toString(),
+            onBehalfOfParticipantId = draft.onBehalfOfParticipantId,
+            createdAtEpochMillis = System.currentTimeMillis(),
+        )
+        requestStore.upsert(currentUserId, request)
+        return request
+    }
+
+    private suspend fun readPendingRequest(
+        activityId: String,
+        direction: SettlementDirection,
+    ): PendingTransferRequest? = runCatching {
+        requestStore.read(currentUserId, activityId, direction)
+            // The store appends each newly-created payload. Prefer list order
+            // over wall-clock ties so an edit made within one millisecond still
+            // restores the newest form identity.
+            .lastOrNull()
+    }.getOrNull()
+
+    private suspend fun removePendingRequest(request: PendingTransferRequest) {
+        runCatching { requestStore.remove(currentUserId, request) }
+    }
+
     private fun messageFor(error: Throwable): String =
         (error as? com.ffocalors.sharedledger.data.transfer.TransferOperationException)?.userMessage
             ?: TransferErrorMapper.toUserMessage(error)
@@ -257,8 +384,17 @@ class TransferViewModel(
     class Factory(
         private val repository: TransferRepository = TransferRepositoryFactory.create(),
         private val queryCache: SessionQueryCache = SessionQueryCache(),
+        private val currentUserId: String = "",
+        private val context: Context? = null,
+        private val requestStore: TransferRequestStore? = null,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T = TransferViewModel(repository, queryCache) as T
+        override fun <T : ViewModel> create(modelClass: Class<T>): T = TransferViewModel(
+            repository = repository,
+            queryCache = queryCache,
+            currentUserId = currentUserId,
+            requestStore = requestStore ?: context?.let(::PreferencesTransferRequestStore)
+                ?: InMemoryTransferRequestStore(),
+        ) as T
     }
 }

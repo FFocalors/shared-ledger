@@ -1,6 +1,7 @@
 package com.ffocalors.sharedledger.ui.transfer
 
 import com.ffocalors.sharedledger.data.transfer.CreateSettlementTransferInput
+import com.ffocalors.sharedledger.data.transfer.InMemoryTransferRequestStore
 import com.ffocalors.sharedledger.data.transfer.SettlementCandidate
 import com.ffocalors.sharedledger.data.transfer.SettlementCandidateKind
 import com.ffocalors.sharedledger.data.transfer.SettlementContext
@@ -24,6 +25,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -63,6 +65,18 @@ class TransferViewModelTest {
     }
 
     @Test
+    fun activityMultiCurrencyFlagIsExposedToTransferUi() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val repository = FakeTransferRepository().apply { multiCurrencyEnabled = true }
+        val viewModel = TransferViewModel(repository)
+
+        viewModel.load("activity-1", SettlementDirection.TRANSFER)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.multiCurrencyEnabled)
+    }
+
+    @Test
     fun duplicateSubmitIsIgnoredWhileRequestIsInFlight() = runTest(dispatcher) {
         Dispatchers.setMain(dispatcher)
         val gate = CompletableDeferred<Result<SettlementTransferResult>>()
@@ -84,7 +98,7 @@ class TransferViewModelTest {
     }
 
     @Test
-    fun unknownWriteBlocksBlindResubmissionUntilContextIsReloaded() = runTest(dispatcher) {
+    fun unknownWriteCanSafelyRetryWithTheSameRequestId() = runTest(dispatcher) {
         Dispatchers.setMain(dispatcher)
         val gate = CompletableDeferred<Result<SettlementTransferResult>>()
         val repository = FakeTransferRepository().apply { createGate = gate }
@@ -98,11 +112,74 @@ class TransferViewModelTest {
         gate.complete(Result.failure(TransferOperationException("network", IOException("timeout"))))
         advanceUntilIdle()
 
-        assertTrue(viewModel.uiState.value.submissionBlocked)
+        assertTrue(!viewModel.uiState.value.submissionBlocked)
         assertEquals(TransferWriteState.UNKNOWN, viewModel.uiState.value.writeState)
         viewModel.submit(draft)
         advanceUntilIdle()
-        assertEquals(1, repository.createCalls.get())
+        assertEquals(2, repository.createCalls.get())
+        assertEquals(repository.requestIds[0], repository.requestIds[1])
+    }
+
+    @Test
+    fun unknownPayloadSurvivesViewModelRecreationAndClearsAfterSuccess() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val store = InMemoryTransferRequestStore()
+        val firstGate = CompletableDeferred<Result<SettlementTransferResult>>()
+        val firstRepository = FakeTransferRepository().apply { createGate = firstGate }
+        val draft = TransferDraft("activity-1", null, TransferMode.TRANSFER, "creditor", "10.0")
+
+        val firstViewModel = TransferViewModel(
+            repository = firstRepository,
+            currentUserId = "user-1",
+            requestStore = store,
+        )
+        firstViewModel.load("activity-1", SettlementDirection.TRANSFER)
+        advanceUntilIdle()
+        firstViewModel.submit(draft)
+        advanceUntilIdle()
+        firstGate.complete(Result.failure(TransferOperationException("network", IOException("timeout"))))
+        advanceUntilIdle()
+
+        val secondRepository = FakeTransferRepository()
+        val secondViewModel = TransferViewModel(
+            repository = secondRepository,
+            currentUserId = "user-1",
+            requestStore = store,
+        )
+        secondViewModel.load("activity-1", SettlementDirection.TRANSFER)
+        advanceUntilIdle()
+        secondViewModel.submit(draft)
+        advanceUntilIdle()
+
+        assertEquals(firstRepository.inputs.single().requestId, secondRepository.inputs.single().requestId)
+        assertEquals(firstRepository.inputs.single().occurredAt, secondRepository.inputs.single().occurredAt)
+        assertTrue(store.read("user-1", "activity-1", SettlementDirection.TRANSFER).isEmpty())
+    }
+
+    @Test
+    fun editingPayloadRotatesRequestIdAndKeepsOldUnknownRequest() = runTest(dispatcher) {
+        Dispatchers.setMain(dispatcher)
+        val store = InMemoryTransferRequestStore()
+        val gate = CompletableDeferred<Result<SettlementTransferResult>>()
+        val repository = FakeTransferRepository().apply { createGate = gate }
+        val viewModel = TransferViewModel(
+            repository = repository,
+            currentUserId = "user-1",
+            requestStore = store,
+        )
+        viewModel.load("activity-1", SettlementDirection.TRANSFER)
+        advanceUntilIdle()
+        viewModel.submit(TransferDraft("activity-1", null, TransferMode.TRANSFER, "creditor", "10.0"))
+        advanceUntilIdle()
+        gate.complete(Result.failure(TransferOperationException("network", IOException("timeout"))))
+        advanceUntilIdle()
+        val firstRequestId = repository.inputs.single().requestId
+
+        viewModel.submit(TransferDraft("activity-1", null, TransferMode.TRANSFER, "creditor", "11.0"))
+        advanceUntilIdle()
+
+        assertNotEquals(firstRequestId, repository.inputs[1].requestId)
+        assertEquals(2, store.read("user-1", "activity-1", SettlementDirection.TRANSFER).size)
     }
 
     @Test
@@ -209,7 +286,10 @@ class TransferViewModelTest {
 
     private class FakeTransferRepository : TransferRepository {
         val createCalls = AtomicInteger()
+        val requestIds = mutableListOf<String?>()
+        val inputs = mutableListOf<CreateSettlementTransferInput>()
         var loadContextCalls = 0
+        var multiCurrencyEnabled = false
         var createGate: CompletableDeferred<Result<SettlementTransferResult>>? = null
         override suspend fun loadContext(activityId: String, direction: SettlementDirection) = Result.success(
             SettlementContext(
@@ -217,6 +297,7 @@ class TransferViewModelTest {
                 currentParticipantId = "debtor",
                 currentParticipantName = "我",
                 baseCurrency = "CNY",
+                multiCurrencyEnabled = multiCurrencyEnabled,
                 candidates = listOf(
                     SettlementCandidate(
                         participantId = "creditor",
@@ -233,6 +314,8 @@ class TransferViewModelTest {
 
         override suspend fun createSettlement(input: CreateSettlementTransferInput): Result<SettlementTransferResult> {
             createCalls.incrementAndGet()
+            requestIds += input.requestId
+            inputs += input
             return createGate?.await() ?: Result.success(SettlementTransferResult("transfer-1", input.amount, "CNY", 2))
         }
     }

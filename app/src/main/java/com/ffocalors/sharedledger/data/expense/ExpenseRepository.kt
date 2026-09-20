@@ -16,7 +16,6 @@ interface ExpenseRepository {
     suspend fun create(input: CreateExpenseInput): Result<ExpenseMutationResult>
     suspend fun update(input: UpdateExpenseInput): Result<ExpenseMutationResult>
     suspend fun delete(expenseId: String): Result<ExpenseMutationResult>
-    suspend fun restore(expenseId: String): Result<ExpenseMutationResult>
     suspend fun refund(input: RefundExpenseInput): Result<ExpenseMutationResult>
 
     /** Compatibility boundary for callers that need to distinguish an unknown write outcome. */
@@ -28,9 +27,6 @@ interface ExpenseRepository {
 
     suspend fun deleteWrite(expenseId: String): ExpenseWriteResult<ExpenseMutationResult> =
         delete(expenseId).toExpenseWriteResult()
-
-    suspend fun restoreWrite(expenseId: String): ExpenseWriteResult<ExpenseMutationResult> =
-        restore(expenseId).toExpenseWriteResult()
 
     suspend fun refundWrite(input: RefundExpenseInput): ExpenseWriteResult<ExpenseMutationResult> =
         refund(input).toExpenseWriteResult()
@@ -121,12 +117,6 @@ class SupabaseExpenseRepository(private val client: SupabaseClient) : ExpenseRep
         ExpenseMutationResult(result.deletedExpenseId, null, result.version, result.deleted)
     }.mapFailure()
 
-    override suspend fun restore(expenseId: String): Result<ExpenseMutationResult> = runCatching {
-        val result = client.postgrest.rpc("restore_expense", buildJsonObject { put("expense_id", expenseId) })
-            .decodeSingle<RestoreExpenseRpcDto>()
-        ExpenseMutationResult(result.restoredExpenseId, null, result.version, result.restored)
-    }.mapFailure()
-
     override suspend fun refund(input: RefundExpenseInput): Result<ExpenseMutationResult> =
         create(input.toCreateInput())
 
@@ -141,12 +131,6 @@ class SupabaseExpenseRepository(private val client: SupabaseClient) : ExpenseRep
             expectedDeleted = true,
             committedMessage = "账单已作废，但最新状态暂时无法确认，请稍后刷新确认，勿重复提交",
         ) { delete(expenseId) }
-
-    override suspend fun restoreWrite(expenseId: String): ExpenseWriteResult<ExpenseMutationResult> =
-        writeAndConfirm(
-            expectedDeleted = false,
-            committedMessage = "账单已恢复，但最新状态暂时无法确认，请稍后刷新确认，勿重复提交",
-        ) { restore(expenseId) }
 
     override suspend fun refundWrite(input: RefundExpenseInput): ExpenseWriteResult<ExpenseMutationResult> =
         writeAndConfirm { refund(input) }
@@ -198,7 +182,7 @@ class SupabaseExpenseRepository(private val client: SupabaseClient) : ExpenseRep
     }
 }
 
-/** Exact post-write confirmation used by delete/restore without coupling the UI to RPC fields. */
+/** Exact post-write confirmation used by delete without coupling the UI to RPC fields. */
 internal fun Expense.hasExpectedDeletionState(expectedDeleted: Boolean?): Boolean =
     expectedDeleted == null || isDeleted == expectedDeleted
 
@@ -228,6 +212,5 @@ class UnavailableExpenseRepository(
     override suspend fun create(input: CreateExpenseInput) = unavailable<ExpenseMutationResult>()
     override suspend fun update(input: UpdateExpenseInput) = unavailable<ExpenseMutationResult>()
     override suspend fun delete(expenseId: String) = unavailable<ExpenseMutationResult>()
-    override suspend fun restore(expenseId: String) = unavailable<ExpenseMutationResult>()
     override suspend fun refund(input: RefundExpenseInput) = unavailable<ExpenseMutationResult>()
 }

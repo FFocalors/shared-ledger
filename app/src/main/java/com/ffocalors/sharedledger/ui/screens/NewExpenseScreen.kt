@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
@@ -44,6 +45,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -324,6 +326,25 @@ fun NewExpenseScreen(
     }
     val keypad = remember { NumericKeypadState() }
     val focusManager = LocalFocusManager.current
+    val listState = rememberLazyListState()
+
+    // A failed submit is rendered as the final list item. Clear the amount
+    // field focus first so the custom keypad cannot cover the message, then
+    // reveal that item with one smooth scroll. Keying this effect by the
+    // message avoids re-scrolling on ordinary recompositions.
+    LaunchedEffect(errorMessage) {
+        if (!errorMessage.isNullOrBlank()) {
+            focusManager.clearFocus(force = true)
+            // The error item is added by the same recomposition that starts
+            // this effect; wait for the next layout pass before reading the
+            // list size, otherwise the old last-item index would be used.
+            withFrameNanos { }
+            val lastItemIndex = listState.layoutInfo.totalItemsCount - 1
+            if (lastItemIndex >= 0) {
+                listState.animateScrollToItem(lastItemIndex)
+            }
+        }
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
     Scaffold(
@@ -351,6 +372,7 @@ fun NewExpenseScreen(
         ) {
         LazyColumn(
             modifier = Modifier.widthIn(max = SharedLedgerDimens.ContentMaxWidth).fillMaxSize().sharedLedgerHazeSource(hazeState),
+            state = listState,
             contentPadding = PaddingValues(SharedLedgerDimens.PageHorizontalPadding, innerPadding.calculateTopPadding() + SharedLedgerSpacing.Medium, SharedLedgerDimens.PageHorizontalPadding, innerPadding.calculateBottomPadding() + SharedLedgerSpacing.Medium),
             verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Large),
         ) {
@@ -457,8 +479,33 @@ fun NewExpenseScreen(
                             val selected = participant.id in draft.payerIds
                             PayerRow(participant, index, selected, draft.payerAmounts[participant.id].orEmpty(), draft.currency, keypad, {
                                 val next = if (selected) draft.payerIds - participant.id else draft.payerIds + participant.id
-                                draft = draft.copy(payerIds = next, payerAmounts = draft.payerAmounts + (participant.id to (draft.payerAmounts[participant.id] ?: "0")))
-                            }, { draft = draft.copy(payerAmounts = draft.payerAmounts + (participant.id to it)) })
+                                val nextAmounts = if (selected) {
+                                    // Deselecting a payer must not leave a visible
+                                    // amount which submit validation will ignore.
+                                    draft.payerAmounts - participant.id
+                                } else {
+                                    draft.payerAmounts + (participant.id to (draft.payerAmounts[participant.id] ?: ""))
+                                }
+                                draft = draft.copy(payerIds = next, payerAmounts = nextAmounts)
+                            }, { value ->
+                                val parsed = value.trim().toBigDecimalOrNull()
+                                val hasPositiveAmount = parsed != null && parsed > BigDecimal.ZERO
+                                val isSelected = participant.id in draft.payerIds
+                                val nextPayerIds = if (hasPositiveAmount) {
+                                    (draft.payerIds + participant.id).distinct()
+                                } else {
+                                    draft.payerIds
+                                }
+                                val nextAmounts = if (!isSelected && !hasPositiveAmount) {
+                                    // An unselected row cannot retain a zero or
+                                    // blank amount that would be misleading in
+                                    // the form or diverge from payerIds.
+                                    draft.payerAmounts - participant.id
+                                } else {
+                                    draft.payerAmounts + (participant.id to value)
+                                }
+                                draft = draft.copy(payerIds = nextPayerIds, payerAmounts = nextAmounts)
+                            })
                         }
                     }
                 }

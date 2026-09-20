@@ -497,7 +497,7 @@ class ExpenseViewModelTest {
     }
 
     @Test
-    fun updateDeleteRestoreAndRefundUseRepositoryOperations() = runTest(dispatcher) {
+    fun updateDeleteAndRefundUseRepositoryOperations() = runTest(dispatcher) {
         Dispatchers.setMain(dispatcher)
         val repository = FakeExpenseRepository()
         val viewModel = ExpenseViewModel(repository, "user-1", fakeShareRepository(repository))
@@ -506,46 +506,13 @@ class ExpenseViewModelTest {
         advanceUntilIdle()
         viewModel.delete("expense-real")
         advanceUntilIdle()
-        viewModel.restore("expense-real")
-        advanceUntilIdle()
         viewModel.submit(ExpenseFormMode.Refund, "expense-real", "activity-real", validDraft().copy(originalExpenseId = "expense-real"))
         advanceUntilIdle()
 
         assertEquals(1, repository.updateCalls.get())
         assertEquals(1, repository.deleteCalls.get())
-        assertEquals(1, repository.restoreCalls.get())
         assertEquals(1, repository.refundCalls.get())
         assertEquals("expense-real", repository.lastRefund?.originalExpenseId)
-    }
-
-    @Test
-    fun restoreRefreshesBothListsAndReturnsDeletedCardToActiveTotals() = runTest(dispatcher) {
-        Dispatchers.setMain(dispatcher)
-        val repository = FakeExpenseRepository().apply {
-            listExpenses = listExpenses.map { it.copy(isDeleted = true) }
-        }
-        val viewModel = ExpenseViewModel(repository, "user-1", dynamicShareRepository(repository))
-
-        viewModel.loadByActivity("activity-real")
-        viewModel.loadByLedgerUnit("activity-real", "ledger-real")
-        viewModel.loadDetail("expense-real")
-        advanceUntilIdle()
-        assertTrue(viewModel.listState("activity:activity-real").value.expenses.single().isDeleted)
-        assertEquals(BigDecimal.ZERO, viewModel.listState("activity:activity-real").value.totalBaseAmount)
-
-        repository.activityIncludeDeleted.clear()
-        repository.ledgerIncludeDeleted.clear()
-        viewModel.restore("expense-real")
-        advanceUntilIdle()
-
-        assertEquals(listOf(true), repository.activityIncludeDeleted)
-        assertEquals(listOf(true), repository.ledgerIncludeDeleted)
-        val activityState = viewModel.listState("activity:activity-real").value
-        val ledgerState = viewModel.listState("ledger:ledger-real").value
-        assertFalse(activityState.expenses.single().isDeleted)
-        assertFalse(ledgerState.expenses.single().isDeleted)
-        assertEquals(BigDecimal("10"), activityState.totalBaseAmount)
-        assertEquals(BigDecimal("10"), ledgerState.ledgerUnitTotals["ledger-real"])
     }
 
     @Test
@@ -691,7 +658,6 @@ private class FakeExpenseRepository : ExpenseRepository {
     val createCalls = AtomicInteger()
     val updateCalls = AtomicInteger()
     val deleteCalls = AtomicInteger()
-    val restoreCalls = AtomicInteger()
     val refundCalls = AtomicInteger()
     var createGate: CompletableDeferred<Result<ExpenseMutationResult>>? = null
     var lastCreate: CreateExpenseInput? = null
@@ -743,11 +709,6 @@ private class FakeExpenseRepository : ExpenseRepository {
             return it
         }
         return delete(expenseId).toExpenseWriteResult()
-    }
-    override suspend fun restore(expenseId: String): Result<ExpenseMutationResult> {
-        restoreCalls.incrementAndGet()
-        listExpenses = listExpenses.map { if (it.id == expenseId) it.copy(isDeleted = false) else it }
-        return Result.success(ExpenseMutationResult(expenseId, null, 4, false))
     }
     override suspend fun refund(input: RefundExpenseInput): Result<ExpenseMutationResult> {
         refundCalls.incrementAndGet()

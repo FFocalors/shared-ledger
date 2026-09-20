@@ -29,6 +29,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +38,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -69,10 +71,20 @@ class NumericKeypadState {
 
     private var getValue: (() -> String)? = null
     private var onChange: ((String) -> Unit)? = null
+    /**
+     * The value most recently produced by this keypad binding. Compose may not
+     * have recomposed the field before the next key is tapped, so reading only
+     * [getValue] can otherwise apply several taps to the same stale text.
+     */
+    private var workingValue: String? = null
+    private var lastObservedValue: String? = null
 
     fun bind(getValue: () -> String, onChange: (String) -> Unit) {
         this.getValue = getValue
         this.onChange = onChange
+        val initial = getValue()
+        workingValue = initial
+        lastObservedValue = initial
         active = true
     }
 
@@ -80,24 +92,62 @@ class NumericKeypadState {
         if (this.onChange === onChange) {
             this.getValue = null
             this.onChange = null
+            this.workingValue = null
+            this.lastObservedValue = null
             active = false
         }
     }
 
+    /**
+     * Synchronizes a bound field after Compose has delivered an external
+     * update (for example, a parent state reset or a different field value).
+     * Inactive fields must not overwrite the active binding because this state
+     * is shared by all amount fields on the form.
+     */
+    fun syncExternalValue(getValue: () -> String) {
+        if (this.getValue !== getValue) return
+        val external = getValue()
+        workingValue = external
+        lastObservedValue = external
+    }
+
+    private fun currentValue(): String? {
+        val getter = getValue ?: return null
+        val observed = getter()
+        val working = workingValue
+        val current = when {
+            working == null -> observed
+            observed == working -> observed
+            // The getter still exposes the value from before the last callback;
+            // keep the value already emitted by the keypad until recomposition.
+            observed == lastObservedValue -> working
+            // A different value came from outside this keypad binding.
+            else -> observed
+        }
+        workingValue = current
+        lastObservedValue = observed
+        return current
+    }
+
+    private fun emit(value: String) {
+        workingValue = value
+        onChange?.invoke(value)
+    }
+
     fun input(digit: String) {
-        val current = getValue?.invoke() ?: return
+        val current = currentValue() ?: return
         val next = when {
             digit == "." -> if (current.contains('.')) current else current + "."
             current.contains('.') && current.substringAfter('.').length >= 2 -> current
             current.length >= 12 -> current
             else -> current + digit
         }
-        if (next != current) onChange?.invoke(next)
+        if (next != current) emit(next)
     }
 
     fun delete() {
-        val current = getValue?.invoke() ?: return
-        if (current.isNotEmpty()) onChange?.invoke(current.dropLast(1))
+        val current = currentValue() ?: return
+        if (current.isNotEmpty()) emit(current.dropLast(1))
     }
 }
 
@@ -106,11 +156,25 @@ fun Modifier.numericKeypadTarget(
     state: NumericKeypadState,
     current: () -> String,
     onChange: (String) -> Unit,
-): Modifier = this.onFocusChanged { focusState ->
-    if (focusState.isFocused) {
-        state.bind(current, onChange)
-    } else {
-        state.unbind(onChange)
+): Modifier = composed {
+    // Focus callbacks are only delivered when focus changes. Keep the callbacks
+    // bound to the field, but make their delegates follow recomposition so that
+    // the keypad never reads the value captured before the previous key press.
+    val latestCurrent = rememberUpdatedState(current)
+    val latestOnChange = rememberUpdatedState(onChange)
+    val boundGetter: () -> String = remember { { latestCurrent.value() } }
+    val boundOnChange: (String) -> Unit = remember { { value -> latestOnChange.value(value) } }
+
+    // Keep the working value aligned after a real Compose update, while the
+    // state itself bridges the short window before that update is observable.
+    SideEffect { state.syncExternalValue(boundGetter) }
+
+    this@composed.onFocusChanged { focusState ->
+        if (focusState.isFocused) {
+            state.bind(boundGetter, boundOnChange)
+        } else {
+            state.unbind(boundOnChange)
+        }
     }
 }
 

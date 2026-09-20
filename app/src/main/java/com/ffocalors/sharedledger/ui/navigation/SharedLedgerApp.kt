@@ -1220,7 +1220,11 @@ private fun AuthenticatedNavHost(
             }
             val transferViewModel: TransferViewModel = viewModel(
                 key = "transfer-$activityId-${mode.name}",
-                factory = TransferViewModel.Factory(queryCache = sessionQueryCache),
+                factory = TransferViewModel.Factory(
+                    queryCache = sessionQueryCache,
+                    currentUserId = currentUserId,
+                    context = context,
+                ),
             )
             val transferState by transferViewModel.uiState.collectAsState()
             val activityDetailState by activityViewModel.detail(activityId).collectAsState()
@@ -1555,7 +1559,6 @@ private fun AuthenticatedNavHost(
                         navController.navigate(SharedLedgerRoutes.newExpense(activityId, ledgerUnitId, ExpenseFormRouteMode.EDIT, id))
                     } } } else null,
                     onVoid = if (activityWritable) { { id -> requireParticipantBinding(activityId) { expenseViewModel.delete(id) } } } else null,
-                    onRestore = if (activityWritable) { { id -> requireParticipantBinding(activityId) { expenseViewModel.restore(id) } } } else null,
                     onAddRefund = if (activityWritable) { { id -> requireParticipantBinding(activityId) {
                         navController.navigate(SharedLedgerRoutes.newExpense(activityId, ledgerUnitId, ExpenseFormRouteMode.REFUND, id))
                     } } } else null,

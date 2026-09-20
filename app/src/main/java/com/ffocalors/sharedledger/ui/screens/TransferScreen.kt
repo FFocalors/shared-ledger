@@ -57,6 +57,7 @@ import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerNumericKeypad
 import com.ffocalors.sharedledger.ui.components.NumericKeypadState
 import com.ffocalors.sharedledger.ui.components.numericKeypadTarget
+import com.ffocalors.sharedledger.ui.components.SharedLedgerFluidCurrencyPicker
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
@@ -74,6 +75,7 @@ import com.ffocalors.sharedledger.ui.util.MoneyFormatter
 import com.ffocalors.sharedledger.ui.transfer.TransferCandidateUi
 import com.ffocalors.sharedledger.ui.transfer.TransferUiState
 import com.ffocalors.sharedledger.data.transfer.SettlementCandidateKind
+import com.ffocalors.sharedledger.data.transfer.SettlementCurrencyOption
 import com.ffocalors.sharedledger.data.transfer.SettlementParticipant
 import java.math.BigDecimal
 
@@ -88,10 +90,13 @@ private data class TransferParticipant(
     val participantId: String,
     val participant: ParticipantUiModel,
     val amount: BigDecimal,
+    val fromParticipantId: String,
     val fromParticipantName: String,
+    val toParticipantId: String,
     val toParticipantName: String,
     val kind: SettlementCandidateKind,
     val onBehalfOptions: List<SettlementParticipant> = emptyList(),
+    val currencyOptions: List<SettlementCurrencyOption> = emptyList(),
 )
 
 private enum class TransferCandidateScope { PERSONAL, ON_BEHALF }
@@ -104,6 +109,10 @@ data class TransferDraft(
     val amount: String,
     val onBehalfOfParticipantId: String? = null,
     val candidateKey: String? = null,
+    val currency: String = "",
+    val requestId: String? = null,
+    /** Optional persisted occurrence time used when a caller restores a draft. */
+    val occurredAt: String? = null,
 )
 
 /**
@@ -122,6 +131,7 @@ fun TransferScreen(
 ) {
     var selectedIndex by rememberSaveable(mode) { mutableIntStateOf(0) }
     var amountText by rememberSaveable(mode) { mutableStateOf("") }
+    var selectedCurrency by rememberSaveable(mode) { mutableStateOf(state.baseCurrency) }
     var selectedOnBehalfId by rememberSaveable(mode) { mutableStateOf<String?>(null) }
     var candidateScope by rememberSaveable(mode) { mutableStateOf(TransferCandidateScope.PERSONAL) }
     val keypad = remember { NumericKeypadState() }
@@ -140,10 +150,13 @@ fun TransferScreen(
                 else AvatarBackground.Unbound(candidate.participantId),
             ),
             amount = candidate.amount,
+            fromParticipantId = candidate.fromParticipantId,
             fromParticipantName = candidate.fromParticipantName,
+            toParticipantId = candidate.toParticipantId,
             toParticipantName = candidate.toParticipantName,
             kind = candidate.kind,
             onBehalfOptions = candidate.onBehalfOptions,
+            currencyOptions = candidate.currencyOptions,
         )
     }
     val selected = participants.getOrNull(selectedIndex)
@@ -155,19 +168,75 @@ fun TransferScreen(
             else -> candidateScope
         }
     }
-    LaunchedEffect(mode, candidateScope, activeCandidates) {
-        selectedIndex = selectedIndex.coerceIn(0, (participants.size - 1).coerceAtLeast(0))
-        amountText = participants.getOrNull(selectedIndex)?.amount?.toPlainString().orEmpty()
-        selectedOnBehalfId = null
+    LaunchedEffect(mode, candidateScope, activeCandidates, state.pendingRequest?.requestId) {
+        val pending = state.pendingRequest
+        val pendingIndex = pending?.let { request ->
+            participants.indexOfFirst { participant ->
+                participant.kind == (if (request.onBehalfOfParticipantId == null) {
+                    SettlementCandidateKind.PERSONAL
+                } else {
+                    SettlementCandidateKind.ON_BEHALF
+                }) && participant.fromParticipantId == request.fromParticipantId &&
+                    participant.toParticipantId == request.toParticipantId
+            }
+        }?.takeIf { it >= 0 }
+        val targetIndex = pendingIndex
+            ?: selectedIndex.coerceIn(0, (participants.size - 1).coerceAtLeast(0))
+        selectedIndex = targetIndex
+        val participant = participants.getOrNull(targetIndex)
+        val pendingOption = pending?.takeIf {
+            participant != null &&
+                participant.fromParticipantId == it.fromParticipantId &&
+                participant.toParticipantId == it.toParticipantId
+        }?.let { request ->
+            participant?.currencyOptions?.firstOrNull { option ->
+                option.normalizedCurrencyCode == request.currency
+            }
+        }
+        val option = participant?.let {
+            defaultTransferCurrencyOption(
+                currencyOptions = it.currencyOptions,
+                baseCurrency = state.baseCurrency,
+                multiCurrencyEnabled = state.multiCurrencyEnabled,
+            )
+        }
+        val pendingMatchesParticipant = pendingIndex == targetIndex && participant != null &&
+            participant.fromParticipantId == pending?.fromParticipantId &&
+            participant.toParticipantId == pending?.toParticipantId
+        selectedCurrency = pendingOption?.normalizedCurrencyCode
+            ?: option?.normalizedCurrencyCode
+            ?: state.baseCurrency
+        amountText = if (pendingOption != null && pending != null) {
+            pending.amount
+        } else {
+            option?.amount?.toPlainString() ?: participant?.amount?.toPlainString().orEmpty()
+        }
+        selectedOnBehalfId = pending?.takeIf { pendingMatchesParticipant }?.onBehalfOfParticipantId
+            ?: participant?.onBehalfOptions?.firstOrNull()?.participantId
     }
-    LaunchedEffect(selected?.candidateKey, selected?.onBehalfOptions) {
+    LaunchedEffect(selected?.candidateKey, selected?.onBehalfOptions, state.pendingRequest?.requestId) {
         if (selected?.kind == SettlementCandidateKind.ON_BEHALF && selected.onBehalfOptions.isNotEmpty()) {
-            selectedOnBehalfId = selected.onBehalfOptions.first().participantId
+            selectedOnBehalfId = state.pendingRequest?.onBehalfOfParticipantId
+                ?.takeIf { candidateId -> selected.onBehalfOptions.any { it.participantId == candidateId } }
+                ?: selected.onBehalfOptions.first().participantId
         }
     }
     val isTransfer = mode == TransferMode.TRANSFER
     val title = if (isTransfer) "转账" else "收款"
-    val isAmountValid = selected != null && isValidTransferAmount(amountText, selected.amount)
+    val pendingMatchesSelected = state.pendingRequest?.let { request ->
+        selected != null &&
+            selected.fromParticipantId == request.fromParticipantId &&
+            selected.toParticipantId == request.toParticipantId
+    } == true
+    val selectedCurrencyOption = selected?.currencyOptions
+        ?.firstOrNull {
+            (state.multiCurrencyEnabled || pendingMatchesSelected) &&
+                it.normalizedCurrencyCode == selectedCurrency
+        }
+        ?: selected?.currencyOptions?.firstOrNull { it.normalizedCurrencyCode == state.baseCurrency }
+        ?: selected?.let { SettlementCurrencyOption(state.baseCurrency, it.amount) }
+    val selectedAmountCap = selectedCurrencyOption?.amount ?: BigDecimal.ZERO
+    val isAmountValid = selected != null && isValidTransferAmount(amountText, selectedAmountCap)
     val isFormVisible = !state.isLoading && state.errorMessage == null && state.emptyMessage == null
     val hazeState = rememberSharedLedgerHazeState()
 
@@ -205,6 +274,7 @@ fun TransferScreen(
                                     amount = amountText,
                                     onBehalfOfParticipantId = selectedOnBehalfId,
                                     candidateKey = selected.candidateKey,
+                                    currency = selectedCurrencyOption?.normalizedCurrencyCode ?: state.baseCurrency,
                                 ),
                             )
                         },
@@ -290,7 +360,14 @@ fun TransferScreen(
                             currencyCode = state.baseCurrency,
                             onSelected = { index ->
                                 selectedIndex = index
-                                amountText = participants[index].amount.toPlainString()
+                                val option = defaultTransferCurrencyOption(
+                                    currencyOptions = participants[index].currencyOptions,
+                                    baseCurrency = state.baseCurrency,
+                                    multiCurrencyEnabled = state.multiCurrencyEnabled,
+                                )
+                                selectedCurrency = option?.normalizedCurrencyCode ?: state.baseCurrency
+                                amountText = option?.amount?.toPlainString()
+                                    ?: participants[index].amount.toPlainString()
                                 selectedOnBehalfId = participants[index].onBehalfOptions.firstOrNull()?.participantId
                             },
                         )
@@ -300,13 +377,30 @@ fun TransferScreen(
                             selected = selected,
                             amountText = amountText,
                             isAmountValid = isAmountValid,
-                            currencyCode = state.baseCurrency,
+                            currencyCode = selectedCurrencyOption?.normalizedCurrencyCode ?: state.baseCurrency,
+                            baseCurrency = state.baseCurrency,
+                            multiCurrencyEnabled = state.multiCurrencyEnabled,
+                            currencyOptions = selected.currencyOptions,
+                            selectedCurrency = selectedCurrencyOption?.normalizedCurrencyCode ?: state.baseCurrency,
+                            maxAmount = selectedAmountCap,
+                            onCurrencyChange = { currency ->
+                                selectedCurrency = currency
+                                amountText = selected.currencyOptions.firstOrNull {
+                                    it.normalizedCurrencyCode == currency
+                                }?.amount?.toPlainString().orEmpty()
+                            },
                             canActOnBehalf = state.canActOnBehalf,
                             currentParticipantId = state.currentParticipantId,
                             onBehalfOptions = selected.onBehalfOptions,
                             selectedOnBehalfId = selectedOnBehalfId,
                             onBehalfOfParticipantIdChanged = { selectedOnBehalfId = it },
-                            onAmountChange = { amountText = sanitizeCnyAmount(it) },
+                            onAmountChange = {
+                                amountText = sanitizeTransferAmount(
+                                    it,
+                                    fractionDigits = if ((selectedCurrencyOption?.normalizedCurrencyCode
+                                            ?: state.baseCurrency) == state.baseCurrency) 1 else 2,
+                                )
+                            },
                             keypad = keypad,
                         )
                     }
@@ -467,6 +561,12 @@ private fun TransferAmountCard(
     amountText: String,
     isAmountValid: Boolean,
     currencyCode: String,
+    baseCurrency: String,
+    multiCurrencyEnabled: Boolean,
+    currencyOptions: List<SettlementCurrencyOption>,
+    selectedCurrency: String,
+    maxAmount: BigDecimal,
+    onCurrencyChange: (String) -> Unit,
     canActOnBehalf: Boolean,
     currentParticipantId: String?,
     onBehalfOptions: List<SettlementParticipant>,
@@ -477,6 +577,14 @@ private fun TransferAmountCard(
     keypad: NumericKeypadState? = null,
 ) {
     val isTransfer = mode == TransferMode.TRANSFER
+    var showCurrencyMenu by remember { mutableStateOf(false) }
+    val visibleCurrencyOptions = visibleTransferCurrencyOptions(
+        multiCurrencyEnabled = multiCurrencyEnabled,
+        currencyOptions = currencyOptions,
+        baseCurrency = baseCurrency,
+    ).ifEmpty {
+        listOf(SettlementCurrencyOption(baseCurrency, maxAmount))
+    }
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = SharedLedgerRadius.BottomActionBar,
@@ -502,6 +610,21 @@ private fun TransferAmountCard(
                 style = SharedLedgerTextStyles.CardTitle,
                 color = MaterialTheme.colorScheme.onSurface,
             )
+            if (shouldShowTransferCurrencyPicker(multiCurrencyEnabled)) {
+                Text(
+                    text = "结算币种",
+                    style = SharedLedgerTextStyles.Label,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                SharedLedgerFluidCurrencyPicker(
+                    expanded = showCurrencyMenu,
+                    onExpandedChange = { showCurrencyMenu = it },
+                    currencyCodes = visibleCurrencyOptions.map { it.normalizedCurrencyCode },
+                    selectedCode = selectedCurrency,
+                    onSelected = onCurrencyChange,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
             SharedLedgerTextField(
                 value = amountText,
                 onValueChange = onAmountChange,
@@ -528,18 +651,18 @@ private fun TransferAmountCard(
             )
             Text(
                 text = if (selected.kind == SettlementCandidateKind.ON_BEHALF) {
-                    "当前债务 ${MoneyFormatter.format(selected.amount, currencyCode, 1)}"
+                    "当前债务 ${MoneyFormatter.format(maxAmount, currencyCode, if (currencyCode == baseCurrency) 1 else 2)}"
                 } else if (isTransfer) {
-                    "最多可转 ${MoneyFormatter.format(selected.amount, currencyCode, 1)}"
+                    "最多可转 ${MoneyFormatter.format(maxAmount, currencyCode, if (currencyCode == baseCurrency) 1 else 2)}"
                 } else {
-                    "当前欠款 ${MoneyFormatter.format(selected.amount, currencyCode, 1)}"
+                    "当前欠款 ${MoneyFormatter.format(maxAmount, currencyCode, if (currencyCode == baseCurrency) 1 else 2)}"
                 },
                 style = SharedLedgerTextStyles.Label,
                 color = MaterialTheme.colorScheme.outline,
             )
             if (!isAmountValid && amountText.isNotBlank()) {
                 Text(
-                    text = if (amountText.toBigDecimalOrNull()?.let { it > selected.amount } == true) {
+                    text = if (amountText.toBigDecimalOrNull()?.let { it > maxAmount } == true) {
                         "金额不能超过当前债务"
                     } else {
                         "请输入大于 0 的金额"
@@ -601,15 +724,48 @@ private fun OnBehalfPicker(
     }
 }
 
-private fun sanitizeCnyAmount(value: String): String {
+internal fun sanitizeTransferAmount(value: String, fractionDigits: Int = 1): String {
     val filtered = value.filter { it.isDigit() || it == '.' }
     val dotIndex = filtered.indexOf('.')
     return if (dotIndex < 0) {
         filtered
     } else {
-        filtered.substring(0, dotIndex + 1) + filtered.substring(dotIndex + 1).take(1)
+        filtered.substring(0, dotIndex + 1) + filtered.substring(dotIndex + 1).take(fractionDigits.coerceAtLeast(0))
     }
 }
+
+/**
+ * The settlement options RPC is the source of truth for currencies that have a
+ * live debt. Keep the base option supplied by that response, but never widen
+ * the list with the exchange-rate catalogue used by expense entry.
+ */
+internal fun visibleTransferCurrencyOptions(
+    multiCurrencyEnabled: Boolean,
+    currencyOptions: List<SettlementCurrencyOption>,
+    baseCurrency: String,
+): List<SettlementCurrencyOption> {
+    val base = baseCurrency.trim().uppercase()
+    val distinct = currencyOptions
+        .filter { it.normalizedCurrencyCode.isNotBlank() && it.amount > BigDecimal.ZERO }
+        .distinctBy { it.normalizedCurrencyCode }
+    return if (multiCurrencyEnabled) {
+        distinct
+    } else {
+        distinct.filter { it.normalizedCurrencyCode == base }
+    }
+}
+
+internal fun defaultTransferCurrencyOption(
+    currencyOptions: List<SettlementCurrencyOption>,
+    baseCurrency: String,
+    multiCurrencyEnabled: Boolean,
+): SettlementCurrencyOption? {
+    val base = baseCurrency.trim().uppercase()
+    return currencyOptions.firstOrNull { it.normalizedCurrencyCode == base }
+        ?: currencyOptions.firstOrNull().takeIf { multiCurrencyEnabled }
+}
+
+internal fun shouldShowTransferCurrencyPicker(multiCurrencyEnabled: Boolean): Boolean = multiCurrencyEnabled
 
 internal fun isValidTransferAmount(value: String): Boolean =
     value.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true

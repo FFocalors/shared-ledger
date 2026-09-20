@@ -110,6 +110,7 @@ data class ExpenseDetailUiState(
     val splits: List<ExpenseSplitUiState> = emptyList(),
     val attachments: List<ExpenseAttachmentUiState> = emptyList(),
     val status: ExpenseDetailStatus = ExpenseDetailStatus.Deleted,
+    val isSettled: Boolean = false,
     val actionMessage: String? = null,
     val attachmentMessage: String? = null,
     val iconKey: String = com.ffocalors.sharedledger.data.expense.ExpenseIconKey.MONEY,
@@ -211,7 +212,6 @@ fun ExpenseDetailScreen(
     onBack: (() -> Unit)? = null,
     onEdit: ((expenseId: String) -> Unit)? = null,
     onVoid: ((expenseId: String) -> Unit)? = null,
-    onRestore: ((expenseId: String) -> Unit)? = null,
     onAddRefund: ((expenseId: String) -> Unit)? = null,
     onRefreshConfirmation: (() -> Unit)? = null,
     onAttachmentClick: ((expenseId: String, attachmentId: String) -> Unit)? = null,
@@ -239,27 +239,26 @@ fun ExpenseDetailScreen(
                 titleStyle = SharedLedgerTextStyles.PageTitle,
                 titleColor = MaterialTheme.colorScheme.primary,
                 showMoreButton = false,
-                 actionIcon = Icons.Rounded.Edit.takeIf { uiState.status == ExpenseDetailStatus.Active && onEdit != null },
-                 actionContentDescription = "编辑账单".takeIf { uiState.status == ExpenseDetailStatus.Active && onEdit != null },
+                 actionIcon = Icons.Rounded.Edit.takeIf { uiState.status == ExpenseDetailStatus.Active && !uiState.isSettled && onEdit != null },
+                 actionContentDescription = "编辑账单".takeIf { uiState.status == ExpenseDetailStatus.Active && !uiState.isSettled && onEdit != null },
                  onActionClick = onEdit?.let { callback -> { callback(uiState.expenseId) } }
-                     .takeIf { uiState.status == ExpenseDetailStatus.Active },
+                     .takeIf { uiState.status == ExpenseDetailStatus.Active && !uiState.isSettled },
                 hazeState = hazeState,
             )
         },
         bottomBar = {
-            val primaryAction = if (uiState.status == ExpenseDetailStatus.Deleted) {
-                onRestore?.let { callback -> { callback(uiState.expenseId) } }
-            } else {
-                onVoid?.let { callback -> { callback(uiState.expenseId) } }
-            }
+            val primaryAction = onVoid
+                ?.takeIf { uiState.status == ExpenseDetailStatus.Active && !uiState.isSettled }
+                ?.let { callback -> { callback(uiState.expenseId) } }
             val hasMoreActions = if (uiState.status == ExpenseDetailStatus.Active) {
-                onEdit != null || onAddRefund != null || onVoid != null
+                uiState.isSettled || (!uiState.isSettled && (onEdit != null || onVoid != null)) || onAddRefund != null
             } else {
                 onAddRefund != null
             }
             if (primaryAction != null || hasMoreActions) {
                 ExpenseDetailBottomBar(
                     status = uiState.status,
+                    isSettled = uiState.isSettled,
                     onPrimaryAction = primaryAction,
                     onMore = { sheetVisible = true }.takeIf { hasMoreActions },
                     hazeState = hazeState,
@@ -357,11 +356,12 @@ fun ExpenseDetailScreen(
         ) {
             ExpenseActionSheet(
                 status = uiState.status,
-                 onEdit = onEdit?.let { callback -> {
+                isSettled = uiState.isSettled,
+                 onEdit = onEdit?.takeIf { !uiState.isSettled }?.let { callback -> {
                      sheetVisible = false
                      callback(uiState.expenseId)
                  } },
-                 onVoid = onVoid?.let { callback -> {
+                 onVoid = onVoid?.takeIf { !uiState.isSettled }?.let { callback -> {
                      sheetVisible = false
                      callback(uiState.expenseId)
                  } },
@@ -686,6 +686,7 @@ private fun DetailCard(content: @Composable () -> Unit) {
 @Composable
 private fun ExpenseDetailBottomBar(
     status: ExpenseDetailStatus,
+    isSettled: Boolean,
     onPrimaryAction: (() -> Unit)?,
     onMore: (() -> Unit)?,
     hazeState: dev.chrisbanes.haze.HazeState,
@@ -698,15 +699,19 @@ private fun ExpenseDetailBottomBar(
         ) {
             onPrimaryAction?.let { callback ->
                 SharedLedgerButton(
-                    text = if (status == ExpenseDetailStatus.Deleted) "恢复账单" else "作废账单",
+                    text = "作废账单",
                     onClick = callback,
                     modifier = Modifier.weight(1f),
-                    tone = if (status == ExpenseDetailStatus.Deleted) {
-                        SharedLedgerButtonTone.SoftPrimary
-                    } else {
-                        SharedLedgerButtonTone.Danger
-                    },
-                    icon = if (status == ExpenseDetailStatus.Deleted) Icons.Rounded.Refresh else Icons.Rounded.Delete,
+                    tone = SharedLedgerButtonTone.Danger,
+                    icon = Icons.Rounded.Delete,
+                )
+            }
+            if (status == ExpenseDetailStatus.Active && isSettled) {
+                Text(
+                    text = "账单已发生结算，不能作废或修改财务字段",
+                    style = SharedLedgerTextStyles.Label,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
                 )
             }
             onMore?.let { callback ->
@@ -726,6 +731,7 @@ private fun ExpenseDetailBottomBar(
 @Composable
 private fun ExpenseActionSheet(
     status: ExpenseDetailStatus,
+    isSettled: Boolean,
     onEdit: (() -> Unit)?,
     onVoid: (() -> Unit)?,
     onAddRefund: (() -> Unit)?,
@@ -744,6 +750,13 @@ private fun ExpenseActionSheet(
         )
         Spacer(Modifier.height(SharedLedgerSpacing.Small))
         if (status == ExpenseDetailStatus.Active) {
+            if (isSettled) {
+                Text(
+                    text = "账单已发生结算，不能作废或修改财务字段",
+                    style = SharedLedgerTextStyles.Label,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             onEdit?.let { callback -> ActionSheetButton(Icons.Rounded.Edit, "编辑账单", SharedLedgerButtonTone.Neutral, outlined = true, onClick = callback) }
             onAddRefund?.let { callback -> ActionSheetButton(Icons.Rounded.CurrencyExchange, "添加退款", SharedLedgerButtonTone.WarmSecondary, onClick = callback) }
             onVoid?.let { callback -> ActionSheetButton(Icons.Rounded.Delete, "作废账单", SharedLedgerButtonTone.Danger, onClick = callback) }

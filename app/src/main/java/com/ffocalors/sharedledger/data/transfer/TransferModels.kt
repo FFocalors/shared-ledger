@@ -24,6 +24,7 @@ data class SettlementCandidate(
     val onBehalfOptions: List<SettlementParticipant> = emptyList(),
     val claimedUserId: String? = null,
     val avatarStyle: String? = null,
+    val currencyOptions: List<SettlementCurrencyOption> = emptyList(),
 ) {
     /** Stable identity for one directed bilateral debt, even when the target repeats. */
     val candidateKey: String
@@ -35,11 +36,23 @@ data class SettlementParticipant(
     val participantName: String,
 )
 
+/** A server-authorized currency and its current settlement cap for one debt direction. */
+data class SettlementCurrencyOption(
+    val currencyCode: String,
+    val amount: BigDecimal,
+    val baseAmount: BigDecimal? = null,
+    val financialVersion: Long? = null,
+    val baseTotal: BigDecimal? = null,
+) {
+    val normalizedCurrencyCode: String get() = currencyCode.trim().uppercase()
+}
+
 data class SettlementContext(
     val activityId: String,
     val currentParticipantId: String?,
     val currentParticipantName: String?,
     val baseCurrency: String,
+    val multiCurrencyEnabled: Boolean = false,
     val candidates: List<SettlementCandidate> = emptyList(),
     val onBehalfCandidates: List<SettlementCandidate> = emptyList(),
     val canActOnBehalf: Boolean = false,
@@ -57,6 +70,8 @@ data class CreateSettlementTransferInput(
     val amount: BigDecimal,
     val occurredAt: String,
     val onBehalfOfParticipantId: String? = null,
+    val currency: String = "CNY",
+    val requestId: String? = null,
 )
 
 data class SettlementTransferResult(

@@ -18,6 +18,9 @@ object ExpenseErrorMapper {
 
     fun toUserMessage(error: Throwable): String {
         if (error is ExpenseOperationException) return error.userMessage
+        if (error.messageChainContains("settled") || error.messageChainContains("settlement")) {
+            return "账单已发生结算，不能修改或删除其财务字段"
+        }
         val sqlState = findSqlState(error)
         return when (sqlState) {
             "28000" -> "登录状态已失效，请重新登录"
@@ -34,6 +37,15 @@ object ExpenseErrorMapper {
                 "操作失败，请稍后重试"
             }
         }
+    }
+
+    private fun Throwable.messageChainContains(value: String): Boolean {
+        var current: Throwable? = this
+        while (current != null) {
+            if (current.message.orEmpty().contains(value, ignoreCase = true)) return true
+            current = current.cause
+        }
+        return false
     }
 
     private fun findSqlState(error: Throwable): String? {

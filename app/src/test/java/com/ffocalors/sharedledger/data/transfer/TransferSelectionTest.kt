@@ -65,4 +65,45 @@ class TransferSelectionTest {
         assertEquals(SettlementCandidateKind.ON_BEHALF, candidates.single().kind)
         assertEquals(listOf("hzl"), candidates.single().onBehalfOptions.map { it.participantId })
     }
+
+    @Test
+    fun currencyAwareOptionsGroupByDebtDirectionWithoutCollidingCurrencies() {
+        val options = listOf(
+            SettlementOptionRowDto(
+                "me", "alice", "USD", JsonPrimitive("50"), JsonPrimitive("335"), 7,
+                JsonPrimitive("432.5"),
+            ),
+            SettlementOptionRowDto(
+                "me", "alice", "CNY", JsonPrimitive("100"), JsonPrimitive("100"), 7,
+                JsonPrimitive("432.5"),
+            ),
+            SettlementOptionRowDto(
+                "bob", "me", "EUR", JsonPrimitive("20"), JsonPrimitive("160"), 7,
+                JsonPrimitive("160"),
+            ),
+        )
+        val names = mapOf("me" to "Me", "alice" to "Alice", "bob" to "Bob")
+
+        val transfer = selectSettlementOptionCandidates(
+            currentParticipantId = "me",
+            direction = SettlementDirection.TRANSFER,
+            options = options,
+            participantNames = names,
+            baseCurrency = "CNY",
+        ).single()
+        assertEquals("alice", transfer.participantId)
+        assertEquals(listOf("CNY", "USD"), transfer.currencyOptions.map { it.currencyCode })
+        assertEquals(listOf(BigDecimal("432.5"), BigDecimal("50")), transfer.currencyOptions.map { it.amount })
+
+        val receive = selectSettlementOptionCandidates(
+            currentParticipantId = "me",
+            direction = SettlementDirection.RECEIVE,
+            options = options,
+            participantNames = names,
+            baseCurrency = "CNY",
+        ).single()
+        assertEquals("bob", receive.participantId)
+        assertEquals(listOf("CNY", "EUR"), receive.currencyOptions.map { it.currencyCode })
+        assertEquals(listOf(BigDecimal("160"), BigDecimal("20")), receive.currencyOptions.map { it.amount })
+    }
 }

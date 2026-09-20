@@ -18,8 +18,10 @@ class TransferPayloadTest {
         assertEquals("debtor", transfer["from_participant_id"]?.jsonPrimitive?.content)
         assertEquals("creditor", transfer["to_participant_id"]?.jsonPrimitive?.content)
         assertEquals("10.5", transfer["amount"]?.jsonPrimitive?.content)
+        assertEquals("USD", transfer["currency"]?.jsonPrimitive?.content)
         assertEquals("2026-09-06T00:00:00Z", transfer["occurred_at"]?.jsonPrimitive?.content)
         assertEquals(JsonNull, transfer["on_behalf_of_participant_id"])
+        assertEquals("request-1", transfer["request_id"]?.jsonPrimitive?.content)
     }
 
     @Test
@@ -29,6 +31,16 @@ class TransferPayloadTest {
         )
 
         assertEquals("unclaimed-debtor", payload["on_behalf_of_participant_id"]?.jsonPrimitive?.content)
+    }
+
+    @Test
+    fun legacyPayloadOmitsNewCurrencyAndReplayFields() {
+        val payload = SettlementRpcPayloadBuilder.createLegacy(input())
+
+        assertEquals(null, payload["currency"])
+        assertEquals(null, payload["request_id"])
+        assertEquals("10.5", payload["amount"]?.jsonPrimitive?.content)
+        assertEquals("2026-09-06T00:00:00Z", payload["occurred_at"]?.jsonPrimitive?.content)
     }
 
     @Test
@@ -62,5 +74,7 @@ class TransferPayloadTest {
         toParticipantId = "creditor",
         amount = BigDecimal("10.5"),
         occurredAt = "2026-09-06T00:00:00Z",
+        currency = "USD",
+        requestId = "request-1",
     )
 }

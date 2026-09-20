@@ -17,6 +17,10 @@ class ExpenseErrorMapperTest {
         assertEquals("账单与参与人信息发生冲突，请刷新后重试", ExpenseErrorMapper.toUserMessage(RuntimeException("code=23505")))
         assertEquals("当前活动状态不允许此操作", ExpenseErrorMapper.toUserMessage(RuntimeException("code=55000")))
         assertEquals("数据刚刚发生变化，请刷新后重试", ExpenseErrorMapper.toUserMessage(RuntimeException("code=40001")))
+        assertEquals(
+            "账单已发生结算，不能修改或删除其财务字段",
+            ExpenseErrorMapper.toUserMessage(RuntimeException("code=23514: expense is settled")),
+        )
     }
 
     @Test

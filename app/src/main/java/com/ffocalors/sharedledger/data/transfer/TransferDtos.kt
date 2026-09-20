@@ -7,6 +7,7 @@ import kotlinx.serialization.json.JsonElement
 @Serializable
 internal data class TransferActivityRowDto(
     @SerialName("base_currency") val baseCurrency: String,
+    @SerialName("multi_currency_enabled") val multiCurrencyEnabled: Boolean = false,
     @SerialName("created_by") val createdBy: String? = null,
 )
 
@@ -34,6 +35,17 @@ internal data class BilateralDebtRowDto(
     @SerialName("debtor_participant_id") val debtorParticipantId: String,
     @SerialName("creditor_participant_id") val creditorParticipantId: String,
     val amount: JsonElement? = null,
+)
+
+@Serializable
+internal data class SettlementOptionRowDto(
+    @SerialName("debtor_participant_id") val debtorParticipantId: String,
+    @SerialName("creditor_participant_id") val creditorParticipantId: String,
+    val currency: String,
+    @SerialName("original_amount") val originalAmount: JsonElement? = null,
+    @SerialName("base_amount") val baseAmount: JsonElement? = null,
+    @SerialName("financial_version") val financialVersion: Long,
+    @SerialName("base_total") val baseTotal: JsonElement? = null,
 )
 
 @Serializable

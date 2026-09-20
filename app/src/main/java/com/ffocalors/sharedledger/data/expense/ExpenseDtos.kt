@@ -114,10 +114,3 @@ data class DeleteExpenseRpcDto(
     val deleted: Boolean,
     val version: Long,
 )
-
-@Serializable
-data class RestoreExpenseRpcDto(
-    @SerialName("restored_expense_id") val restoredExpenseId: String,
-    val restored: Boolean,
-    val version: Long,
-)

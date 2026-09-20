@@ -176,7 +176,7 @@ class ExpenseViewModel(
             return
         }
         // Keep an authoritative state already rendered by this route (for example the
-        // server-confirmed delete/restore result) ahead of a stale cache entry. Otherwise
+        // server-confirmed delete result) ahead of a stale cache entry. Otherwise
         // an invalidated cache can briefly overwrite the new status while refreshing.
         val existing = state.value.detail ?: cached.value
         viewModelScope.launch {
@@ -295,8 +295,6 @@ class ExpenseViewModel(
     }
 
     fun delete(expenseId: String) = mutateDetail(expenseId, "账单已作废") { repository.deleteWrite(expenseId) }
-
-    fun restore(expenseId: String) = mutateDetail(expenseId, "账单已恢复") { repository.restoreWrite(expenseId) }
 
     fun clearFormError() { _form.value = ExpenseFormUiState() }
 
@@ -685,5 +683,6 @@ fun ExpenseDetail.toUiState(
         },
         attachments = emptyList(),
         status = if (expense.isDeleted) ExpenseDetailStatus.Deleted else ExpenseDetailStatus.Active,
+        isSettled = debtSettlements.isNotEmpty() && debtSettlements.all { it.remainingAmount <= BigDecimal.ZERO },
     )
 }
