@@ -4,6 +4,7 @@ import com.ffocalors.sharedledger.data.supabase.SupabaseClientProvider
 import com.ffocalors.sharedledger.domain.financial.FundRecord
 import com.ffocalors.sharedledger.domain.financial.FundRecordType
 import com.ffocalors.sharedledger.domain.financial.ParticipantInfo
+import io.github.jan.supabase.postgrest.exception.PostgrestRestException
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
@@ -125,28 +126,55 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
                 custodian = custodian,
                 balance = row.balance.toFinancialBigDecimal(),
                 usedAmount = BigDecimal.ZERO,
+                currency = (row.currencyCode ?: row.currency ?: currency.baseCurrency).trim().uppercase(),
+                baseBalance = row.baseBalance?.toFinancialBigDecimal(),
             )
         }
         val usagesByAccount = usagesRequest.await().let(::aggregatePrepaymentUsageAmounts)
         val accountsWithUsage = accounts.map { account ->
             account.copy(usedAmount = usagesByAccount[account.accountId] ?: BigDecimal.ZERO)
         }
+        val supportedCurrencies = if (currency.multiCurrencyEnabled) {
+            loadSupportedCurrencies()
+        } else emptyList()
+        val normalizedBaseCurrency = currency.baseCurrency.trim().uppercase()
         FinancialContext(
             activityId = activityId,
-            currency = currency.baseCurrency.trim().uppercase(),
+            currency = normalizedBaseCurrency,
             participants = participantsWithAvatars,
             currentParticipantId = currentParticipantId,
             accounts = accountsWithUsage,
             canActOnBehalf = canActOnBehalf,
             unclaimedParticipants = participantsWithAvatars.filterNot { it.participantId in claimedParticipantIds },
+            baseCurrency = normalizedBaseCurrency,
+            multiCurrencyEnabled = currency.multiCurrencyEnabled,
+            supportedCurrencies = (listOf(normalizedBaseCurrency) + supportedCurrencies + accountsWithUsage.map { it.currency })
+                .map { it.trim().uppercase() }
+                .filter { it.length == 3 }
+                .distinct(),
+            financialVersion = currency.financialVersion,
         )
     }
 
-    suspend fun previewFinalSettlement(activityId: String): List<FinalSettlementSuggestion> = coroutineScope {
+    suspend fun previewFinalSettlement(activityId: String): List<FinalSettlementSuggestion> =
+        previewFinalSettlement(activityId, FinalSettlementMode.BASE_UNIFIED)
+
+    suspend fun previewFinalSettlement(
+        activityId: String,
+        mode: FinalSettlementMode,
+    ): List<FinalSettlementSuggestion> = coroutineScope {
         val rowsRequest = async {
-            client.postgrest.rpc("preview_activity_settlement", buildJsonObject {
-                put("activity_id", activityId)
-            }).decodeList<FinancialPreviewRowDto>()
+            try {
+                client.postgrest.rpc("preview_final_settlement_v2", buildJsonObject {
+                    put("p_activity_id", activityId)
+                    put("p_mode", mode.databaseValue)
+                }).decodeList<FinancialPreviewRowDto>()
+            } catch (error: Throwable) {
+                if (mode != FinalSettlementMode.BASE_UNIFIED || !isMissingFinancialRpc(error)) throw error
+                client.postgrest.rpc("preview_activity_settlement", buildJsonObject {
+                    put("activity_id", activityId)
+                }).decodeList<FinancialPreviewRowDto>()
+            }
         }
         val participantNamesRequest = async {
             client.from("participants").select {
@@ -158,56 +186,124 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         rows.mapNotNull { row ->
             val from = participantNames[row.fromParticipantId] ?: return@mapNotNull null
             val to = participantNames[row.toParticipantId] ?: return@mapNotNull null
-            val amount = row.amount.toFinancialBigDecimal()
+            val amount = (row.settlementAmount ?: row.amount ?: row.originalAmount ?: row.baseAmount)
+                .toFinancialBigDecimal()
             if (amount <= BigDecimal.ZERO) return@mapNotNull null
+            val currency = (row.currencyCode ?: row.currency).trim().uppercase()
             FinalSettlementSuggestion(
-                id = "${row.fromParticipantId}-${row.toParticipantId}-${amount.toPlainString()}-${row.sourceFinancialVersion}",
+                id = "${row.fromParticipantId}-${row.toParticipantId}-${currency}-${amount.toPlainString()}-${row.sourceFinancialVersion}-${row.planNo ?: ""}-${row.pathNo ?: ""}",
                 activityId = row.activityId,
                 from = from,
                 to = to,
                 amount = amount,
                 ordinaryAmount = row.ordinaryAmount.toFinancialBigDecimal(),
                 prepaymentReturnAmount = row.prepaymentReturnAmount.toFinancialBigDecimal(),
-                currency = row.currency.trim().uppercase(),
+                currency = currency,
                 sourceFinancialVersion = row.sourceFinancialVersion,
+                isPrepaymentReturn = row.isPrepaymentReturn,
+                mode = FinalSettlementMode.fromDatabaseValueOrNull(row.mode ?: row.settlementMode ?: row.finalMode) ?: mode,
+                baseAmount = row.baseAmount?.toFinancialBigDecimal() ?: amount,
+                originalAmount = row.originalAmount?.toFinancialBigDecimal() ?: amount,
+                planNo = row.planNo,
+                pathNo = row.pathNo,
+                hopNo = row.hopNo,
+                pathCurrency = row.pathCurrency?.trim()?.uppercase(),
             )
         }
     }
 
     suspend fun createPrepayment(input: PrepaymentInput): FundRecord {
-        val response = executeWriteRpc {
-            client.postgrest.rpc("create_prepayment", buildJsonObject {
-                put("activity_id", input.activityId)
-                put("owner_participant_id", input.ownerParticipantId)
-                put("custodian_participant_id", input.custodianParticipantId)
-                put("amount", input.amount.toPlainString())
-                put("occurred_at", input.occurredAt)
-            if (input.onBehalfOfParticipantId == null) {
-                put("on_behalf_of_participant_id", JsonNull)
-            } else {
-                put("on_behalf_of_participant_id", input.onBehalfOfParticipantId)
-            }
-            }).decodeSingle<FinancialPrepaymentRpcDto>()
+        val response = executeWriteRpc(input.requestId) {
+            createPrepaymentRpc(
+                v2Name = "create_prepayment_v2",
+                legacyName = "create_prepayment",
+                input = input,
+            )
         }
-        return loadCommittedRecord(input.activityId, response.transferId)
+        return loadCommittedRecord(input.activityId, response.transferId.ifBlank { findTransferIdByRequest(input.activityId, input.requestId) })
     }
 
     suspend fun createPrepaymentReturn(input: PrepaymentInput): FundRecord {
-        val response = executeWriteRpc {
-            client.postgrest.rpc("create_prepayment_return", buildJsonObject {
+        val response = executeWriteRpc(input.requestId) {
+            createPrepaymentRpc(
+                v2Name = "create_prepayment_return_v2",
+                legacyName = "create_prepayment_return",
+                input = input,
+            )
+        }
+        return loadCommittedRecord(input.activityId, response.transferId.ifBlank { findTransferIdByRequest(input.activityId, input.requestId) })
+    }
+
+    suspend fun previewPrepayment(input: PrepaymentInput): PrepaymentPreview {
+        val response = try {
+            client.postgrest.rpc("preview_prepayment", buildJsonObject {
+                put("activity_id", input.activityId)
+                put("owner_participant_id", input.ownerParticipantId)
+                put("custodian_participant_id", input.custodianParticipantId)
+                put("amount", input.amount.toPlainString())
+                put("currency", input.currency.trim().uppercase())
+            }).decodeSingle<FinancialPrepaymentPreviewRpcDto>()
+        } catch (error: Throwable) {
+            // Some PostgREST deployments expose the SQL argument names with p_ prefixes.
+            // This is a read-only compatibility retry; writes never use this ambiguity path.
+            if (!isMissingFinancialRpc(error)) throw error
+            client.postgrest.rpc("preview_prepayment", buildJsonObject {
+                put("p_activity_id", input.activityId)
+                put("p_owner_participant_id", input.ownerParticipantId)
+                put("p_custodian_participant_id", input.custodianParticipantId)
+                put("p_amount", input.amount.toPlainString())
+                put("p_currency", input.currency.trim().uppercase())
+            }).decodeSingle<FinancialPrepaymentPreviewRpcDto>()
+        }
+        return PrepaymentPreview(
+            activityId = input.activityId,
+            ownerParticipantId = input.ownerParticipantId,
+            custodianParticipantId = input.custodianParticipantId,
+            currency = (response.currencyCode ?: response.currency ?: input.currency).trim().uppercase(),
+            requestedAmount = (response.amount ?: response.requestedAmount)?.toFinancialBigDecimal() ?: input.amount,
+            settlementAmount = response.settlementAmount.toFinancialBigDecimal(),
+            newPrepaymentBalance = (response.newBalance ?: response.newPrepaymentBalance).toFinancialBigDecimal(),
+            financialVersion = response.financialVersion,
+            requestId = response.requestId ?: input.requestId,
+        )
+    }
+
+    private suspend fun createPrepaymentRpc(
+        v2Name: String,
+        legacyName: String,
+        input: PrepaymentInput,
+    ): FinancialPrepaymentRpcDto {
+        val payload = buildJsonObject {
+            put("activity_id", input.activityId)
+            put("owner_participant_id", input.ownerParticipantId)
+            put("custodian_participant_id", input.custodianParticipantId)
+            put("amount", input.amount.toPlainString())
+            put("currency", input.currency.trim().uppercase())
+            put("occurred_at", input.occurredAt)
+            input.onBehalfOfParticipantId?.let { put("on_behalf_of_participant_id", it) } ?: put("on_behalf_of_participant_id", JsonNull)
+            input.requestId?.let { put("request_id", it) }
+            input.sourceFinancialVersion?.let { put("expected_financial_version", it) }
+        }
+        return try {
+            client.postgrest.rpc(v2Name, payload).decodeSingle<FinancialPrepaymentRpcDto>()
+        } catch (error: Throwable) {
+            // The old RPC only understands base-currency arguments. A foreign-currency request
+            // must never be silently re-written as base currency.
+            if (!isMissingFinancialRpc(error)) throw error
+            val baseCurrency = activityBaseCurrency(input.activityId)
+            if (input.currency.trim().uppercase() != baseCurrency) {
+                throw FinancialOperationException("当前服务端尚未部署 ${input.currency.trim().uppercase()} 预存，请先更新服务端")
+            }
+            val legacyPayload = buildJsonObject {
                 put("activity_id", input.activityId)
                 put("owner_participant_id", input.ownerParticipantId)
                 put("custodian_participant_id", input.custodianParticipantId)
                 put("amount", input.amount.toPlainString())
                 put("occurred_at", input.occurredAt)
-            if (input.onBehalfOfParticipantId == null) {
-                put("on_behalf_of_participant_id", JsonNull)
-            } else {
-                put("on_behalf_of_participant_id", input.onBehalfOfParticipantId)
+                input.onBehalfOfParticipantId?.let { put("on_behalf_of_participant_id", it) } ?: put("on_behalf_of_participant_id", JsonNull)
             }
-            }).decodeSingle<FinancialTransferRpcDto>()
+            client.postgrest.rpc(legacyName, legacyPayload).decodeSingle<FinancialPrepaymentRpcDto>()
         }
-        return loadCommittedRecord(input.activityId, response.transferId)
     }
 
     suspend fun void(record: FundRecord, reason: String): FundRecord {
@@ -218,17 +314,6 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
                 put("transfer_id", record.transferId)
                 put("void_reason", reason.trim())
             }).decodeSingle<FinancialVoidRpcDto>()
-        }
-        return loadCommittedRecord(record.activityId, response.transferId)
-    }
-
-    suspend fun restore(record: FundRecord, reason: String): FundRecord {
-        if (record.isReadOnly) throw FinancialOperationException("只读资金记录不能恢复")
-        val response = executeWriteRpc(record.transferId) {
-            client.postgrest.rpc("restore_transfer", buildJsonObject {
-                put("transfer_id", record.transferId)
-                put("restore_reason", reason.trim())
-            }).decodeSingle<FinancialRestoreRpcDto>()
         }
         return loadCommittedRecord(record.activityId, response.transferId)
     }
@@ -272,21 +357,39 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
     }
 
     suspend fun executeFinalSettlement(request: FinalSettlementSuggestion, occurredAt: String): FundRecord {
-        val response = executeWriteRpc {
-            client.postgrest.rpc("execute_final_settlement_item", buildJsonObject {
+        val response = executeWriteRpc(request.requestId) {
+            val payload = buildJsonObject {
                 put("activity_id", request.activityId)
                 put("from_participant_id", request.from.participantId)
                 put("to_participant_id", request.to.participantId)
                 put("amount", request.amount.toPlainString())
+                put("currency", request.currency.trim().uppercase())
                 put("occurred_at", occurredAt)
-            if (request.onBehalfOfParticipantId == null) {
-                put("on_behalf_of_participant_id", JsonNull)
-            } else {
-                put("on_behalf_of_participant_id", request.onBehalfOfParticipantId)
+                put("mode", request.mode.databaseValue)
+                put("expected_financial_version", request.sourceFinancialVersion)
+                request.requestId?.let { put("request_id", it) }
+                request.onBehalfOfParticipantId?.let { put("on_behalf_of_participant_id", it) } ?: put("on_behalf_of_participant_id", JsonNull)
             }
-            }).decodeSingle<FinancialTransferRpcDto>()
+            try {
+                client.postgrest.rpc("execute_final_settlement_v2", payload).decodeSingle<FinancialTransferRpcDto>()
+            } catch (error: Throwable) {
+                if (!isMissingFinancialRpc(error) || request.mode != FinalSettlementMode.BASE_UNIFIED) throw error
+                val baseCurrency = activityBaseCurrency(request.activityId)
+                if (request.currency.trim().uppercase() != baseCurrency) {
+                    throw FinancialOperationException("旧版最终结算仅支持活动基础币种 $baseCurrency")
+                }
+                val legacyPayload = buildJsonObject {
+                    put("activity_id", request.activityId)
+                    put("from_participant_id", request.from.participantId)
+                    put("to_participant_id", request.to.participantId)
+                    put("amount", request.amount.toPlainString())
+                    put("occurred_at", occurredAt)
+                    request.onBehalfOfParticipantId?.let { put("on_behalf_of_participant_id", it) } ?: put("on_behalf_of_participant_id", JsonNull)
+                }
+                client.postgrest.rpc("execute_final_settlement_item", legacyPayload).decodeSingle()
+            }
         }
-        return loadCommittedRecord(request.activityId, response.transferId)
+        return loadCommittedRecord(request.activityId, response.transferId.ifBlank { findTransferIdByRequest(request.activityId, request.requestId) })
     }
 
     private suspend fun <T> executeWriteRpc(
@@ -382,7 +485,7 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         val currencyRequest = async {
             client.from("activities").select {
                 filter { eq("id", activityId) }
-            }.decodeSingle<FinancialActivityRowDto>().baseCurrency.trim().uppercase()
+            }.decodeSingle<FinancialActivityRowDto>()
         }
         val debts = debtsRequest.await()
         val expenseIds = debts.values.map { it.expenseId }.distinct()
@@ -394,12 +497,19 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         }
         val expenses = expensesRequest.await()
         val participants = participantsRequest.await()
-        val currency = currencyRequest.await()
+        val activity = currencyRequest.await()
         usages.mapNotNull { usage ->
             val account = accounts[usage.accountId] ?: return@mapNotNull null
             val debt = usage.expenseDebtId?.let(debts::get) ?: return@mapNotNull null
             val expense = expenses[debt.expenseId] ?: return@mapNotNull null
-            mapPrepaymentUsageRecord(usage, account, debt, expense, participants, currency)
+            mapPrepaymentUsageRecord(
+                usage,
+                account,
+                debt,
+                expense,
+                participants,
+                usage.currencyCode ?: account.currency?.ifBlank { activity.baseCurrency } ?: activity.baseCurrency,
+            )
         }
     }
 
@@ -454,6 +564,29 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         }
     }
 
+    private suspend fun activityBaseCurrency(activityId: String): String =
+        client.from("activities").select {
+            filter { eq("id", activityId) }
+        }.decodeSingle<FinancialActivityRowDto>().baseCurrency.trim().uppercase()
+
+    private suspend fun findTransferIdByRequest(activityId: String, requestId: String?): String {
+        if (requestId.isNullOrBlank()) throw FinancialOperationException("资金操作已提交，但服务端未返回记录编号，请刷新资金记录确认")
+        return client.from("transfers").select {
+            filter {
+                eq("activity_id", activityId)
+                eq("request_id", requestId)
+            }
+        }.decodeList<FinancialTransferRowDto>().firstOrNull()?.id
+            ?: throw FinancialOperationException("资金操作已提交，但最新记录暂时无法刷新，请稍后刷新确认")
+    }
+
+    private suspend fun loadSupportedCurrencies(): List<String> = runCatching {
+        client.postgrest.rpc("list_supported_exchange_currencies")
+            .decodeList<FinancialSupportedCurrencyRowDto>()
+            .map { it.currencyCode.trim().uppercase() }
+            .filter { it.length == 3 }
+    }.getOrDefault(emptyList())
+
     private suspend fun enrichParticipants(
         activityId: String,
         rows: List<FinancialParticipantRowDto>,
@@ -480,6 +613,18 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
             filter { isIn("id", userIds) }
         }.decodeList<FinancialProfileRowDto>().associateBy { it.id }
     }
+}
+
+/** PostgREST uses PGRST202/404 when a new overloaded RPC is not in the schema cache yet. */
+private fun isMissingFinancialRpc(error: Throwable): Boolean {
+    var current: Throwable? = error
+    while (current != null) {
+        if (current is PostgrestRestException &&
+            (current.code.equals("PGRST202", ignoreCase = true) || current.statusCode == 404)
+        ) return true
+        current = current.cause
+    }
+    return false
 }
 
 internal data class TransferDisputeResult(val dispute: com.ffocalors.sharedledger.domain.financial.TransferDispute)

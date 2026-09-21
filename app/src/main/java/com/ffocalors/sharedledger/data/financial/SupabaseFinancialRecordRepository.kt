@@ -1,5 +1,6 @@
 package com.ffocalors.sharedledger.data.financial
 
+import android.content.Context
 import com.ffocalors.sharedledger.data.supabase.SupabaseClientProvider
 import com.ffocalors.sharedledger.data.common.ReadFailureKind
 import com.ffocalors.sharedledger.domain.financial.FundRecord
@@ -15,6 +16,8 @@ import kotlinx.coroutines.CancellationException
 
 internal class SupabaseFinancialRecordRepository(
     private val remote: FinancialRemoteDataSource,
+    private val currentUserId: String = "",
+    private val requestStore: FinancialRequestStore = InMemoryFinancialRequestStore(),
 ) : FinancialRecordRepository {
     override suspend fun create(record: FundRecord): FinancialWriteResult<FundRecord> =
         FinancialWriteResult.failure("资金记录必须通过服务端业务操作创建")
@@ -33,13 +36,6 @@ internal class SupabaseFinancialRecordRepository(
             if (reason.isBlank()) throw FinancialOperationException("作废必须填写原因")
             val record = remote.getRecord(activityId, transferId)
             remote.void(record, reason)
-        }
-
-    override suspend fun restore(activityId: String, transferId: String, reason: String): FinancialWriteResult<FundRecord> =
-        write {
-            if (reason.isBlank()) throw FinancialOperationException("恢复必须填写原因")
-            val record = remote.getRecord(activityId, transferId)
-            remote.restore(record, reason)
         }
 
     override suspend fun addDispute(
@@ -62,18 +58,117 @@ internal class SupabaseFinancialRecordRepository(
         read { remote.currentParticipantId(activityId) }
 
     override suspend fun createPrepayment(input: PrepaymentInput): FinancialWriteResult<FundRecord> =
-        write { remote.createPrepayment(input) }
+        writeWithDurableRequest(
+            operationKey = "prepayment:create",
+            activityId = input.activityId,
+            payload = input,
+        ) { pending ->
+            remote.createPrepayment(
+                input.copy(requestId = pending.requestId, occurredAt = pending.persistedOccurredAt(input.occurredAt)),
+            )
+        }
 
     override suspend fun createPrepaymentReturn(input: PrepaymentInput): FinancialWriteResult<FundRecord> =
-        write { remote.createPrepaymentReturn(input) }
+        writeWithDurableRequest(
+            operationKey = "prepayment:return",
+            activityId = input.activityId,
+            payload = input,
+        ) { pending ->
+            remote.createPrepaymentReturn(
+                input.copy(requestId = pending.requestId, occurredAt = pending.persistedOccurredAt(input.occurredAt)),
+            )
+        }
 
     override suspend fun previewFinalSettlement(activityId: String): FinancialReadResult<List<FinalSettlementSuggestion>> =
         read { remote.previewFinalSettlement(activityId) }
 
+    override suspend fun previewFinalSettlement(
+        activityId: String,
+        mode: FinalSettlementMode,
+    ): FinancialReadResult<List<FinalSettlementSuggestion>> =
+        read { remote.previewFinalSettlement(activityId, mode) }
+
+    override suspend fun previewPrepayment(input: PrepaymentInput): FinancialReadResult<PrepaymentPreview> =
+        read { remote.previewPrepayment(input) }
+
     override suspend fun executeFinalSettlement(
         request: FinalSettlementSuggestion,
         occurredAt: String,
-    ): FinancialWriteResult<FundRecord> = write { remote.executeFinalSettlement(request, occurredAt) }
+    ): FinancialWriteResult<FundRecord> = writeWithDurableRequest(
+        operationKey = "final-settlement:execute:${request.mode.databaseValue}",
+        activityId = request.activityId,
+        payload = request to occurredAt,
+    ) { pending ->
+        remote.executeFinalSettlement(request.copy(requestId = pending.requestId), pending.persistedOccurredAt(occurredAt))
+    }
+
+    private suspend fun <P> writeWithDurableRequest(
+        operationKey: String,
+        activityId: String,
+        payload: P,
+        block: suspend (PendingFinancialRequest) -> FundRecord,
+    ): FinancialWriteResult<FundRecord> {
+        val payloadText = durablePayloadText(payload)
+        val fingerprint = financialPayloadFingerprint(payloadText)
+        val pending = runCatching {
+            requestStore.read(currentUserId, activityId, operationKey)
+                .asReversed()
+                .firstOrNull { it.payloadFingerprint == fingerprint || it.matchesRetryPayload(payload) }
+                ?: PendingFinancialRequest(
+                    requestId = java.util.UUID.randomUUID().toString(),
+                    activityId = activityId,
+                    operationKey = operationKey,
+                    payloadFingerprint = fingerprint,
+                    payload = payloadText,
+                    createdAtEpochMillis = System.currentTimeMillis(),
+                ).also { requestStore.upsert(currentUserId, it) }
+        }.getOrElse {
+            return FinancialWriteResult.failure("无法保存资金操作重试凭据，请稍后重试")
+        }
+        return try {
+            val result = write { block(pending) }
+            if (result.isSuccess || result.isCommitted || !result.isUnknown) {
+                runCatching { requestStore.remove(currentUserId, pending) }
+            }
+            if (result.isUnknown) result.copy(committedOperationId = pending.requestId) else result
+        } catch (error: Throwable) {
+            // write() currently maps all known failures to a result, but preserve the request on
+            // an unexpected exception because the server may have committed it.
+            throw error
+        }
+    }
+
+    private fun durablePayloadText(value: Any?): String = when (value) {
+        is PrepaymentInput -> listOf(
+            value.activityId, value.ownerParticipantId, value.custodianParticipantId,
+            value.amount.stripTrailingZeros().toPlainString(), value.currency.trim().uppercase(),
+            value.occurredAt, value.onBehalfOfParticipantId.orEmpty(), value.sourceFinancialVersion?.toString().orEmpty(),
+        ).joinToString("|")
+        is Pair<*, *> -> "${durablePayloadText(value.first)}|${value.second}"
+        is FinalSettlementSuggestion -> listOf(
+            value.activityId, value.id, value.from.participantId, value.to.participantId,
+            value.amount.stripTrailingZeros().toPlainString(), value.currency.trim().uppercase(),
+            value.ordinaryAmount.stripTrailingZeros().toPlainString(), value.prepaymentReturnAmount.stripTrailingZeros().toPlainString(),
+            value.sourceFinancialVersion.toString(), value.mode.databaseValue, value.planNo?.toString().orEmpty(),
+            value.pathNo?.toString().orEmpty(), value.hopNo?.toString().orEmpty(), value.onBehalfOfParticipantId.orEmpty(),
+        ).joinToString("|")
+        else -> value.toString()
+    }
+
+    private fun PendingFinancialRequest.matchesRetryPayload(value: Any?): Boolean = when (value) {
+        is PrepaymentInput -> {
+            val parts = payload.split('|')
+            parts.size >= 8 && parts[0] == value.activityId && parts[1] == value.ownerParticipantId &&
+                parts[2] == value.custodianParticipantId && parts[3] == value.amount.stripTrailingZeros().toPlainString() &&
+                parts[4] == value.currency.trim().uppercase() && parts[6] == value.onBehalfOfParticipantId.orEmpty() &&
+                parts[7] == value.sourceFinancialVersion?.toString().orEmpty()
+        }
+        is Pair<*, *> -> payload.substringBeforeLast('|') == durablePayloadText(value.first)
+        else -> false
+    }
+
+    private fun PendingFinancialRequest.persistedOccurredAt(fallback: String): String =
+        payload.split('|').firstOrNull { it.contains('T') && it.contains(':') } ?: fallback
 
     private suspend fun <T> read(block: suspend () -> T): FinancialReadResult<T> = try {
         FinancialReadResult.Success(block())
@@ -127,8 +222,17 @@ internal fun isFinancialNetworkFailure(error: Throwable): Boolean = generateSequ
 private fun String.containsAny(vararg values: String): Boolean = values.any { contains(it, ignoreCase = true) }
 
 object FinancialRecordRepositoryFactory {
-    fun create(): FinancialRecordRepository = SupabaseClientProvider.createOrNull()
-        ?.let { SupabaseFinancialRecordRepository(FinancialRemoteDataSource(it)) }
+    fun create(
+        context: Context? = null,
+        currentUserId: String = "",
+    ): FinancialRecordRepository = SupabaseClientProvider.createOrNull()
+        ?.let {
+            SupabaseFinancialRecordRepository(
+                remote = FinancialRemoteDataSource(it),
+                currentUserId = currentUserId,
+                requestStore = context?.let(::PreferencesFinancialRequestStore) ?: InMemoryFinancialRequestStore(),
+            )
+        }
         ?: UnavailableFinancialRecordRepository()
 }
 
@@ -139,7 +243,6 @@ private class UnavailableFinancialRecordRepository : FinancialRecordRepository {
     override suspend fun list(activityId: String, type: FundRecordType?) = unavailable<List<FundRecord>>()
     override suspend fun get(activityId: String, transferId: String) = unavailable<FundRecord>()
     override suspend fun void(activityId: String, transferId: String, reason: String) = unavailableWrite<FundRecord>()
-    override suspend fun restore(activityId: String, transferId: String, reason: String) = unavailableWrite<FundRecord>()
     override suspend fun addDispute(activityId: String, transferId: String, participantId: String, note: String) = unavailableWrite<TransferDispute>()
     override suspend fun resolveDispute(activityId: String, disputeId: String) = unavailableWrite<TransferDispute>()
     override suspend fun loadPrepaymentContext(activityId: String) = unavailable<FinancialContext>()
@@ -166,6 +269,9 @@ object FinancialErrorMapper {
         if (error is FinancialOperationException) return error.userMessage
         val text = generateSequence(error) { it.cause }.joinToString(" ") { it.message.orEmpty() }
         val code = Regex("(?i)(?:sqlstate|errcode|\\\"code\\\"|\\bcode)\\s*[=: ]+\\\"?([0-9A-Z]{5})").find(text)?.groupValues?.getOrNull(1)?.uppercase()
+        if (text.contains("financial_version", true) || text.contains("expected financial version", true)) {
+            return "当前资金版本已变化，请刷新预存预览后重试。"
+        }
         return when (code) {
             "28000" -> "登录状态已失效，请重新登录"
             "42501" -> "你没有权限执行此操作，或尚未绑定参与人"
@@ -174,13 +280,13 @@ object FinancialErrorMapper {
             "40001", "40P01" -> "当前资金方案已发生变化，请重新查看最新方案后重试。"
             "23514" -> when {
                 text.contains("prepayment return exceeds", true) || text.contains("available balance", true) ->
-                    "预存余额不足，无法恢复这笔返还记录，请刷新后查看最新状态。"
+                    "预存余额不足，无法执行这笔返还，请刷新后查看最新状态。"
                 text.contains("settlement exceeds", true) || text.contains("bilateral debt", true) ->
-                    "当前债务已被后续还款消耗，无法恢复这笔记录，请刷新后查看最新状态。"
+                    "当前债务已被后续还款消耗，无法执行这笔资金操作，请刷新后查看最新状态。"
                 text.contains("final settlement", true) && text.contains("path", true) ->
-                    "最终结算路径已变化，无法恢复，请重新查看方案并创建新的最终结算。"
+                    "最终结算路径已变化，无法执行，请重新查看方案并创建新的最终结算。"
                 text.contains("final settlement", true) && (text.contains("plan", true) || text.contains("matches", true)) ->
-                    "最终结算方案已变化，无法恢复，请重新查看方案并创建新的最终结算。"
+                    "最终结算方案已变化，无法执行，请重新查看方案并创建新的最终结算。"
                 text.contains("stale", true) || text.contains("plan", true) || text.contains("version", true) ->
                     "当前结算方案已发生变化，请重新查看最新方案。"
                 else -> "金额或资金状态不符合规则"

@@ -87,17 +87,17 @@ class FinancialWriteResultTest {
     }
 
     @Test
-    fun restoreConflictMessagesKeepFinancialCausesDistinct() {
+    fun financialConflictMessagesKeepCausesDistinct() {
         assertEquals(
-            "预存余额不足，无法恢复这笔返还记录，请刷新后查看最新状态。",
+            "预存余额不足，无法执行这笔返还，请刷新后查看最新状态。",
             FinancialErrorMapper.toUserMessage(RuntimeException("SQLSTATE 23514: prepayment return exceeds current available balance")),
         )
         assertEquals(
-            "当前债务已被后续还款消耗，无法恢复这笔记录，请刷新后查看最新状态。",
+            "当前债务已被后续还款消耗，无法执行这笔资金操作，请刷新后查看最新状态。",
             FinancialErrorMapper.toUserMessage(RuntimeException("SQLSTATE 23514: transfer settlement component exceeds current bilateral debt")),
         )
         assertEquals(
-            "最终结算路径已变化，无法恢复，请重新查看方案并创建新的最终结算。",
+            "最终结算路径已变化，无法执行，请重新查看方案并创建新的最终结算。",
             FinancialErrorMapper.toUserMessage(RuntimeException("SQLSTATE 23514: final settlement path no longer matches current plan")),
         )
     }

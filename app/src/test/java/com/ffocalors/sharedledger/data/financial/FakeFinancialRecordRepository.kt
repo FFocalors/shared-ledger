@@ -84,20 +84,6 @@ class FakeFinancialRecordRepository(
         return FinancialWriteResult.success(updated)
     }
 
-    override suspend fun restore(
-        activityId: String,
-        transferId: String,
-        reason: String,
-    ): FinancialWriteResult<FundRecord> {
-        if (reason.isBlank()) return FinancialWriteResult.failure("恢复必须填写原因")
-        val record = find(activityId, transferId) ?: return FinancialWriteResult.failure("未找到资金记录")
-        if (!record.isVoided) return FinancialWriteResult.success(record)
-        if (!canManage(record)) return FinancialWriteResult.failure("当前演示用户没有恢复权限")
-        val updated = record.copy(voidMetadata = null)
-        replace(updated)
-        return FinancialWriteResult.success(updated)
-    }
-
     override suspend fun addDispute(
         activityId: String,
         transferId: String,

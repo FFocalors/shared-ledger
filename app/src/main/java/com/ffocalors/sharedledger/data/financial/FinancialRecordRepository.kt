@@ -7,6 +7,18 @@ import com.ffocalors.sharedledger.domain.financial.RecorderInfo
 import com.ffocalors.sharedledger.domain.financial.TransferDispute
 import java.math.BigDecimal
 
+/** The server-side projection used for final-settlement planning. */
+enum class FinalSettlementMode(val databaseValue: String) {
+    BASE_UNIFIED("base_unified"),
+    ORIGINAL_CURRENCY("original_currency"),
+    ;
+
+    companion object {
+        fun fromDatabaseValueOrNull(value: String?): FinalSettlementMode? =
+            entries.firstOrNull { it.databaseValue.equals(value?.trim(), ignoreCase = true) }
+    }
+}
+
 sealed interface FinancialReadResult<out T> {
     data class Success<T>(val value: T) : FinancialReadResult<T>
     data class Failure(
@@ -71,6 +83,11 @@ data class PrepaymentAccount(
     val balance: BigDecimal,
     /** Amount already consumed by expense debts from this account. */
     val usedAmount: BigDecimal = BigDecimal.ZERO,
+    /** Account currency. Older rows did not expose this field and use the activity base currency. */
+    val currency: String = "CNY",
+    /** Optional server projection values in the activity base currency. Never used as a balance cap. */
+    val baseBalance: BigDecimal? = null,
+    val baseUsedAmount: BigDecimal? = null,
 )
 
 data class FinancialContext(
@@ -81,6 +98,23 @@ data class FinancialContext(
     val accounts: List<PrepaymentAccount>,
     val canActOnBehalf: Boolean = false,
     val unclaimedParticipants: List<com.ffocalors.sharedledger.domain.financial.ParticipantInfo> = emptyList(),
+    /** Base currency retained for old callers; account balances are always in their own currency. */
+    val baseCurrency: String = currency,
+    val multiCurrencyEnabled: Boolean = false,
+    val supportedCurrencies: List<String> = listOf(currency),
+    val financialVersion: Long = 0L,
+)
+
+data class PrepaymentPreview(
+    val activityId: String,
+    val ownerParticipantId: String,
+    val custodianParticipantId: String,
+    val currency: String,
+    val requestedAmount: BigDecimal,
+    val settlementAmount: BigDecimal = BigDecimal.ZERO,
+    val newPrepaymentBalance: BigDecimal = BigDecimal.ZERO,
+    val financialVersion: Long = 0L,
+    val requestId: String? = null,
 )
 
 data class FinalSettlementSuggestion(
@@ -93,7 +127,17 @@ data class FinalSettlementSuggestion(
     val prepaymentReturnAmount: BigDecimal,
     val currency: String,
     val sourceFinancialVersion: Long,
+    val isPrepaymentReturn: Boolean = false,
     val onBehalfOfParticipantId: String? = null,
+    val mode: FinalSettlementMode = FinalSettlementMode.BASE_UNIFIED,
+    /** Server-projected amounts; [amount] remains the amount to execute. */
+    val baseAmount: BigDecimal = amount,
+    val originalAmount: BigDecimal = amount,
+    val planNo: Int? = null,
+    val pathNo: Int? = null,
+    val hopNo: Int? = null,
+    val requestId: String? = null,
+    val pathCurrency: String? = null,
 )
 
 data class PrepaymentInput(
@@ -103,6 +147,9 @@ data class PrepaymentInput(
     val amount: BigDecimal,
     val occurredAt: String,
     val onBehalfOfParticipantId: String? = null,
+    val currency: String = "CNY",
+    val requestId: String? = null,
+    val sourceFinancialVersion: Long? = null,
 )
 
 interface FinancialRecordRepository {
@@ -118,12 +165,6 @@ interface FinancialRecordRepository {
     suspend fun listAll(activityId: String): FinancialReadResult<List<FundRecord>> = list(activityId)
     suspend fun get(activityId: String, transferId: String): FinancialReadResult<FundRecord>
     suspend fun void(
-        activityId: String,
-        transferId: String,
-        reason: String,
-    ): FinancialWriteResult<FundRecord>
-
-    suspend fun restore(
         activityId: String,
         transferId: String,
         reason: String,
@@ -150,6 +191,15 @@ interface FinancialRecordRepository {
     suspend fun createPrepaymentReturn(input: PrepaymentInput): FinancialWriteResult<FundRecord>
 
     suspend fun previewFinalSettlement(activityId: String): FinancialReadResult<List<FinalSettlementSuggestion>>
+
+    /** Mode-aware overload; old fakes and old servers remain usable for base_unified. */
+    suspend fun previewFinalSettlement(
+        activityId: String,
+        mode: FinalSettlementMode,
+    ): FinancialReadResult<List<FinalSettlementSuggestion>> = previewFinalSettlement(activityId)
+
+    suspend fun previewPrepayment(input: PrepaymentInput): FinancialReadResult<PrepaymentPreview> =
+        FinancialReadResult.Failure("当前服务端未提供预存预览")
 
     suspend fun executeFinalSettlement(
         request: FinalSettlementSuggestion,

@@ -94,6 +94,11 @@ data class FinalSettlementPath(
     val to: ParticipantInfo,
     val amount: BigDecimal,
     val componentType: FundRecordComponentType,
+    val currency: String? = null,
+    val baseAmount: BigDecimal? = null,
+    val originalAmount: BigDecimal? = null,
+    val mode: String? = null,
+    val pathCurrency: String? = null,
 )
 
 data class FinalSettlementPathSummary(

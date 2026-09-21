@@ -34,7 +34,11 @@ internal fun aggregatePrepaymentUsageAmounts(
     usages: List<FinancialPrepaymentUsageRowDto>,
 ): Map<String, BigDecimal> = usages
     .groupBy { it.accountId }
-    .mapValues { (_, rows) -> rows.fold(BigDecimal.ZERO) { total, row -> total + row.amount.toFinancialBigDecimal() } }
+    .mapValues { (_, rows) ->
+        rows.fold(BigDecimal.ZERO) { total, row ->
+            total + (row.prepaymentAmount ?: row.amount).toFinancialBigDecimal()
+        }
+    }
 
 internal fun mapFinancialRecord(
     transfer: FinancialTransferRowDto,
@@ -53,7 +57,7 @@ internal fun mapFinancialRecord(
         to = participant(transfer.toParticipantId),
         type = FundRecordType.fromDatabaseValue(transfer.type),
         amount = transfer.amount.toFinancialBigDecimal(),
-        currency = transfer.currency.trim().uppercase(),
+        currency = (transfer.currencyCode ?: transfer.currency).trim().uppercase(),
         occurredAt = transfer.occurredAt,
         recordedAt = transfer.createdAt,
         recordedBy = recorder(transfer.recordedBy),
@@ -84,6 +88,11 @@ internal fun mapFinancialRecord(
                 to = participant(it.toParticipantId),
                 amount = it.amount.toFinancialBigDecimal(),
                 componentType = FundRecordComponentType.fromDatabaseValue(it.componentType),
+                currency = (it.pathCurrency ?: it.currencyCode)?.trim()?.uppercase(),
+                baseAmount = it.baseAmount?.toFinancialBigDecimal(),
+                originalAmount = it.originalAmount?.toFinancialBigDecimal(),
+                mode = it.mode,
+                pathCurrency = (it.pathCurrency ?: it.currencyCode)?.trim()?.uppercase(),
             )
         },
         source = FundRecordSource.TRANSFER,
@@ -100,7 +109,7 @@ internal fun mapPrepaymentUsageRecord(
 ): FundRecord? {
     val from = participants[account.ownerParticipantId] ?: return null
     val to = participants[account.custodianParticipantId] ?: return null
-    val amount = usage.amount.toFinancialBigDecimal()
+    val amount = (usage.prepaymentAmount ?: usage.amount).toFinancialBigDecimal()
     if (amount <= BigDecimal.ZERO) return null
     return FundRecord(
         // Both projection row IDs are regenerated during a rebuild; owner + custodian + debt is stable.
@@ -110,7 +119,9 @@ internal fun mapPrepaymentUsageRecord(
         to = to,
         type = FundRecordType.AUTO_PREPAYMENT_USAGE,
         amount = amount,
-        currency = currency,
+        currency = (
+            usage.prepaymentCurrency ?: usage.currencyCode ?: usage.currency ?: account.currency?.ifBlank { currency } ?: currency
+        ).trim().uppercase(),
         occurredAt = expense.occurredAt,
         recordedAt = usage.createdAt ?: expense.occurredAt,
         recordedBy = RecorderInfo("system:prepayment", "预存自动扣款"),

@@ -50,6 +50,7 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
@@ -76,8 +77,12 @@ class NumericKeypadState {
      * have recomposed the field before the next key is tapped, so reading only
      * [getValue] can otherwise apply several taps to the same stale text.
      */
-    private var workingValue: String? = null
+    private var workingValue: String? by mutableStateOf<String?>(null)
     private var lastObservedValue: String? = null
+
+    /** Current value rendered in the keypad's read-only display row. */
+    val displayValue: String
+        get() = workingValue.orEmpty()
 
     fun bind(getValue: () -> String, onChange: (String) -> Unit) {
         this.getValue = getValue
@@ -240,6 +245,30 @@ fun SharedLedgerNumericKeypad(
                         ),
                     verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
                 ) {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = SharedLedgerRadius.Medium,
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                    ) {
+                        val displayValue = state.displayValue
+                        Text(
+                            text = displayValue.ifEmpty { "0" },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    horizontal = SharedLedgerSpacing.Medium,
+                                    vertical = SharedLedgerSpacing.Small,
+                                ),
+                            style = SharedLedgerTextStyles.AmountMedium,
+                            textAlign = TextAlign.End,
+                            color = if (displayValue.isEmpty()) {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
+                            maxLines = 1,
+                        )
+                    }
                     KeypadRows.forEach { row ->
                         Row(
                             modifier = Modifier.fillMaxWidth(),

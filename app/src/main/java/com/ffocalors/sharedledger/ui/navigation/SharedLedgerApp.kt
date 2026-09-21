@@ -51,6 +51,7 @@ import com.ffocalors.sharedledger.data.financial.FinancialRecordRepository
 import com.ffocalors.sharedledger.data.financial.FinancialRecordRepositoryFactory
 import com.ffocalors.sharedledger.data.financial.FinancialWriteResult
 import com.ffocalors.sharedledger.data.financial.FinalSettlementSuggestion
+import com.ffocalors.sharedledger.data.financial.FinalSettlementMode
 import com.ffocalors.sharedledger.data.financial.PrepaymentInput
 import com.ffocalors.sharedledger.ui.components.ActivityKind
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
@@ -312,7 +313,9 @@ private fun AuthenticatedNavHost(
             exchangeRateRepository = exchangeRateRepository,
         ),
     )
-    val financialRepository = remember { FinancialRecordRepositoryFactory.create() }
+    val financialRepository = remember(currentUserId) {
+        FinancialRecordRepositoryFactory.create(context = context, currentUserId = currentUserId)
+    }
     val financialReadViewModel: FinancialReadViewModel = viewModel(
         key = "financial-$currentUserId",
         factory = FinancialReadViewModel.Factory(
@@ -703,9 +706,7 @@ private fun AuthenticatedNavHost(
                     }
                 } } else null,
                 onShowPrepayment = if (canWriteActivity) { {
-                    requireParticipantBinding(activityId) {
-                        navController.navigate(SharedLedgerRoutes.prepayment(activityId, "fund"))
-                    }
+                    navController.navigate(SharedLedgerRoutes.prepayment(activityId, "fund"))
                 } } else null,
                 onFundRecords = if (activityId.isNotBlank()) {
                     {
@@ -1648,11 +1649,6 @@ private fun AuthenticatedNavHost(
                         ?.firstOrNull { it.userId == currentUserId }
                         ?.claimedParticipantId,
                     onBack = { navController.navigateUp() },
-                    onRefreshActivity = {
-                        invalidateActivityData(activityId)
-                        activityViewModel.loadDetail(activityId, force = true)
-                        activityViewModel.refreshHome()
-                    },
                     onRecreateCorrectRecord = {
                         navController.navigate(SharedLedgerRoutes.transfer(activityId, TransferRouteMode.TRANSFER, ledgerUnitId))
                     },
@@ -1669,10 +1665,17 @@ private fun AuthenticatedNavHost(
             val activityId = backStackEntry.arguments?.getString("activityId").orEmpty()
             val mode = if (backStackEntry.arguments?.getString("mode") == "return") PrepaymentMode.RETURN else PrepaymentMode.FUND
             val activityDetailState by activityViewModel.detail(activityId).collectAsState()
-            val financialWritesEnabled = canPerformFinancialAction(activityDetailState.detail, currentUserId)
+            // FUND is an activity-level operation; the selected payer/holder need not be
+            // the current user's claimed participant. RETURN keeps the existing actor gate.
+            val financialWritesEnabled = if (mode == PrepaymentMode.FUND) {
+                activityDetailState.detail?.let { it.summary.archivedAt == null } == true
+            } else {
+                canPerformFinancialAction(activityDetailState.detail, currentUserId)
+            }
             val contextState by financialReadViewModel.contextState(activityId).collectAsState()
             var submitting by remember(activityId) { mutableStateOf(false) }
             var actionError by remember(activityId) { mutableStateOf<String?>(null) }
+            var prepaymentPreview by remember(activityId) { mutableStateOf<com.ffocalors.sharedledger.data.financial.PrepaymentPreview?>(null) }
             val scope = androidx.compose.runtime.rememberCoroutineScope()
             androidx.compose.runtime.LaunchedEffect(activityId) {
                 if (activityId.isNotBlank()) {
@@ -1706,24 +1709,67 @@ private fun AuthenticatedNavHost(
                     errorMessage = actionError ?: contextState.errorMessage,
                     onRetry = { financialReadViewModel.loadContext(activityId, force = true) },
                     onBack = { navController.navigateUp() },
-                    onSubmit = { ownerId, custodianId, amount, onBehalfOfParticipantId ->
+                    preview = prepaymentPreview,
+                    onPreviewRequested = { ownerId, custodianId, amount, currency, onBehalfOfParticipantId ->
+                        contextState.data?.let { contextValue ->
+                            prepaymentPreview = null
+                            scope.launch {
+                                val result = financialRepository.previewPrepayment(
+                                    PrepaymentInput(
+                                        activityId = activityId,
+                                        ownerParticipantId = ownerId,
+                                        custodianParticipantId = custodianId,
+                                        amount = amount,
+                                        occurredAt = Instant.now().toString(),
+                                        onBehalfOfParticipantId = onBehalfOfParticipantId.takeIf { mode == PrepaymentMode.RETURN },
+                                        currency = currency,
+                                        sourceFinancialVersion = contextValue.financialVersion,
+                                    ),
+                                )
+                                if (result is com.ffocalors.sharedledger.data.financial.FinancialReadResult.Success) {
+                                    prepaymentPreview = result.value
+                                }
+                            }
+                            }
+                    },
+                    onSubmit = { ownerId, custodianId, amount, currency, onBehalfOfParticipantId ->
                     val endpointIds = setOf(ownerId, custodianId)
                     val contextValue = contextState.data
                     val currentIsParty = contextValue?.currentParticipantId in endpointIds
-                    val validOnBehalf = contextValue != null && when {
-                        onBehalfOfParticipantId == null -> currentIsParty
-                        else -> contextValue.canActOnBehalf &&
-                            onBehalfOfParticipantId in endpointIds &&
-                            contextValue.unclaimedParticipants.any { it.participantId == onBehalfOfParticipantId }
+                    val validOnBehalf = if (mode == PrepaymentMode.FUND) {
+                        true
+                    } else {
+                        contextValue != null && when {
+                            onBehalfOfParticipantId == null -> currentIsParty
+                            else -> contextValue.canActOnBehalf &&
+                                onBehalfOfParticipantId in endpointIds &&
+                                contextValue.unclaimedParticipants.any { it.participantId == onBehalfOfParticipantId }
+                        }
                     }
                     if (ownerId == custodianId) {
                         actionError = "预存所有者和保管人不能是同一位参与人"
-                    } else if (!validOnBehalf) {
+                    } else if (mode == PrepaymentMode.RETURN && !validOnBehalf) {
                         actionError = "请选择有效的代记参与人"
                     } else if (!submitting) {
                         submitting = true
                         actionError = null
-                        val input = PrepaymentInput(activityId, ownerId, custodianId, amount, Instant.now().toString(), onBehalfOfParticipantId)
+                        val previewVersion = prepaymentPreview
+                            ?.takeIf {
+                                it.ownerParticipantId == ownerId &&
+                                    it.custodianParticipantId == custodianId &&
+                                    it.currency.equals(currency, ignoreCase = true) &&
+                                    it.requestedAmount == amount
+                            }
+                        val input = PrepaymentInput(
+                            activityId = activityId,
+                            ownerParticipantId = ownerId,
+                            custodianParticipantId = custodianId,
+                            amount = amount,
+                            occurredAt = Instant.now().toString(),
+                            onBehalfOfParticipantId = onBehalfOfParticipantId.takeIf { mode == PrepaymentMode.RETURN },
+                            currency = currency,
+                            sourceFinancialVersion = previewVersion?.financialVersion ?: contextValue?.financialVersion,
+                        )
                         scope.launch {
                             val result = if (mode == PrepaymentMode.FUND) financialRepository.createPrepayment(input) else financialRepository.createPrepaymentReturn(input)
                             submitting = false
@@ -1748,6 +1794,9 @@ private fun AuthenticatedNavHost(
                             } else {
                                 if (result.isUnknown) financialReadViewModel.invalidateActivity(activityId)
                                 actionError = result.errorMessage
+                                if (listOf("version", "版本", "过期", "最新").any { token -> result.errorMessage.orEmpty().contains(token, ignoreCase = true) }) {
+                                    financialReadViewModel.loadContext(activityId, force = true)
+                                }
                             }
                         }
                     }
@@ -1763,7 +1812,8 @@ private fun AuthenticatedNavHost(
             val activityDetailState by activityViewModel.detail(activityId).collectAsState()
             val financialWritesEnabled = canPerformFinancialAction(activityDetailState.detail, currentUserId)
             val contextState by financialReadViewModel.contextState(activityId).collectAsState()
-            val previewState by financialReadViewModel.previewState(activityId).collectAsState()
+            var settlementMode by remember(activityId) { mutableStateOf(FinalSettlementMode.BASE_UNIFIED) }
+            val previewState by financialReadViewModel.previewState(activityId, settlementMode).collectAsState()
             var submitting by remember(activityId) { mutableStateOf(false) }
             var actionError by remember(activityId) { mutableStateOf<String?>(null) }
             val scope = androidx.compose.runtime.rememberCoroutineScope()
@@ -1771,20 +1821,20 @@ private fun AuthenticatedNavHost(
                 if (activityId.isNotBlank()) {
                     activityViewModel.loadDetail(activityId)
                     financialReadViewModel.loadContext(activityId)
-                    financialReadViewModel.loadSettlementPreview(activityId)
+                    financialReadViewModel.loadSettlementPreview(activityId, settlementMode)
                 }
             }
             RefreshActivityOnResume(backStackEntry) {
                 if (activityId.isNotBlank()) {
                     financialReadViewModel.loadContext(activityId)
-                    financialReadViewModel.loadSettlementPreview(activityId)
+                    financialReadViewModel.loadSettlementPreview(activityId, settlementMode)
                 }
             }
             androidx.compose.runtime.LaunchedEffect(activityId, realtimeState.revisions.financial) {
                 if (realtimeState.activeActivityId == activityId && realtimeState.revisions.financial > 0L) {
                     financialReadViewModel.invalidateActivity(activityId)
                     financialReadViewModel.loadContext(activityId, force = true)
-                    financialReadViewModel.loadSettlementPreview(activityId, force = true)
+                    financialReadViewModel.loadSettlementPreview(activityId, settlementMode, force = true)
                 }
             }
             val financialContext = contextState.data
@@ -1813,6 +1863,10 @@ private fun AuthenticatedNavHost(
                             ordinaryAmount = item.ordinaryAmount,
                             prepaymentReturnAmount = item.prepaymentReturnAmount,
                             sourceFinancialVersion = item.sourceFinancialVersion,
+                            mode = item.mode,
+                            planNo = item.planNo,
+                            pathNo = item.pathNo,
+                            hopNo = item.hopNo,
                             onBehalfOptions = onBehalfOptions,
                             onBehalfRequired = financialContext?.let {
                                 it.canActOnBehalf &&
@@ -1840,19 +1894,27 @@ private fun AuthenticatedNavHost(
                     errorMessage = error,
                     onRetry = {
                         financialReadViewModel.loadContext(activityId, force = true)
-                        financialReadViewModel.loadSettlementPreview(activityId, force = true)
+                        financialReadViewModel.loadSettlementPreview(activityId, settlementMode, force = true)
+                    },
+                    mode = settlementMode,
+                    onModeChange = { mode ->
+                        if (mode != settlementMode) {
+                            settlementMode = mode
+                            financialReadViewModel.loadSettlementPreview(activityId, mode, force = true)
+                        }
                     },
                     onFinalize = { request ->
                     if (!submitting) {
+                        val requestedBehalfId = request.onBehalfOfParticipantId
                         val item = suggestions.firstOrNull { it.id == request.previewItemId }
-                        if (item == null || !request.isValid()) {
+                        if (item == null || !request.isValid() || request.mode != settlementMode) {
                             actionError = "当前结算方案已发生变化，请重新查看最新方案。"
                             financialReadViewModel.loadContext(activityId, force = true)
-                            financialReadViewModel.loadSettlementPreview(activityId, force = true)
-                        } else if (item.onBehalfRequired && request.onBehalfOfParticipantId == null) {
+                            financialReadViewModel.loadSettlementPreview(activityId, settlementMode, force = true)
+                        } else if (item.onBehalfRequired && requestedBehalfId == null) {
                             actionError = "请选择代记参与人后再执行结算。"
-                        } else if (request.onBehalfOfParticipantId != null &&
-                            item.onBehalfOptions.none { it.participantId == request.onBehalfOfParticipantId }) {
+                        } else if (requestedBehalfId != null &&
+                            item.onBehalfOptions.none { it.participantId == requestedBehalfId }) {
                             actionError = "请选择有效的代记参与人后再执行结算。"
                         } else {
                             submitting = true
@@ -1867,13 +1929,18 @@ private fun AuthenticatedNavHost(
                                     prepaymentReturnAmount = item.prepaymentReturnAmount,
                                     currency = item.currency,
                                     sourceFinancialVersion = item.sourceFinancialVersion,
-                                    onBehalfOfParticipantId = request.onBehalfOfParticipantId,
+                                    onBehalfOfParticipantId = requestedBehalfId,
+                                    mode = item.mode,
+                                    planNo = item.planNo,
+                                    pathNo = item.pathNo,
+                                    hopNo = item.hopNo,
                                 )
                                 val written = financialRepository.executeFinalSettlement(remoteItem, Instant.now().toString())
                                 submitting = false
                                 if (written.isSuccess) {
                                     financialReadViewModel.invalidateAfterWrite(activityId, written.value?.transferId)
                                     financialReadViewModel.loadRecords(activityId, force = true)
+                                    financialReadViewModel.loadSettlementPreview(activityId, settlementMode, force = true)
                                     invalidateActivityData(activityId)
                                     activityViewModel.loadDetail(activityId, force = true)
                                     activityViewModel.refreshHome()
@@ -1884,6 +1951,7 @@ private fun AuthenticatedNavHost(
                                 } else if (written.isCommitted && written.committedOperationId != null) {
                                     financialReadViewModel.invalidateAfterWrite(activityId, written.committedOperationId)
                                     financialReadViewModel.loadRecords(activityId, force = true)
+                                    financialReadViewModel.loadSettlementPreview(activityId, settlementMode, force = true)
                                     invalidateActivityData(activityId)
                                     activityViewModel.loadDetail(activityId, force = true)
                                     activityViewModel.refreshHome()
@@ -1895,7 +1963,7 @@ private fun AuthenticatedNavHost(
                                     if (written.isUnknown) financialReadViewModel.invalidateActivity(activityId)
                                     actionError = written.errorMessage
                                     financialReadViewModel.loadContext(activityId, force = true)
-                                    financialReadViewModel.loadSettlementPreview(activityId, force = true)
+                                    financialReadViewModel.loadSettlementPreview(activityId, settlementMode, force = true)
                                 }
                             }
                         }
@@ -1936,7 +2004,6 @@ private fun FinancialRecordDetailRoute(
     financialViewModel: FinancialReadViewModel,
     currentParticipantId: String?,
     onBack: () -> Unit,
-    onRefreshActivity: () -> Unit,
     onRecreateCorrectRecord: () -> Unit,
 ) {
     var actionError by remember(activityId, transferId) { mutableStateOf<String?>(null) }
@@ -2010,17 +2077,6 @@ private fun FinancialRecordDetailRoute(
                         scope.launch {
                             val result = repository.void(activityId, transferId, reason)
                             isSubmitting = false
-                            handleFinancialActionResult(result)
-                        }
-                    }
-                } } else null,
-                onRestore = if (writesEnabled) { { _, reason ->
-                    if (!isSubmitting) {
-                        isSubmitting = true
-                        scope.launch {
-                            val result = repository.restore(activityId, transferId, reason)
-                            isSubmitting = false
-                            if (result.isSuccess || result.isCommitted) onRefreshActivity()
                             handleFinancialActionResult(result)
                         }
                     }

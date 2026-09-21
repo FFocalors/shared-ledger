@@ -63,7 +63,7 @@ class FinancialRecordsTest {
     }
 
     @Test
-    fun voidAndRestoreRequireReasonAndKeepTheRecordIdempotent() = runBlocking {
+    fun voidRequiresReasonAndCannotBeRepeatedOrRestored() = runBlocking {
         val actor = RecorderInfo("u", "测试记录人")
         val repository = FakeFinancialRecordRepository(actorContext = FakeActorContext(actor = actor, participantIds = setOf("fake-alice")))
         val blank = repository.void("fake-preview-activity", "fake-settlement-001", " ")
@@ -74,10 +74,8 @@ class FinancialRecordsTest {
         assertEquals("重复录入", result.value!!.voidMetadata!!.reason)
         val read = repository.get("fake-preview-activity", "fake-settlement-001")
         assertTrue(read is FinancialReadResult.Success && read.value.isVoided)
-        val restored = repository.restore("fake-preview-activity", "fake-settlement-001", "已确认更正")
-        assertTrue(restored.isSuccess)
-        assertFalse(restored.value!!.isVoided)
-        assertTrue(repository.restore("fake-preview-activity", "fake-settlement-001", "重复点击").isSuccess)
+        val repeatedVoid = repository.void("fake-preview-activity", "fake-settlement-001", "再次作废")
+        assertFalse(repeatedVoid.isSuccess)
     }
 
     @Test

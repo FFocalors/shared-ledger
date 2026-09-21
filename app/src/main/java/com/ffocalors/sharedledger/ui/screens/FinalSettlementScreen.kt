@@ -46,6 +46,7 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
 import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLow
 import com.ffocalors.sharedledger.ui.theme.SurfaceWarmLowest
+import com.ffocalors.sharedledger.data.financial.FinalSettlementMode
 import java.math.BigDecimal
 
 data class FinalSettlementRequest(
@@ -59,6 +60,10 @@ data class FinalSettlementRequest(
     val prepaymentReturnAmount: BigDecimal,
     val sourceFinancialVersion: Long,
     val onBehalfOfParticipantId: String? = null,
+    val mode: FinalSettlementMode = FinalSettlementMode.BASE_UNIFIED,
+    val planNo: Int? = null,
+    val pathNo: Int? = null,
+    val hopNo: Int? = null,
 )
 
 /** Request contract passed from the settlement form to the host write flow. */
@@ -74,7 +79,8 @@ fun FinalSettlementRequest.isValid(): Boolean =
         ordinaryAmount >= BigDecimal.ZERO &&
         prepaymentReturnAmount >= BigDecimal.ZERO &&
         ordinaryAmount + prepaymentReturnAmount == amount &&
-        sourceFinancialVersion >= 0L
+        sourceFinancialVersion >= 0L &&
+        mode.databaseValue.isNotBlank()
 
 data class FinalSettlementSuggestionUi(
     val id: String,
@@ -89,6 +95,10 @@ data class FinalSettlementSuggestionUi(
     val sourceFinancialVersion: Long,
     val onBehalfOptions: List<FinalSettlementParticipantOption> = emptyList(),
     val onBehalfRequired: Boolean = false,
+    val mode: FinalSettlementMode = FinalSettlementMode.BASE_UNIFIED,
+    val planNo: Int? = null,
+    val pathNo: Int? = null,
+    val hopNo: Int? = null,
 )
 
 data class FinalSettlementParticipantOption(
@@ -117,6 +127,10 @@ private fun FinalSettlementSuggestionUi.toRequest(activityId: String, onBehalfOf
         prepaymentReturnAmount = prepaymentReturnAmount,
         sourceFinancialVersion = sourceFinancialVersion,
         onBehalfOfParticipantId = onBehalfOfParticipantId,
+        mode = mode,
+        planNo = planNo,
+        pathNo = pathNo,
+        hopNo = hopNo,
     )
 
 private val SettlementSuggestions = listOf(
@@ -185,6 +199,8 @@ fun FinalSettlementScreen(
     isLoading: Boolean = false,
     errorMessage: String? = null,
     onRetry: (() -> Unit)? = null,
+    mode: FinalSettlementMode = FinalSettlementMode.BASE_UNIFIED,
+    onModeChange: ((FinalSettlementMode) -> Unit)? = null,
 ) {
     val hazeState = rememberSharedLedgerHazeState()
     Scaffold(
@@ -230,6 +246,24 @@ fun FinalSettlementScreen(
                             style = SharedLedgerTextStyles.BodySecondary,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                        if (onModeChange != null) {
+                            LazyRow(horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
+                                items(FinalSettlementMode.entries, key = { it.databaseValue }) { option ->
+                                    Surface(
+                                        onClick = { onModeChange(option) },
+                                        shape = SharedLedgerRadius.Full,
+                                        color = if (option == mode) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmLowest,
+                                        border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant),
+                                    ) {
+                                        Text(
+                                            text = if (option == FinalSettlementMode.BASE_UNIFIED) "统一基础币" else "按原币种",
+                                            modifier = Modifier.padding(horizontal = SharedLedgerSpacing.Medium, vertical = SharedLedgerSpacing.Small),
+                                            style = SharedLedgerTextStyles.Label,
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 when {
@@ -239,15 +273,18 @@ fun FinalSettlementScreen(
                     }
                     suggestions.isEmpty() -> item(key = "empty") { EmptyState(title = "当前没有待执行的结算项") }
                     else -> {
-                        item(key = "suggested-header") {
-                            SettlementSectionHeader(
-                                "建议转账 (${suggestions.size}笔)",
-                                "待处理",
-                                modifier = Modifier.padding(top = SharedLedgerSpacing.MediumSmall),
-                            )
-                        }
-                        items(suggestions, key = { it.id }) { suggestion ->
-                            SettlementSuggestionCard(suggestion, onFinalize?.let { callback -> { behalfId -> callback(suggestion.toRequest(activityId, behalfId)) } })
+                        val groups = suggestions.groupBy { "${it.fromParticipantId}->${it.toParticipantId}:${it.currency}" }
+                        groups.entries.forEach { (groupKey, group) ->
+                            item(key = "suggested-header:$groupKey") {
+                                SettlementSectionHeader(
+                                    "${group.first().directionLabel()} · ${group.first().currency} (${group.size}笔)",
+                                    "待处理",
+                                    modifier = Modifier.padding(top = SharedLedgerSpacing.MediumSmall),
+                                )
+                            }
+                            items(group, key = { it.id }) { suggestion ->
+                                SettlementSuggestionCard(suggestion, onFinalize?.let { callback -> { behalfId -> callback(suggestion.toRequest(activityId, behalfId)) } })
+                            }
                         }
                     }
                 }

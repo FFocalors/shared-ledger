@@ -22,7 +22,6 @@ import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Flag
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.material.icons.rounded.Route
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.Warning
@@ -149,7 +148,6 @@ fun TransferDetailScreen(
     onAddDispute: ((transferId: String, note: String) -> Unit)? = null,
     onResolveDispute: ((disputeId: String) -> Unit)? = null,
     onVoid: ((transferId: String, reason: String) -> Unit)? = null,
-    onRestore: ((transferId: String, reason: String) -> Unit)? = null,
     onRecreateCorrectRecord: ((transferId: String) -> Unit)? = null,
 ) {
     val record = uiState.toFundRecord()
@@ -180,7 +178,6 @@ fun TransferDetailScreen(
                 onAddDispute = onAddDispute?.let { { dialog = DetailDialog.AddDispute } },
                 onResolveDispute = onResolveDispute,
                 onVoid = onVoid?.let { { dialog = DetailDialog.VoidRecord } },
-                onRestore = onRestore?.let { { dialog = DetailDialog.RestoreRecord } },
                 onRecreate = onRecreateCorrectRecord?.let { callback -> { callback(record.transferId) } },
                 hazeState = hazeState,
             )
@@ -244,17 +241,6 @@ fun TransferDetailScreen(
                 onAddDispute?.invoke(record.transferId, note)
             },
         )
-        DetailDialog.RestoreRecord -> ReasonDialog(
-            title = "恢复这条记录？",
-            label = "恢复原因（必填）",
-            confirmLabel = "确认恢复",
-            onDismiss = { dialog = null },
-            onConfirm = { reason ->
-                dialog = null
-                onRestore?.invoke(record.transferId, reason)
-            },
-            description = "恢复后会按当前账单、还款与预存状态重新计算。若当前状态已变化，恢复可能需要重新查看最新方案。",
-        )
         null -> Unit
     }
 }
@@ -262,7 +248,6 @@ fun TransferDetailScreen(
 private sealed interface DetailDialog {
     data object VoidRecord : DetailDialog
     data object AddDispute : DetailDialog
-    data object RestoreRecord : DetailDialog
 }
 
 @Composable
@@ -462,7 +447,6 @@ private fun DetailActions(
     onAddDispute: (() -> Unit)?,
     onResolveDispute: ((String) -> Unit)?,
     onVoid: (() -> Unit)?,
-    onRestore: (() -> Unit)?,
     onRecreate: (() -> Unit)?,
     hazeState: dev.chrisbanes.haze.HazeState,
 ) {
@@ -474,8 +458,7 @@ private fun DetailActions(
             if (record.isReadOnly) {
                 Text("预存自动扣款记录仅供查看", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else if (record.isVoided) {
-                onRestore?.let { SharedLedgerButton("恢复记录", it, tone = SharedLedgerButtonTone.Success, icon = Icons.Rounded.Restore) }
-                onRecreate?.let { SharedLedgerButton("恢复失败时重新创建", it, tone = SharedLedgerButtonTone.SoftPrimary, icon = Icons.Rounded.Refresh) }
+                onRecreate?.let { SharedLedgerButton("作废后重新创建更正记录", it, tone = SharedLedgerButtonTone.SoftPrimary, icon = Icons.Rounded.Refresh) }
             } else if (record.hasUnresolvedDispute) {
                 val dispute = record.unresolvedDisputes.first()
                 onResolveDispute?.let { callback ->

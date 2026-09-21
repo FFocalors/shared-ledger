@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.ffocalors.sharedledger.data.financial.FinancialContext
 import com.ffocalors.sharedledger.data.financial.FinalSettlementSuggestion
+import com.ffocalors.sharedledger.data.financial.FinalSettlementMode
 import com.ffocalors.sharedledger.data.financial.FinancialReadResult
 import com.ffocalors.sharedledger.data.financial.FinancialRecordRepository
 import com.ffocalors.sharedledger.data.financial.FinancialRecordRepositoryFactory
@@ -63,10 +64,16 @@ class FinancialReadViewModel(
     fun contextState(activityId: String): StateFlow<FinancialContextUiState> =
         contextStates.getOrPut(activityId) { MutableStateFlow(FinancialContextUiState()) }.asStateFlow()
 
-    fun previewState(activityId: String): StateFlow<FinalSettlementPreviewUiState> =
-        previewStates.getOrPut(activityId) { MutableStateFlow(FinalSettlementPreviewUiState()) }.asStateFlow()
+    fun previewState(
+        activityId: String,
+        mode: FinalSettlementMode = FinalSettlementMode.BASE_UNIFIED,
+    ): StateFlow<FinalSettlementPreviewUiState> =
+        previewStates.getOrPut(previewScope(activityId, mode)) { MutableStateFlow(FinalSettlementPreviewUiState()) }.asStateFlow()
 
-    fun settlementPreviewState(activityId: String): StateFlow<FinalSettlementPreviewUiState> = previewState(activityId)
+    fun settlementPreviewState(
+        activityId: String,
+        mode: FinalSettlementMode = FinalSettlementMode.BASE_UNIFIED,
+    ): StateFlow<FinalSettlementPreviewUiState> = previewState(activityId, mode)
 
     /** Loads one full timeline snapshot; [type] is always filtered locally. */
     fun loadList(activityId: String, type: FundRecordType? = null, force: Boolean = false) =
@@ -164,9 +171,14 @@ class FinancialReadViewModel(
         }
     }
 
-    fun loadSettlementPreview(activityId: String, force: Boolean = false) {
-        val state = previewStates.getOrPut(activityId) { MutableStateFlow(FinalSettlementPreviewUiState()) }
-        val key = previewKey(activityId)
+    fun loadSettlementPreview(
+        activityId: String,
+        mode: FinalSettlementMode = FinalSettlementMode.BASE_UNIFIED,
+        force: Boolean = false,
+    ) {
+        val scope = previewScope(activityId, mode)
+        val state = previewStates.getOrPut(scope) { MutableStateFlow(FinalSettlementPreviewUiState()) }
+        val key = previewKey(activityId, mode)
         val cached = queryCache.read(key)
         if (!force && cached.state == QueryCacheState.Fresh && cached.value != null) {
             state.value = FinalSettlementPreviewUiState(
@@ -180,7 +192,7 @@ class FinancialReadViewModel(
         state.value = loadingState(existing)
         viewModelScope.launch {
             queryCache.getOrLoad(key, forceRefresh = true) {
-                repository.previewFinalSettlement(activityId).toCacheResult()
+                repository.previewFinalSettlement(activityId, mode).toCacheResult()
             }.fold(
                 onSuccess = {
                     state.value = FinalSettlementPreviewUiState(
@@ -198,7 +210,7 @@ class FinancialReadViewModel(
     fun invalidateActivity(activityId: String) {
         queryCache.invalidate(listKey(activityId))
         queryCache.invalidate(contextKey(activityId))
-        queryCache.invalidate(previewKey(activityId))
+        queryCache.invalidatePrefix("financial-query:preview:$activityId:")
         queryCache.invalidatePrefix("financial-query:detail:$activityId:")
     }
 
@@ -241,8 +253,11 @@ class FinancialReadViewModel(
         QueryCacheKey<FundRecord>(detailScope(activityId, transferId))
     private fun detailScope(activityId: String, transferId: String) = "financial-query:detail:$activityId:$transferId"
     private fun contextKey(activityId: String) = QueryCacheKey<FinancialContext>("financial-query:context:$activityId")
-    private fun previewKey(activityId: String) =
-        QueryCacheKey<List<FinalSettlementSuggestion>>("financial-query:preview:$activityId")
+    private fun previewScope(activityId: String, mode: FinalSettlementMode) =
+        "financial-query:preview:$activityId:${mode.databaseValue}"
+
+    private fun previewKey(activityId: String, mode: FinalSettlementMode) =
+        QueryCacheKey<List<FinalSettlementSuggestion>>(previewScope(activityId, mode))
 
     class Factory(
         private val repository: FinancialRecordRepository = FinancialRecordRepositoryFactory.create(),

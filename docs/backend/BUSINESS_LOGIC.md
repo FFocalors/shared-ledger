@@ -13,7 +13,7 @@
 1. 优先覆盖聚餐、旅行等熟人共同消费的常见场景。
 2. 准确保存消费、付款、分摊和真实转账，不追求银行级资金追溯。
 3. 原始账务事实与计算结果分离，计算结果可以重建，真实资金记录不能被系统偷偷修改。
-4. 日常使用尽量简单，复杂能力只在大型活动最终收尾时出现。
+4. 日常使用尽量简单，复杂能力只在活动需要收尾时出现。
 5. 特殊情况只做最小边界收束，不为低频场景引入复杂审批和状态机。
 
 ---
@@ -32,7 +32,7 @@
 - 支持普通转账、部分还款和多次还款。
 - 支持大型活动级预存、预存抵扣和预存返还。
 - 支持退款、逻辑删除和账务重新计算。
-- 支持大型活动最终结算方案。
+- 支持普通和大型活动最终结算，提供统一基准币和原币种两种模式。
 - 支持多人账号加入、协作编辑、审计和简单争议标记。
 - 支持备注、账单图片和直接拍照。
 - 自动判断活动是否完成，用户手动归档。
@@ -42,8 +42,8 @@
 - 不做传统个人收支统计和资产管理。
 - 不建立跨活动复用的全局联系人池。
 - 日常账务不做三人及以上的债务路径优化。
-- 普通活动不提供优化转账方案。
-- 不支持外币转账、外币预存或外币结算。
+- 普通活动的日常结算不提供三方债务路径优化；需要收尾时可使用最终结算模式。
+- 多币种活动可以使用已启用的外币进行转账、预存、预存返还和最终结算；每笔资金事实必须保存币种、汇率及基准币快照。
 - 不计算汇兑损益。
 - 不提供 LedgerUnit 级独立预存。
 - 不提供 Owner/Admin/Member 三级角色，只保留 Creator/Member。
@@ -73,7 +73,7 @@
 | TransferAllocation | 普通 Transfer 具体冲抵了哪些债务。 |
 | Prepayment | owner 提前交给 custodian 保管的活动资金。 |
 | PrepaymentUsage | 预存余额具体抵扣了哪些消费债务。 |
-| Final Settlement | 大型活动收尾时，根据全部当前未结账务生成的转账建议。 |
+| Final Settlement | 活动收尾时，根据当前未结账务生成的转账建议；可选择统一基准币或按原币种结算。 |
 | Dispute | 对 Transfer 的争议标记，不直接改变余额。 |
 
 ---
@@ -169,7 +169,7 @@ Member
 - 查看全部活动账目。
 - 新增 Expense。
 - 修改其他成员录入的 Expense。
-- 逻辑删除或恢复 Expense。
+- 逻辑删除 Expense；删除后的 Expense 不可恢复。
 - 以自己的 Participant 身份使用转账或收款。
 - 作废自己录入的 Transfer 或 Prepayment。
 - 对与自己有关的 Transfer 添加争议标记。
@@ -273,7 +273,7 @@ Expense 还必须固化 `fx_rate_source` 与 `fx_rate_observed_at`：新自动�
 - Split 也以该 Expense 的币种录入或展示。
 - 系统转换为基准币后再参与债务计算。
 - 使用其他币种向付款人还钱属于 Transfer，不属于原 Expense 的 Payment。
-- 所有 Transfer、Prepayment 和最终结算只使用 Activity.base_currency。
+- 单币种活动的 Transfer、Prepayment 和最终结算使用 Activity.base_currency；启用多币种后可使用已支持的外币，并保存原币、汇率和基准币金额快照。
 
 当一笔 Expense 包含多条 Payment 或 Split 时，各明细折算并保留 1 位小数后可能产生尾差。系统按固定顺序把尾差计入最后一条明细，确保：
 
@@ -455,7 +455,7 @@ Transfer.to = 收款方
 ```text
 付款方当前直接欠收款方
 0 < amount ≤ 当前同方向双边净债务
-currency = Activity.base_currency
+currency = Activity.base_currency，或是已启用多币种活动允许的外币
 ```
 
 用户可以部分还款，也可以分多次还款。
@@ -481,6 +481,7 @@ Transfer 表示用户确认已经真实发生的资金移动。
 - 创建后不能修改金额、付款人、收款人、类型或发生时间。
 - 录错时作废原 Transfer，再创建正确记录。
 - 作废是逻辑作废，原记录继续保留在历史和审计中。
+- 作废后永久不可编辑、不可恢复、不可再次作废；需要更正时创建新的 Transfer。
 - Member 只能作废自己录入的 Transfer。
 - Creator 可以作废任意 Transfer。
 
@@ -502,7 +503,7 @@ final_settlement
 | settlement | 普通还款或收款 | 是 |
 | prepayment | owner 向 custodian 增加活动预存 | 否，但会先偿还同方向当前债务 |
 | prepayment_return | custodian 返还 owner 的剩余预存 | 否，受可用预存余额限制 |
-| final_settlement | 执行大型活动当前最终结算建议 | 否，但必须匹配服务端当前方案 |
+| final_settlement | 执行当前 Activity、所选模式下的最终结算建议 | 否，但必须匹配服务端当前方案 |
 
 一笔实际 Transfer 可以通过 TransferComponent 解释多个同方向用途，例如：
 
@@ -527,7 +528,7 @@ Activity + owner + custodian
 - 普通 Activity 可以使用 Activity 级预存。
 - 大型 Activity 的预存跨全部子活动使用。
 - MVP 不提供 LedgerUnit 级独立预存。
-- 预存和预存返还只使用 Activity.base_currency。
+- 预存和预存返还默认使用 Activity.base_currency；多币种活动可按币种建立独立预存账户，不能跨币种抵扣。
 
 ### 11.2 正式规则
 
@@ -673,25 +674,34 @@ B 的预存余额：700.0 → 800.0
 
 ---
 
-## 13. 大型活动最终结算
+## 13. 活动最终结算
 
 正式业务定义：
 
-> 大型活动最终结算根据当前全部未结账务生成确定性的优化转账方案，尽量减少不必要的中间转账，但不承诺任意复杂债务图上的数学全局最少付款笔数。
+> 最终结算根据当前未结账务生成确定性的优化转账方案，尽量减少不必要的中间转账，但不承诺任意复杂债务图上的数学全局最少付款笔数。
 
 ### 13.1 使用范围
 
-最终结算只在大型 Activity 提供，面向活动准备收尾时使用。
+普通 Activity 以 root LedgerUnit 的当前未结账务生成方案；大型 Activity 汇总 root 与全部子活动的当前未结账务。两种 Activity 都可以在准备收尾时使用最终结算。
 
 计算范围固定为：
 
 ```text
-大型 Activity 中全部当前未结清的根单元和子活动账务
+当前 Activity 范围内全部未结清的账务；大型 Activity 包含根单元和全部子活动
 ```
 
-用户不能只选择部分子活动参与最终结算。
+一次最终结算必须覆盖该模式规定的完整范围，不能只选择大型 Activity 的部分子活动。
 
-### 13.2 与日常债务分离
+### 13.2 两种结算模式
+
+最终结算必须显式选择一种模式，并在 `final_settlement_paths` 中保存模式、路径币种、原币金额、基准币金额和汇率快照：
+
+1. `base_unified`（统一基准币）：将范围内可结算债务和预存返还按各自账单的汇率快照折算到 Activity.base_currency，在一个统一债务图中优化，实际 Transfer 使用基准币。
+2. `original_currency`（原币种）：按原币种分别计算和结算，只在同一币种内净额优化；不同币种不自动互换或抵消，实际 Transfer 使用对应原币种。
+
+多币种关闭时只能使用 `base_unified`，且所有金额均为 Activity.base_currency。
+
+### 13.3 与日常债务分离
 
 最终结算方案：
 
@@ -700,9 +710,9 @@ B 的预存余额：700.0 → 800.0
 - 不因为方案生成就视为已付款；
 - 只有用户确认真实付款并成功写入 `final_settlement` Transfer 后才改变余额。
 
-### 13.3 优化转账方案
+### 13.4 优化转账方案
 
-最终结算可以根据大型 Activity 的全部普通未结余额进行跨人净额优化，生成确定性的推荐转账方案。
+最终结算可以根据当前 Activity 范围内的全部普通未结余额进行跨人净额优化，生成确定性的推荐转账方案。
 
 例如：
 
@@ -724,7 +734,7 @@ B 欠 C 100.0
 A → C 100.0
 ```
 
-### 13.4 预存返还
+### 13.5 预存返还
 
 最终结算中：
 
@@ -733,21 +743,22 @@ A → C 100.0
 3. 普通结算建议和预存返还方向相同时，可以合并为一笔实际付款并保存不同 TransferComponent；
 4. 方向相反时不自动抵消。
 
-### 13.5 final_settlement Transfer
+### 13.6 final_settlement Transfer
 
 `Transfer.type = final_settlement`：
 
 - 不受“付款方必须直接欠收款方”的普通 Transfer 限制；
-- 只能按照当前大型 Activity 的最终结算方案执行；
+- 只能按照当前 Activity、所选模式和当前版本的最终结算方案执行；
 - 写入时由服务端 RPC 重新计算当前方案；
 - 付款方、收款方和金额必须匹配当前方案项；
+- 币种必须匹配所选模式：`base_unified` 使用基准币，`original_currency` 使用对应原币；
 - 不能由客户端任意创建没有方案支持的 final_settlement。
 
 服务端同时保存该笔 final_settlement 对底层债务的结清路径。例如 `A → C 100.0` 可以解释为同时结清 `A → B 100.0` 和 `B → C 100.0`。该路径只用于更新子活动状态和解释结算结果，不会改写原始 ExpenseDebt。
 
 final_settlement 的路径分配与普通 TransferAllocation 不同：同一笔实际金额可以沿一条债务路径同时结清多段等额债务，因此不能要求“所有路径债务金额之和等于 Transfer.amount”。
 
-### 13.6 方案更新
+### 13.7 方案更新
 
 不为 MVP 建立复杂的长期结算会话。
 
@@ -781,7 +792,7 @@ disputed_at
 - 撤销 Transfer；
 - 改变当前余额；
 - 改变 TransferAllocation；
-- 恢复已结债务；
+- 改变已结债务；
 - 自动阻止归档或普通记账。
 
 界面应明显显示：
@@ -801,12 +812,12 @@ disputed_at
 
 ## 15. 历史修改与重新计算
 
-允许在发生 Transfer 后继续修改或逻辑删除历史 Expense。
+只有没有真实 Transfer 历史触及的 Expense 才能继续修改或逻辑删除。真实 Transfer 历史包括普通 settlement、Prepayment 中的 settlement component，以及 final_settlement path；Transfer 即使已作废，历史关联仍然存在。仅有自动 PrepaymentUsage 的 Expense 仍可删除，重建投影时会释放对应预存余额。
 
 最小处理原则：
 
 ```text
-Expense 修改、删除或恢复
+Expense 修改或删除（仅限没有真实 Transfer 历史）
 → 重新计算当前 ExpenseDebt
 → 重新计算双边净债务
 → 重新计算 TransferAllocation
@@ -814,11 +825,11 @@ Expense 修改、删除或恢复
 → 重新计算余额和活动状态
 ```
 
-真实发生的 Transfer 和 Prepayment 记录保持不变。
+真实发生的 Transfer 和 Prepayment 记录保持不变；Transfer source history 也不可重建或删除。
 
 可能结果：
 
-- 原本已结清的债务重新出现；
+- 仅有自动预存 usage 的账单删除后，预存余额重新释放；
 - 预存多余部分回到预存余额；
 - 普通 Transfer 多付部分形成反向债务；
 - Activity 从 completed 自动回到 active。
@@ -843,11 +854,12 @@ deleted_at
 deleted_by
 ```
 
-逻辑删除后：
+Expense 只有在不存在真实 Transfer source history 时才能逻辑删除。仅有自动 `PrepaymentUsage` 不构成真实 Transfer 历史，删除后重建会释放该 usage。逻辑删除后：
 
 - 不参与当前账务计算；
 - 原记录继续保留；
-- 恢复后重新参与计算。
+- 永久不可修改、不可恢复；
+- 不能通过恢复 RPC 或直接 DML 重新参与计算。
 
 ### 16.2 Transfer 与 Prepayment
 
@@ -861,6 +873,7 @@ void_reason
 ```
 
 作废后不参与当前余额，但历史记录仍可查看。
+作废不会删除 Transfer source history；作废后的 Transfer 永久不可编辑、不可恢复、不可再次作废。
 
 ### 16.3 Activity 删除
 
@@ -950,7 +963,7 @@ LWW 不用于解决 Transfer、Prepayment 等资金并发超额问题。
 
 适用操作包括：
 
-- 创建、修改、删除或恢复 Expense；
+- 创建、修改或删除 Expense（删除前必须通过真实 Transfer history 检查）；
 - 创建或作废 settlement Transfer；
 - 创建或作废 Prepayment；
 - 创建或作废 PrepaymentReturn；
@@ -1054,6 +1067,7 @@ transfers
 transfer_components
 transfer_allocations
 final_settlement_paths
+transfer_source_expenses
 transfer_disputes
 ```
 
@@ -1118,12 +1132,13 @@ exchange_rate_cache
 → 保存 Usage 和当前余额
 ```
 
-### 22.4 大型活动最终结算
+### 22.4 活动最终结算
 
 ```text
 打开最终结算
-→ 服务端汇总大型 Activity 全部当前未结账务
-→ 普通债务计算优化转账方案
+→ 选择 base_unified 或 original_currency 模式
+→ 服务端汇总当前 Activity 范围内全部未结账务
+→ 按所选模式计算优化转账方案
 → 加入保持原方向的预存返还
 → 合并同方向用途
 → 显示建议
@@ -1216,7 +1231,7 @@ B 在 A 处预存：1000.0
 A 欠 B：200.0
 ```
 
-### 示例六：大型活动最终结算
+### 示例六：活动最终结算
 
 ```text
 早餐：A → B 100.0
@@ -1272,9 +1287,9 @@ Transfer 仍然有效
 3. 每笔 Expense 按固定参与人顺序独立生成债务。
 4. 日常只允许双边抵消，不进行三方路径优化。
 5. settlement Transfer 不得超过当前同方向净债务。
-6. final_settlement 只能匹配服务端当前大型活动最终结算方案。
+6. final_settlement 只能匹配服务端当前 Activity 和模式对应的最终结算方案。
 7. 预存只抵扣双边抵消后的 owner → custodian 当前净债务。
-8. 大型活动预存作用于整个 Activity，不能绑定单个子活动。
+8. 预存按 Activity、owner、custodian、currency 建立账户；大型活动预存跨全部子活动使用，不能绑定单个子活动。
 9. Transfer 和 Prepayment 创建后不可直接编辑。
 10. Dispute 不改变 Transfer 和余额。
 11. 所有改变资金余额的写入必须经过服务端 RPC 单事务校验。
@@ -1293,8 +1308,8 @@ Transfer 仍然有效
 - 双边抵消、部分还款和多次还款结果正确。
 - Activity 级预存可以新增、消费抵扣和返还。
 - 外币 Expense 能固化汇率并统一折算到基准币。
-- 退款、逻辑删除和恢复能够触发正确的当前重算。
-- final_settlement 能根据当前大型活动方案安全写入。
+- 退款和符合条件的逻辑删除能够触发正确的当前重算；已删除账单不可恢复。
+- final_settlement 能按两种模式根据当前 Activity 方案安全写入。
 - 两台设备并发提交资金操作时不会突破当前金额上限。
 - User、Participant、Creator、Member 和认领关系符合权限规则。
 - completed、active、archived 和争议提示能够正确展示。
