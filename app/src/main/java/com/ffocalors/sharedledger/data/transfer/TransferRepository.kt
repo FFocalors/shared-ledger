@@ -17,7 +17,16 @@ import kotlinx.serialization.json.put
 
 interface TransferRepository {
     suspend fun loadContext(activityId: String, direction: SettlementDirection): Result<SettlementContext>
+    suspend fun loadExpenseCandidates(
+        activityId: String,
+        fromParticipantId: String,
+        toParticipantId: String,
+        currency: String,
+    ): Result<List<SettlementExpenseOption>> = Result.success(emptyList())
     suspend fun createSettlement(input: CreateSettlementTransferInput): Result<SettlementTransferResult>
+
+    suspend fun previewSettlement(input: PreviewSettlementInput): Result<SettlementPreview> =
+        Result.failure(TransferOperationException("当前服务端尚未部署账单偿还预览"))
 
     /** Keeps the existing Result API while exposing ambiguous RPC outcomes to new callers. */
     suspend fun createSettlementWrite(input: CreateSettlementTransferInput): TransferWriteResult<SettlementTransferResult> =
@@ -27,6 +36,7 @@ interface TransferRepository {
 class SupabaseTransferRepository(private val client: SupabaseClient) : TransferRepository {
     /** Null until the capability has been observed; false means the old server contract. */
     private var supportsMultiCurrencySettlement: Boolean? = null
+    private var supportsTargetedSettlement: Boolean? = null
     private var loadedBaseCurrency: String? = null
 
     override suspend fun loadContext(activityId: String, direction: SettlementDirection): Result<SettlementContext> = runCatching {
@@ -125,17 +135,25 @@ class SupabaseTransferRepository(private val client: SupabaseClient) : TransferR
 
     override suspend fun createSettlement(input: CreateSettlementTransferInput): Result<SettlementTransferResult> = runCatching {
         require(input.amount > BigDecimal.ZERO) { "transfer amount must be positive" }
-        val response = if (supportsMultiCurrencySettlement != false) {
+        val response = if (supportsTargetedSettlement != false) {
             try {
-                client.postgrest.rpc("create_settlement_transfer", SettlementRpcPayloadBuilder.create(input))
+                client.postgrest.rpc("create_expense_repayment_v2", SettlementRpcPayloadBuilder.createTargeted(input))
                     .decodeSingle<CreateSettlementTransferRpcDto>()
-                    .also { supportsMultiCurrencySettlement = true }
+                    .also { supportsTargetedSettlement = true }
             } catch (error: Throwable) {
                 if (!isMissingSettlementRpc(error)) throw error
-                supportsMultiCurrencySettlement = false
+                supportsTargetedSettlement = false
+                if (input.allocationMode == SettlementAllocationMode.TARGETED ||
+                    input.targetExpenseIds.isNotEmpty() || input.expectedFinancialVersion != null
+                ) {
+                    throw TransferOperationException("当前服务端尚未部署账单偿还，请刷新后重试")
+                }
                 createLegacySettlement(input)
             }
         } else {
+            if (input.allocationMode == SettlementAllocationMode.TARGETED ||
+                input.targetExpenseIds.isNotEmpty() || input.expectedFinancialVersion != null
+            ) throw TransferOperationException("当前服务端尚未部署账单偿还，请刷新后重试")
             createLegacySettlement(input)
         }
         SettlementTransferResult(
@@ -144,6 +162,58 @@ class SupabaseTransferRepository(private val client: SupabaseClient) : TransferR
             currency = response.currency,
             financialVersion = response.financialVersion,
         )
+    }.mapFailure()
+
+    override suspend fun previewSettlement(input: PreviewSettlementInput): Result<SettlementPreview> = runCatching {
+        require(input.amount > BigDecimal.ZERO) { "transfer amount must be positive" }
+        val rows = client.postgrest.rpc(
+            "preview_expense_repayment",
+            SettlementRpcPayloadBuilder.preview(input),
+        ).decodeList<SettlementPreviewRowDto>()
+        val version = rows.mapNotNull { it.sourceFinancialVersion ?: it.financialVersion }.maxOrNull()
+            ?: input.expectedFinancialVersion
+            ?: 0L
+        SettlementPreview(
+            activityId = input.activityId,
+            fromParticipantId = input.fromParticipantId,
+            toParticipantId = input.toParticipantId,
+            currency = input.currency.trim().uppercase(),
+            requestedAmount = input.amount,
+            allocationMode = input.allocationMode,
+            financialVersion = version,
+            targetExpenseIds = input.targetExpenseIds,
+            lines = rows.mapNotNull { row ->
+                val amount = (row.paymentAmount ?: row.originalAmount).toBigDecimalOrNull() ?: return@mapNotNull null
+                SettlementPreviewLine(
+                    expenseId = row.expenseId,
+                    amount = amount,
+                    baseAmount = row.baseAmount.toBigDecimalOrNull(),
+                    originalAmount = row.originalAmount.toBigDecimalOrNull(),
+                    remainingAmount = row.remainingAmount.toBigDecimalOrNull(),
+                    remainingOriginalAmount = row.remainingOriginalAmount.toBigDecimalOrNull(),
+                    remainingBaseAmount = row.remainingBaseAmount.toBigDecimalOrNull(),
+                    currencyCode = row.originalCurrency,
+                )
+            },
+        )
+    }.mapFailure()
+
+    override suspend fun loadExpenseCandidates(
+        activityId: String,
+        fromParticipantId: String,
+        toParticipantId: String,
+        currency: String,
+    ): Result<List<SettlementExpenseOption>> = runCatching {
+        val rows = client.postgrest.rpc(
+            "list_transfer_expense_candidates",
+            SettlementRpcPayloadBuilder.listExpenseCandidates(
+                activityId = activityId,
+                fromParticipantId = fromParticipantId,
+                toParticipantId = toParticipantId,
+                currency = currency,
+            ),
+        ).decodeList<SettlementExpenseRowDto>().also { supportsTargetedSettlement = true }
+        rows.mapNotNull { row -> row.toExpenseOption(fromParticipantId, toParticipantId) }
     }.mapFailure()
 
     private suspend fun createLegacySettlement(input: CreateSettlementTransferInput): CreateSettlementTransferRpcDto {
@@ -422,6 +492,12 @@ object TransferRepositoryFactory {
 class UnavailableTransferRepository : TransferRepository {
     private fun <T> unavailable(): Result<T> = Result.failure(TransferOperationException("尚未配置 Supabase，无法加载转账数据"))
     override suspend fun loadContext(activityId: String, direction: SettlementDirection) = unavailable<SettlementContext>()
+    override suspend fun loadExpenseCandidates(
+        activityId: String,
+        fromParticipantId: String,
+        toParticipantId: String,
+        currency: String,
+    ) = unavailable<List<SettlementExpenseOption>>()
     override suspend fun createSettlement(input: CreateSettlementTransferInput) = unavailable<SettlementTransferResult>()
 }
 
@@ -429,4 +505,29 @@ private fun JsonElement?.toBigDecimalOrNull(): BigDecimal? = when (this) {
     null, JsonNull -> null
     is JsonPrimitive -> content.toBigDecimalOrNull()
     else -> null
+}
+
+private fun SettlementExpenseRowDto.toExpenseOption(
+    fallbackFromParticipantId: String,
+    fallbackToParticipantId: String,
+): SettlementExpenseOption? {
+    val from = debtorParticipantId ?: fallbackFromParticipantId
+    val to = creditorParticipantId ?: fallbackToParticipantId
+    val original = remainingOriginalAmount.toBigDecimalOrNull() ?: return null
+    val base = remainingBaseAmount.toBigDecimalOrNull() ?: original
+    val code = debtCurrency.orEmpty().trim().uppercase()
+    if (expenseId.isBlank() || code.isBlank() || original <= BigDecimal.ZERO || base <= BigDecimal.ZERO) return null
+    return SettlementExpenseOption(
+        expenseId = expenseId,
+        debtorParticipantId = from,
+        creditorParticipantId = to,
+        subActivityId = ledgerUnitId,
+        subActivityName = ledgerUnitName,
+        title = title,
+        occurredAt = occurredAt,
+        currencyCode = code,
+        remainingOriginalAmount = original,
+        remainingBaseAmount = base,
+        financialVersion = financialVersion,
+    )
 }

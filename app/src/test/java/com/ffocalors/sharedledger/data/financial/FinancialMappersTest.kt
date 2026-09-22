@@ -9,10 +9,32 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import java.math.BigDecimal
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class FinancialMappersTest {
+    @Test
+    fun finalSettlementPreviewDoesNotTurnMissingOrInvalidVersionIntoZero() {
+        val missing = Json.decodeFromString<FinancialPreviewRowDto>("""
+            {"activity_id":"a1","from_participant_id":"p1","to_participant_id":"p2","amount":"10.0","currency":"CNY"}
+        """.trimIndent())
+        val invalid = Json.decodeFromString<FinancialPreviewRowDto>("""
+            {"activity_id":"a1","from_participant_id":"p1","to_participant_id":"p2","amount":"10.0","currency":"CNY","source_financial_version":"not-a-version"}
+        """.trimIndent())
+        val fractional = Json.decodeFromString<FinancialPreviewRowDto>("""
+            {"activity_id":"a1","from_participant_id":"p1","to_participant_id":"p2","amount":"10.0","currency":"CNY","source_financial_version": "7.5"}
+        """.trimIndent())
+        val valid = Json.decodeFromString<FinancialPreviewRowDto>("""
+            {"activity_id":"a1","from_participant_id":"p1","to_participant_id":"p2","amount":"10.0","currency":"CNY","source_financial_version":"7"}
+        """.trimIndent())
+
+        assertNull(missing.sourceFinancialVersion)
+        assertNull(invalid.sourceFinancialVersion)
+        assertNull(fractional.sourceFinancialVersion)
+        assertEquals(7L, valid.sourceFinancialVersion)
+    }
+
     @Test
     fun aggregatesCurrentUsageByAccountWithoutChangingRawTransferAmount() {
         val usage = aggregatePrepaymentUsageAmounts(

@@ -26,6 +26,9 @@ data class PendingTransferRequest(
     val type: String,
     val occurredAt: String,
     val onBehalfOfParticipantId: String?,
+    val allocationMode: SettlementAllocationMode = SettlementAllocationMode.FIFO,
+    val targetExpenseIds: List<String> = emptyList(),
+    val expectedFinancialVersion: Long? = null,
     val createdAtEpochMillis: Long = 0L,
 ) {
     fun matches(
@@ -38,6 +41,9 @@ data class PendingTransferRequest(
         type: String,
         onBehalfOfParticipantId: String?,
         occurredAt: String?,
+        allocationMode: SettlementAllocationMode = SettlementAllocationMode.FIFO,
+        targetExpenseIds: List<String> = emptyList(),
+        expectedFinancialVersion: Long? = null,
     ): Boolean = this.activityId == activityId &&
         this.direction == direction &&
         this.fromParticipantId == fromParticipantId &&
@@ -46,6 +52,9 @@ data class PendingTransferRequest(
         this.currency == currency.trim().uppercase() &&
         this.type == type &&
         this.onBehalfOfParticipantId == onBehalfOfParticipantId &&
+        this.allocationMode == allocationMode &&
+        this.targetExpenseIds == targetExpenseIds &&
+        this.expectedFinancialVersion == expectedFinancialVersion &&
         (occurredAt == null || this.occurredAt == occurredAt)
 }
 
@@ -69,6 +78,9 @@ private data class PendingTransferRequestDto(
     val type: String,
     val occurredAt: String,
     val onBehalfOfParticipantId: String? = null,
+    val allocationMode: String = SettlementAllocationMode.FIFO.name,
+    val targetExpenseIds: List<String> = emptyList(),
+    val expectedFinancialVersion: Long? = null,
     val createdAtEpochMillis: Long = 0L,
 )
 
@@ -146,6 +158,9 @@ private fun PendingTransferRequest.toDto() = PendingTransferRequestDto(
     type = type,
     occurredAt = occurredAt,
     onBehalfOfParticipantId = onBehalfOfParticipantId,
+    allocationMode = allocationMode.name,
+    targetExpenseIds = targetExpenseIds,
+    expectedFinancialVersion = expectedFinancialVersion,
     createdAtEpochMillis = createdAtEpochMillis,
 )
 
@@ -161,6 +176,10 @@ private fun PendingTransferRequestDto.toDomainOrNull(): PendingTransferRequest? 
         type = type,
         occurredAt = occurredAt,
         onBehalfOfParticipantId = onBehalfOfParticipantId,
+        allocationMode = runCatching { SettlementAllocationMode.valueOf(allocationMode.uppercase()) }
+            .getOrDefault(SettlementAllocationMode.FIFO),
+        targetExpenseIds = targetExpenseIds,
+        expectedFinancialVersion = expectedFinancialVersion,
         createdAtEpochMillis = createdAtEpochMillis,
     )
 }.getOrNull()

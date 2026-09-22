@@ -63,6 +63,56 @@ class FinancialRecordsTest {
     }
 
     @Test
+    fun pathSummaryKeepsSameEndpointsSeparateWhenIntermediateNodesAndAmountsDiffer() = runBlocking {
+        val hzl = ParticipantInfo("hzl", "hzl")
+        val zhy = ParticipantInfo("zhy", "zhy")
+        val whr = ParticipantInfo("whr", "whr")
+        val record = FundRecord(
+            transferId = "t", activityId = "activity", from = hzl, to = whr,
+            type = FundRecordType.FINAL_SETTLEMENT, amount = BigDecimal("41.2"), currency = "CNY",
+            occurredAt = "now", recordedAt = "now", recordedBy = RecorderInfo("u", "User"),
+            components = listOf(FundRecordComponent("c", FundRecordComponentType.SETTLEMENT, BigDecimal("41.2"))),
+            finalSettlementPaths = listOf(
+                FinalSettlementPath(1, 1, hzl, whr, BigDecimal("31.6"), FundRecordComponentType.SETTLEMENT),
+                FinalSettlementPath(2, 1, hzl, zhy, BigDecimal("9.6"), FundRecordComponentType.SETTLEMENT),
+                FinalSettlementPath(2, 2, zhy, whr, BigDecimal("9.6"), FundRecordComponentType.SETTLEMENT),
+            ),
+        )
+
+        val summaries = record.finalSettlementPathSummaries
+        assertEquals(BigDecimal("41.2"), record.amount)
+        assertEquals(2, summaries.size)
+        assertEquals(listOf(hzl, whr), summaries[0].participants)
+        assertEquals(BigDecimal("31.6"), summaries[0].endpointAmount)
+        assertEquals(listOf(hzl, zhy, whr), summaries[1].participants)
+        assertEquals(BigDecimal("9.6"), summaries[1].endpointAmount)
+        assertEquals(2, summaries[1].hopCount)
+    }
+
+    @Test
+    fun pathSummaryMergesConsecutiveAllocationsForOneGraphEdgeBeforeCountingHops() = runBlocking {
+        val hzl = ParticipantInfo("hzl", "hzl")
+        val zhy = ParticipantInfo("zhy", "zhy")
+        val whr = ParticipantInfo("whr", "whr")
+        val record = FundRecord(
+            transferId = "t", activityId = "activity", from = hzl, to = whr,
+            type = FundRecordType.FINAL_SETTLEMENT, amount = BigDecimal("9.6"), currency = "CNY",
+            occurredAt = "now", recordedAt = "now", recordedBy = RecorderInfo("u", "User"),
+            components = listOf(FundRecordComponent("c", FundRecordComponentType.SETTLEMENT, BigDecimal("9.6"))),
+            finalSettlementPaths = listOf(
+                FinalSettlementPath(1, 1, hzl, zhy, BigDecimal("4.0"), FundRecordComponentType.SETTLEMENT),
+                FinalSettlementPath(1, 2, hzl, zhy, BigDecimal("5.6"), FundRecordComponentType.SETTLEMENT),
+                FinalSettlementPath(1, 3, zhy, whr, BigDecimal("9.6"), FundRecordComponentType.SETTLEMENT),
+            ),
+        )
+
+        val summary = record.finalSettlementPathSummaries.single()
+        assertEquals(listOf(hzl, zhy, whr), summary.participants)
+        assertEquals(2, summary.hopCount)
+        assertEquals(BigDecimal("9.6"), summary.endpointAmount)
+    }
+
+    @Test
     fun voidRequiresReasonAndCannotBeRepeatedOrRestored() = runBlocking {
         val actor = RecorderInfo("u", "测试记录人")
         val repository = FakeFinancialRecordRepository(actorContext = FakeActorContext(actor = actor, participantIds = setOf("fake-alice")))

@@ -28,6 +28,7 @@ internal object ExpenseDtoMappers {
         fxRateSource = dto.fxRateSource,
         fxRateObservedAt = dto.fxRateObservedAt,
         iconKey = ExpenseIconKey.normalize(dto.iconKey),
+        financialLocked = dto.financialLocked,
     )
 
     fun payment(dto: PaymentRowDto) = Payment(dto.id, dto.expenseId, dto.participantId,
@@ -61,11 +62,31 @@ internal object ExpenseDtoMappers {
         }
     }
 
+    fun repaymentProgress(dto: ExpenseRepaymentProgressRowDto) = ExpenseRepaymentProgress(
+        expenseId = dto.expenseId,
+        debtorParticipantId = dto.debtorParticipantId,
+        creditorParticipantId = dto.creditorParticipantId,
+        currency = dto.debtCurrency.trim().uppercase(),
+        owedOriginalAmount = decimalOrZero(dto.debtOriginalAmount),
+        owedBaseAmount = decimalOrZero(dto.debtBaseAmount),
+        reverseOffsetOriginalAmount = decimalOrZero(dto.offsetOriginalAmount),
+        reverseOffsetBaseAmount = decimalOrZero(dto.offsetBaseAmount),
+        settledTransferOriginalAmount = decimalOrZero(dto.settledOriginalAmount),
+        settledTransferBaseAmount = decimalOrZero(dto.settledBaseAmount),
+        prepaymentOriginalAmount = decimalOrZero(dto.prepaymentOriginalAmount),
+        prepaymentBaseAmount = decimalOrZero(dto.prepaymentBaseAmount),
+        remainingOriginalAmount = decimalOrZero(dto.remainingOriginalAmount),
+        remainingBaseAmount = decimalOrZero(dto.remainingBaseAmount),
+        financialVersion = dto.financialVersion,
+    )
+
     fun decimalOrNull(value: JsonElement?): BigDecimal? = when (value) {
         null, JsonNull -> null
         is JsonPrimitive -> value.content.toBigDecimalOrNull()
         else -> null
     }
+
+    private fun decimalOrZero(value: JsonElement?): BigDecimal = decimalOrNull(value) ?: BigDecimal.ZERO
 
     private fun JsonElement.decimalRequired(field: String): BigDecimal =
         ExpenseDtoMappers.decimalOrNull(this) ?: error("$field must be a decimal value")

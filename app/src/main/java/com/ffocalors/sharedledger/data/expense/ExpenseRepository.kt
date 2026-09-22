@@ -15,6 +15,8 @@ interface ExpenseRepository {
     suspend fun getDetail(expenseId: String): Result<ExpenseDetail>
     suspend fun create(input: CreateExpenseInput): Result<ExpenseMutationResult>
     suspend fun update(input: UpdateExpenseInput): Result<ExpenseMutationResult>
+    suspend fun updatePresentation(input: UpdateExpensePresentationInput): Result<ExpenseMutationResult> =
+        Result.failure(ExpenseOperationException("当前账单暂不支持展示字段编辑"))
     suspend fun delete(expenseId: String): Result<ExpenseMutationResult>
     suspend fun refund(input: RefundExpenseInput): Result<ExpenseMutationResult>
 
@@ -24,6 +26,9 @@ interface ExpenseRepository {
 
     suspend fun updateWrite(input: UpdateExpenseInput): ExpenseWriteResult<ExpenseMutationResult> =
         update(input).toExpenseWriteResult()
+
+    suspend fun updatePresentationWrite(input: UpdateExpensePresentationInput): ExpenseWriteResult<ExpenseMutationResult> =
+        updatePresentation(input).toExpenseWriteResult()
 
     suspend fun deleteWrite(expenseId: String): ExpenseWriteResult<ExpenseMutationResult> =
         delete(expenseId).toExpenseWriteResult()
@@ -68,16 +73,18 @@ class SupabaseExpenseRepository(private val client: SupabaseClient) : ExpenseRep
         val splits = client.from("splits").select {
             filter { eq("expense_id", expenseId) }
         }.decodeList<SplitRowDto>().map { ExpenseDtoMappers.split(it) }
-        val debtRows = client.from("expense_debts").select {
-            filter { eq("expense_id", expenseId) }
-        }.decodeList<ExpenseDebtRowDto>()
-        val debtIds = debtRows.map { it.id }
-        val allocations = if (debtIds.isEmpty()) emptyList() else client.from("transfer_allocations").select {
-            filter { isIn("expense_debt_id", debtIds) }
-        }.decodeList<TransferAllocationRowDto>()
-        val usages = if (debtIds.isEmpty()) emptyList() else client.from("prepayment_usages").select {
-            filter { isIn("expense_debt_id", debtIds) }
-        }.decodeList<PrepaymentUsageRowDto>()
+        // The progress RPC is the sole source of truth for this screen.  It
+        // filters voided transfers, applies reverse offsets, includes final
+        // settlement paths, and returns bill/base currency snapshots.  Reading
+        // the rebuildable allocation tables here would make the detail page
+        // disagree with the settlement projection during a rebuild.
+        val repaymentProgress = client.postgrest.rpc(
+            "get_expense_repayment_progress",
+            buildJsonObject {
+                put("p_activity_id", ledgerUnit.activityId)
+                put("p_expense_id", expenseId)
+            },
+        ).decodeList<ExpenseRepaymentProgressRowDto>().map(ExpenseDtoMappers::repaymentProgress)
         val participantIds = (payments.map(Payment::participantId) + splits.map(Split::participantId)).distinct()
         val participants = if (participantIds.isEmpty()) {
             emptyList()
@@ -93,7 +100,8 @@ class SupabaseExpenseRepository(private val client: SupabaseClient) : ExpenseRep
             payments = payments,
             splits = splits,
             participants = participants.sortedBy { it.order },
-            debtSettlements = ExpenseDtoMappers.debtSettlements(debtRows, allocations, usages),
+            repaymentProgress = repaymentProgress,
+            repaymentProgressAvailable = true,
         )
     }.mapFailure()
 
@@ -111,6 +119,17 @@ class SupabaseExpenseRepository(private val client: SupabaseClient) : ExpenseRep
             fxRate = ExpenseDtoMappers.decimalOrNull(result.fxRate), fxRateSource = result.fxRateSource, fxRateObservedAt = result.fxRateObservedAt)
     }.mapFailure()
 
+    override suspend fun updatePresentation(input: UpdateExpensePresentationInput): Result<ExpenseMutationResult> = runCatching {
+        val result = client.postgrest.rpc("update_expense_presentation", ExpenseRpcPayloadBuilder.updatePresentation(input))
+            .decodeSingle<UpdateExpensePresentationRpcDto>()
+        ExpenseMutationResult(
+            expenseId = result.updatedExpenseId,
+            baseAmount = null,
+            version = result.version,
+            financialLocked = result.financialLocked,
+        )
+    }.mapFailure()
+
     override suspend fun delete(expenseId: String): Result<ExpenseMutationResult> = runCatching {
         val result = client.postgrest.rpc("delete_expense", buildJsonObject { put("expense_id", expenseId) })
             .decodeSingle<DeleteExpenseRpcDto>()
@@ -125,6 +144,9 @@ class SupabaseExpenseRepository(private val client: SupabaseClient) : ExpenseRep
 
     override suspend fun updateWrite(input: UpdateExpenseInput): ExpenseWriteResult<ExpenseMutationResult> =
         writeAndConfirm { update(input) }
+
+    override suspend fun updatePresentationWrite(input: UpdateExpensePresentationInput): ExpenseWriteResult<ExpenseMutationResult> =
+        writeAndConfirm { updatePresentation(input) }
 
     override suspend fun deleteWrite(expenseId: String): ExpenseWriteResult<ExpenseMutationResult> =
         writeAndConfirm(

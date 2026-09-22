@@ -227,6 +227,7 @@ fun NewExpenseScreen(
     multiCurrencyEnabled: Boolean = false,
     currentParticipantId: String? = null,
     mode: ExpenseFormMode = ExpenseFormMode.Create,
+    presentationOnly: Boolean = false,
     initialDraft: ExpenseFormDraft? = null,
     attachments: List<ExpenseAttachmentDraftUiState> = emptyList(),
     isSubmitting: Boolean = false,
@@ -378,6 +379,13 @@ fun NewExpenseScreen(
         ) {
             item("amount") {
                 FormSection {
+                    if (presentationOnly) {
+                        Text(
+                            text = "已发生真实转账，仅可修改标题、备注等信息",
+                            style = SharedLedgerTextStyles.Label,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                     if (mode != ExpenseFormMode.Refund) {
                         SharedLedgerTextField(
                             draft.title,
@@ -419,6 +427,7 @@ fun NewExpenseScreen(
                                 .fillMaxWidth()
                                 .numericKeypadTarget(keypad, { draft.amount }, { draft = draft.copy(amount = it) }),
                             placeholder = "0.0",
+                            enabled = !presentationOnly,
                             readOnly = true,
                             leadingIcon = {
                                 Text(currencySymbol(draft.currency), style = SharedLedgerTextStyles.CardTitle, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -439,7 +448,7 @@ fun NewExpenseScreen(
                                             )
                                             onCurrencySelected?.invoke(code)
                                         },
-                                        enabled = mode != ExpenseFormMode.Refund,
+                                        enabled = mode != ExpenseFormMode.Refund && !presentationOnly,
                                     )
                                 }
                             },
@@ -505,7 +514,7 @@ fun NewExpenseScreen(
                                     draft.payerAmounts + (participant.id to value)
                                 }
                                 draft = draft.copy(payerIds = nextPayerIds, payerAmounts = nextAmounts)
-                            })
+                            }, enabled = !presentationOnly)
                         }
                     }
                 }
@@ -515,7 +524,7 @@ fun NewExpenseScreen(
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Text("分摊方式", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
-                            SegmentedControl(options = listOf("手动分摊", "AA均摊"), selectedIndex = if (draft.splitMethod == ExpenseSplitMethod.Manual) 0 else 1, onSelected = { draft = draft.copy(splitMethod = if (it == 0) ExpenseSplitMethod.Manual else ExpenseSplitMethod.Aa) }, modifier = Modifier.widthIn(max = ComponentSizes.SegmentedControlMaxWidth))
+                            SegmentedControl(options = listOf("手动分摊", "AA均摊"), selectedIndex = if (draft.splitMethod == ExpenseSplitMethod.Manual) 0 else 1, onSelected = { draft = draft.copy(splitMethod = if (it == 0) ExpenseSplitMethod.Manual else ExpenseSplitMethod.Aa) }, modifier = Modifier.widthIn(max = ComponentSizes.SegmentedControlMaxWidth), enabled = !presentationOnly)
                         }
                     }
                     Surface(shape = CircleShape, color = if (splitTotal.compareTo(amount) == 0) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer) {
@@ -532,10 +541,10 @@ fun NewExpenseScreen(
                         )
                         if (draft.splitMethod == ExpenseSplitMethod.Manual) {
                             val value = draft.manualSplitAmounts[participant.id].orEmpty()
-                            ParticipantAmountRow(participantUi, value.toBigDecimalOrNull() ?: BigDecimal.ZERO, currencyCode = draft.currency, editable = true, editableAmount = value, onAmountChange = { draft = draft.copy(manualSplitAmounts = draft.manualSplitAmounts + (participant.id to it)) }, keypad = keypad)
+                            ParticipantAmountRow(participantUi, value.toBigDecimalOrNull() ?: BigDecimal.ZERO, currencyCode = draft.currency, editable = !presentationOnly, editableAmount = value, onAmountChange = { draft = draft.copy(manualSplitAmounts = draft.manualSplitAmounts + (participant.id to it)) }, keypad = keypad)
                         } else {
                             val selected = participant.id in draft.aaParticipantIds
-                            Surface(onClick = { draft = draft.copy(aaParticipantIds = if (selected) draft.aaParticipantIds - participant.id else draft.aaParticipantIds + participant.id) }, modifier = Modifier.fillMaxWidth(), shape = SharedLedgerRadius.Large, color = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = .35f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .4f), border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant)) {
+                            Surface(onClick = { draft = draft.copy(aaParticipantIds = if (selected) draft.aaParticipantIds - participant.id else draft.aaParticipantIds + participant.id) }, enabled = !presentationOnly, modifier = Modifier.fillMaxWidth(), shape = SharedLedgerRadius.Large, color = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = .35f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .4f), border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant)) {
                                 Row(Modifier.padding(SharedLedgerSpacing.Medium), verticalAlignment = Alignment.CenterVertically) {
                                     Text(participant.name, Modifier.weight(1f), style = SharedLedgerTextStyles.Body)
                                     Text(if (selected) "已选择" else "未选择", style = SharedLedgerTextStyles.Label, color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
@@ -552,6 +561,7 @@ fun NewExpenseScreen(
                         Icon(Icons.Rounded.Schedule, null)
                         Surface(
                             onClick = { showDatePicker = true },
+                            enabled = !presentationOnly,
                             modifier = Modifier
                                 .weight(1f),
                             shape = SharedLedgerRadius.Medium,
@@ -734,8 +744,8 @@ private fun ExpenseAttachmentDraftRow(
 }
 
 @Composable
-private fun PayerRow(participant: ExpenseFormParticipant, index: Int, selected: Boolean, amount: String, currency: String, keypad: NumericKeypadState, onToggle: () -> Unit, onAmountChange: (String) -> Unit) {
-    Surface(onClick = onToggle, modifier = Modifier.fillMaxWidth(), shape = SharedLedgerRadius.Medium, color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .52f), border = BorderStroke(SharedLedgerDimens.OutlineWidth, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = .5f))) {
+private fun PayerRow(participant: ExpenseFormParticipant, index: Int, selected: Boolean, amount: String, currency: String, keypad: NumericKeypadState, onToggle: () -> Unit, onAmountChange: (String) -> Unit, enabled: Boolean = true) {
+    Surface(onClick = onToggle, enabled = enabled, modifier = Modifier.fillMaxWidth(), shape = SharedLedgerRadius.Medium, color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .52f), border = BorderStroke(SharedLedgerDimens.OutlineWidth, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = .5f))) {
         Row(Modifier.padding(SharedLedgerSpacing.MediumSmall), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall)) {
             ParticipantAvatar(
                 name = participant.name,
@@ -744,7 +754,7 @@ private fun PayerRow(participant: ExpenseFormParticipant, index: Int, selected: 
                 size = SharedLedgerDimens.AvatarSmall,
             )
             Text(participant.name, Modifier.weight(1f), style = SharedLedgerTextStyles.Body)
-            SharedLedgerTextField(amount, onAmountChange, Modifier.widthIn(min = 82.dp, max = SharedLedgerDimens.ParticipantAmountFieldWidth).numericKeypadTarget(keypad, { amount }, onAmountChange), placeholder = MoneyFormatter.format(BigDecimal.ZERO, currency), readOnly = true)
+            SharedLedgerTextField(amount, onAmountChange, Modifier.widthIn(min = 82.dp, max = SharedLedgerDimens.ParticipantAmountFieldWidth).numericKeypadTarget(keypad, { amount }, onAmountChange), placeholder = MoneyFormatter.format(BigDecimal.ZERO, currency), enabled = enabled, readOnly = true)
         }
     }
 }

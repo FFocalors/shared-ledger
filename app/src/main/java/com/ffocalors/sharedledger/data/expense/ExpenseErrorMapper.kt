@@ -18,6 +18,17 @@ object ExpenseErrorMapper {
 
     fun toUserMessage(error: Throwable): String {
         if (error is ExpenseOperationException) return error.userMessage
+        if (error.messageChainContains("immutable historical") ||
+            error.messageChainContains("financial fields are immutable") ||
+            error.messageChainContains("settled expense financial") ||
+            error.messageChainContains("settled expense cannot") ||
+            error.messageChainContains("expense financial lock is immutable")
+        ) {
+            return "已发生真实转账，仅可修改标题、备注等信息"
+        }
+        if (error.messageChainContains("deleted expense cannot")) {
+            return "已删除账单不可编辑或恢复"
+        }
         if (error.messageChainContains("settled") || error.messageChainContains("settlement")) {
             return "账单已发生结算，不能修改或删除其财务字段"
         }

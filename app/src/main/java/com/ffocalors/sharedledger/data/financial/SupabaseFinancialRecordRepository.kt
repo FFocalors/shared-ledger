@@ -253,11 +253,32 @@ private class UnavailableFinancialRecordRepository : FinancialRecordRepository {
     override suspend fun executeFinalSettlement(request: FinalSettlementSuggestion, occurredAt: String) = unavailableWrite<FundRecord>()
 }
 
+private val financialErrorCodePattern = Regex(
+    """(?i)(?:sqlstate|errcode|"code"|\bcode)\s*[=: ]+"?([0-9A-Z]{5,8})(?![0-9A-Z])""",
+)
+
+private fun financialErrorCode(text: String): String? =
+    financialErrorCodePattern.find(text)?.groupValues?.getOrNull(1)?.uppercase()
+
+private fun isFinalSettlementContractError(text: String, code: String?): Boolean {
+    val mentionsFinalSettlement = text.contains("final settlement", true) ||
+        text.contains("final_settlement", true)
+    return mentionsFinalSettlement && (
+        code == "PGRST202" ||
+            text.contains("schema cache", true) ||
+            (text.contains("function", true) && text.contains("does not exist", true))
+        )
+}
+
+private fun isFinalSettlementModeConstraint(text: String): Boolean =
+    text.contains("settlement_mode", true) ||
+        text.contains("final_settlement_paths_mode_valid", true) ||
+        text.contains("invalid final settlement mode", true)
+
 object FinancialErrorMapper {
     fun failureKind(error: Throwable): ReadFailureKind {
         val text = generateSequence(error) { it.cause }.joinToString(" ") { it.message.orEmpty() }
-        val code = Regex("(?i)(?:sqlstate|errcode|\\\"code\\\"|\\bcode)\\s*[=: ]+\\\"?([0-9A-Z]{5})").find(text)
-            ?.groupValues?.getOrNull(1)?.uppercase()
+        val code = financialErrorCode(text)
         return when (code) {
             "28000", "42501" -> ReadFailureKind.PermissionDenied
             "P0002", "PGRST116" -> ReadFailureKind.NotFound
@@ -268,13 +289,32 @@ object FinancialErrorMapper {
     fun toUserMessage(error: Throwable): String {
         if (error is FinancialOperationException) return error.userMessage
         val text = generateSequence(error) { it.cause }.joinToString(" ") { it.message.orEmpty() }
-        val code = Regex("(?i)(?:sqlstate|errcode|\\\"code\\\"|\\bcode)\\s*[=: ]+\\\"?([0-9A-Z]{5})").find(text)?.groupValues?.getOrNull(1)?.uppercase()
+        val code = financialErrorCode(text)
+        if (isFinalSettlementContractError(text, code)) {
+            return FINAL_SETTLEMENT_CONTRACT_UNAVAILABLE_MESSAGE
+        }
+        if (isFinalSettlementModeConstraint(text)) {
+            return "当前服务端不支持所选结算模式，请更新服务端后重试。"
+        }
+        if (text.contains("final settlement", true) && text.contains("request_id", true) && text.contains("required", true)) {
+            return "最终结算请求缺少服务端要求的 request_id，请更新客户端后重试。"
+        }
         if (text.contains("financial_version", true) || text.contains("expected financial version", true)) {
             return "当前资金版本已变化，请刷新预存预览后重试。"
         }
         return when (code) {
             "28000" -> "登录状态已失效，请重新登录"
-            "42501" -> "你没有权限执行此操作，或尚未绑定参与人"
+            "42501" -> when {
+                text.contains("creator must be party or act on behalf", true) ||
+                    text.contains("creator must be a transfer party or explicitly act on behalf", true) ->
+                    "你不是这笔转账的一方；请选择未绑定参与人代记后重试"
+                text.contains("creator may act only for unclaimed transfer party", true) ||
+                    text.contains("creator may act only for an unclaimed participant", true) ->
+                    "创建者只能为这笔转账中尚未绑定账号的参与人代记"
+                text.contains("member must use claimed participant", true) ->
+                    "仅这笔转账的付款方或收款方可以记录已转账"
+                else -> "你没有权限执行此操作，或尚未绑定参与人"
+            }
             "P0002" -> "活动或资金记录不存在"
             "22023", "22004" -> "资金操作参数不符合规则"
             "40001", "40P01" -> "当前资金方案已发生变化，请重新查看最新方案后重试。"
@@ -296,5 +336,27 @@ object FinancialErrorMapper {
                 "网络连接失败，请检查网络后重试"
             } else "资金操作失败，请稍后重试"
         }
+    }
+
+    /** Maps errors from the final-settlement RPC with operation-specific semantics. */
+    internal fun toFinalSettlementUserMessage(error: Throwable): String {
+        if (error is FinancialOperationException) return error.userMessage
+        val text = generateSequence(error) { it.cause }.joinToString(" ") { it.message.orEmpty() }
+        val code = financialErrorCode(text)
+        if (code == "PGRST202" || text.contains("schema cache", true) ||
+            (text.contains("execute_final_settlement_v2", true) && text.contains("does not exist", true))
+        ) {
+            return FINAL_SETTLEMENT_CONTRACT_UNAVAILABLE_MESSAGE
+        }
+        if (isFinalSettlementModeConstraint(text)) {
+            return "当前服务端不支持所选结算模式，请更新服务端后重试。"
+        }
+        if (text.contains("request_id", true) && text.contains("required", true)) {
+            return "最终结算请求缺少服务端要求的 request_id，请更新客户端后重试。"
+        }
+        if (code == "40001" || code == "40P01" || text.contains("financial_version mismatch", true)) {
+            return "当前结算方案已发生变化，请重新查看最新方案后重试。"
+        }
+        return toUserMessage(error)
     }
 }

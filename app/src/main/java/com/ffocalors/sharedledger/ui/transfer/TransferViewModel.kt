@@ -9,9 +9,13 @@ import com.ffocalors.sharedledger.data.transfer.InMemoryTransferRequestStore
 import com.ffocalors.sharedledger.data.transfer.PendingTransferRequest
 import com.ffocalors.sharedledger.data.transfer.SettlementCandidate
 import com.ffocalors.sharedledger.data.transfer.SettlementCandidateKind
+import com.ffocalors.sharedledger.data.transfer.SettlementAllocationMode
 import com.ffocalors.sharedledger.data.transfer.SettlementCurrencyOption
+import com.ffocalors.sharedledger.data.transfer.SettlementExpenseOption
 import com.ffocalors.sharedledger.data.transfer.SettlementDirection
 import com.ffocalors.sharedledger.data.transfer.SettlementTransferResult
+import com.ffocalors.sharedledger.data.transfer.SettlementPreview
+import com.ffocalors.sharedledger.data.transfer.PreviewSettlementInput
 import com.ffocalors.sharedledger.data.transfer.SettlementParticipant
 import com.ffocalors.sharedledger.data.transfer.TransferErrorMapper
 import com.ffocalors.sharedledger.data.transfer.TransferRepository
@@ -45,6 +49,7 @@ data class TransferCandidateUi(
     val kind: SettlementCandidateKind = SettlementCandidateKind.PERSONAL,
     val onBehalfOptions: List<SettlementParticipant> = emptyList(),
     val currencyOptions: List<SettlementCurrencyOption> = emptyList(),
+    val expenseOptions: List<SettlementExpenseOption> = emptyList(),
     val candidateKey: String = "${kind.name}:$fromParticipantId->$toParticipantId",
     val claimedUserId: String? = null,
     val avatarStyle: String? = null,
@@ -66,6 +71,10 @@ data class TransferUiState(
     val writeState: TransferWriteState? = null,
     val failureKind: ReadFailureKind? = null,
     val pendingRequest: PendingTransferRequest? = null,
+    val isPreviewing: Boolean = false,
+    val preview: SettlementPreview? = null,
+    val previewErrorMessage: String? = null,
+    val previewRequired: Boolean = false,
 )
 
 class TransferViewModel(
@@ -78,8 +87,10 @@ class TransferViewModel(
     val uiState: StateFlow<TransferUiState> = _uiState.asStateFlow()
     private var loadedActivityId: String? = null
     private var loadedDirection: SettlementDirection? = null
+    private var previewGeneration = 0L
 
     fun load(activityId: String, direction: SettlementDirection, force: Boolean = false) {
+        previewGeneration += 1
         val key = contextKey(activityId, direction)
         val cached = queryCache.read(key)
         if (!force && cached.state == QueryCacheState.Fresh && cached.value != null) {
@@ -90,6 +101,7 @@ class TransferViewModel(
                 _uiState.value = _uiState.value.copy(
                     pendingRequest = readPendingRequest(activityId, direction),
                 )
+                enrichExpenseOptions(cached.value)
             }
             return
         }
@@ -106,6 +118,7 @@ class TransferViewModel(
                     _uiState.value = toUiState(it, direction).copy(
                         pendingRequest = readPendingRequest(activityId, direction),
                     )
+                    enrichExpenseOptions(it)
                 },
                 onFailure = { error ->
                     val kind = error.readFailureKind()
@@ -138,6 +151,25 @@ class TransferViewModel(
         val candidate = draft.candidateKey?.let { key ->
             allCandidates.firstOrNull { it.candidateKey == key }
         } ?: allCandidates.singleOrNull { it.participantId == draft.participantId }
+        val currency = draft.currency.trim().uppercase().ifBlank { state.baseCurrency }
+        val selectedExpenses = candidate?.expenseOptions.orEmpty().filter { it.expenseId in draft.targetExpenseIds }
+        val selectedExpenseCap = selectedExpenses.sumOf {
+            if (currency == state.baseCurrency) it.remainingBaseAmount else it.remainingOriginalAmount
+        }
+        val selectedAmountCap = candidate?.let {
+            selectedCurrencyOption(it, currency, state.baseCurrency)?.amount ?: it.amount
+        } ?: BigDecimal.ZERO
+        val targetedCap = minOf(selectedExpenseCap, selectedAmountCap)
+        val previewMatches = !state.previewRequired || state.preview?.let { preview ->
+                preview.activityId == draft.activityId &&
+                    preview.fromParticipantId == candidate?.fromParticipantId &&
+                    preview.toParticipantId == candidate?.toParticipantId &&
+                    preview.allocationMode == draft.allocationMode &&
+                    preview.currency == currency &&
+                    preview.requestedAmount.compareTo(amount ?: BigDecimal.ZERO) == 0 &&
+                    preview.targetExpenseIds.toSet() == draft.targetExpenseIds.toSet() &&
+                    (draft.expectedFinancialVersion == null || preview.financialVersion == draft.expectedFinancialVersion)
+            } == true
         when {
             state.currentParticipantId.isNullOrBlank() && draft.onBehalfOfParticipantId == null ->
                 setError("当前用户尚未绑定参与人，请先选择代记参与人")
@@ -148,6 +180,13 @@ class TransferViewModel(
             } != false -> setError(
                 "金额不能超过当前债务 ${selectedCurrencyOption(candidate, draft.currency, state.baseCurrency)?.amount?.toPlainString() ?: candidate.amount.toPlainString()}"
             )
+            draft.allocationMode == SettlementAllocationMode.TARGETED &&
+                (draft.targetExpenseIds.isEmpty() || selectedExpenses.size != draft.targetExpenseIds.distinct().size) ->
+                setError("请选择当前仍可抵扣的账单")
+            draft.allocationMode == SettlementAllocationMode.TARGETED && amount > targetedCap ->
+                setError("金额不能超过所选账单的可抵扣金额 ${targetedCap.toPlainString()}")
+            !previewMatches ->
+                setError("账单抵扣预览已过期，请等待刷新后再提交")
             !isValidActingParty(state, candidate, draft.onBehalfOfParticipantId) -> setError("请选择有效的代记参与人")
             else -> {
                 _uiState.value = state.copy(isSubmitting = true, errorMessage = null)
@@ -183,6 +222,9 @@ class TransferViewModel(
                         onBehalfOfParticipantId = pending.onBehalfOfParticipantId,
                         currency = pending.currency,
                         requestId = pending.requestId,
+                        allocationMode = pending.allocationMode,
+                        targetExpenseIds = pending.targetExpenseIds,
+                        expectedFinancialVersion = pending.expectedFinancialVersion,
                     )
                     val result = repository.createSettlementWrite(input)
                     if (result.isSuccess && result.value != null) {
@@ -210,10 +252,116 @@ class TransferViewModel(
         }
     }
 
-    fun retry() {
+    fun retry(onSuccess: (SettlementTransferResult) -> Unit = {}) {
+        val pending = _uiState.value.pendingRequest
+        if (_uiState.value.writeState == TransferWriteState.UNKNOWN && pending != null) {
+            retryPending(pending, onSuccess)
+            return
+        }
         val activityId = loadedActivityId ?: return
         val direction = loadedDirection ?: return
         load(activityId, direction, force = true)
+    }
+
+    fun preview(draft: TransferDraft) {
+        val state = _uiState.value
+        val amount = draft.amount.toBigDecimalOrNull()
+        val allCandidates = state.candidates + state.onBehalfCandidates
+        val candidate = draft.candidateKey?.let { key -> allCandidates.firstOrNull { it.candidateKey == key } }
+            ?: allCandidates.singleOrNull { it.participantId == draft.participantId }
+            ?: run {
+                previewGeneration += 1
+                _uiState.value = state.copy(preview = null, isPreviewing = false, previewErrorMessage = null, previewRequired = true)
+                return
+            }
+        val currency = draft.currency.trim().uppercase().ifBlank { state.baseCurrency }
+        if (amount == null || amount <= BigDecimal.ZERO) {
+            previewGeneration += 1
+            _uiState.value = state.copy(preview = null, isPreviewing = false, previewErrorMessage = null, previewRequired = true)
+            return
+        }
+        if (draft.allocationMode == SettlementAllocationMode.TARGETED && draft.targetExpenseIds.isEmpty()) {
+            previewGeneration += 1
+            _uiState.value = state.copy(preview = null, previewErrorMessage = null, isPreviewing = false, previewRequired = true)
+            return
+        }
+        val input = PreviewSettlementInput(
+            activityId = draft.activityId,
+            fromParticipantId = candidate.fromParticipantId,
+            toParticipantId = candidate.toParticipantId,
+            amount = amount,
+            currency = currency,
+            allocationMode = draft.allocationMode,
+            targetExpenseIds = draft.targetExpenseIds,
+            expectedFinancialVersion = draft.expectedFinancialVersion,
+        )
+        val generation = ++previewGeneration
+        _uiState.value = state.copy(isPreviewing = true, preview = null, previewErrorMessage = null, previewRequired = true)
+        viewModelScope.launch {
+            repository.previewSettlement(input).fold(
+                onSuccess = { preview ->
+                    if (generation == previewGeneration) {
+                        _uiState.value = _uiState.value.copy(
+                            isPreviewing = false,
+                            preview = preview,
+                            previewErrorMessage = null,
+                        )
+                    }
+                },
+                onFailure = { error ->
+                    if (generation == previewGeneration) {
+                        _uiState.value = _uiState.value.copy(
+                            isPreviewing = false,
+                            preview = null,
+                            previewErrorMessage = messageFor(error),
+                        )
+                    }
+                },
+            )
+        }
+    }
+
+    private fun retryPending(
+        pending: PendingTransferRequest,
+        onSuccess: (SettlementTransferResult) -> Unit = {},
+    ) {
+        if (_uiState.value.isSubmitting) return
+        val amount = pending.amount.toBigDecimalOrNull() ?: return
+        _uiState.value = _uiState.value.copy(isSubmitting = true, errorMessage = null)
+        viewModelScope.launch {
+            val input = CreateSettlementTransferInput(
+                activityId = pending.activityId,
+                fromParticipantId = pending.fromParticipantId,
+                toParticipantId = pending.toParticipantId,
+                amount = amount,
+                occurredAt = pending.occurredAt,
+                onBehalfOfParticipantId = pending.onBehalfOfParticipantId,
+                currency = pending.currency,
+                requestId = pending.requestId,
+                allocationMode = pending.allocationMode,
+                targetExpenseIds = pending.targetExpenseIds,
+                expectedFinancialVersion = pending.expectedFinancialVersion,
+            )
+            val result = repository.createSettlementWrite(input)
+            if (result.isSuccess && result.value != null) {
+                removePendingRequest(pending)
+                queryCache.invalidatePrefix("transfer-query:${pending.activityId}:")
+                invalidateFinancialReadCaches(pending.activityId)
+                _uiState.value = _uiState.value.copy(
+                    isSubmitting = false,
+                    pendingRequest = null,
+                    writeState = TransferWriteState.SUCCEEDED,
+                )
+                onSuccess(result.value)
+            } else {
+                _uiState.value = _uiState.value.copy(
+                    isSubmitting = false,
+                    errorMessage = result.errorMessage ?: "转账失败",
+                    writeState = result.state,
+                    pendingRequest = pending,
+                )
+            }
+        }
     }
 
     /** Called by Realtime or after an external financial write. */
@@ -228,6 +376,32 @@ class TransferViewModel(
             queryCache.invalidatePrefix("financial-query:context:$activityId")
             queryCache.invalidatePrefix("financial-query:preview:$activityId")
         }
+    }
+
+    private suspend fun enrichExpenseOptions(
+        context: com.ffocalors.sharedledger.data.transfer.SettlementContext,
+    ) {
+        val candidates = context.candidates + context.onBehalfCandidates
+        if (candidates.isEmpty()) return
+        val enriched = candidates.map { candidate ->
+            val currencies = (candidate.currencyOptions.map { it.normalizedCurrencyCode } + context.baseCurrency)
+                .distinct()
+            val rows = currencies.flatMap { currency ->
+                repository.loadExpenseCandidates(
+                    activityId = context.activityId,
+                    fromParticipantId = candidate.fromParticipantId,
+                    toParticipantId = candidate.toParticipantId,
+                    currency = currency,
+                ).getOrDefault(emptyList())
+            }.distinctBy { it.expenseId }
+            candidate.copy(expenseOptions = rows)
+        }
+        val byKey = enriched.associateBy { it.candidateKey }
+        val latest = _uiState.value
+        _uiState.value = latest.copy(
+            candidates = latest.candidates.mapNotNull { item -> byKey[item.candidateKey]?.let(::toUi) },
+            onBehalfCandidates = latest.onBehalfCandidates.mapNotNull { item -> byKey[item.candidateKey]?.let(::toUi) },
+        )
     }
 
     fun clearSessionCache() = queryCache.clear()
@@ -255,6 +429,7 @@ class TransferViewModel(
         kind = candidate.kind,
         onBehalfOptions = candidate.onBehalfOptions,
         currencyOptions = candidate.currencyOptions,
+        expenseOptions = candidate.expenseOptions,
         claimedUserId = candidate.claimedUserId,
         avatarStyle = candidate.avatarStyle,
     )
@@ -337,6 +512,9 @@ class TransferViewModel(
                     type = type,
                     onBehalfOfParticipantId = draft.onBehalfOfParticipantId,
                     occurredAt = draft.occurredAt,
+                    allocationMode = draft.allocationMode,
+                    targetExpenseIds = draft.targetExpenseIds,
+                    expectedFinancialVersion = draft.expectedFinancialVersion,
                 )
             }
         if (stored != null) return stored
@@ -356,6 +534,9 @@ class TransferViewModel(
             occurredAt = draft.occurredAt?.trim().takeUnless { it.isNullOrBlank() }
                 ?: Instant.now().toString(),
             onBehalfOfParticipantId = draft.onBehalfOfParticipantId,
+            allocationMode = draft.allocationMode,
+            targetExpenseIds = draft.targetExpenseIds,
+            expectedFinancialVersion = draft.expectedFinancialVersion,
             createdAtEpochMillis = System.currentTimeMillis(),
         )
         requestStore.upsert(currentUserId, request)

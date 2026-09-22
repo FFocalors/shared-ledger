@@ -46,6 +46,7 @@ data class Expense(
     val fxRateSource: String = "legacy_manual",
     val fxRateObservedAt: String? = null,
     val iconKey: String = ExpenseIconKey.MONEY,
+    val financialLocked: Boolean = false,
 )
 
 data class ExpenseLedgerUnit(
@@ -72,6 +73,35 @@ data class ExpenseDebtSettlement(
         get() = (amount - settledAmount).max(BigDecimal.ZERO)
 }
 
+/**
+ * Server-calculated repayment progress for one directional Expense debt.
+ * Amounts are kept in both the bill currency and the activity base currency;
+ * callers must not recompute one from the other.
+ */
+data class ExpenseRepaymentProgress(
+    val expenseId: String,
+    val debtorParticipantId: String,
+    val creditorParticipantId: String,
+    val currency: String,
+    val owedOriginalAmount: BigDecimal,
+    val owedBaseAmount: BigDecimal,
+    val reverseOffsetOriginalAmount: BigDecimal,
+    val reverseOffsetBaseAmount: BigDecimal,
+    val settledTransferOriginalAmount: BigDecimal,
+    val settledTransferBaseAmount: BigDecimal,
+    val prepaymentOriginalAmount: BigDecimal,
+    val prepaymentBaseAmount: BigDecimal,
+    val remainingOriginalAmount: BigDecimal,
+    val remainingBaseAmount: BigDecimal,
+    val financialVersion: Long? = null,
+) {
+    val settledOriginalAmount: BigDecimal
+        get() = settledTransferOriginalAmount + prepaymentOriginalAmount
+
+    val settledBaseAmount: BigDecimal
+        get() = settledTransferBaseAmount + prepaymentBaseAmount
+}
+
 data class ExpenseDetail(
     val expense: Expense,
     val ledgerUnit: ExpenseLedgerUnit,
@@ -80,6 +110,9 @@ data class ExpenseDetail(
     val splits: List<Split>,
     val participants: List<ExpenseParticipant>,
     val debtSettlements: List<ExpenseDebtSettlement> = emptyList(),
+    /** Authoritative currency-aware projection; empty only for legacy fixtures. */
+    val repaymentProgress: List<ExpenseRepaymentProgress> = emptyList(),
+    val repaymentProgressAvailable: Boolean = false,
 )
 
 data class PaymentInput(
@@ -125,6 +158,14 @@ data class UpdateExpenseInput(
     val iconKey: String = ExpenseIconKey.MONEY,
 )
 
+data class UpdateExpensePresentationInput(
+    val expenseId: String,
+    val title: String,
+    val note: String? = null,
+    val iconKey: String = ExpenseIconKey.MONEY,
+    val expectedVersion: Long? = null,
+)
+
 data class RefundExpenseInput(
     val ledgerUnitId: String,
     val title: String,
@@ -168,6 +209,7 @@ data class ExpenseMutationResult(
     val fxRate: BigDecimal? = null,
     val fxRateSource: String? = null,
     val fxRateObservedAt: String? = null,
+    val financialLocked: Boolean? = null,
 )
 
 enum class ExpenseWriteState {

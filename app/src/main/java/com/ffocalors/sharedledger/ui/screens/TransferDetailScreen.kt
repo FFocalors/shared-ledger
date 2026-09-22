@@ -430,7 +430,10 @@ private fun PathsSection(record: FundRecord) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Rounded.Route, contentDescription = "结算路径", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
                 Column(modifier = Modifier.weight(1f).padding(start = SharedLedgerSpacing.Small)) {
-                    Text("路径 ${path.pathNo}：${path.from.displayName} → ${path.to.displayName}", style = SharedLedgerTextStyles.Body)
+                    Text(
+                        "路径 ${path.pathNo}：${path.participants.joinToString(" → ") { it.displayName }}",
+                        style = SharedLedgerTextStyles.Body,
+                    )
                     Text("${path.hopCount} 跳 · ${path.componentType.displayName}", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 AmountDisplay(path.endpointAmount, currencyCode = record.currency, size = AmountSize.Small)

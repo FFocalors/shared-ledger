@@ -52,6 +52,14 @@ object ExpenseRpcPayloadBuilder {
         expenseId = input.expenseId,
     )
 
+    fun updatePresentation(input: UpdateExpensePresentationInput) = buildJsonObject {
+        put("expense_id", input.expenseId)
+        put("title", input.title)
+        input.note?.let { put("note", it) } ?: put("note", JsonNull)
+        put("icon_key", ExpenseIconKey.normalize(input.iconKey))
+        input.expectedVersion?.let { put("expected_version", it) } ?: put("expected_version", JsonNull)
+    }
+
     private fun inputPayload(input: CreateExpenseInput, expenseId: String? = null) = buildJsonObject {
         expenseId?.let { put("expense_id", it) }
         put("ledger_unit_id", input.ledgerUnitId)

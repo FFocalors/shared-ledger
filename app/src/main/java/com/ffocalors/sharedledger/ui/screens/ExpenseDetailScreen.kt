@@ -111,6 +111,8 @@ data class ExpenseDetailUiState(
     val attachments: List<ExpenseAttachmentUiState> = emptyList(),
     val status: ExpenseDetailStatus = ExpenseDetailStatus.Deleted,
     val isSettled: Boolean = false,
+    val financialLocked: Boolean = false,
+    val repaymentSummary: ExpenseRepaymentSummaryUiState = ExpenseRepaymentSummaryUiState(),
     val actionMessage: String? = null,
     val attachmentMessage: String? = null,
     val iconKey: String = com.ffocalors.sharedledger.data.expense.ExpenseIconKey.MONEY,
@@ -133,11 +135,46 @@ data class ExpenseSplitUiState(
     val settlement: ExpenseSettlement = ExpenseSettlement.Pending,
     val paidAmount: String? = null,
     val netAdvance: String? = null,
+    val settledTransferAmount: String? = null,
+    val settledPrepaymentAmount: String? = null,
+    val reverseOffsetAmount: String? = null,
+    val remainingAmount: String? = null,
+    val transferBreakdown: ExpenseTransferBreakdownUiState = ExpenseTransferBreakdownUiState(),
+    val currencyCode: String = "",
+    val baseCurrencyCode: String = "",
+    val baseRemainingAmount: String? = null,
+    /** The split/share amount remains visible separately from actual debt to others. */
+    val shareAmount: String? = null,
+    val shareCurrencyCode: String = "",
     val isCurrentUser: Boolean = false,
     val isPayer: Boolean = false,
     val participantId: String = "",
     val claimedUserId: String? = null,
     val avatarStyle: String? = null,
+)
+
+@Immutable
+data class ExpenseTransferBreakdownUiState(
+    val fifoAmount: String? = null,
+    val targetedAmount: String? = null,
+    val finalSettlementAmount: String? = null,
+)
+
+@Immutable
+data class ExpenseRepaymentSummaryUiState(
+    val owedAmount: String? = null,
+    val settledTransferAmount: String? = null,
+    val settledPrepaymentAmount: String? = null,
+    val reverseOffsetAmount: String? = null,
+    val remainingAmount: String? = null,
+    val currencyCode: String = "",
+    val baseCurrencyCode: String = "",
+    val baseOwedAmount: String? = null,
+    val baseSettledTransferAmount: String? = null,
+    val baseSettledPrepaymentAmount: String? = null,
+    val baseReverseOffsetAmount: String? = null,
+    val baseRemainingAmount: String? = null,
+    val transferBreakdown: ExpenseTransferBreakdownUiState = ExpenseTransferBreakdownUiState(),
 )
 
 enum class ExpenseSplitMethodUi {
@@ -239,26 +276,26 @@ fun ExpenseDetailScreen(
                 titleStyle = SharedLedgerTextStyles.PageTitle,
                 titleColor = MaterialTheme.colorScheme.primary,
                 showMoreButton = false,
-                 actionIcon = Icons.Rounded.Edit.takeIf { uiState.status == ExpenseDetailStatus.Active && !uiState.isSettled && onEdit != null },
-                 actionContentDescription = "编辑账单".takeIf { uiState.status == ExpenseDetailStatus.Active && !uiState.isSettled && onEdit != null },
+                 actionIcon = Icons.Rounded.Edit.takeIf { uiState.status == ExpenseDetailStatus.Active && onEdit != null },
+                 actionContentDescription = "编辑账单".takeIf { uiState.status == ExpenseDetailStatus.Active && onEdit != null },
                  onActionClick = onEdit?.let { callback -> { callback(uiState.expenseId) } }
-                     .takeIf { uiState.status == ExpenseDetailStatus.Active && !uiState.isSettled },
+                     .takeIf { uiState.status == ExpenseDetailStatus.Active },
                 hazeState = hazeState,
             )
         },
         bottomBar = {
             val primaryAction = onVoid
-                ?.takeIf { uiState.status == ExpenseDetailStatus.Active && !uiState.isSettled }
+                ?.takeIf { uiState.status == ExpenseDetailStatus.Active && !uiState.financialLocked }
                 ?.let { callback -> { callback(uiState.expenseId) } }
             val hasMoreActions = if (uiState.status == ExpenseDetailStatus.Active) {
-                uiState.isSettled || (!uiState.isSettled && (onEdit != null || onVoid != null)) || onAddRefund != null
+                onEdit != null || onVoid != null || onAddRefund != null
             } else {
                 onAddRefund != null
             }
             if (primaryAction != null || hasMoreActions) {
                 ExpenseDetailBottomBar(
                     status = uiState.status,
-                    isSettled = uiState.isSettled,
+                    financialLocked = uiState.financialLocked,
                     onPrimaryAction = primaryAction,
                     onMore = { sheetVisible = true }.takeIf { hasMoreActions },
                     hazeState = hazeState,
@@ -311,6 +348,9 @@ fun ExpenseDetailScreen(
                 item(key = "hero") {
                     ExpenseHeroCard(uiState = uiState)
                 }
+                item(key = "repayment-summary") {
+                    RepaymentSummaryCard(uiState.repaymentSummary)
+                }
                 item(key = "payment") {
                     ExpenseSection(title = "付款信息", icon = Icons.Rounded.Payments) {
                         PaymentCard(uiState = uiState)
@@ -356,19 +396,19 @@ fun ExpenseDetailScreen(
         ) {
             ExpenseActionSheet(
                 status = uiState.status,
-                isSettled = uiState.isSettled,
-                 onEdit = onEdit?.takeIf { !uiState.isSettled }?.let { callback -> {
-                     sheetVisible = false
-                     callback(uiState.expenseId)
-                 } },
-                 onVoid = onVoid?.takeIf { !uiState.isSettled }?.let { callback -> {
-                     sheetVisible = false
-                     callback(uiState.expenseId)
-                 } },
-                 onAddRefund = onAddRefund?.let { callback -> {
-                     sheetVisible = false
-                     callback(uiState.expenseId)
-                 } },
+                financialLocked = uiState.financialLocked,
+                onEdit = onEdit?.let { callback -> {
+                    sheetVisible = false
+                    callback(uiState.expenseId)
+                } },
+                onVoid = onVoid?.takeIf { !uiState.financialLocked }?.let { callback -> {
+                    sheetVisible = false
+                    callback(uiState.expenseId)
+                } },
+                onAddRefund = onAddRefund?.let { callback -> {
+                    sheetVisible = false
+                    callback(uiState.expenseId)
+                } },
             )
         }
     }
@@ -431,7 +471,7 @@ private fun ExpenseHeroCard(uiState: ExpenseDetailUiState) {
                 color = MaterialTheme.colorScheme.primary,
             )
             Text(
-                text = "基础币: ${formatExpenseDetailAmount(uiState.amount, uiState.currencyCode)} | 原币: ${formatExpenseDetailAmount(uiState.originalAmount, uiState.originalCurrencyCode)}",
+                text = "原币 ${formatExpenseDetailAmount(uiState.originalAmount, uiState.originalCurrencyCode)} | 基础币 ${formatExpenseDetailAmount(uiState.amount, uiState.currencyCode)}",
                 style = SharedLedgerTextStyles.BodySecondary,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -512,12 +552,77 @@ private fun PaymentCard(uiState: ExpenseDetailUiState) {
                         Text("垫付方", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Text(
-                        formatExpenseDetailAmount(payment.amount, uiState.currencyCode),
+                        formatExpenseDetailAmount(payment.amount, uiState.originalCurrencyCode),
                         style = SharedLedgerTextStyles.Body,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Medium,
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RepaymentSummaryCard(summary: ExpenseRepaymentSummaryUiState) {
+    if (summary.owedAmount == null && summary.remainingAmount == null) return
+    DetailCard {
+        Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
+            Text("偿还进度", style = SharedLedgerTextStyles.CardTitle)
+            RepaymentAmountLine("实际债务", summary.owedAmount, summary.currencyCode)
+            RepaymentAmountLine("真实转账偿还", summary.settledTransferAmount, summary.currencyCode)
+            RepaymentAmountLine("预存自动抵扣", summary.settledPrepaymentAmount, summary.currencyCode)
+            RepaymentAmountLine("反向债务冲抵", summary.reverseOffsetAmount, summary.currencyCode)
+            RepaymentAmountLine("尚欠", summary.remainingAmount, summary.currencyCode, emphasize = true)
+            TransferBreakdownLine(summary.transferBreakdown, summary.currencyCode)
+            if (summary.baseCurrencyCode.isNotBlank() && summary.baseCurrencyCode != summary.currencyCode && summary.baseRemainingAmount != null) {
+                Text(
+                    "基础币口径：${formatExpenseDetailAmount(summary.baseRemainingAmount, summary.baseCurrencyCode)} 尚欠",
+                    style = SharedLedgerTextStyles.Label,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RepaymentAmountLine(
+    label: String,
+    amount: String?,
+    currencyCode: String,
+    emphasize: Boolean = false,
+) {
+    if (amount == null) return
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(label, style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            formatExpenseDetailAmount(amount, currencyCode),
+            style = if (emphasize) SharedLedgerTextStyles.Body else SharedLedgerTextStyles.BodySecondary,
+            color = if (emphasize && ((amount.toBigDecimalOrNull()?.signum() ?: 0) > 0)) {
+                MaterialTheme.colorScheme.error
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
+            fontWeight = if (emphasize) FontWeight.Medium else FontWeight.Normal,
+        )
+    }
+}
+
+@Composable
+private fun TransferBreakdownLine(breakdown: ExpenseTransferBreakdownUiState, currencyCode: String) {
+    val entries = listOf(
+        "按顺序抵扣" to breakdown.fifoAmount,
+        "指定账单" to breakdown.targetedAmount,
+        "最终结算" to breakdown.finalSettlementAmount,
+    ).filter { !it.second.isNullOrBlank() && ((it.second!!.toBigDecimalOrNull()?.signum() ?: 0) > 0) }
+    if (entries.isEmpty()) return
+    Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall)) {
+        Text("真实转账明细", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        entries.forEach { (label, amount) ->
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(label, style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(formatExpenseDetailAmount(amount.orEmpty(), currencyCode), style = SharedLedgerTextStyles.Label)
             }
         }
     }
@@ -540,7 +645,7 @@ private fun SplitCard(splits: List<ExpenseSplitUiState>, currencyCode: String) {
         Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium)) {
             splits.forEachIndexed { index, split ->
                 if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                SplitRow(split, currencyCode)
+                SplitRow(split, split.currencyCode.ifBlank { currencyCode })
             }
         }
     }
@@ -581,22 +686,47 @@ private fun SplitRow(split: ExpenseSplitUiState, currencyCode: String) {
             ExpenseSettlement.Paid -> "已结清"
         }
         val statusColor = if (split.settlement == ExpenseSettlement.Pending) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-        val detail = buildAnnotatedString {
-            append("应承担 ${formatExpenseDetailAmount(split.owedAmount, currencyCode)}")
-            if (split.paidAmount != null) append("，实际支付 ${formatExpenseDetailAmount(split.paidAmount, currencyCode)}")
-            if (split.netAdvance != null) append("，净垫付 ${formatExpenseDetailAmount(split.netAdvance, currencyCode)}")
-            append("，")
-            pushStyle(SpanStyle(color = statusColor, fontWeight = FontWeight.Medium))
-            append(statusText)
-            pop()
-            append("。")
-        }
-        Text(
-            text = detail,
+        Column(
             modifier = Modifier.padding(start = SharedLedgerDimens.AvatarMedium + SharedLedgerSpacing.MediumSmall),
-            style = SharedLedgerTextStyles.BodySecondary,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
+        ) {
+            val detail = buildAnnotatedString {
+                append("实际债务 ${formatExpenseDetailAmount(split.owedAmount, currencyCode)}")
+                if (split.paidAmount != null && split.settledTransferAmount == null) {
+                    append("，实际支付 ${formatExpenseDetailAmount(split.paidAmount, currencyCode)}")
+                }
+                if (split.netAdvance != null) append("，净垫付 ${formatExpenseDetailAmount(split.netAdvance, currencyCode)}")
+                append("，")
+                pushStyle(SpanStyle(color = statusColor, fontWeight = FontWeight.Medium))
+                append(statusText)
+                pop()
+                append("。")
+            }
+            Text(text = detail, style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            split.shareAmount?.let {
+                Text(
+                    "分摊金额 ${formatExpenseDetailAmount(it, split.shareCurrencyCode.ifBlank { currencyCode })}",
+                    style = SharedLedgerTextStyles.Label,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            split.settledTransferAmount?.let {
+                Text("真实转账偿还 ${formatExpenseDetailAmount(it, currencyCode)}", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            split.settledPrepaymentAmount?.let {
+                Text("预存自动抵扣 ${formatExpenseDetailAmount(it, currencyCode)}", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            split.reverseOffsetAmount?.let {
+                Text("反向债务冲抵 ${formatExpenseDetailAmount(it, currencyCode)}（不计为付款）", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            split.remainingAmount?.let {
+                Text("尚欠 ${formatExpenseDetailAmount(it, currencyCode)}", style = SharedLedgerTextStyles.Label, color = if ((it.toBigDecimalOrNull()?.signum() ?: 0) > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
+            }
+            TransferBreakdownLine(split.transferBreakdown, currencyCode)
+            if (split.baseCurrencyCode.isNotBlank() && split.baseCurrencyCode != currencyCode && split.baseRemainingAmount != null) {
+                Text("基础币尚欠 ${formatExpenseDetailAmount(split.baseRemainingAmount, split.baseCurrencyCode)}", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
     }
 }
 
@@ -686,7 +816,7 @@ private fun DetailCard(content: @Composable () -> Unit) {
 @Composable
 private fun ExpenseDetailBottomBar(
     status: ExpenseDetailStatus,
-    isSettled: Boolean,
+    financialLocked: Boolean,
     onPrimaryAction: (() -> Unit)?,
     onMore: (() -> Unit)?,
     hazeState: dev.chrisbanes.haze.HazeState,
@@ -706,9 +836,9 @@ private fun ExpenseDetailBottomBar(
                     icon = Icons.Rounded.Delete,
                 )
             }
-            if (status == ExpenseDetailStatus.Active && isSettled) {
+            if (status == ExpenseDetailStatus.Active && financialLocked) {
                 Text(
-                    text = "账单已发生结算，不能作废或修改财务字段",
+                    text = "已发生真实转账，仅可修改标题、备注等信息",
                     style = SharedLedgerTextStyles.Label,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.weight(1f),
@@ -731,7 +861,7 @@ private fun ExpenseDetailBottomBar(
 @Composable
 private fun ExpenseActionSheet(
     status: ExpenseDetailStatus,
-    isSettled: Boolean,
+    financialLocked: Boolean,
     onEdit: (() -> Unit)?,
     onVoid: (() -> Unit)?,
     onAddRefund: (() -> Unit)?,
@@ -750,9 +880,9 @@ private fun ExpenseActionSheet(
         )
         Spacer(Modifier.height(SharedLedgerSpacing.Small))
         if (status == ExpenseDetailStatus.Active) {
-            if (isSettled) {
+            if (financialLocked) {
                 Text(
-                    text = "账单已发生结算，不能作废或修改财务字段",
+                    text = "已发生真实转账，仅可修改标题、备注等信息",
                     style = SharedLedgerTextStyles.Label,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

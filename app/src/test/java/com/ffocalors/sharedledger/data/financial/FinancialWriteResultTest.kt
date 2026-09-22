@@ -101,4 +101,54 @@ class FinancialWriteResultTest {
             FinancialErrorMapper.toUserMessage(RuntimeException("SQLSTATE 23514: final settlement path no longer matches current plan")),
         )
     }
+
+    @Test
+    fun finalSettlementActorPermissionExplainsWhoMayRecordPayment() {
+        assertEquals(
+            "仅这笔转账的付款方或收款方可以记录已转账",
+            FinancialErrorMapper.toUserMessage(
+                RuntimeException("SQLSTATE 42501: member must use claimed participant"),
+            ),
+        )
+        assertEquals(
+            "你不是这笔转账的一方；请选择未绑定参与人代记后重试",
+            FinancialErrorMapper.toUserMessage(
+                RuntimeException("SQLSTATE 42501: creator must be party or act on behalf"),
+            ),
+        )
+        assertEquals(
+            "创建者只能为这笔转账中尚未绑定账号的参与人代记",
+            FinancialErrorMapper.toUserMessage(
+                RuntimeException("SQLSTATE 42501: creator may act only for an unclaimed participant"),
+            ),
+        )
+    }
+
+    @Test
+    fun finalSettlementErrorMappingDistinguishesContractModeAndStalePlan() {
+        assertEquals(
+            FINAL_SETTLEMENT_CONTRACT_UNAVAILABLE_MESSAGE,
+            FinancialErrorMapper.toFinalSettlementUserMessage(
+                RuntimeException("code=PGRST202: execute_final_settlement_v2 is not in the schema cache"),
+            ),
+        )
+        assertEquals(
+            "当前服务端不支持所选结算模式，请更新服务端后重试。",
+            FinancialErrorMapper.toFinalSettlementUserMessage(
+                RuntimeException("SQLSTATE 22023: settlement_mode check constraint failed"),
+            ),
+        )
+        assertEquals(
+            "当前结算方案已发生变化，请重新查看最新方案后重试。",
+            FinancialErrorMapper.toFinalSettlementUserMessage(
+                RuntimeException("SQLSTATE 40001: financial_version mismatch; refresh the plan"),
+            ),
+        )
+        assertEquals(
+            "最终结算请求缺少服务端要求的 request_id，请更新客户端后重试。",
+            FinancialErrorMapper.toFinalSettlementUserMessage(
+                RuntimeException("SQLSTATE 22023: expected_financial_version and request_id are required"),
+            ),
+        )
+    }
 }

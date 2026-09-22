@@ -26,6 +26,7 @@ data class ExpenseRowDto(
     @SerialName("fx_rate_source") val fxRateSource: String = "legacy_manual",
     @SerialName("fx_rate_observed_at") val fxRateObservedAt: String? = null,
     @SerialName("icon_key") val iconKey: String = ExpenseIconKey.MONEY,
+    @SerialName("financial_locked") val financialLocked: Boolean = false,
 )
 
 @Serializable
@@ -63,6 +64,35 @@ data class TransferAllocationRowDto(
 data class PrepaymentUsageRowDto(
     @SerialName("expense_debt_id") val expenseDebtId: String,
     val amount: JsonElement,
+)
+
+/**
+ * Authoritative per-debt repayment projection returned by
+ * `get_expense_repayment_progress`.
+ *
+ * All amount columns are deliberately kept as JsonElement because PostgREST
+ * can encode PostgreSQL numeric values as either JSON numbers or strings.
+ * The server owns the arithmetic (including reverse offsets, void filtering,
+ * FX snapshots, final-settlement paths and prepayment usage); Android only
+ * formats these values for display.
+ */
+@Serializable
+data class ExpenseRepaymentProgressRowDto(
+    @SerialName("expense_id") val expenseId: String,
+    @SerialName("debtor_participant_id") val debtorParticipantId: String,
+    @SerialName("creditor_participant_id") val creditorParticipantId: String,
+    @SerialName("debt_currency") val debtCurrency: String,
+    @SerialName("debt_original_amount") val debtOriginalAmount: JsonElement? = null,
+    @SerialName("debt_base_amount") val debtBaseAmount: JsonElement? = null,
+    @SerialName("settled_original_amount") val settledOriginalAmount: JsonElement? = null,
+    @SerialName("settled_base_amount") val settledBaseAmount: JsonElement? = null,
+    @SerialName("prepayment_original_amount") val prepaymentOriginalAmount: JsonElement? = null,
+    @SerialName("prepayment_base_amount") val prepaymentBaseAmount: JsonElement? = null,
+    @SerialName("offset_original_amount") val offsetOriginalAmount: JsonElement? = null,
+    @SerialName("offset_base_amount") val offsetBaseAmount: JsonElement? = null,
+    @SerialName("remaining_original_amount") val remainingOriginalAmount: JsonElement? = null,
+    @SerialName("remaining_base_amount") val remainingBaseAmount: JsonElement? = null,
+    @SerialName("financial_version") val financialVersion: Long? = null,
 )
 
 @Serializable
@@ -113,4 +143,12 @@ data class DeleteExpenseRpcDto(
     @SerialName("deleted_expense_id") val deletedExpenseId: String,
     val deleted: Boolean,
     val version: Long,
+)
+
+@Serializable
+data class UpdateExpensePresentationRpcDto(
+    @SerialName("updated_expense_id") val updatedExpenseId: String,
+    val version: Long,
+    @SerialName("financial_version") val financialVersion: Long? = null,
+    @SerialName("financial_locked") val financialLocked: Boolean = false,
 )

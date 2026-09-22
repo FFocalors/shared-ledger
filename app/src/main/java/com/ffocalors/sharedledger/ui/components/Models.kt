@@ -90,6 +90,7 @@ data class ExpenseCardUiModel(
     val amountAvailable: Boolean = true,
     val isDeleted: Boolean = false,
     val iconKey: String = ExpenseIconKey.MONEY,
+    val financialLocked: Boolean = false,
 )
 
 @Immutable

@@ -170,10 +170,8 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
                     put("p_mode", mode.databaseValue)
                 }).decodeList<FinancialPreviewRowDto>()
             } catch (error: Throwable) {
-                if (mode != FinalSettlementMode.BASE_UNIFIED || !isMissingFinancialRpc(error)) throw error
-                client.postgrest.rpc("preview_activity_settlement", buildJsonObject {
-                    put("activity_id", activityId)
-                }).decodeList<FinancialPreviewRowDto>()
+                if (!isMissingFinancialRpc(error)) throw error
+                throw finalSettlementContractUnavailable(error)
             }
         }
         val participantNamesRequest = async {
@@ -184,6 +182,8 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         val rows = rowsRequest.await()
         val participantNames = participantNamesRequest.await()
         rows.mapNotNull { row ->
+            val sourceFinancialVersion = row.sourceFinancialVersion
+                ?: throw FinancialOperationException(FINAL_SETTLEMENT_INVALID_PREVIEW_MESSAGE)
             val from = participantNames[row.fromParticipantId] ?: return@mapNotNull null
             val to = participantNames[row.toParticipantId] ?: return@mapNotNull null
             val amount = (row.settlementAmount ?: row.amount ?: row.originalAmount ?: row.baseAmount)
@@ -191,7 +191,7 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
             if (amount <= BigDecimal.ZERO) return@mapNotNull null
             val currency = (row.currencyCode ?: row.currency).trim().uppercase()
             FinalSettlementSuggestion(
-                id = "${row.fromParticipantId}-${row.toParticipantId}-${currency}-${amount.toPlainString()}-${row.sourceFinancialVersion}-${row.planNo ?: ""}-${row.pathNo ?: ""}",
+                id = "${row.fromParticipantId}-${row.toParticipantId}-${currency}-${amount.toPlainString()}-${sourceFinancialVersion}-${row.planNo ?: ""}-${row.pathNo ?: ""}",
                 activityId = row.activityId,
                 from = from,
                 to = to,
@@ -199,7 +199,7 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
                 ordinaryAmount = row.ordinaryAmount.toFinancialBigDecimal(),
                 prepaymentReturnAmount = row.prepaymentReturnAmount.toFinancialBigDecimal(),
                 currency = currency,
-                sourceFinancialVersion = row.sourceFinancialVersion,
+                sourceFinancialVersion = sourceFinancialVersion,
                 isPrepaymentReturn = row.isPrepaymentReturn,
                 mode = FinalSettlementMode.fromDatabaseValueOrNull(row.mode ?: row.settlementMode ?: row.finalMode) ?: mode,
                 baseAmount = row.baseAmount?.toFinancialBigDecimal() ?: amount,
@@ -356,7 +356,7 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         return TransferDisputeResult(record.disputes.first { it.disputeId == disputeId })
     }
 
-    suspend fun executeFinalSettlement(request: FinalSettlementSuggestion, occurredAt: String): FundRecord {
+    suspend fun executeFinalSettlement(request: FinalSettlementSuggestion, occurredAt: String): FundRecord = try {
         val response = executeWriteRpc(request.requestId) {
             val payload = buildJsonObject {
                 put("activity_id", request.activityId)
@@ -373,23 +373,17 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
             try {
                 client.postgrest.rpc("execute_final_settlement_v2", payload).decodeSingle<FinancialTransferRpcDto>()
             } catch (error: Throwable) {
-                if (!isMissingFinancialRpc(error) || request.mode != FinalSettlementMode.BASE_UNIFIED) throw error
-                val baseCurrency = activityBaseCurrency(request.activityId)
-                if (request.currency.trim().uppercase() != baseCurrency) {
-                    throw FinancialOperationException("旧版最终结算仅支持活动基础币种 $baseCurrency")
-                }
-                val legacyPayload = buildJsonObject {
-                    put("activity_id", request.activityId)
-                    put("from_participant_id", request.from.participantId)
-                    put("to_participant_id", request.to.participantId)
-                    put("amount", request.amount.toPlainString())
-                    put("occurred_at", occurredAt)
-                    request.onBehalfOfParticipantId?.let { put("on_behalf_of_participant_id", it) } ?: put("on_behalf_of_participant_id", JsonNull)
-                }
-                client.postgrest.rpc("execute_final_settlement_item", legacyPayload).decodeSingle()
+                if (!isMissingFinancialRpc(error)) throw error
+                throw finalSettlementContractUnavailable(error)
             }
         }
-        return loadCommittedRecord(request.activityId, response.transferId.ifBlank { findTransferIdByRequest(request.activityId, request.requestId) })
+        loadCommittedRecord(request.activityId, response.transferId.ifBlank { findTransferIdByRequest(request.activityId, request.requestId) })
+    } catch (cancelled: kotlinx.coroutines.CancellationException) {
+        throw cancelled
+    } catch (error: FinancialOperationException) {
+        throw error
+    } catch (error: Throwable) {
+        throw FinancialOperationException(FinancialErrorMapper.toFinalSettlementUserMessage(error), error)
     }
 
     private suspend fun <T> executeWriteRpc(
@@ -614,6 +608,14 @@ internal class FinancialRemoteDataSource(private val client: SupabaseClient) {
         }.decodeList<FinancialProfileRowDto>().associateBy { it.id }
     }
 }
+
+internal const val FINAL_SETTLEMENT_CONTRACT_UNAVAILABLE_MESSAGE =
+    "最终结算服务端契约未部署或 schema cache 未刷新，请先更新服务端后重试"
+internal const val FINAL_SETTLEMENT_INVALID_PREVIEW_MESSAGE =
+    "最终结算服务端返回了无效 financial_version，请更新服务端后重试"
+
+private fun finalSettlementContractUnavailable(error: Throwable): FinancialOperationException =
+    FinancialOperationException(FINAL_SETTLEMENT_CONTRACT_UNAVAILABLE_MESSAGE, error)
 
 /** PostgREST uses PGRST202/404 when a new overloaded RPC is not in the schema cache yet. */
 private fun isMissingFinancialRpc(error: Throwable): Boolean {

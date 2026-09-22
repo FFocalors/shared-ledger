@@ -106,8 +106,17 @@ data class FinalSettlementPathSummary(
     val hopCount: Int,
     val from: ParticipantInfo,
     val to: ParticipantInfo,
-    /** The transfer endpoint amount; hop amounts must never be summed into it. */
+    /** Every participant in the path, in graph order, including both endpoints. */
+    val participants: List<ParticipantInfo>,
+    /** The path's actual flow amount; repeated hop amounts must never be summed into it. */
     val endpointAmount: BigDecimal,
+    val componentType: FundRecordComponentType,
+)
+
+private data class MergedFinalSettlementEdge(
+    val from: ParticipantInfo,
+    val to: ParticipantInfo,
+    val amount: BigDecimal,
     val componentType: FundRecordComponentType,
 )
 
@@ -136,22 +145,51 @@ data class FundRecord(
     val unresolvedDisputes: List<TransferDispute> get() = disputes.filterNot { it.isResolved }
     val hasUnresolvedDispute: Boolean get() = unresolvedDisputes.isNotEmpty()
 
-    /** Groups path hops for explanation without adding the repeated hop amounts. */
+    /**
+     * Groups path allocations into graph edges for explanation without adding repeated hop amounts.
+     * Rows for a split source debt are stable-sorted by hop number and merged only while the same
+     * edge remains consecutive; the first merged edge carries the path flow amount.
+     */
     val finalSettlementPathSummaries: List<FinalSettlementPathSummary>
         get() = finalSettlementPaths
             .groupBy { it.pathNo }
             .toSortedMap()
             .values
-            .map { hops ->
-                val first = hops.minBy { it.hopNo }
-                val last = hops.maxBy { it.hopNo }
+            .mapNotNull { hops ->
+                val mergedEdges = hops
+                    // Kotlin's sortedWith is stable, so rows sharing a hop number retain their
+                    // persisted/input order for the consecutive-edge merge below.
+                    .sortedWith(compareBy<FinalSettlementPath> { it.hopNo })
+                    .fold(mutableListOf<MergedFinalSettlementEdge>()) { edges, hop ->
+                        val previous = edges.lastOrNull()
+                        if (previous != null &&
+                            previous.from.participantId == hop.from.participantId &&
+                            previous.to.participantId == hop.to.participantId
+                        ) {
+                            edges[edges.lastIndex] = previous.copy(amount = previous.amount + hop.amount)
+                        } else {
+                            edges += MergedFinalSettlementEdge(
+                                from = hop.from,
+                                to = hop.to,
+                                amount = hop.amount,
+                                componentType = hop.componentType,
+                            )
+                        }
+                        edges
+                    }
+                val firstEdge = mergedEdges.firstOrNull() ?: return@mapNotNull null
+                val participants = buildList {
+                    add(firstEdge.from)
+                    mergedEdges.forEach { add(it.to) }
+                }
                 FinalSettlementPathSummary(
-                    pathNo = first.pathNo,
-                    hopCount = hops.size,
-                    from = first.from,
-                    to = last.to,
-                    endpointAmount = amount,
-                    componentType = first.componentType,
+                    pathNo = hops.first().pathNo,
+                    hopCount = mergedEdges.size,
+                    from = participants.first(),
+                    to = participants.last(),
+                    participants = participants,
+                    endpointAmount = firstEdge.amount,
+                    componentType = firstEdge.componentType,
                 )
             }
 }

@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -69,6 +70,7 @@ import com.ffocalors.sharedledger.ui.screens.TransferDetailUiState
 import com.ffocalors.sharedledger.ui.screens.FinalSettlementScreen
 import com.ffocalors.sharedledger.ui.screens.FinalSettlementRequest
 import com.ffocalors.sharedledger.ui.screens.isValid
+import com.ffocalors.sharedledger.ui.screens.matchesSettlementScope
 import com.ffocalors.sharedledger.ui.screens.FundRecordsScreen
 import com.ffocalors.sharedledger.ui.screens.HomeScreen
 import com.ffocalors.sharedledger.ui.screens.LargeActivityScreen
@@ -81,7 +83,6 @@ import com.ffocalors.sharedledger.ui.screens.TransferScreen
 import com.ffocalors.sharedledger.ui.screens.PrepaymentMode
 import com.ffocalors.sharedledger.ui.screens.PrepaymentScreen
 import com.ffocalors.sharedledger.ui.screens.FinalSettlementSuggestionUi
-import com.ffocalors.sharedledger.ui.screens.FinalSettlementParticipantOption
 import com.ffocalors.sharedledger.data.transfer.SettlementDirection
 import com.ffocalors.sharedledger.ui.transfer.TransferViewModel
 import com.ffocalors.sharedledger.ui.attachment.AttachmentClientItem
@@ -766,7 +767,10 @@ private fun AuthenticatedNavHost(
             val activityWritable = isActivityWritable(detailState.detail)
             val currentLedgerUnit = detailState.detail?.ledgerUnits?.firstOrNull { it.id == ledgerUnitId }
             val canDeleteSubActivity = activityWritable &&
-                currentLedgerUnit?.type?.equals("sub_activity", ignoreCase = true) == true
+                currentLedgerUnit?.type?.equals("sub_activity", ignoreCase = true) == true &&
+                !expenseState.isLoading &&
+                expenseState.errorMessage == null &&
+                expenseState.expenses.none { it.financialLocked }
             val attachmentViewModel: AttachmentViewModel = viewModel(
                 key = "attachments-ledger-$activityId-$ledgerUnitId",
                 factory = AttachmentViewModel.Factory(queryCache = sessionQueryCache),
@@ -1118,6 +1122,8 @@ private fun AuthenticatedNavHost(
                     ExpenseFormRouteMode.REFUND -> ExpenseFormMode.Refund
                     ExpenseFormRouteMode.CREATE -> ExpenseFormMode.Create
                 }
+                val presentationOnly = formMode == ExpenseFormMode.Edit &&
+                    detailExpenseState.detail?.expense?.financialLocked == true
                 NewExpenseScreen(
                     ledgerUnitId = resolvedLedgerUnitId,
                     participants = participants,
@@ -1133,6 +1139,7 @@ private fun AuthenticatedNavHost(
                     isOffline = !networkAvailable,
                     currentParticipantId = currentParticipantId,
                     mode = formMode,
+                    presentationOnly = presentationOnly,
                     initialDraft = detailExpenseState.detail?.toFormDraft(formMode),
                     attachments = attachmentState.toNewExpenseUiState { item -> canDeleteAttachment(item, activityDetail, currentUserId) },
                     isSubmitting = formState.isSubmitting || attachmentState.isLoading || attachmentState.isWriting,
@@ -1151,15 +1158,15 @@ private fun AuthenticatedNavHost(
                     onSave = { draft ->
                         val savedExpenseId = persistedExpenseId
                         if (savedExpenseId != null) {
-                            expenseViewModel.submit(ExpenseFormMode.Edit, savedExpenseId, activityId, draft) { updatedExpenseId ->
+                            expenseViewModel.submit(ExpenseFormMode.Edit, savedExpenseId, activityId, draft, onSuccess = { updatedExpenseId ->
                                 persistedExpenseId = updatedExpenseId
                                 attachmentScope.launch { uploadExpenseAttachments(updatedExpenseId) }
-                            }
+                            }, presentationOnly = presentationOnly)
                         } else {
-                            expenseViewModel.submit(formMode, expenseId, activityId, draft) { createdExpenseId ->
+                            expenseViewModel.submit(formMode, expenseId, activityId, draft, onSuccess = { createdExpenseId ->
                                 persistedExpenseId = createdExpenseId
                                 attachmentScope.launch { uploadExpenseAttachments(createdExpenseId) }
-                            }
+                            }, presentationOnly = presentationOnly)
                         }
                     },
                     onAddAttachment = if (activityWritable && attachmentState.items.size < MAX_CLIENT_ATTACHMENTS) attachmentInput.requestSourceChooser else null,
@@ -1280,8 +1287,18 @@ private fun AuthenticatedNavHost(
                 onBack = { navController.navigateUp() },
                 onRetry = {
                     activityViewModel.loadDetail(activityId, force = true)
-                    transferViewModel.retry()
+                    transferViewModel.retry { transferResult ->
+                        financialReadViewModel.invalidateAfterWrite(activityId, transferResult.transferId)
+                        financialReadViewModel.loadRecords(activityId, force = true)
+                        invalidateActivityData(activityId)
+                        activityViewModel.loadDetail(activityId, force = true)
+                        activityViewModel.refreshHome()
+                        navController.navigateUp()
+                    }
                 },
+                onPreview = if (transferWritesEnabled) { draft ->
+                    transferViewModel.preview(draft)
+                } else null,
                 onConfirm = if (transferWritesEnabled) { { draft ->
                     transferViewModel.submit(draft) { transferResult ->
                         financialReadViewModel.invalidateAfterWrite(draft.activityId, transferResult.transferId)
@@ -1559,7 +1576,7 @@ private fun AuthenticatedNavHost(
                     onEdit = if (activityWritable) { { id -> requireParticipantBinding(activityId) {
                         navController.navigate(SharedLedgerRoutes.newExpense(activityId, ledgerUnitId, ExpenseFormRouteMode.EDIT, id))
                     } } } else null,
-                    onVoid = if (activityWritable) { { id -> requireParticipantBinding(activityId) { expenseViewModel.delete(id) } } } else null,
+                    onVoid = if (activityWritable && !detail.expense.financialLocked) { { id -> requireParticipantBinding(activityId) { expenseViewModel.delete(id) } } } else null,
                     onAddRefund = if (activityWritable) { { id -> requireParticipantBinding(activityId) {
                         navController.navigate(SharedLedgerRoutes.newExpense(activityId, ledgerUnitId, ExpenseFormRouteMode.REFUND, id))
                     } } } else null,
@@ -1810,40 +1827,52 @@ private fun AuthenticatedNavHost(
         ) { backStackEntry ->
             val activityId = backStackEntry.arguments?.getString("activityId").orEmpty()
             val activityDetailState by activityViewModel.detail(activityId).collectAsState()
-            val financialWritesEnabled = canPerformFinancialAction(activityDetailState.detail, currentUserId)
-            val contextState by financialReadViewModel.contextState(activityId).collectAsState()
+            val financialWritesEnabled = canRecordFinalSettlement(activityDetailState.detail, currentUserId)
             var settlementMode by remember(activityId) { mutableStateOf(FinalSettlementMode.BASE_UNIFIED) }
             val previewState by financialReadViewModel.previewState(activityId, settlementMode).collectAsState()
+            val latestSettlementMode by rememberUpdatedState(settlementMode)
             var submitting by remember(activityId) { mutableStateOf(false) }
             var actionError by remember(activityId) { mutableStateOf<String?>(null) }
             val scope = androidx.compose.runtime.rememberCoroutineScope()
             androidx.compose.runtime.LaunchedEffect(activityId) {
                 if (activityId.isNotBlank()) {
                     activityViewModel.loadDetail(activityId)
-                    financialReadViewModel.loadContext(activityId)
-                    financialReadViewModel.loadSettlementPreview(activityId, settlementMode)
+                    financialReadViewModel.loadSettlementPreview(activityId, latestSettlementMode)
                 }
             }
             RefreshActivityOnResume(backStackEntry) {
                 if (activityId.isNotBlank()) {
-                    financialReadViewModel.loadContext(activityId)
-                    financialReadViewModel.loadSettlementPreview(activityId, settlementMode)
+                    financialReadViewModel.loadSettlementPreview(activityId, latestSettlementMode)
                 }
             }
             androidx.compose.runtime.LaunchedEffect(activityId, realtimeState.revisions.financial) {
                 if (realtimeState.activeActivityId == activityId && realtimeState.revisions.financial > 0L) {
                     financialReadViewModel.invalidateActivity(activityId)
-                    financialReadViewModel.loadContext(activityId, force = true)
-                    financialReadViewModel.loadSettlementPreview(activityId, settlementMode, force = true)
+                    financialReadViewModel.loadSettlementPreview(activityId, latestSettlementMode, force = true)
                 }
             }
-            val financialContext = contextState.data
+            val isRefreshing = previewState.isRefreshing
+            val latestIsRefreshing by rememberUpdatedState(isRefreshing)
+            androidx.compose.runtime.LaunchedEffect(
+                activityId,
+                settlementMode,
+                previewState.isLoading,
+                previewState.isRefreshing,
+                previewState.data,
+                previewState.errorMessage,
+            ) {
+                // An action error belongs to the snapshot that was visible when the action
+                // failed. Once the preview has completed successfully, the UI is showing a new
+                // authoritative snapshot and must not keep the old error page pinned above it.
+                if (!previewState.isLoading &&
+                    !previewState.isRefreshing &&
+                    previewState.data != null &&
+                    previewState.errorMessage == null
+                ) {
+                    actionError = null
+                }
+            }
             val suggestions = previewState.data.orEmpty().map { item ->
-                        val onBehalfOptions = if (financialContext?.canActOnBehalf == true) {
-                            listOf(item.from, item.to).distinctBy { it.participantId }
-                                .filter { participant -> financialContext.unclaimedParticipants.any { it.participantId == participant.participantId } }
-                                .map { participant -> FinalSettlementParticipantOption(participant.participantId, participant.displayName) }
-                        } else emptyList()
                         FinalSettlementSuggestionUi(
                             id = item.id,
                             fromParticipantId = item.from.participantId,
@@ -1867,16 +1896,10 @@ private fun AuthenticatedNavHost(
                             planNo = item.planNo,
                             pathNo = item.pathNo,
                             hopNo = item.hopNo,
-                            onBehalfOptions = onBehalfOptions,
-                            onBehalfRequired = financialContext?.let {
-                                it.canActOnBehalf &&
-                                    it.currentParticipantId !in listOf(item.from.participantId, item.to.participantId)
-                            } == true,
                         )
                     }
-            val error = actionError ?: contextState.errorMessage ?: previewState.errorMessage
-            val loading = (contextState.isLoading && financialContext == null) ||
-                (previewState.isLoading && previewState.data == null)
+            val error = actionError ?: previewState.errorMessage
+            val loading = previewState.isLoading && previewState.data == null
             if (activityId.isBlank()) {
                 ExpenseRouteStatus("活动路由参数缺失", onBack = { navController.navigateUp() })
             } else if (activityDetailState.isLoading) {
@@ -1891,83 +1914,96 @@ private fun AuthenticatedNavHost(
                     onBack = { navController.navigateUp() },
                     suggestions = suggestions,
                     isLoading = loading,
+                    isRefreshing = isRefreshing,
                     errorMessage = error,
                     onRetry = {
-                        financialReadViewModel.loadContext(activityId, force = true)
-                        financialReadViewModel.loadSettlementPreview(activityId, settlementMode, force = true)
+                        actionError = null
+                        financialReadViewModel.loadSettlementPreview(activityId, latestSettlementMode, force = true)
                     },
                     mode = settlementMode,
                     onModeChange = { mode ->
-                        if (mode != settlementMode) {
+                        if (mode != latestSettlementMode) {
+                            actionError = null
                             settlementMode = mode
                             financialReadViewModel.loadSettlementPreview(activityId, mode, force = true)
                         }
                     },
                     onFinalize = { request ->
-                    if (!submitting) {
-                        val requestedBehalfId = request.onBehalfOfParticipantId
-                        val item = suggestions.firstOrNull { it.id == request.previewItemId }
-                        if (item == null || !request.isValid() || request.mode != settlementMode) {
-                            actionError = "当前结算方案已发生变化，请重新查看最新方案。"
-                            financialReadViewModel.loadContext(activityId, force = true)
-                            financialReadViewModel.loadSettlementPreview(activityId, settlementMode, force = true)
-                        } else if (item.onBehalfRequired && requestedBehalfId == null) {
-                            actionError = "请选择代记参与人后再执行结算。"
-                        } else if (requestedBehalfId != null &&
-                            item.onBehalfOptions.none { it.participantId == requestedBehalfId }) {
-                            actionError = "请选择有效的代记参与人后再执行结算。"
-                        } else {
-                            submitting = true
-                            scope.launch {
-                                val remoteItem = FinalSettlementSuggestion(
-                                    id = item.id,
-                                    activityId = activityId,
-                                    from = com.ffocalors.sharedledger.domain.financial.ParticipantInfo(item.fromParticipantId, item.from.name),
-                                    to = com.ffocalors.sharedledger.domain.financial.ParticipantInfo(item.toParticipantId, item.to.name),
-                                    amount = item.amount,
-                                    ordinaryAmount = item.ordinaryAmount,
-                                    prepaymentReturnAmount = item.prepaymentReturnAmount,
-                                    currency = item.currency,
-                                    sourceFinancialVersion = item.sourceFinancialVersion,
-                                    onBehalfOfParticipantId = requestedBehalfId,
-                                    mode = item.mode,
-                                    planNo = item.planNo,
-                                    pathNo = item.pathNo,
-                                    hopNo = item.hopNo,
-                                )
-                                val written = financialRepository.executeFinalSettlement(remoteItem, Instant.now().toString())
-                                submitting = false
-                                if (written.isSuccess) {
-                                    financialReadViewModel.invalidateAfterWrite(activityId, written.value?.transferId)
-                                    financialReadViewModel.loadRecords(activityId, force = true)
-                                    financialReadViewModel.loadSettlementPreview(activityId, settlementMode, force = true)
-                                    invalidateActivityData(activityId)
-                                    activityViewModel.loadDetail(activityId, force = true)
-                                    activityViewModel.refreshHome()
-                                    navController.navigate(SharedLedgerRoutes.transferDetail(activityId, written.value!!.transferId)) {
-                                        popUpTo(SharedLedgerRoutes.FINAL_SETTLEMENT_PATTERN) { inclusive = true }
-                                        launchSingleTop = true
+                        if (!submitting) {
+                            when {
+                                latestIsRefreshing -> {
+                                    actionError = "正在刷新最新结算方案，请稍候。"
+                                }
+                                !request.matchesSettlementScope(activityId, latestSettlementMode) -> {
+                                    actionError = "当前结算方案已发生变化，请重新查看最新方案。"
+                                    financialReadViewModel.loadSettlementPreview(activityId, latestSettlementMode, force = true)
+                                }
+                                !request.isValid() -> {
+                                    actionError = "当前结算项目数据不完整，请重新读取方案。"
+                                    financialReadViewModel.loadSettlementPreview(activityId, latestSettlementMode, force = true)
+                                }
+                                else -> {
+                                    actionError = null
+                                    submitting = true
+                                    scope.launch {
+                                        // This object is reconstructed solely from the immutable
+                                        // click request. Do not look up a mutable/recomposed UI
+                                        // suggestion by id here; the RPC validates the source
+                                        // financial version and current plan atomically.
+                                        val remoteItem = FinalSettlementSuggestion(
+                                            id = request.previewItemId,
+                                            activityId = request.activityId,
+                                            from = com.ffocalors.sharedledger.domain.financial.ParticipantInfo(
+                                                request.fromParticipantId,
+                                                request.fromParticipantName,
+                                            ),
+                                            to = com.ffocalors.sharedledger.domain.financial.ParticipantInfo(
+                                                request.toParticipantId,
+                                                request.toParticipantName,
+                                            ),
+                                            amount = request.amount,
+                                            ordinaryAmount = request.ordinaryAmount,
+                                            prepaymentReturnAmount = request.prepaymentReturnAmount,
+                                            currency = request.currency,
+                                            sourceFinancialVersion = request.sourceFinancialVersion,
+                                            mode = request.mode,
+                                            planNo = request.planNo,
+                                            pathNo = request.pathNo,
+                                            hopNo = request.hopNo,
+                                        )
+                                        val written = financialRepository.executeFinalSettlement(remoteItem, Instant.now().toString())
+                                        submitting = false
+                                        if (written.isSuccess) {
+                                            financialReadViewModel.invalidateAfterWrite(activityId, written.value?.transferId)
+                                            financialReadViewModel.loadRecords(activityId, force = true)
+                                            financialReadViewModel.loadSettlementPreview(activityId, latestSettlementMode, force = true)
+                                            invalidateActivityData(activityId)
+                                            activityViewModel.loadDetail(activityId, force = true)
+                                            activityViewModel.refreshHome()
+                                            navController.navigate(SharedLedgerRoutes.transferDetail(activityId, written.value!!.transferId)) {
+                                                popUpTo(SharedLedgerRoutes.FINAL_SETTLEMENT_PATTERN) { inclusive = true }
+                                                launchSingleTop = true
+                                            }
+                                        } else if (written.isCommitted && written.committedOperationId != null) {
+                                            financialReadViewModel.invalidateAfterWrite(activityId, written.committedOperationId)
+                                            financialReadViewModel.loadRecords(activityId, force = true)
+                                            financialReadViewModel.loadSettlementPreview(activityId, latestSettlementMode, force = true)
+                                            invalidateActivityData(activityId)
+                                            activityViewModel.loadDetail(activityId, force = true)
+                                            activityViewModel.refreshHome()
+                                            navController.navigate(SharedLedgerRoutes.transferDetail(activityId, written.committedOperationId)) {
+                                                popUpTo(SharedLedgerRoutes.FINAL_SETTLEMENT_PATTERN) { inclusive = true }
+                                                launchSingleTop = true
+                                            }
+                                        } else {
+                                            if (written.isUnknown) financialReadViewModel.invalidateActivity(activityId)
+                                            actionError = written.errorMessage
+                                            financialReadViewModel.loadSettlementPreview(activityId, latestSettlementMode, force = true)
+                                        }
                                     }
-                                } else if (written.isCommitted && written.committedOperationId != null) {
-                                    financialReadViewModel.invalidateAfterWrite(activityId, written.committedOperationId)
-                                    financialReadViewModel.loadRecords(activityId, force = true)
-                                    financialReadViewModel.loadSettlementPreview(activityId, settlementMode, force = true)
-                                    invalidateActivityData(activityId)
-                                    activityViewModel.loadDetail(activityId, force = true)
-                                    activityViewModel.refreshHome()
-                                    navController.navigate(SharedLedgerRoutes.transferDetail(activityId, written.committedOperationId)) {
-                                        popUpTo(SharedLedgerRoutes.FINAL_SETTLEMENT_PATTERN) { inclusive = true }
-                                        launchSingleTop = true
-                                    }
-                                } else {
-                                    if (written.isUnknown) financialReadViewModel.invalidateActivity(activityId)
-                                    actionError = written.errorMessage
-                                    financialReadViewModel.loadContext(activityId, force = true)
-                                    financialReadViewModel.loadSettlementPreview(activityId, settlementMode, force = true)
                                 }
                             }
                         }
-                    }
                     },
                 )
             }
@@ -2121,6 +2157,17 @@ internal fun canPerformFinancialAction(
             activity.members.any { member ->
                 member.userId == currentUserId && member.claimedParticipantId != null
             }
+        )
+} == true
+
+/** Final settlement records belong to the activity's participant plan, not a claimed account. */
+internal fun canRecordFinalSettlement(
+    detail: com.ffocalors.sharedledger.data.activity.ActivityDetail?,
+    currentUserId: String,
+): Boolean = detail?.let { activity ->
+    activity.summary.archivedAt == null && (
+        activity.summary.createdBy == currentUserId ||
+            activity.members.any { member -> member.userId == currentUserId }
         )
 } == true
 

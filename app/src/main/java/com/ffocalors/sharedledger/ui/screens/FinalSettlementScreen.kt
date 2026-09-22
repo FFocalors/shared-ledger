@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,10 +18,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,19 +49,24 @@ data class FinalSettlementRequest(
     val previewItemId: String,
     val fromParticipantId: String,
     val toParticipantId: String,
+    val fromParticipantName: String = fromParticipantId,
+    val toParticipantName: String = toParticipantId,
     val amount: BigDecimal,
     val currency: String,
     val ordinaryAmount: BigDecimal,
     val prepaymentReturnAmount: BigDecimal,
     val sourceFinancialVersion: Long,
-    val onBehalfOfParticipantId: String? = null,
     val mode: FinalSettlementMode = FinalSettlementMode.BASE_UNIFIED,
     val planNo: Int? = null,
     val pathNo: Int? = null,
     val hopNo: Int? = null,
 )
 
-/** Request contract passed from the settlement form to the host write flow. */
+/**
+ * Request contract passed from the settlement form to the host write flow.
+ * Component amounts are presentation metadata and are intentionally excluded: the execution RPC
+ * accepts the total and revalidates the current plan against [sourceFinancialVersion].
+ */
 fun FinalSettlementRequest.isValid(): Boolean =
     activityId.isNotBlank() &&
         previewItemId.isNotBlank() &&
@@ -76,11 +76,13 @@ fun FinalSettlementRequest.isValid(): Boolean =
         amount > BigDecimal.ZERO &&
         currency.length == 3 &&
         currency == currency.uppercase() &&
-        ordinaryAmount >= BigDecimal.ZERO &&
-        prepaymentReturnAmount >= BigDecimal.ZERO &&
-        ordinaryAmount + prepaymentReturnAmount == amount &&
         sourceFinancialVersion >= 0L &&
         mode.databaseValue.isNotBlank()
+
+internal fun FinalSettlementRequest.matchesSettlementScope(
+    activityId: String,
+    mode: FinalSettlementMode,
+): Boolean = this.activityId == activityId && this.mode == mode
 
 data class FinalSettlementSuggestionUi(
     val id: String,
@@ -93,17 +95,10 @@ data class FinalSettlementSuggestionUi(
     val ordinaryAmount: BigDecimal,
     val prepaymentReturnAmount: BigDecimal,
     val sourceFinancialVersion: Long,
-    val onBehalfOptions: List<FinalSettlementParticipantOption> = emptyList(),
-    val onBehalfRequired: Boolean = false,
     val mode: FinalSettlementMode = FinalSettlementMode.BASE_UNIFIED,
     val planNo: Int? = null,
     val pathNo: Int? = null,
     val hopNo: Int? = null,
-)
-
-data class FinalSettlementParticipantOption(
-    val participantId: String,
-    val participantName: String,
 )
 
 internal const val FinalSettlementPlanExplanation =
@@ -115,18 +110,19 @@ internal fun FinalSettlementSuggestionUi.directionLabel(): String =
 internal fun FinalSettlementSuggestionUi.paymentInstruction(): String =
     "${from.name} 向 ${to.name} 转账"
 
-private fun FinalSettlementSuggestionUi.toRequest(activityId: String, onBehalfOfParticipantId: String?): FinalSettlementRequest =
+private fun FinalSettlementSuggestionUi.toRequest(activityId: String): FinalSettlementRequest =
     FinalSettlementRequest(
         activityId = activityId,
         previewItemId = id,
         fromParticipantId = fromParticipantId,
         toParticipantId = toParticipantId,
+        fromParticipantName = from.name,
+        toParticipantName = to.name,
         amount = amount,
         currency = currency,
         ordinaryAmount = ordinaryAmount,
         prepaymentReturnAmount = prepaymentReturnAmount,
         sourceFinancialVersion = sourceFinancialVersion,
-        onBehalfOfParticipantId = onBehalfOfParticipantId,
         mode = mode,
         planNo = planNo,
         pathNo = pathNo,
@@ -197,6 +193,7 @@ fun FinalSettlementScreen(
     onFinalize: ((FinalSettlementRequest) -> Unit)? = null,
     suggestions: List<FinalSettlementSuggestionUi> = emptyList(),
     isLoading: Boolean = false,
+    isRefreshing: Boolean = false,
     errorMessage: String? = null,
     onRetry: (() -> Unit)? = null,
     mode: FinalSettlementMode = FinalSettlementMode.BASE_UNIFIED,
@@ -251,6 +248,7 @@ fun FinalSettlementScreen(
                                 items(FinalSettlementMode.entries, key = { it.databaseValue }) { option ->
                                     Surface(
                                         onClick = { onModeChange(option) },
+                                        enabled = !isRefreshing,
                                         shape = SharedLedgerRadius.Full,
                                         color = if (option == mode) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmLowest,
                                         border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant),
@@ -268,11 +266,19 @@ fun FinalSettlementScreen(
                 }
                 when {
                     isLoading -> item(key = "loading") { LoadingState(message = "正在读取最新结算方案…") }
-                    errorMessage != null -> item(key = "error") {
+                    isRefreshing && suggestions.isEmpty() -> item(key = "refreshing") {
+                        LoadingState(message = "正在读取最新结算方案…", isRefreshing = true)
+                    }
+                    errorMessage != null && !isRefreshing -> item(key = "error") {
                         ErrorState(message = errorMessage, onRetry = onRetry, retryLabel = "重新读取方案")
                     }
                     suggestions.isEmpty() -> item(key = "empty") { EmptyState(title = "当前没有待执行的结算项") }
                     else -> {
+                        if (isRefreshing) {
+                            item(key = "refreshing-banner") {
+                                LoadingState(message = "正在读取最新结算方案…", isRefreshing = true)
+                            }
+                        }
                         val groups = suggestions.groupBy { "${it.fromParticipantId}->${it.toParticipantId}:${it.currency}" }
                         groups.entries.forEach { (groupKey, group) ->
                             item(key = "suggested-header:$groupKey") {
@@ -283,7 +289,14 @@ fun FinalSettlementScreen(
                                 )
                             }
                             items(group, key = { it.id }) { suggestion ->
-                                SettlementSuggestionCard(suggestion, onFinalize?.let { callback -> { behalfId -> callback(suggestion.toRequest(activityId, behalfId)) } })
+                                val execute = onFinalize
+                                    ?.takeIf { !isRefreshing }
+                                    ?.let { callback -> { callback(suggestion.toRequest(activityId)) } }
+                                SettlementSuggestionCard(
+                                    suggestion = suggestion,
+                                    onExecute = execute,
+                                    refreshing = isRefreshing,
+                                )
                             }
                         }
                     }
@@ -329,12 +342,10 @@ private fun SettlementSectionHeader(
 @Composable
 private fun SettlementSuggestionCard(
     suggestion: FinalSettlementSuggestionUi,
-    onExecute: ((String?) -> Unit)?,
+    onExecute: (() -> Unit)?,
+    refreshing: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
-    var selectedOnBehalfId by remember(suggestion.id) {
-        mutableStateOf(suggestion.onBehalfOptions.firstOrNull()?.participantId.takeIf { suggestion.onBehalfRequired })
-    }
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = SharedLedgerRadius.Large,
@@ -379,65 +390,24 @@ private fun SettlementSuggestionCard(
                     SuggestionBadge("待转账")
                 }
             }
-            if (suggestion.onBehalfOptions.isNotEmpty()) {
-                Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall)) {
-                    Text(
-                        "选择代记人（不会改变上方转账双方）",
-                        style = SharedLedgerTextStyles.Label,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
-                        items(suggestion.onBehalfOptions, key = { it.participantId }) { option ->
-                            OnBehalfChip(
-                                label = option.participantName,
-                                selected = selectedOnBehalfId == option.participantId,
-                                onClick = { selectedOnBehalfId = option.participantId },
-                            )
-                        }
-                    }
-                }
-            }
-            if (onExecute == null) {
+            if (refreshing || onExecute == null) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    SuggestionBadge("只读方案 · v${suggestion.sourceFinancialVersion}")
+                    SuggestionBadge(
+                        if (refreshing) "正在刷新最新结算方案…"
+                        else "只读方案 · v${suggestion.sourceFinancialVersion}",
+                    )
                 }
             } else {
                 SharedLedgerButton(
                     text = "记录已转账",
-                    onClick = { onExecute(selectedOnBehalfId) },
+                    onClick = onExecute,
                     tone = SharedLedgerButtonTone.SoftPrimary,
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun OnBehalfChip(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
-    Surface(
-        onClick = onClick,
-        shape = SharedLedgerRadius.Full,
-        color = if (selected) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmLowest,
-        border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant),
-    ) {
-        Box(
-            modifier = Modifier
-                .defaultMinSize(minHeight = SharedLedgerDimens.TopBarActionSize)
-                .padding(horizontal = SharedLedgerSpacing.Medium),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = if (selected) "✓ $label" else label,
-                style = SharedLedgerTextStyles.Label,
-            )
         }
     }
 }

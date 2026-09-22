@@ -6,6 +6,7 @@ import com.ffocalors.sharedledger.ui.demo.DemoRouteIds
 import com.ffocalors.sharedledger.ui.screens.FinalSettlementRequest
 import java.math.BigDecimal
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -204,7 +205,7 @@ class RoutesTest {
     }
 
     @Test
-    fun financialActionGateAllowsBoundMembersAndUnclaimedCreatorsButNotArchivedActivities() {
+    fun financialActionGateKeepsFinalSettlementMemberGateSeparate() {
         val role = com.ffocalors.sharedledger.data.activity.ActivityRole.Member
         val detail = com.ffocalors.sharedledger.data.activity.ActivityDetail(
             summary = com.ffocalors.sharedledger.data.activity.ActivitySummary(
@@ -245,6 +246,13 @@ class RoutesTest {
                 "user-real",
             ),
         )
+        assertTrue(
+            canRecordFinalSettlement(
+                detail.copy(members = detail.members.map { it.copy(claimedParticipantId = null) }),
+                "user-real",
+            ),
+        )
+        assertFalse(canRecordFinalSettlement(detail, "other-user"))
         val creatorDetail = detail.copy(
             summary = detail.summary.copy(createdBy = "creator"),
             members = listOf(
@@ -252,9 +260,17 @@ class RoutesTest {
             ),
         )
         assertTrue(canPerformFinancialAction(creatorDetail, "creator"))
+        assertTrue(canRecordFinalSettlement(creatorDetail, "creator"))
         assertEquals(
             false,
             canPerformFinancialAction(
+                creatorDetail.copy(summary = creatorDetail.summary.copy(archivedAt = "2026-09-07T00:00:00Z")),
+                "creator",
+            ),
+        )
+        assertEquals(
+            false,
+            canRecordFinalSettlement(
                 creatorDetail.copy(summary = creatorDetail.summary.copy(archivedAt = "2026-09-07T00:00:00Z")),
                 "creator",
             ),

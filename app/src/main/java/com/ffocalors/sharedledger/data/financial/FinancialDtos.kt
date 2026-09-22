@@ -236,7 +236,7 @@ internal data class FinancialPreviewRowDto(
     @SerialName("prepayment_return_amount") val prepaymentReturnAmount: JsonElement? = null,
     val currency: String,
     @SerialName("currency_code") val currencyCode: String? = null,
-    @SerialName("source_financial_version") @Serializable(with = FlexibleLongSerializer::class) val sourceFinancialVersion: Long = 0L,
+    @SerialName("source_financial_version") @Serializable(with = FlexibleNullableLongSerializer::class) val sourceFinancialVersion: Long? = null,
     @SerialName("is_prepayment_return") val isPrepaymentReturn: Boolean = false,
     @SerialName("base_amount") val baseAmount: JsonElement? = null,
     @SerialName("original_amount") val originalAmount: JsonElement? = null,
@@ -265,6 +265,27 @@ internal object FlexibleLongSerializer : KSerializer<Long> {
     }
 
     override fun serialize(encoder: Encoder, value: Long) = encoder.encodeLong(value)
+}
+
+/** Final-settlement previews must preserve a missing or invalid version as null. */
+internal object FlexibleNullableLongSerializer : KSerializer<Long?> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("FlexibleNullableLong", PrimitiveKind.LONG)
+
+    override fun deserialize(decoder: Decoder): Long? {
+        val element = (decoder as? JsonDecoder)?.decodeJsonElement()
+            ?: return decoder.decodeLong()
+        return when (element) {
+            JsonNull -> null
+            is JsonPrimitive -> element.content.toLongOrNull() ?: runCatching {
+                java.math.BigDecimal(element.content).toBigIntegerExact().longValueExact()
+            }.getOrNull()
+            else -> null
+        }
+    }
+
+    override fun serialize(encoder: Encoder, value: Long?) {
+        if (value == null) encoder.encodeNull() else encoder.encodeLong(value)
+    }
 }
 
 internal object FlexibleIntSerializer : KSerializer<Int> {

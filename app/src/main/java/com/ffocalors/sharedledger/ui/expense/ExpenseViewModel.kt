@@ -11,6 +11,7 @@ import com.ffocalors.sharedledger.data.expense.ExpenseErrorMapper
 import com.ffocalors.sharedledger.data.expense.ExpenseOperationException
 import com.ffocalors.sharedledger.data.expense.ExpenseRepository
 import com.ffocalors.sharedledger.data.expense.ExpenseRepositoryFactory
+import com.ffocalors.sharedledger.data.expense.ExpenseRepaymentProgress
 import com.ffocalors.sharedledger.data.expense.ExpenseWriteResult
 import com.ffocalors.sharedledger.data.expense.ExpenseWriteState
 import com.ffocalors.sharedledger.data.expense.ParticipantExpenseShareRepository
@@ -21,12 +22,14 @@ import com.ffocalors.sharedledger.data.expense.ManualSplitInput
 import com.ffocalors.sharedledger.data.expense.PaymentInput
 import com.ffocalors.sharedledger.data.expense.RefundExpenseInput
 import com.ffocalors.sharedledger.data.expense.UpdateExpenseInput
+import com.ffocalors.sharedledger.data.expense.UpdateExpensePresentationInput
 import com.ffocalors.sharedledger.data.common.ReadFailureKind
 import com.ffocalors.sharedledger.data.common.readFailureKind
 import com.ffocalors.sharedledger.data.common.shouldRemoveCachedRead
 import com.ffocalors.sharedledger.ui.components.ExpenseCardUiModel
 import com.ffocalors.sharedledger.ui.screens.ExpenseDetailStatus
 import com.ffocalors.sharedledger.ui.screens.ExpenseDetailUiState
+import com.ffocalors.sharedledger.ui.screens.ExpenseRepaymentSummaryUiState
 import com.ffocalors.sharedledger.ui.screens.ExpensePaymentUiState
 import com.ffocalors.sharedledger.ui.screens.ExpenseSettlement
 import com.ffocalors.sharedledger.ui.screens.ExpenseSplitMethodUi
@@ -69,6 +72,7 @@ data class ExpenseFormDraft(
     val occurredAt: String,
     val note: String,
     val iconKey: String = ExpenseIconKey.MONEY,
+    val expenseVersion: Long? = null,
 )
 
 data class ExpenseListUiState(
@@ -218,6 +222,7 @@ class ExpenseViewModel(
         activityId: String,
         draft: ExpenseFormDraft,
         onSuccess: (String) -> Unit = {},
+        presentationOnly: Boolean = false,
     ) {
         if (_form.value.isSubmitting || _form.value.submissionBlocked) return
         val validation = validate(draft, mode)
@@ -230,24 +235,36 @@ class ExpenseViewModel(
         viewModelScope.launch {
             val result = when (mode) {
                 ExpenseFormMode.Create -> repository.createWrite(input.create)
-                ExpenseFormMode.Edit -> repository.updateWrite(
-                    UpdateExpenseInput(
-                        expenseId = requireNotNull(expenseId),
-                        ledgerUnitId = input.create.ledgerUnitId,
-                        title = input.create.title,
-                        originalAmount = input.create.originalAmount,
-                        originalCurrency = input.create.originalCurrency,
-                        fxRate = input.create.fxRate,
-                        splitMethod = input.create.splitMethod,
-                        payments = input.create.payments,
-                        manualSplits = input.create.manualSplits,
-                        aaParticipantIds = input.create.aaParticipantIds,
-                        occurredAt = input.create.occurredAt,
-                        note = input.create.note,
-                        originalExpenseId = input.create.originalExpenseId,
-                        iconKey = input.create.iconKey,
-                    ),
-                )
+                ExpenseFormMode.Edit -> if (presentationOnly) {
+                    repository.updatePresentationWrite(
+                        UpdateExpensePresentationInput(
+                            expenseId = requireNotNull(expenseId),
+                            title = draft.title.trim(),
+                            note = draft.note.trim().ifBlank { null },
+                            iconKey = draft.iconKey,
+                            expectedVersion = draft.expenseVersion,
+                        ),
+                    )
+                } else {
+                    repository.updateWrite(
+                        UpdateExpenseInput(
+                            expenseId = requireNotNull(expenseId),
+                            ledgerUnitId = input.create.ledgerUnitId,
+                            title = input.create.title,
+                            originalAmount = input.create.originalAmount,
+                            originalCurrency = input.create.originalCurrency,
+                            fxRate = input.create.fxRate,
+                            splitMethod = input.create.splitMethod,
+                            payments = input.create.payments,
+                            manualSplits = input.create.manualSplits,
+                            aaParticipantIds = input.create.aaParticipantIds,
+                            occurredAt = input.create.occurredAt,
+                            note = input.create.note,
+                            originalExpenseId = input.create.originalExpenseId,
+                            iconKey = input.create.iconKey,
+                        ),
+                    )
+                }
                 ExpenseFormMode.Refund -> repository.refundWrite(
                     RefundExpenseInput(
                         ledgerUnitId = input.create.ledgerUnitId,
@@ -610,6 +627,7 @@ fun ExpenseDetail.toFormDraft(mode: ExpenseFormMode): ExpenseFormDraft {
         occurredAt = if (mode == ExpenseFormMode.Refund) Instant.now().toString() else expense.occurredAt,
         note = expense.note.orEmpty(),
         iconKey = ExpenseIconKey.normalize(expense.iconKey),
+        expenseVersion = expense.version,
     )
 }
 
@@ -628,6 +646,7 @@ internal fun Expense.toExpenseCardUiModel(
     amountAvailable = amountAvailable,
     isDeleted = isDeleted,
     iconKey = ExpenseIconKey.normalize(iconKey),
+    financialLocked = financialLocked,
 )
 
 fun ExpenseDetail.toUiState(
@@ -638,12 +657,25 @@ fun ExpenseDetail.toUiState(
     val avatarParticipants = activityParticipants.associateBy { it.id }
     val nonZeroPayments = payments.filter { it.amount.compareTo(BigDecimal.ZERO) != 0 }
     val payerIds = nonZeroPayments.mapTo(mutableSetOf()) { it.participantId }
+    val authoritativeProgress = repaymentProgress
+    val progressByDebtor = authoritativeProgress.groupBy { it.debtorParticipantId }
+    val hasAuthoritativeProgress = repaymentProgressAvailable
+    val progressSummary = authoritativeProgress.toRepaymentSummary(expense.originalCurrency, baseCurrency, hasAuthoritativeProgress)
+    val splitsByParticipant = splits.associateBy { it.participantId }
+    val displayParticipantIds = if (hasAuthoritativeProgress) {
+        // Keep every recorded split visible, including a payer's own share,
+        // while adding a debt-only participant for refund/projection edge cases
+        // where no current Split row exists.
+        (splits.map { it.participantId } + progressByDebtor.keys).distinct()
+    } else {
+        splits.map { it.participantId }
+    }
     return ExpenseDetailUiState(
         expenseId = expense.id,
         title = expense.title,
         merchant = "",
-        amount = expense.baseAmount.toPlainString(),
-        currencyCode = baseCurrency,
+        amount = expense.originalAmount.abs().toPlainString(),
+        currencyCode = expense.originalCurrency,
         originalAmount = expense.originalAmount.abs().toPlainString(),
         originalCurrencyCode = expense.originalCurrency,
         occurredAt = UiDateTimeFormatter.format(expense.occurredAt),
@@ -654,7 +686,7 @@ fun ExpenseDetail.toUiState(
             ExpensePaymentUiState(
                 participantId = payment.participantId,
                 participant = names[payment.participantId]?.name ?: payment.participantId,
-                amount = (payment.baseAmount ?: payment.amount.multiply(expense.fxRate)).toPlainString(),
+                amount = payment.amount.abs().toPlainString(),
                 isCurrentUser = payment.participantId == currentParticipantId,
                 claimedUserId = avatarParticipants[payment.participantId]?.claimedUserId,
                 avatarStyle = avatarParticipants[payment.participantId]?.avatarStyle,
@@ -664,25 +696,78 @@ fun ExpenseDetail.toUiState(
             ExpenseSplitMethod.Aa -> ExpenseSplitMethodUi.Aa
             ExpenseSplitMethod.Manual -> ExpenseSplitMethodUi.Manual
         },
-        splits = splits.map { split ->
-            val remainingDebt = debtSettlements
-                .filter { it.debtorParticipantId == split.participantId }
-                .fold(BigDecimal.ZERO) { total, debt -> total + debt.remainingAmount }
+        splits = displayParticipantIds.map { participantId ->
+            val split = splitsByParticipant[participantId]
+            val progress = progressByDebtor[participantId].orEmpty()
+            val owedOriginal = progress.sumOfOrZero { it.owedOriginalAmount }
+            val transferOriginal = progress.sumOfOrZero { it.settledTransferOriginalAmount }
+            val prepaymentOriginal = progress.sumOfOrZero { it.prepaymentOriginalAmount }
+            val reverseOriginal = progress.sumOfOrZero { it.reverseOffsetOriginalAmount }
+            val remainingOriginal = progress.sumOfOrZero { it.remainingOriginalAmount }
+            val remainingBase = progress.sumOfOrZero { it.remainingBaseAmount }
+            val remainingDebt = if (hasAuthoritativeProgress) {
+                remainingOriginal
+            } else {
+                debtSettlements
+                    .filter { it.debtorParticipantId == participantId }
+                    .fold(BigDecimal.ZERO) { total, debt -> total + debt.remainingAmount }
+            }
             ExpenseSplitUiState(
-                participantId = split.participantId,
-                participant = names[split.participantId]?.name ?: split.participantId,
-                owedAmount = (split.baseAmount ?: split.amount.multiply(expense.fxRate)).abs().toPlainString(),
+                participantId = participantId,
+                participant = names[participantId]?.name ?: participantId,
+                owedAmount = if (hasAuthoritativeProgress) owedOriginal.toPlainString()
+                else split?.amount?.abs()?.toPlainString().orEmpty(),
                 settlement = if (remainingDebt <= BigDecimal.ZERO) ExpenseSettlement.Paid else ExpenseSettlement.Pending,
-                paidAmount = null,
+                paidAmount = if (hasAuthoritativeProgress) transferOriginal.toPlainString() else null,
                 netAdvance = null,
-                isCurrentUser = split.participantId == currentParticipantId,
-                isPayer = split.participantId in payerIds,
-                claimedUserId = avatarParticipants[split.participantId]?.claimedUserId,
-                avatarStyle = avatarParticipants[split.participantId]?.avatarStyle,
+                settledTransferAmount = transferOriginal.toPlainString().takeIf { hasAuthoritativeProgress },
+                settledPrepaymentAmount = prepaymentOriginal.toPlainString().takeIf { hasAuthoritativeProgress },
+                reverseOffsetAmount = reverseOriginal.toPlainString().takeIf { hasAuthoritativeProgress },
+                remainingAmount = remainingOriginal.toPlainString().takeIf { hasAuthoritativeProgress },
+                currencyCode = expense.originalCurrency,
+                baseCurrencyCode = baseCurrency,
+                baseRemainingAmount = remainingBase.toPlainString().takeIf { hasAuthoritativeProgress },
+                isCurrentUser = participantId == currentParticipantId,
+                isPayer = participantId in payerIds,
+                claimedUserId = avatarParticipants[participantId]?.claimedUserId,
+                avatarStyle = avatarParticipants[participantId]?.avatarStyle,
+                shareAmount = split?.amount?.abs()?.toPlainString(),
+                shareCurrencyCode = expense.originalCurrency,
             )
         },
         attachments = emptyList(),
         status = if (expense.isDeleted) ExpenseDetailStatus.Deleted else ExpenseDetailStatus.Active,
-        isSettled = debtSettlements.isNotEmpty() && debtSettlements.all { it.remainingAmount <= BigDecimal.ZERO },
+        isSettled = if (hasAuthoritativeProgress) {
+            authoritativeProgress.all { it.remainingOriginalAmount <= BigDecimal.ZERO }
+        } else {
+            debtSettlements.isNotEmpty() && debtSettlements.all { it.remainingAmount <= BigDecimal.ZERO }
+        },
+        financialLocked = expense.financialLocked,
+        repaymentSummary = progressSummary,
     )
 }
+
+private fun List<ExpenseRepaymentProgress>.toRepaymentSummary(
+    originalCurrency: String,
+    baseCurrency: String,
+    loaded: Boolean,
+): ExpenseRepaymentSummaryUiState {
+    if (isEmpty() && !loaded) return ExpenseRepaymentSummaryUiState()
+    return ExpenseRepaymentSummaryUiState(
+        owedAmount = sumOfOrZero { it.owedOriginalAmount }.toPlainString(),
+        settledTransferAmount = sumOfOrZero { it.settledTransferOriginalAmount }.toPlainString(),
+        settledPrepaymentAmount = sumOfOrZero { it.prepaymentOriginalAmount }.toPlainString(),
+        reverseOffsetAmount = sumOfOrZero { it.reverseOffsetOriginalAmount }.toPlainString(),
+        remainingAmount = sumOfOrZero { it.remainingOriginalAmount }.toPlainString(),
+        currencyCode = originalCurrency,
+        baseCurrencyCode = baseCurrency,
+        baseOwedAmount = sumOfOrZero { it.owedBaseAmount }.toPlainString(),
+        baseSettledTransferAmount = sumOfOrZero { it.settledTransferBaseAmount }.toPlainString(),
+        baseSettledPrepaymentAmount = sumOfOrZero { it.prepaymentBaseAmount }.toPlainString(),
+        baseReverseOffsetAmount = sumOfOrZero { it.reverseOffsetBaseAmount }.toPlainString(),
+        baseRemainingAmount = sumOfOrZero { it.remainingBaseAmount }.toPlainString(),
+    )
+}
+
+private inline fun List<ExpenseRepaymentProgress>.sumOfOrZero(selector: (ExpenseRepaymentProgress) -> BigDecimal): BigDecimal =
+    fold(BigDecimal.ZERO) { total, row -> total + selector(row) }

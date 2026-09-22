@@ -3,6 +3,7 @@ package com.ffocalors.sharedledger.data.transfer
 import java.math.BigDecimal
 import java.io.IOException
 import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -10,6 +11,24 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TransferPayloadTest {
+    @Test
+    fun targetedPayloadCarriesModeTargetsAndVersion() {
+        val payload = SettlementRpcPayloadBuilder.createTargeted(
+            input().copy(
+                allocationMode = SettlementAllocationMode.TARGETED,
+                targetExpenseIds = listOf("expense-1", "expense-2"),
+                expectedFinancialVersion = 12L,
+            ),
+        )
+
+        assertEquals("TARGETED", payload["mode"]?.jsonPrimitive?.content)
+        assertEquals(
+            listOf("expense-1", "expense-2"),
+            payload["target_expense_ids"]?.jsonArray?.map { it.jsonPrimitive.content },
+        )
+        assertEquals("12", payload["expected_financial_version"]?.jsonPrimitive?.content)
+    }
+
     @Test
     fun payloadUsesImmutableDebtEndpointsAndNullOnBehalf() {
         val transfer = SettlementRpcPayloadBuilder.create(input())
