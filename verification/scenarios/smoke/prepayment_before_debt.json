@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "scenario_id": "prepayment_before_debt",
+  "description": "B prepays A 200 CNY before a later expense creates 100 CNY of B-to-A debt.",
+  "activity": {
+    "type": "normal",
+    "base_currency": "CNY",
+    "multi_currency_enabled": false
+  },
+  "participants": ["A", "B"],
+  "operations": [
+    {
+      "type": "create_prepayment",
+      "ref": "transfer_1",
+      "owner_participant": "B",
+      "custodian_participant": "A",
+      "amount": "200.0",
+      "currency": "CNY"
+    },
+    {
+      "type": "create_expense",
+      "ref": "expense_1",
+      "title": "Hotel",
+      "amount": "100.0",
+      "currency": "CNY",
+      "payments": {"A": "100.0"},
+      "split_method": "manual",
+      "splits": {"B": "100.0"}
+    }
+  ]
+}

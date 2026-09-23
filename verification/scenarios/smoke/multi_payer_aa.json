@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "scenario_id": "multi_payer_aa",
+  "description": "A and B both pay; A, B, and C split the expense equally.",
+  "activity": {
+    "type": "normal",
+    "base_currency": "CNY",
+    "multi_currency_enabled": false
+  },
+  "participants": ["A", "B", "C"],
+  "operations": [
+    {
+      "type": "create_expense",
+      "ref": "expense_1",
+      "title": "Group meal",
+      "amount": "100.0",
+      "currency": "CNY",
+      "payments": {"A": "60.0", "B": "40.0"},
+      "split_method": "aa",
+      "aa_participants": ["A", "B", "C"]
+    }
+  ]
+}

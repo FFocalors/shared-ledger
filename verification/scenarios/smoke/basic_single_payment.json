@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "scenario_id": "basic_single_payment",
+  "description": "A pays 100 CNY and B bears the full expense.",
+  "activity": {
+    "type": "normal",
+    "base_currency": "CNY",
+    "multi_currency_enabled": false
+  },
+  "participants": ["A", "B"],
+  "operations": [
+    {
+      "type": "create_expense",
+      "ref": "expense_1",
+      "title": "Lunch",
+      "amount": "100.0",
+      "currency": "CNY",
+      "payments": {"A": "100.0"},
+      "split_method": "manual",
+      "splits": {"B": "100.0"}
+    }
+  ]
+}

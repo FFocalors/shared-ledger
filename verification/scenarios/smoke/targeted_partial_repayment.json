@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "scenario_id": "targeted_partial_repayment",
+  "description": "B owes A 100 CNY and repays 40 CNY against that specific expense.",
+  "activity": {
+    "type": "normal",
+    "base_currency": "CNY",
+    "multi_currency_enabled": false
+  },
+  "participants": ["A", "B"],
+  "operations": [
+    {
+      "type": "create_expense",
+      "ref": "expense_1",
+      "title": "Tickets",
+      "amount": "100.0",
+      "currency": "CNY",
+      "payments": {"A": "100.0"},
+      "split_method": "manual",
+      "splits": {"B": "100.0"}
+    },
+    {
+      "type": "targeted_repayment",
+      "ref": "transfer_1",
+      "from_participant": "B",
+      "to_participant": "A",
+      "amount": "40.0",
+      "currency": "CNY",
+      "target_expense_refs": ["expense_1"]
+    }
+  ]
+}

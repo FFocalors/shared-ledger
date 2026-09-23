@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "scenario_id": "linked_refund_after_settlement",
+  "description": "B fully repays A, then a linked refund is received by B and benefits A.",
+  "activity": {
+    "type": "normal",
+    "base_currency": "CNY",
+    "multi_currency_enabled": false
+  },
+  "participants": ["A", "B"],
+  "operations": [
+    {
+      "type": "create_expense",
+      "ref": "expense_1",
+      "title": "Reservation",
+      "amount": "100.0",
+      "currency": "CNY",
+      "payments": {"A": "100.0"},
+      "split_method": "manual",
+      "splits": {"B": "100.0"}
+    },
+    {
+      "type": "fifo_repayment",
+      "ref": "transfer_1",
+      "from_participant": "B",
+      "to_participant": "A",
+      "amount": "100.0",
+      "currency": "CNY"
+    },
+    {
+      "type": "linked_refund",
+      "ref": "expense_2",
+      "original_expense_ref": "expense_1",
+      "title": "Reservation refund",
+      "amount": "-100.0",
+      "currency": "CNY",
+      "payments": {"B": "-100.0"},
+      "split_method": "manual",
+      "splits": {"A": "-100.0"}
+    }
+  ]
+}

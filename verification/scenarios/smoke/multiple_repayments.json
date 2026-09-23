@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "scenario_id": "multiple_repayments",
+  "description": "B repays A's 100 CNY expense in three FIFO installments of 30, 20, and 50.",
+  "activity": {
+    "type": "normal",
+    "base_currency": "CNY",
+    "multi_currency_enabled": false
+  },
+  "participants": ["A", "B"],
+  "operations": [
+    {
+      "type": "create_expense",
+      "ref": "expense_1",
+      "title": "Equipment",
+      "amount": "100.0",
+      "currency": "CNY",
+      "payments": {"A": "100.0"},
+      "split_method": "manual",
+      "splits": {"B": "100.0"}
+    },
+    {
+      "type": "fifo_repayment",
+      "ref": "transfer_1",
+      "from_participant": "B",
+      "to_participant": "A",
+      "amount": "30.0",
+      "currency": "CNY"
+    },
+    {
+      "type": "fifo_repayment",
+      "ref": "transfer_2",
+      "from_participant": "B",
+      "to_participant": "A",
+      "amount": "20.0",
+      "currency": "CNY"
+    },
+    {
+      "type": "fifo_repayment",
+      "ref": "transfer_3",
+      "from_participant": "B",
+      "to_participant": "A",
+      "amount": "50.0",
+      "currency": "CNY"
+    }
+  ]
+}
