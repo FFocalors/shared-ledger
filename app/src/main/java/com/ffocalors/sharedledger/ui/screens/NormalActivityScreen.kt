@@ -30,6 +30,7 @@ import com.ffocalors.sharedledger.ui.components.BottomActionItem
 import com.ffocalors.sharedledger.ui.components.EmptyState
 import com.ffocalors.sharedledger.ui.components.ErrorState
 import com.ffocalors.sharedledger.ui.components.ExpenseCard
+import com.ffocalors.sharedledger.ui.components.ExpenseCardSkeleton
 import com.ffocalors.sharedledger.ui.components.ExpenseCardUiModel
 import com.ffocalors.sharedledger.ui.components.ExpenseActionSheet
 import com.ffocalors.sharedledger.ui.components.LoadingState
@@ -237,8 +238,8 @@ fun NormalActivityScreen(
                         )
                     }
                     if (expenseLoading) {
-                        item(key = "expenses-state") {
-                            LoadingState(message = "正在加载账单…")
+                        items(4, key = { "expense-skeleton-$it" }) {
+                            ExpenseCardSkeleton(modifier = Modifier.animateItem())
                         }
                     } else if (expenseErrorMessage != null) {
                         item(key = "expenses-state") {
@@ -249,7 +250,10 @@ fun NormalActivityScreen(
                         }
                     } else if (expenses.isEmpty()) {
                         item(key = "expenses-empty") {
-                            EmptyState(title = "暂无账单")
+                            EmptyState(
+                                title = "暂无账单明细",
+                                description = "点击底部“记一笔”记录当前活动的消费或退款。",
+                            )
                         }
                     } else {
                         items(expenses, key = { it.expenseId.ifBlank { it.name } }) { expense ->

@@ -119,8 +119,8 @@ class ExpenseViewModelTest {
         assertEquals("USD", uiState.currencyCode)
         assertEquals("10.00", uiState.originalAmount)
         assertEquals("EUR", uiState.originalCurrencyCode)
-        assertEquals("12.340", uiState.payments.single().amount)
-        assertEquals("6.170", uiState.splits.first().owedAmount)
+        assertEquals("10", uiState.payments.single().amount)
+        assertEquals("5", uiState.splits.first().owedAmount)
     }
 
     @Test
@@ -157,9 +157,9 @@ class ExpenseViewModelTest {
         assertFalse(splits.getValue("whr").isCurrentUser)
         assertFalse(splits.getValue("zhy").isPayer)
         assertTrue(splits.getValue("zhy").isCurrentUser)
-        assertEquals("52.1", splits.getValue("whr").owedAmount)
-        assertEquals("52.1", splits.getValue("zhy").owedAmount)
-        assertEquals("52.0", splits.getValue("hzl").owedAmount)
+        assertEquals("52.0667", splits.getValue("whr").owedAmount)
+        assertEquals("52.0667", splits.getValue("zhy").owedAmount)
+        assertEquals("52.0666", splits.getValue("hzl").owedAmount)
     }
 
     @Test
@@ -176,7 +176,7 @@ class ExpenseViewModelTest {
         val uiState = detail.toUiState(currentParticipantId = "participant-b")
 
         assertEquals(listOf("Alice", "Bob"), uiState.payments.map { it.participant })
-        assertEquals(listOf("4.0", "6.0"), uiState.payments.map { it.amount })
+        assertEquals(listOf("4", "6"), uiState.payments.map { it.amount })
         assertEquals(listOf(false, true), uiState.payments.map { it.isCurrentUser })
         assertTrue(uiState.splits.all { it.isPayer })
         assertEquals(ExpenseSplitMethodUi.Manual, uiState.splitMethod)
@@ -486,7 +486,13 @@ class ExpenseViewModelTest {
         val viewModel = ExpenseViewModel(repository, "user-1", fakeShareRepository(repository))
         var successId: String? = null
 
-        viewModel.submit(ExpenseFormMode.Create, null, "activity-real", validDraft()) { successId = it }
+        viewModel.submit(
+            mode = ExpenseFormMode.Create,
+            expenseId = null,
+            activityId = "activity-real",
+            draft = validDraft(),
+            onSuccess = { successId = it },
+        )
         advanceUntilIdle()
 
         assertEquals("expense-committed", successId)

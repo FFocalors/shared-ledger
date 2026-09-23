@@ -2,7 +2,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select extensions.plan(16);
+select extensions.plan(17);
 
 create function pg_temp.authenticate(p_user uuid) returns void
 language plpgsql as $function$
@@ -196,23 +196,25 @@ select ok(
   'can_read_expense retains authenticated identity and membership checks'
 );
 
-select pg_temp.authenticate('f3000000-0000-0000-0000-000000000001');
 select ok(
-  (select restored from public.restore_expense('f3000000-0000-0000-0000-000000000402')),
-  'Deleted Expense remains restorable through the public restore RPC'
+  not has_function_privilege('authenticated', 'public.restore_expense(uuid)', 'EXECUTE')
+    and not has_function_privilege('service_role', 'public.restore_expense(uuid)', 'EXECUTE')
+    and not has_function_privilege('authenticated', 'private.restore_expense_impl(uuid)', 'EXECUTE')
+    and not has_function_privilege('service_role', 'private.restore_expense_impl(uuid)', 'EXECUTE'),
+  'expense restore RPCs are retired for client and service roles'
+);
+select throws_ok(
+  $$select * from public.restore_expense('f3000000-0000-0000-0000-000000000402')$$,
+  '42501', null, 'authenticated callers cannot execute the retired restore RPC'
+);
+set local role postgres;
+select throws_ok(
+  $$update public.expenses set is_deleted=false, deleted_at=null, deleted_by=null where id='f3000000-0000-0000-0000-000000000402'$$,
+  '55000', null, 'the database guard rejects direct restoration of a deleted Expense'
 );
 select ok(
-  has_function_privilege('authenticated', 'public.restore_expense(uuid)', 'EXECUTE')
-    and not has_function_privilege('anon', 'public.restore_expense(uuid)', 'EXECUTE'),
-  'restore_expense remains exposed only to authenticated callers'
-);
-select ok(
-  (select not p.prosecdef and p.proconfig @> array['search_path=""']::text[]
-   from pg_proc as p
-   join pg_namespace as n on n.oid = p.pronamespace
-   where n.nspname = 'public' and p.proname = 'restore_expense'
-     and pg_catalog.pg_get_function_identity_arguments(p.oid) = 'expense_id uuid'),
-  'restore_expense remains a SECURITY INVOKER wrapper with an empty search_path'
+  (select is_deleted from public.expenses where id='f3000000-0000-0000-0000-000000000402'),
+  'failed direct restoration leaves the Expense deleted'
 );
 
 select * from extensions.finish();

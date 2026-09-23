@@ -230,8 +230,14 @@ class ActivityViewModel(
                     else -> ActivityManagementStatus.InProgress
                 },
                 outstandingDebt = "${detail.summary.baseCurrency} ${detail.summary.totalDebt}",
-                hasOutstandingDebt = detail.summary.totalDebt.toBigDecimalOrNull()?.signum() == 1,
-                remainingPrepayment = "${detail.summary.baseCurrency} ${detail.summary.totalPrepayment}",
+                hasOutstandingDebt = detail.summary.hasUnsettledDebt,
+                remainingPrepayment = detail.summary.prepaymentBalancesByCurrency
+                    ?.let { balances ->
+                        balances.takeIf { it.isNotEmpty() }
+                            ?.joinToString(" · ") { "${it.currency} ${it.balance}" }
+                            ?: "${detail.summary.baseCurrency} ${detail.summary.totalPrepayment}"
+                    }
+                    .orEmpty(),
                 participantListLocked = detail.summary.participantsLockedAt != null,
                 participantListLockMessage = if (detail.summary.participantsLockedAt != null) {
                     "参与人名单已锁定，不能新增或删除参与人；仍可绑定或解除绑定。"

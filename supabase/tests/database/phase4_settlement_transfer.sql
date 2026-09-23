@@ -2,6 +2,11 @@
 
 begin;
 
+\ir legacy_rpc_fixture_adapters.sql
+
+create extension if not exists pgtap with schema extensions;
+select extensions.plan(1);
+
 create function pg_temp.assert_true(p_condition boolean, p_message text)
 returns void
 language plpgsql
@@ -101,7 +106,7 @@ create temporary table phase4_ids (
 
 -- Two B -> A debts establish Expense FIFO capacity and financial_version 2.
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'f4100000-0000-0000-0000-000000000001', 'Old B to A', 60, 'CNY', 1, 'manual',
     '[{"participant_id":"f4200000-0000-0000-0000-000000000011","amount":"60"}]',
     '[{"participant_id":"f4200000-0000-0000-0000-000000000012","amount":"60"}]',
@@ -110,7 +115,7 @@ with created as (
 ) insert into phase4_ids select 'basic_e1', expense_id from created;
 
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'f4100000-0000-0000-0000-000000000001', 'New B to A', 40, 'CNY', 1, 'manual',
     '[{"participant_id":"f4200000-0000-0000-0000-000000000011","amount":"40"}]',
     '[{"participant_id":"f4200000-0000-0000-0000-000000000012","amount":"40"}]',
@@ -121,7 +126,7 @@ with created as (
 -- Counterexample: old A->B 50, reverse B->A 70, new A->B 100. Expense-only
 -- bilateral is A->B 80, whose residual queue is only the newest ExpenseDebt.
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'f4100000-0000-0000-0000-000000000002', 'Old A to B', 50, 'CNY', 1, 'manual',
     '[{"participant_id":"f4200000-0000-0000-0000-000000000022","amount":"50"}]',
     '[{"participant_id":"f4200000-0000-0000-0000-000000000021","amount":"50"}]',
@@ -130,7 +135,7 @@ with created as (
 ) insert into phase4_ids select 'counter_e1', expense_id from created;
 
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'f4100000-0000-0000-0000-000000000002', 'Reverse B to A', 70, 'CNY', 1, 'manual',
     '[{"participant_id":"f4200000-0000-0000-0000-000000000021","amount":"70"}]',
     '[{"participant_id":"f4200000-0000-0000-0000-000000000022","amount":"70"}]',
@@ -139,7 +144,7 @@ with created as (
 ) insert into phase4_ids select 'counter_e2', expense_id from created;
 
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'f4100000-0000-0000-0000-000000000002', 'New A to B', 100, 'CNY', 1, 'manual',
     '[{"participant_id":"f4200000-0000-0000-0000-000000000022","amount":"100"}]',
     '[{"participant_id":"f4200000-0000-0000-0000-000000000021","amount":"100"}]',
@@ -148,7 +153,7 @@ with created as (
 ) insert into phase4_ids select 'counter_e3', expense_id from created;
 
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'f4100000-0000-0000-0000-000000000003', 'Archived source', 50, 'CNY', 1, 'manual',
     '[{"participant_id":"f4200000-0000-0000-0000-000000000031","amount":"50"}]',
     '[{"participant_id":"f4200000-0000-0000-0000-000000000032","amount":"50"}]',
@@ -156,8 +161,29 @@ with created as (
   )
 ) insert into phase4_ids select 'archived_e1', expense_id from created;
 
+-- Unsettled Expenses remain editable and deletable before archival.
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
+    'f4100000-0000-0000-0000-000000000003', 'Editable source', 10, 'CNY', 1, 'manual',
+    '[{"participant_id":"f4200000-0000-0000-0000-000000000031","amount":"10"}]',
+    '[{"participant_id":"f4200000-0000-0000-0000-000000000032","amount":"10"}]',
+    '{}', '2026-08-31 10:00:00+08', null, null
+  )
+) insert into phase4_ids select 'editable_e1', expense_id from created;
+
+select pg_temp.assert_true(base_amount = 12 and version = 2, 'unsettled Expense update succeeds')
+from pg_temp.update_expense_fixture(
+  (select object_id from phase4_ids where label = 'editable_e1'),
+  'f4100000-0000-0000-0000-000000000003', 'Edited unsettled source', 12, 'CNY', 1, 'manual',
+  '[{"participant_id":"f4200000-0000-0000-0000-000000000031","amount":"12"}]',
+  '[{"participant_id":"f4200000-0000-0000-0000-000000000032","amount":"12"}]',
+  '{}', '2026-08-31 10:00:00+08', null, null
+);
+select pg_temp.assert_true(deleted and version = 3, 'unsettled Expense delete succeeds')
+from public.delete_expense((select object_id from phase4_ids where label = 'editable_e1'));
+
+with created as (
+  select * from pg_temp.create_expense_fixture(
     'f4100000-0000-0000-0000-000000000004', 'C owes D', 25, 'USD', 1, 'manual',
     '[{"participant_id":"f4200000-0000-0000-0000-000000000044","amount":"25"}]',
     '[{"participant_id":"f4200000-0000-0000-0000-000000000043","amount":"25"}]',
@@ -166,7 +192,7 @@ with created as (
 ) insert into phase4_ids select 'behalf_e1', expense_id from created;
 
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'f4100000-0000-0000-0000-000000000004', 'B owes A', 10, 'USD', 1, 'manual',
     '[{"participant_id":"f4200000-0000-0000-0000-000000000041","amount":"10"}]',
     '[{"participant_id":"f4200000-0000-0000-0000-000000000042","amount":"10"}]',
@@ -177,14 +203,14 @@ with created as (
 select pg_temp.assert_true(
   (select financial_version = 2 from public.activities where id = 'f4000000-0000-0000-0000-000000000001')
   and (select financial_version = 3 from public.activities where id = 'f4000000-0000-0000-0000-000000000002')
-  and (select financial_version = 1 from public.activities where id = 'f4000000-0000-0000-0000-000000000003'),
+  and (select financial_version = 4 from public.activities where id = 'f4000000-0000-0000-0000-000000000003'),
   'each successful Expense create must increment financial_version exactly once'
 );
 
 -- Member B records a partial transfer.
 select pg_temp.authenticate('f4300000-0000-0000-0000-000000000002');
 with created as (
-  select * from public.create_settlement_transfer(
+  select * from pg_temp.create_settlement_transfer_fixture(
     'f4000000-0000-0000-0000-000000000001',
     'f4200000-0000-0000-0000-000000000012',
     'f4200000-0000-0000-0000-000000000011',
@@ -208,7 +234,7 @@ begin
   select financial_version into v_before from public.activities where id = 'f4000000-0000-0000-0000-000000000001';
   select count(*) into v_count from public.transfers where activity_id = 'f4000000-0000-0000-0000-000000000001';
   begin
-    perform * from public.create_settlement_transfer(
+    perform * from pg_temp.create_settlement_transfer_fixture(
       'f4000000-0000-0000-0000-000000000001',
       'f4200000-0000-0000-0000-000000000012',
       'f4200000-0000-0000-0000-000000000011', 71, now(), null
@@ -225,7 +251,7 @@ end;
 $test$;
 
 with created as (
-  select * from public.create_settlement_transfer(
+  select * from pg_temp.create_settlement_transfer_fixture(
     'f4000000-0000-0000-0000-000000000001',
     'f4200000-0000-0000-0000-000000000012',
     'f4200000-0000-0000-0000-000000000011',
@@ -236,19 +262,31 @@ with created as (
 select pg_temp.assert_true(
   not exists (select 1 from public.bilateral_debts where activity_id = 'f4000000-0000-0000-0000-000000000001')
   and (
-    select array_agg(
-      t.id::text || ':' || e.title || ':' || ta.amount::text
-      order by t.occurred_at, t.created_at, t.id, e.occurred_at, e.created_at, e.id
-    ) = array[
-      (select object_id::text from phase4_ids where label = 'basic_t1') || ':Old B to A:30.0',
-      (select object_id::text from phase4_ids where label = 'basic_t2') || ':Old B to A:30.0',
-      (select object_id::text from phase4_ids where label = 'basic_t2') || ':New B to A:40.0'
-    ]::text[]
-    from public.transfer_allocations as ta
-    join public.transfers as t on t.id = ta.transfer_id
-    join public.expense_debts as ed on ed.id = ta.expense_debt_id
-    join public.expenses as e on e.id = ed.expense_id
-    where ta.activity_id = 'f4000000-0000-0000-0000-000000000001'
+    with actual as (
+      select row_number() over (
+               order by t.occurred_at, t.created_at, t.id, e.occurred_at, e.created_at, e.id
+             ) as seq,
+             t.id as transfer_id,
+             e.title,
+             ta.amount
+      from public.transfer_allocations as ta
+      join public.transfers as t on t.id = ta.transfer_id
+      join public.expense_debts as ed on ed.id = ta.expense_debt_id
+      join public.expenses as e on e.id = ed.expense_id
+      where ta.activity_id = 'f4000000-0000-0000-0000-000000000001'
+    )
+    select count(*) = 3 and bool_and(
+      case seq
+        when 1 then transfer_id = (select object_id from phase4_ids where label = 'basic_t1')
+                  and title = 'Old B to A' and amount = 30
+        when 2 then transfer_id = (select object_id from phase4_ids where label = 'basic_t2')
+                  and title = 'Old B to A' and amount = 30
+        when 3 then transfer_id = (select object_id from phase4_ids where label = 'basic_t2')
+                  and title = 'New B to A' and amount = 40
+        else false
+      end
+    )
+    from actual
   ),
   'multiple Transfers and Expense allocations must both follow stable FIFO order'
 );
@@ -279,7 +317,7 @@ $test$;
 -- Creator participates as claimed A without an on-behalf marker.
 select pg_temp.authenticate('f4300000-0000-0000-0000-000000000001');
 with created as (
-  select * from public.create_settlement_transfer(
+  select * from pg_temp.create_settlement_transfer_fixture(
     'f4000000-0000-0000-0000-000000000001',
     'f4200000-0000-0000-0000-000000000012',
     'f4200000-0000-0000-0000-000000000011', 20, now(), null
@@ -309,7 +347,7 @@ from public.void_settlement_transfer((select object_id from phase4_ids where lab
 do $test$
 begin
   begin
-    perform * from public.create_settlement_transfer(
+    perform * from pg_temp.create_settlement_transfer_fixture(
       'f4000000-0000-0000-0000-000000000001',
       'f4200000-0000-0000-0000-000000000012',
       'f4200000-0000-0000-0000-000000000011', 1, now(),
@@ -326,7 +364,7 @@ $test$;
 do $test$
 begin
   begin
-    perform * from public.create_settlement_transfer(
+    perform * from pg_temp.create_settlement_transfer_fixture(
       'f4000000-0000-0000-0000-000000000004',
       'f4200000-0000-0000-0000-000000000043',
       'f4200000-0000-0000-0000-000000000044', 25, now(), null
@@ -338,7 +376,7 @@ end;
 $test$;
 
 with created as (
-  select * from public.create_settlement_transfer(
+  select * from pg_temp.create_settlement_transfer_fixture(
     'f4000000-0000-0000-0000-000000000004',
     'f4200000-0000-0000-0000-000000000043',
     'f4200000-0000-0000-0000-000000000044', 25,
@@ -361,7 +399,7 @@ select pg_temp.authenticate('f4300000-0000-0000-0000-000000000002');
 do $test$
 begin
   begin
-    perform * from public.create_settlement_transfer(
+    perform * from pg_temp.create_settlement_transfer_fixture(
       'f4000000-0000-0000-0000-000000000004',
       'f4200000-0000-0000-0000-000000000043',
       'f4200000-0000-0000-0000-000000000044', 1, now(),
@@ -377,7 +415,7 @@ select pg_temp.authenticate('f4300000-0000-0000-0000-000000000003');
 do $test$
 begin
   begin
-    perform * from public.create_settlement_transfer(
+    perform * from pg_temp.create_settlement_transfer_fixture(
       'f4000000-0000-0000-0000-000000000001',
       'f4200000-0000-0000-0000-000000000012',
       'f4200000-0000-0000-0000-000000000011', 1, now(), null
@@ -391,7 +429,7 @@ $test$;
 -- Expense-only bilateral cancellation must happen before Transfer allocation.
 select pg_temp.authenticate('f4300000-0000-0000-0000-000000000001');
 with created as (
-  select * from public.create_settlement_transfer(
+  select * from pg_temp.create_settlement_transfer_fixture(
     'f4000000-0000-0000-0000-000000000002',
     'f4200000-0000-0000-0000-000000000021',
     'f4200000-0000-0000-0000-000000000022', 80, now(), null
@@ -410,45 +448,50 @@ select pg_temp.assert_true(
   'reverse ExpenseDebt must consume old same-direction debt before Transfer FIFO starts'
 );
 
--- Historical reduction leaves only 10 allocated from the immutable 80 Transfer,
--- while the full Transfer produces the natural reverse bilateral debt 70.
-select pg_temp.assert_true(base_amount = 30 and version = 2, 'historical Expense update succeeds')
-from public.update_expense(
-  (select object_id from phase4_ids where label = 'counter_e3'),
-  'f4100000-0000-0000-0000-000000000002', 'New A to B reduced', 30, 'CNY', 1, 'manual',
-  '[{"participant_id":"f4200000-0000-0000-0000-000000000022","amount":"30"}]',
-  '[{"participant_id":"f4200000-0000-0000-0000-000000000021","amount":"30"}]',
-  '{}', '2026-08-31 11:00:00+08', null, null
-);
+-- A live real allocation is an immutable financial fact. Updating or deleting
+-- its source Expense must leave the debt, allocation, and version untouched.
+do $settled_expense_immutable$
+declare v_version bigint;
+begin
+  select financial_version into v_version
+  from public.activities where id = 'f4000000-0000-0000-0000-000000000002';
 
-select pg_temp.assert_true(
-  (select pg_catalog.sum(amount) = 10 from public.transfer_allocations where transfer_id = (select object_id from phase4_ids where label = 'counter_t1'))
-  and exists (
-    select 1 from public.bilateral_debts
-    where activity_id = 'f4000000-0000-0000-0000-000000000002'
-      and debtor_participant_id = 'f4200000-0000-0000-0000-000000000022'
-      and creditor_participant_id = 'f4200000-0000-0000-0000-000000000021'
-      and amount = 70
-  )
-  and (select financial_version = 5 from public.activities where id = 'f4000000-0000-0000-0000-000000000002'),
-  'history update must rebuild allocation and expose overpayment as reverse bilateral debt'
-);
+  begin
+    perform * from pg_temp.update_expense_fixture(
+      (select object_id from phase4_ids where label = 'counter_e3'),
+      'f4100000-0000-0000-0000-000000000002', 'New A to B reduced', 30, 'CNY', 1, 'manual',
+      '[{"participant_id":"f4200000-0000-0000-0000-000000000022","amount":"30"}]',
+      '[{"participant_id":"f4200000-0000-0000-0000-000000000021","amount":"30"}]',
+      '{}', '2026-08-31 11:00:00+08', null, null
+    );
+    raise exception 'settled Expense update unexpectedly succeeded';
+  exception when check_violation then null;
+  end;
 
-select pg_temp.assert_true(deleted and version = 3, 'historical Expense delete succeeds')
-from public.delete_expense((select object_id from phase4_ids where label = 'counter_e3'));
+  perform pg_temp.assert_true(
+    (select original_amount = 100 and title = 'New A to B' and version = 1 and not is_deleted
+       from public.expenses where id = (select object_id from phase4_ids where label = 'counter_e3'))
+    and (select pg_catalog.sum(amount) = 80 from public.transfer_allocations where transfer_id = (select object_id from phase4_ids where label = 'counter_t1'))
+    and not exists (select 1 from public.bilateral_debts where activity_id = 'f4000000-0000-0000-0000-000000000002')
+    and (select financial_version = v_version from public.activities where id = 'f4000000-0000-0000-0000-000000000002'),
+    'rejected settled Expense update must preserve its source facts and version'
+  );
 
-select pg_temp.assert_true(
-  not exists (select 1 from public.transfer_allocations where transfer_id = (select object_id from phase4_ids where label = 'counter_t1'))
-  and exists (
-    select 1 from public.bilateral_debts
-    where activity_id = 'f4000000-0000-0000-0000-000000000002'
-      and debtor_participant_id = 'f4200000-0000-0000-0000-000000000022'
-      and creditor_participant_id = 'f4200000-0000-0000-0000-000000000021'
-      and amount = 100
-  )
-  and (select financial_version = 6 from public.activities where id = 'f4000000-0000-0000-0000-000000000002'),
-  'history delete must rebuild allocations and bilateral debt exactly once'
-);
+  begin
+    perform * from public.delete_expense((select object_id from phase4_ids where label = 'counter_e3'));
+    raise exception 'settled Expense delete unexpectedly succeeded';
+  exception when check_violation then null;
+  end;
+
+  perform pg_temp.assert_true(
+    (select original_amount = 100 and title = 'New A to B' and version = 1 and not is_deleted
+       from public.expenses where id = (select object_id from phase4_ids where label = 'counter_e3'))
+    and (select pg_catalog.sum(amount) = 80 from public.transfer_allocations where transfer_id = (select object_id from phase4_ids where label = 'counter_t1'))
+    and (select financial_version = v_version from public.activities where id = 'f4000000-0000-0000-0000-000000000002'),
+    'rejected settled Expense delete must preserve its source facts and version'
+  );
+end;
+$settled_expense_immutable$;
 
 -- Full repair equals incremental business columns and does not move version.
 reset role;
@@ -469,7 +512,7 @@ select pg_temp.assert_true(
   and not exists ((table expected_allocations) except (select activity_id, transfer_id, expense_debt_id, amount from public.transfer_allocations where activity_id = 'f4000000-0000-0000-0000-000000000002'))
   and not exists ((select activity_id, debtor_participant_id, creditor_participant_id, amount from public.bilateral_debts where activity_id = 'f4000000-0000-0000-0000-000000000002') except table expected_bilateral)
   and not exists ((table expected_bilateral) except (select activity_id, debtor_participant_id, creditor_participant_id, amount from public.bilateral_debts where activity_id = 'f4000000-0000-0000-0000-000000000002'))
-  and (select financial_version = 6 from public.activities where id = 'f4000000-0000-0000-0000-000000000002'),
+  and (select financial_version = 4 from public.activities where id = 'f4000000-0000-0000-0000-000000000002'),
   'full repair must equal incremental business columns without incrementing version'
 );
 
@@ -484,7 +527,7 @@ declare v_before bigint;
 begin
   select financial_version into v_before from public.activities where id = 'f4000000-0000-0000-0000-000000000003';
   begin
-    perform * from public.create_expense(
+    perform * from pg_temp.create_expense_fixture(
       'f4100000-0000-0000-0000-000000000003', 'Blocked create', 10, 'CNY', 1, 'manual',
       '[{"participant_id":"f4200000-0000-0000-0000-000000000031","amount":"10"}]',
       '[{"participant_id":"f4200000-0000-0000-0000-000000000032","amount":"10"}]',
@@ -494,7 +537,7 @@ begin
   exception when object_not_in_prerequisite_state then null;
   end;
   begin
-    perform * from public.update_expense(
+    perform * from pg_temp.update_expense_fixture(
       (select object_id from phase4_ids where label = 'archived_e1'),
       'f4100000-0000-0000-0000-000000000003', 'Blocked update', 40, 'CNY', 1, 'manual',
       '[{"participant_id":"f4200000-0000-0000-0000-000000000031","amount":"40"}]',
@@ -510,7 +553,7 @@ begin
   exception when object_not_in_prerequisite_state then null;
   end;
   begin
-    perform * from public.create_settlement_transfer(
+    perform * from pg_temp.create_settlement_transfer_fixture(
       'f4000000-0000-0000-0000-000000000003',
       'f4200000-0000-0000-0000-000000000032',
       'f4200000-0000-0000-0000-000000000031', 10, now(), null
@@ -620,7 +663,7 @@ select pg_temp.assert_true(
 
 select pg_temp.assert_true(
   (
-    select count(*) = 9
+    select count(*) = 10
       and bool_and(p.prosecdef)
       and bool_and(p.proconfig @> array['search_path=""']::text[])
     from pg_proc as p
@@ -649,4 +692,6 @@ select pg_temp.assert_true(
   'authenticated outsider must not read Transfer facts or allocations'
 );
 
+select pass('Settlement Transfer schema, security, and projection assertions');
+select * from extensions.finish();
 rollback;

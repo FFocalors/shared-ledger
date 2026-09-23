@@ -397,6 +397,14 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
         totalDebt = status.totalDebt.toDecimalText(),
         totalPrepayment = status.totalPrepayment.toDecimalText(),
         financialVersion = status.financialVersion,
+        prepaymentBalancesByCurrency = status.prepaymentByCurrency?.mapNotNull { balance ->
+            val amount = balance.balance.toDecimalText().toBigDecimalOrNull() ?: return@mapNotNull null
+            if (amount <= java.math.BigDecimal.ZERO) return@mapNotNull null
+            ActivityCurrencyBalance(balance.currency.trim().uppercase(), amount.stripTrailingZeros().toPlainString())
+        }
+            ?.sortedBy(ActivityCurrencyBalance::currency),
+        hasUnsettledDebt = status.hasUnsettledDebt
+            ?: (status.totalDebt.toDecimalText().toBigDecimalOrNull()?.signum() == 1),
     )
 
     private fun JsonElement?.toDecimalText(): String = when (this) {

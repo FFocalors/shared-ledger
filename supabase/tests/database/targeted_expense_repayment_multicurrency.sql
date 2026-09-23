@@ -1,6 +1,8 @@
 \set ON_ERROR_STOP on
 
 begin;
+
+\ir legacy_rpc_fixture_adapters.sql
 create extension if not exists pgtap with schema extensions;
 select extensions.plan(4);
 
@@ -39,7 +41,7 @@ values ('f8000000-0000-0000-0000-000000000001','f8300000-0000-0000-0000-00000000
 set local role authenticated;
 select pg_temp.authenticate('f8100000-0000-0000-0000-000000000001');
 with x as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'f8200000-0000-0000-0000-000000000001','EUR bill',10,'EUR',8,
     'manual'::public.expense_split_method,
     '[{"participant_id":"f8300000-0000-0000-0000-000000000002","amount":"10"}]'::jsonb,

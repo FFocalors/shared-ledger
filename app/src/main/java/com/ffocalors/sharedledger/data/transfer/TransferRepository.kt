@@ -34,11 +34,6 @@ interface TransferRepository {
 }
 
 class SupabaseTransferRepository(private val client: SupabaseClient) : TransferRepository {
-    /** Null until the capability has been observed; false means the old server contract. */
-    private var supportsMultiCurrencySettlement: Boolean? = null
-    private var supportsTargetedSettlement: Boolean? = null
-    private var loadedBaseCurrency: String? = null
-
     override suspend fun loadContext(activityId: String, direction: SettlementDirection): Result<SettlementContext> = runCatching {
         val userId = client.auth.currentSessionOrNull()?.user?.id
             ?: throw TransferOperationException("登录状态已失效，请重新登录")
@@ -46,7 +41,6 @@ class SupabaseTransferRepository(private val client: SupabaseClient) : TransferR
             filter { eq("id", activityId) }
         }.decodeSingle<TransferActivityRowDto>()
         val baseCurrency = activity.baseCurrency.trim().uppercase()
-        loadedBaseCurrency = baseCurrency
         val participants = client.from("participants").select {
             filter {
                 eq("activity_id", activityId)
@@ -77,15 +71,12 @@ class SupabaseTransferRepository(private val client: SupabaseClient) : TransferR
             client.postgrest.rpc(
                 "list_settlement_options",
                 buildJsonObject { put("p_activity_id", activityId) },
-            ).decodeList<SettlementOptionRowDto>().also {
-                supportsMultiCurrencySettlement = true
-            }
+            ).decodeList<SettlementOptionRowDto>()
         } catch (error: Throwable) {
             if (!isMissingSettlementRpc(error)) throw error
             // The Android client can be upgraded before the linked Supabase migration.
             // Keep the old read model usable until the new RPC is deployed; it only exposes
             // the legacy base-currency debt and never fabricates external-currency options.
-            supportsMultiCurrencySettlement = false
             client.from("bilateral_debts").select {
                 filter { eq("activity_id", activityId) }
             }.decodeList<BilateralDebtRowDto>().map { debt ->
@@ -135,26 +126,15 @@ class SupabaseTransferRepository(private val client: SupabaseClient) : TransferR
 
     override suspend fun createSettlement(input: CreateSettlementTransferInput): Result<SettlementTransferResult> = runCatching {
         require(input.amount > BigDecimal.ZERO) { "transfer amount must be positive" }
-        val response = if (supportsTargetedSettlement != false) {
-            try {
-                client.postgrest.rpc("create_expense_repayment_v2", SettlementRpcPayloadBuilder.createTargeted(input))
-                    .decodeSingle<CreateSettlementTransferRpcDto>()
-                    .also { supportsTargetedSettlement = true }
-            } catch (error: Throwable) {
-                if (!isMissingSettlementRpc(error)) throw error
-                supportsTargetedSettlement = false
-                if (input.allocationMode == SettlementAllocationMode.TARGETED ||
-                    input.targetExpenseIds.isNotEmpty() || input.expectedFinancialVersion != null
-                ) {
-                    throw TransferOperationException("当前服务端尚未部署账单偿还，请刷新后重试")
-                }
-                createLegacySettlement(input)
-            }
-        } else {
-            if (input.allocationMode == SettlementAllocationMode.TARGETED ||
-                input.targetExpenseIds.isNotEmpty() || input.expectedFinancialVersion != null
-            ) throw TransferOperationException("当前服务端尚未部署账单偿还，请刷新后重试")
-            createLegacySettlement(input)
+        if (input.requestId.isNullOrBlank() || input.expectedFinancialVersion == null) {
+            throw TransferOperationException("还款请求缺少 request_id 或财务版本，请刷新债务后重试")
+        }
+        val response = try {
+            client.postgrest.rpc("create_expense_repayment_v2", SettlementRpcPayloadBuilder.createTargeted(input))
+                .decodeSingle<CreateSettlementTransferRpcDto>()
+        } catch (error: Throwable) {
+            if (!isMissingSettlementRpc(error)) throw error
+            throw TransferOperationException("当前服务端尚未部署账单偿还，请先更新服务端后重试", error)
         }
         SettlementTransferResult(
             transferId = response.transferId,
@@ -212,21 +192,9 @@ class SupabaseTransferRepository(private val client: SupabaseClient) : TransferR
                 toParticipantId = toParticipantId,
                 currency = currency,
             ),
-        ).decodeList<SettlementExpenseRowDto>().also { supportsTargetedSettlement = true }
+        ).decodeList<SettlementExpenseRowDto>()
         rows.mapNotNull { row -> row.toExpenseOption(fromParticipantId, toParticipantId) }
     }.mapFailure()
-
-    private suspend fun createLegacySettlement(input: CreateSettlementTransferInput): CreateSettlementTransferRpcDto {
-        val baseCurrency = loadedBaseCurrency
-            ?: throw TransferOperationException("请先刷新转账页面")
-        if (input.currency.trim().uppercase() != baseCurrency) {
-            throw TransferOperationException("当前服务端尚未部署多币种转账，请使用 $baseCurrency 结算")
-        }
-        return client.postgrest.rpc(
-            "create_settlement_transfer",
-            SettlementRpcPayloadBuilder.createLegacy(input),
-        ).decodeSingle()
-    }
 
     override suspend fun createSettlementWrite(input: CreateSettlementTransferInput): TransferWriteResult<SettlementTransferResult> =
         createSettlement(input).toTransferWriteResult()

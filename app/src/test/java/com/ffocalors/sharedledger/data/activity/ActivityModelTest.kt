@@ -68,13 +68,21 @@ class ActivityModelTest {
               "completed":false,
               "total_debt":0.0,
               "total_prepayment":12.50,
-              "financial_version":3
+              "financial_version":3,
+              "has_unsettled_debt":true,
+              "prepayment_by_currency":[
+                {"currency":"CNY","balance":12.50},
+                {"currency":"USD","balance":4.0}
+              ]
             }]
             """.trimIndent(),
         )
 
         assertEquals("0.0", rows.single().totalDebt?.toString()?.removeSurrounding("\"") ?: "")
         assertEquals("12.50", rows.single().totalPrepayment?.toString()?.removeSurrounding("\"") ?: "")
+        assertEquals(listOf("CNY", "USD"), rows.single().prepaymentByCurrency?.map { it.currency })
+        assertEquals("4.0", rows.single().prepaymentByCurrency?.last()?.balance?.toString())
+        assertEquals(true, rows.single().hasUnsettledDebt)
     }
 
     @Test

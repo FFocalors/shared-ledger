@@ -2,6 +2,11 @@
 
 begin;
 
+\ir legacy_rpc_fixture_adapters.sql
+
+create extension if not exists pgtap with schema extensions;
+select extensions.plan(1);
+
 create function pg_temp.assert_true(p_condition boolean, p_message text)
 returns void
 language plpgsql
@@ -116,7 +121,7 @@ create temporary table phase3_expense_ids (
 
 -- Single payer: B owes A 60.0.
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'e1000000-0000-0000-0000-000000000001',
     'Single payer',
     100.0000,
@@ -152,7 +157,7 @@ select pg_temp.assert_true(
 
 -- Two creditors and two debtors, with input JSON deliberately out of order.
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'e1000000-0000-0000-0000-000000000001',
     'Multiple sides',
     200.0000,
@@ -196,7 +201,7 @@ select pg_temp.assert_true(
 
 -- Participant ordering, followed by UUID as the deterministic secondary key.
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'e1000000-0000-0000-0000-000000000001',
     'Order and id tie-break',
     100.0000,
@@ -240,7 +245,7 @@ select pg_temp.assert_true(
 
 -- A second B -> A expense aggregates with the first one.
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'e1000000-0000-0000-0000-000000000001',
     'Same direction aggregation',
     40.0000,
@@ -270,7 +275,7 @@ select pg_temp.assert_true(
 
 -- Reverse A -> B 30.0 nets only this unordered pair to B -> A 70.0.
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'e1000000-0000-0000-0000-000000000001',
     'Reverse direction offset',
     30.0000,
@@ -306,7 +311,7 @@ select pg_temp.assert_true(
 
 -- A three-person cycle remains three bilateral rows; there is no path netting.
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'e1000000-0000-0000-0000-000000000002', 'Triangle AB', 50.0000, 'CNY', 1, 'manual',
     '[{"participant_id":"e2000000-0000-0000-0000-000000000101","amount":"50.0000"}]'::jsonb,
     '[{"participant_id":"e2000000-0000-0000-0000-000000000102","amount":"50.0000"}]'::jsonb,
@@ -316,7 +321,7 @@ with created as (
 insert into phase3_expense_ids select 'triangle_ab', expense_id from created;
 
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'e1000000-0000-0000-0000-000000000002', 'Triangle BC', 50.0000, 'CNY', 1, 'manual',
     '[{"participant_id":"e2000000-0000-0000-0000-000000000102","amount":"50.0000"}]'::jsonb,
     '[{"participant_id":"e2000000-0000-0000-0000-000000000103","amount":"50.0000"}]'::jsonb,
@@ -326,7 +331,7 @@ with created as (
 insert into phase3_expense_ids select 'triangle_bc', expense_id from created;
 
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'e1000000-0000-0000-0000-000000000002', 'Triangle CA', 50.0000, 'CNY', 1, 'manual',
     '[{"participant_id":"e2000000-0000-0000-0000-000000000103","amount":"50.0000"}]'::jsonb,
     '[{"participant_id":"e2000000-0000-0000-0000-000000000101","amount":"50.0000"}]'::jsonb,
@@ -347,7 +352,7 @@ select pg_temp.assert_true(
 -- Negative Expense uses the identical net/matching algorithm. The refund is
 -- the exact reverse of the original, so bilateral debt becomes zero.
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'e1000000-0000-0000-0000-000000000003', 'Refund original', 100.0000, 'CNY', 1, 'manual',
     '[{"participant_id":"e2000000-0000-0000-0000-000000000201","amount":"100.0000"}]'::jsonb,
     '[
@@ -360,7 +365,7 @@ with created as (
 insert into phase3_expense_ids select 'refund_original', expense_id from created;
 
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'e1000000-0000-0000-0000-000000000003', 'Negative refund', -100.0000, 'CNY', 1, 'manual',
     '[{"participant_id":"e2000000-0000-0000-0000-000000000201","amount":"-100.0000"}]'::jsonb,
     '[
@@ -392,7 +397,7 @@ select pg_temp.assert_true(
 
 -- create -> update -> delete all update projections in the same RPC transaction.
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'e1000000-0000-0000-0000-000000000004', 'Mutable', 90.0000, 'CNY', 1, 'manual',
     '[{"participant_id":"e2000000-0000-0000-0000-000000000301","amount":"90.0000"}]'::jsonb,
     '[
@@ -413,7 +418,7 @@ select pg_temp.assert_true(
 );
 
 select pg_temp.assert_true(base_amount = 50.0 and version = 2, 'update must retain Phase 2C return/version semantics')
-from public.update_expense(
+from pg_temp.update_expense_fixture(
   (select expense_id from phase3_expense_ids where label = 'mutable'),
   'e1000000-0000-0000-0000-000000000004',
   'Mutable updated',
@@ -728,4 +733,6 @@ select pg_temp.assert_true(
   'debt amount columns must be NOT NULL numeric(20,1)'
 );
 
+select pass('Expense debt projection schema and conservation assertions');
+select * from extensions.finish();
 rollback;

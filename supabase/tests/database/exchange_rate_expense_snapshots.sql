@@ -4,6 +4,9 @@
 -- every write is rolled back at the end.
 begin;
 
+create extension if not exists pgtap with schema extensions;
+select extensions.plan(1);
+
 create function pg_temp.assert_true(p_condition boolean, p_message text)
 returns void language plpgsql as $function$
 begin
@@ -26,8 +29,8 @@ insert into public.activities (
   id, join_code, name, type, base_currency, multi_currency_enabled, created_by
 )
 values
-  ('fe100000-0000-0000-0000-000000000001', 'FE000001', 'FX CNY', 'normal', 'CNY', true, 'fe000000-0000-0000-0000-000000000001'),
-  ('fe100000-0000-0000-0000-000000000002', 'FE000002', 'FX AUD no cache', 'normal', 'AUD', true, 'fe000000-0000-0000-0000-000000000001');
+  ('fe100000-0000-0000-0000-000000000001', '92000001', 'FX CNY', 'normal', 'CNY', true, 'fe000000-0000-0000-0000-000000000001'),
+  ('fe100000-0000-0000-0000-000000000002', '92000002', 'FX AUD no cache', 'normal', 'AUD', true, 'fe000000-0000-0000-0000-000000000001');
 insert into public.activity_members(activity_id, user_id)
 values
   ('fe100000-0000-0000-0000-000000000001', 'fe000000-0000-0000-0000-000000000001'),
@@ -175,4 +178,6 @@ select pg_temp.assert_true(
 );
 
 reset role;
+select extensions.pass('Server-managed FX snapshots and linked refund inheritance assertions');
+select * from extensions.finish();
 rollback;

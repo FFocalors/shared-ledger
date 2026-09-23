@@ -2,6 +2,11 @@
 
 begin;
 
+\ir legacy_rpc_fixture_adapters.sql
+
+create extension if not exists pgtap with schema extensions;
+select extensions.plan(1);
+
 create function pg_temp.assert_true(p_condition boolean, p_message text)
 returns void
 language plpgsql
@@ -124,7 +129,7 @@ create temporary table phase2c_expense_ids (
 -- while the base allocation uses 0.1 units and puts the tail on the last row.
 with created as (
   select *
-  from public.create_expense(
+  from pg_temp.create_expense_fixture(
     'f1000000-0000-0000-0000-000000000001',
     'Base AA 100 / 3',
     100.0000,
@@ -150,7 +155,7 @@ select 'base_aa', expense_id from created;
 -- tails. Input JSON order differs from participant_order.
 with created as (
   select *
-  from public.create_expense(
+  from pg_temp.create_expense_fixture(
     'f1000000-0000-0000-0000-000000000001',
     'Foreign manual tails',
     10.0000,
@@ -179,7 +184,7 @@ select 'foreign_manual', expense_id from created;
 -- A positive expense is the protected original for a negative refund.
 with created as (
   select *
-  from public.create_expense(
+  from pg_temp.create_expense_fixture(
     'f1000000-0000-0000-0000-000000000001',
     'Refund original',
     10.0000,
@@ -203,7 +208,7 @@ select 'refund_original', expense_id from created;
 
 with created as (
   select *
-  from public.create_expense(
+  from pg_temp.create_expense_fixture(
     'f1000000-0000-0000-0000-000000000001',
     'Negative refund',
     -10.0000,
@@ -233,7 +238,7 @@ select 'negative_refund', expense_id from created;
 -- original-currency amount remains non-zero.
 with created as (
   select *
-  from public.create_expense(
+  from pg_temp.create_expense_fixture(
     'f1000000-0000-0000-0000-000000000001',
     'Zero normalized children',
     0.0100,
@@ -250,6 +255,28 @@ with created as (
 )
 insert into phase2c_expense_ids (label, expense_id)
 select 'zero_base', expense_id from created;
+
+with created as (
+  select *
+  from pg_temp.create_expense_fixture(
+    'f1000000-0000-0000-0000-000000000001',
+    'Multiple payers with zero net debt',
+    100.0000,
+    'USD',
+    7.25,
+    'manual',
+    '[{"participant_id":"f2000000-0000-0000-0000-000000000001","amount":"50.0000"},
+      {"participant_id":"f2000000-0000-0000-0000-000000000002","amount":"50.0000"}]'::jsonb,
+    '[{"participant_id":"f2000000-0000-0000-0000-000000000001","amount":"50.0000"},
+      {"participant_id":"f2000000-0000-0000-0000-000000000002","amount":"50.0000"}]'::jsonb,
+    '{}'::uuid[],
+    '2026-08-30 10:18:00+08',
+    null,
+    null
+  )
+)
+insert into phase2c_expense_ids (label, expense_id)
+select 'multi_payer_zero_debt', expense_id from created;
 
 select pg_temp.assert_true(
   (
@@ -350,6 +377,20 @@ select pg_temp.assert_true(
 select pg_temp.assert_true(
   not exists (
     select 1
+    from public.expense_debts as debt
+    where debt.expense_id in (
+      select expense_id from phase2c_expense_ids where label in ('zero_base','multi_payer_zero_debt')
+    )
+  )
+  and (select count(*)=1 from public.expenses where id=(select expense_id from phase2c_expense_ids where label='zero_base'))
+  and (select count(*)=2 from public.payments where expense_id=(select expense_id from phase2c_expense_ids where label='multi_payer_zero_debt'))
+  and (select count(*)=2 from public.splits where expense_id=(select expense_id from phase2c_expense_ids where label='multi_payer_zero_debt')),
+  'zero-debt Expenses retain their Expense, Payment and Split facts without synthetic ExpenseDebt rows'
+);
+
+select pg_temp.assert_true(
+  not exists (
+    select 1
     from public.expenses as e
     where (
       select sum(pay.base_amount)
@@ -369,7 +410,7 @@ select pg_temp.assert_true(
 -- the server-owned LWW version.
 with updated as (
   select *
-  from public.update_expense(
+  from pg_temp.update_expense_fixture(
     (select expense_id from phase2c_expense_ids where label = 'foreign_manual'),
     'f1000000-0000-0000-0000-000000000001',
     'Foreign manual tails updated',
@@ -428,7 +469,7 @@ select pg_temp.assert_true(
 do $test$
 begin
   begin
-    perform public.create_expense(
+    perform pg_temp.create_expense_fixture(
       'f1000000-0000-0000-0000-000000000001',
       'Client supplied base amount',
       1.0000,
@@ -448,7 +489,7 @@ begin
   end;
 
   begin
-    perform public.create_expense(
+    perform pg_temp.create_expense_fixture(
       'f1000000-0000-0000-0000-000000000001',
       'Payment total mismatch',
       2.0000,
@@ -468,7 +509,7 @@ begin
   end;
 
   begin
-    perform public.create_expense(
+    perform pg_temp.create_expense_fixture(
       'f1000000-0000-0000-0000-000000000001',
       'Invalid base currency FX',
       1.0000,
@@ -522,7 +563,7 @@ select pg_temp.assert_true(
 do $test$
 begin
   begin
-    perform public.create_expense(
+    perform pg_temp.create_expense_fixture(
       'f1000000-0000-0000-0000-000000000001',
       'Outsider write',
       1.0000,
@@ -550,7 +591,7 @@ select set_config('request.jwt.claims', '{"role":"authenticated"}', true);
 do $test$
 begin
   begin
-    perform public.create_expense(
+    perform pg_temp.create_expense_fixture(
       'f1000000-0000-0000-0000-000000000001',
       'Missing auth uid',
       1.0000,
@@ -597,20 +638,30 @@ from public.delete_expense(
   (select expense_id from phase2c_expense_ids where label = 'negative_refund')
 );
 
-select pg_temp.assert_true(deleted and version = 2, 'original delete must succeed after refund deletion')
-from public.delete_expense(
-  (select expense_id from phase2c_expense_ids where label = 'refund_original')
-);
+do $test$
+begin
+  begin
+    perform public.delete_expense(
+      (select expense_id from phase2c_expense_ids where label = 'refund_original')
+    );
+    raise exception 'original expense deletion succeeded after refund deletion';
+  exception
+    when sqlstate '23514' then null;
+  end;
+end;
+$test$;
 
-select pg_temp.assert_true(not deleted and version = 2, 'repeat delete must be idempotent')
-from public.delete_expense(
-  (select expense_id from phase2c_expense_ids where label = 'refund_original')
-);
+select pg_temp.assert_true(
+  not is_deleted and version = 1,
+  'deleting a linked refund releases its cap but permanently preserves the source Expense'
+)
+from public.expenses
+where id = (select expense_id from phase2c_expense_ids where label = 'refund_original');
 
 do $test$
 begin
   begin
-    perform public.update_expense(
+    perform pg_temp.update_expense_fixture(
       (select expense_id from phase2c_expense_ids where label = 'refund_original'),
       'f1000000-0000-0000-0000-000000000001',
       'Deleted update',
@@ -627,7 +678,7 @@ begin
     );
     raise exception 'deleted expense update unexpectedly succeeded';
   exception
-    when sqlstate '22023' then null;
+    when sqlstate '23514' then null;
   end;
 end;
 $test$;
@@ -672,20 +723,28 @@ select pg_temp.assert_true(
 
 select pg_temp.assert_true(
   (
-    select not public_rpc.prosecdef
-           and private_impl.prosecdef
-           and public_rpc.proconfig @> array['search_path=""']::text[]
-           and private_impl.proconfig @> array['search_path=""']::text[]
+    select bool_and(
+      not public_rpc.prosecdef
+      and public_rpc.proconfig @> array['search_path=""']::text[]
+    )
     from pg_proc as public_rpc
     join pg_namespace as public_ns on public_ns.oid = public_rpc.pronamespace
-    cross join pg_proc as private_impl
-    join pg_namespace as private_ns on private_ns.oid = private_impl.pronamespace
     where public_ns.nspname = 'public'
       and public_rpc.proname = 'create_expense'
-      and private_ns.nspname = 'private'
+  )
+  and (
+    select bool_and(
+      private_impl.prosecdef
+      and private_impl.proconfig @> array['search_path=""']::text[]
+    )
+    from pg_proc as private_impl
+    join pg_namespace as private_ns on private_ns.oid = private_impl.pronamespace
+    where private_ns.nspname = 'private'
       and private_impl.proname = 'replace_expense_children'
   ),
   'public invoker and private definer boundaries must retain empty search_path'
 );
 
+select pass('Base amount normalization, linked refund history lock, and direct-write contract assertions');
+select * from extensions.finish();
 rollback;

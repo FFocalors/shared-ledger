@@ -1,6 +1,10 @@
 \set ON_ERROR_STOP on
 
+create extension if not exists pgtap with schema extensions;
+
 begin;
+
+\ir legacy_rpc_fixture_adapters.sql
 select plan(10);
 
 create function pg_temp.assert_true(p_condition boolean, p_message text)
@@ -65,7 +69,7 @@ select pg_temp.authenticate('f2100000-0000-0000-0000-000000000002');
 -- 47.2 EUR, paid 47/0.2 EUR, split equally at 23.6/23.6 EUR.
 create temporary table fix_target_expense on commit drop as
 select expense_id
-from public.create_expense(
+from pg_temp.create_expense_fixture(
   'f2200000-0000-0000-0000-000000000001',
   'EUR AA 47.2',
   47.2, 'EUR', 7.6755, 'aa'::public.expense_split_method,
@@ -116,7 +120,7 @@ select is(
 -- match as the base projection: 222->111=50, 333->111=10, 333->444=40.
 create temporary table fix_multi_expense on commit drop as
 select expense_id
-from public.create_expense(
+from pg_temp.create_expense_fixture(
   'f2200000-0000-0000-0000-000000000001',
   'Stable multi-row match',
   100, 'CNY', 1, 'manual'::public.expense_split_method,

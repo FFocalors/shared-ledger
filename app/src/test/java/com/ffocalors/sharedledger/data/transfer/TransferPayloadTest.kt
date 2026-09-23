@@ -16,7 +16,7 @@ class TransferPayloadTest {
         val payload = SettlementRpcPayloadBuilder.createTargeted(
             input().copy(
                 allocationMode = SettlementAllocationMode.TARGETED,
-                targetExpenseIds = listOf("expense-1", "expense-2"),
+                targetExpenseIds = listOf("expense-2", "expense-1", "expense-2"),
                 expectedFinancialVersion = 12L,
             ),
         )
@@ -31,7 +31,7 @@ class TransferPayloadTest {
 
     @Test
     fun payloadUsesImmutableDebtEndpointsAndNullOnBehalf() {
-        val transfer = SettlementRpcPayloadBuilder.create(input())
+        val transfer = SettlementRpcPayloadBuilder.createTargeted(input())
 
         assertEquals("activity-1", transfer["activity_id"]?.jsonPrimitive?.content)
         assertEquals("debtor", transfer["from_participant_id"]?.jsonPrimitive?.content)
@@ -45,7 +45,7 @@ class TransferPayloadTest {
 
     @Test
     fun payloadPreservesCreatorOnBehalfParticipant() {
-        val payload = SettlementRpcPayloadBuilder.create(
+        val payload = SettlementRpcPayloadBuilder.createTargeted(
             input().copy(onBehalfOfParticipantId = "unclaimed-debtor"),
         )
 
@@ -53,18 +53,22 @@ class TransferPayloadTest {
     }
 
     @Test
-    fun legacyPayloadOmitsNewCurrencyAndReplayFields() {
-        val payload = SettlementRpcPayloadBuilder.createLegacy(input())
+    fun formalRepaymentPayloadCarriesCurrencyModeAndReplayFields() {
+        val payload = SettlementRpcPayloadBuilder.createTargeted(
+            input().copy(expectedFinancialVersion = 9L),
+        )
 
-        assertEquals(null, payload["currency"])
-        assertEquals(null, payload["request_id"])
+        assertEquals("USD", payload["currency"]?.jsonPrimitive?.content)
+        assertEquals("FIFO", payload["mode"]?.jsonPrimitive?.content)
+        assertEquals("9", payload["expected_financial_version"]?.jsonPrimitive?.content)
+        assertEquals("request-1", payload["request_id"]?.jsonPrimitive?.content)
         assertEquals("10.5", payload["amount"]?.jsonPrimitive?.content)
         assertEquals("2026-09-06T00:00:00Z", payload["occurred_at"]?.jsonPrimitive?.content)
     }
 
     @Test
     fun onBehalfMetadataCannotRewriteDebtEndpoints() {
-        val payload = SettlementRpcPayloadBuilder.create(
+        val payload = SettlementRpcPayloadBuilder.createTargeted(
             input().copy(onBehalfOfParticipantId = "debtor"),
         )
 
@@ -95,5 +99,6 @@ class TransferPayloadTest {
         occurredAt = "2026-09-06T00:00:00Z",
         currency = "USD",
         requestId = "request-1",
+        expectedFinancialVersion = 7L,
     )
 }

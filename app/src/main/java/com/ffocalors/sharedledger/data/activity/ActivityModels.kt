@@ -160,6 +160,14 @@ data class FinancialStatusRowDto(
     @SerialName("total_debt") val totalDebt: JsonElement? = null,
     @SerialName("total_prepayment") val totalPrepayment: JsonElement? = null,
     @SerialName("financial_version") val financialVersion: Long = 0,
+    @SerialName("prepayment_by_currency") val prepaymentByCurrency: List<CurrencyBalanceRowDto>? = null,
+    @SerialName("has_unsettled_debt") val hasUnsettledDebt: Boolean? = null,
+)
+
+@Serializable
+data class CurrencyBalanceRowDto(
+    val currency: String,
+    val balance: JsonElement? = null,
 )
 
 data class ActivitySummary(
@@ -179,6 +187,13 @@ data class ActivitySummary(
     val totalPrepayment: String,
     val financialVersion: Long = 0,
     val participantsLockedAt: String? = null,
+    val prepaymentBalancesByCurrency: List<ActivityCurrencyBalance>? = null,
+    val hasUnsettledDebt: Boolean = false,
+)
+
+data class ActivityCurrencyBalance(
+    val currency: String,
+    val balance: String,
 )
 
 data class ParticipantAvatarSummary(

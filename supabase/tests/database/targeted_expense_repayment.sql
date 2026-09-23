@@ -2,6 +2,8 @@
 
 begin;
 
+\ir legacy_rpc_fixture_adapters.sql
+
 create extension if not exists pgtap with schema extensions;
 select extensions.plan(8);
 
@@ -40,7 +42,7 @@ values
    'authenticated','authenticated','targeted.b@example.invalid',crypt('x',gen_salt('bf')),now(),'{}','{}',now(),now());
 
 insert into public.activities(id,join_code,name,type,base_currency,multi_currency_enabled,created_by)
-values ('f7000000-0000-0000-0000-000000000001','97000001','Targeted repayment','normal','CNY',true,
+values ('f7000000-0000-0000-0000-000000000001','97000002','Targeted repayment','normal','CNY',true,
         'f7100000-0000-0000-0000-000000000001');
 insert into public.activity_members(activity_id,user_id)
 values ('f7000000-0000-0000-0000-000000000001','f7100000-0000-0000-0000-000000000001'),
@@ -59,7 +61,7 @@ select pg_temp.authenticate('f7100000-0000-0000-0000-000000000001');
 
 -- Prepayment is created before the bills so it is consumed dynamically by the
 -- first bill.  The second bill is then the selected partial-payment target.
-select * from public.create_prepayment(
+select * from pg_temp.create_prepayment_fixture(
   'f7000000-0000-0000-0000-000000000001',
   'f7300000-0000-0000-0000-000000000001',
   'f7300000-0000-0000-0000-000000000002',40,'2026-09-01 08:00+08',null
@@ -67,7 +69,7 @@ select * from public.create_prepayment(
 
 create temporary table targeted_ids(label text primary key, object_id uuid) on commit drop;
 with x as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'f7200000-0000-0000-0000-000000000001','first bill',100,'CNY',1,
     'manual'::public.expense_split_method,
     '[{"participant_id":"f7300000-0000-0000-0000-000000000002","amount":"100"}]'::jsonb,
@@ -77,7 +79,7 @@ with x as (
 )
 insert into targeted_ids select 'first',expense_id from x;
 with x as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'f7200000-0000-0000-0000-000000000001','second bill',80,'CNY',1,
     'manual'::public.expense_split_method,
     '[{"participant_id":"f7300000-0000-0000-0000-000000000002","amount":"80"}]'::jsonb,
@@ -87,7 +89,7 @@ with x as (
 )
 insert into targeted_ids select 'second',expense_id from x;
 with x as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'f7200000-0000-0000-0000-000000000001','reverse bill',30,'CNY',1,
     'manual'::public.expense_split_method,
     '[{"participant_id":"f7300000-0000-0000-0000-000000000001","amount":"30"}]'::jsonb,

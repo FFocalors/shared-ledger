@@ -1,3 +1,7 @@
+-- RETIRED: The product contract forbids restoring immutable Transfer facts.
+-- This historical positive-restore suite is retained for traceability only;
+-- do not run it. Revoked restore grants and one-way void behavior are covered
+-- by the current contract tests and TEST_STATUS.md.
 \set ON_ERROR_STOP on
 
 begin;

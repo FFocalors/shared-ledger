@@ -277,7 +277,11 @@ internal object FlexibleNullableLongSerializer : KSerializer<Long?> {
         return when (element) {
             JsonNull -> null
             is JsonPrimitive -> element.content.toLongOrNull() ?: runCatching {
-                java.math.BigDecimal(element.content).toBigIntegerExact().longValueExact()
+                val integer = java.math.BigDecimal(element.content).toBigIntegerExact()
+                val minimum = java.math.BigInteger.valueOf(Long.MIN_VALUE)
+                val maximum = java.math.BigInteger.valueOf(Long.MAX_VALUE)
+                if (integer < minimum || integer > maximum) throw ArithmeticException("long overflow")
+                integer.toLong()
             }.getOrNull()
             else -> null
         }

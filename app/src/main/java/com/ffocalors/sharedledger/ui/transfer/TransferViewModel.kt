@@ -514,7 +514,6 @@ class TransferViewModel(
                     occurredAt = draft.occurredAt,
                     allocationMode = draft.allocationMode,
                     targetExpenseIds = draft.targetExpenseIds,
-                    expectedFinancialVersion = draft.expectedFinancialVersion,
                 )
             }
         if (stored != null) return stored

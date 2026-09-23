@@ -59,6 +59,7 @@ import com.ffocalors.sharedledger.ui.components.AmountEmphasis
 import com.ffocalors.sharedledger.ui.components.AmountSize
 import com.ffocalors.sharedledger.ui.components.EmptyState
 import com.ffocalors.sharedledger.ui.components.ErrorState
+import com.ffocalors.sharedledger.ui.components.HomeActivityCardSkeleton
 import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatarGroup
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
@@ -183,7 +184,9 @@ fun HomeScreen(
             }
 
             if (isLoading) {
-                item { LoadingState() }
+                items(3, key = { "home-skeleton-$it" }) {
+                    HomeActivityCardSkeleton(modifier = Modifier.animateItem())
+                }
             } else if (errorMessage != null) {
                 item { ErrorState(message = errorMessage, onRetry = onRetry) }
             } else if (selectedTab == HomeTab.InProgress) {

@@ -1,8 +1,11 @@
 \set ON_ERROR_STOP on
+\ir .dbtest_env.sql
 
 begin;
 
+create extension if not exists pgtap with schema extensions;
 create extension if not exists dblink with schema extensions;
+select extensions.plan(1);
 
 create function pg_temp.assert_true(p_condition boolean, p_message text)
 returns void
@@ -19,11 +22,11 @@ $function$;
 -- serialize on the shared transaction-scoped debt projection advisory lock.
 select extensions.dblink_connect(
   'phase3_projection_locker',
-  'host=supabase_db_shared-ledger port=5432 dbname=postgres user=postgres password=postgres'
+  :'db_conninfo'
 );
 select extensions.dblink_connect(
   'phase3_projection_waiter',
-  'host=supabase_db_shared-ledger port=5432 dbname=postgres user=postgres password=postgres'
+  :'db_conninfo'
 );
 
 select extensions.dblink_exec('phase3_projection_locker', 'begin');
@@ -80,4 +83,6 @@ select pg_temp.assert_true(
 select extensions.dblink_disconnect('phase3_projection_locker');
 select extensions.dblink_disconnect('phase3_projection_waiter');
 
+select pass('projection rebuilds share the transaction-scoped Activity lock');
+select * from extensions.finish();
 rollback;

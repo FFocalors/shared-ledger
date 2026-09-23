@@ -64,7 +64,11 @@ internal class SupabaseFinancialRecordRepository(
             payload = input,
         ) { pending ->
             remote.createPrepayment(
-                input.copy(requestId = pending.requestId, occurredAt = pending.persistedOccurredAt(input.occurredAt)),
+                input.copy(
+                    requestId = pending.requestId,
+                    occurredAt = pending.persistedOccurredAt(input.occurredAt),
+                    sourceFinancialVersion = pending.persistedSourceFinancialVersion(),
+                ),
             )
         }
 
@@ -75,7 +79,11 @@ internal class SupabaseFinancialRecordRepository(
             payload = input,
         ) { pending ->
             remote.createPrepaymentReturn(
-                input.copy(requestId = pending.requestId, occurredAt = pending.persistedOccurredAt(input.occurredAt)),
+                input.copy(
+                    requestId = pending.requestId,
+                    occurredAt = pending.persistedOccurredAt(input.occurredAt),
+                    sourceFinancialVersion = pending.persistedSourceFinancialVersion(),
+                ),
             )
         }
 
@@ -99,7 +107,13 @@ internal class SupabaseFinancialRecordRepository(
         activityId = request.activityId,
         payload = request to occurredAt,
     ) { pending ->
-        remote.executeFinalSettlement(request.copy(requestId = pending.requestId), pending.persistedOccurredAt(occurredAt))
+        remote.executeFinalSettlement(
+            request.copy(
+                requestId = pending.requestId,
+                sourceFinancialVersion = pending.persistedSourceFinancialVersion(),
+            ),
+            pending.persistedOccurredAt(occurredAt),
+        )
     }
 
     private suspend fun <P> writeWithDurableRequest(
@@ -161,14 +175,37 @@ internal class SupabaseFinancialRecordRepository(
             parts.size >= 8 && parts[0] == value.activityId && parts[1] == value.ownerParticipantId &&
                 parts[2] == value.custodianParticipantId && parts[3] == value.amount.stripTrailingZeros().toPlainString() &&
                 parts[4] == value.currency.trim().uppercase() && parts[6] == value.onBehalfOfParticipantId.orEmpty() &&
-                parts[7] == value.sourceFinancialVersion?.toString().orEmpty()
+                parts[7].toLongOrNull() != null
         }
-        is Pair<*, *> -> payload.substringBeforeLast('|') == durablePayloadText(value.first)
+        is Pair<*, *> -> {
+            val persistedPlan = payload.substringBeforeLast('|').split('|')
+            val currentPlan = durablePayloadText(value.first).split('|')
+            val isFinalSettlement = value.first is FinalSettlementSuggestion
+            persistedPlan.size == currentPlan.size && persistedPlan.indices.all { index ->
+                (isFinalSettlement && index == FINAL_SETTLEMENT_SOURCE_VERSION_INDEX) ||
+                    persistedPlan[index] == currentPlan[index]
+            }
+        }
         else -> false
     }
 
     private fun PendingFinancialRequest.persistedOccurredAt(fallback: String): String =
         payload.split('|').firstOrNull { it.contains('T') && it.contains(':') } ?: fallback
+
+    private fun PendingFinancialRequest.persistedSourceFinancialVersion(): Long {
+        val versionIndex = when {
+            operationKey.startsWith("prepayment:") -> PREPAYMENT_SOURCE_VERSION_INDEX
+            operationKey.startsWith("final-settlement:") -> FINAL_SETTLEMENT_SOURCE_VERSION_INDEX
+            else -> -1
+        }
+        return payload.split('|').getOrNull(versionIndex)?.toLongOrNull()
+            ?: throw FinancialOperationException("无法读取资金请求的原始财务版本，请刷新后重新提交")
+    }
+
+    private companion object {
+        const val PREPAYMENT_SOURCE_VERSION_INDEX = 7
+        const val FINAL_SETTLEMENT_SOURCE_VERSION_INDEX = 8
+    }
 
     private suspend fun <T> read(block: suspend () -> T): FinancialReadResult<T> = try {
         FinancialReadResult.Success(block())

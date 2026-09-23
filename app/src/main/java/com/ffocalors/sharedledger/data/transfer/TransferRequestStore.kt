@@ -43,7 +43,6 @@ data class PendingTransferRequest(
         occurredAt: String?,
         allocationMode: SettlementAllocationMode = SettlementAllocationMode.FIFO,
         targetExpenseIds: List<String> = emptyList(),
-        expectedFinancialVersion: Long? = null,
     ): Boolean = this.activityId == activityId &&
         this.direction == direction &&
         this.fromParticipantId == fromParticipantId &&
@@ -53,8 +52,7 @@ data class PendingTransferRequest(
         this.type == type &&
         this.onBehalfOfParticipantId == onBehalfOfParticipantId &&
         this.allocationMode == allocationMode &&
-        this.targetExpenseIds == targetExpenseIds &&
-        this.expectedFinancialVersion == expectedFinancialVersion &&
+        this.targetExpenseIds.distinct().sorted() == targetExpenseIds.distinct().sorted() &&
         (occurredAt == null || this.occurredAt == occurredAt)
 }
 

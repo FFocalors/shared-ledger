@@ -1,8 +1,10 @@
 \set ON_ERROR_STOP on
 
 begin;
+
+\ir legacy_rpc_fixture_adapters.sql
 create extension if not exists pgtap with schema extensions;
-select extensions.plan(71);
+select extensions.plan(63);
 
 create function pg_temp.authenticate(p_user uuid) returns void
 language plpgsql as $function$
@@ -53,7 +55,7 @@ select ok((select count(*)=1 from public.create_participant('f9700000-0000-0000-
 select ok((select is_new from public.claim_participant('f9700000-0000-0000-0000-000000000001',(select id from public.participants where activity_id='f9700000-0000-0000-0000-000000000001' and participant_order=0))), 'user can claim an unbound participant');
 select ok((select count(*)=1 from public.participant_claims where activity_id='f9700000-0000-0000-0000-000000000001'), 'claim is persisted');
 
-select expense_id into temporary phase7_expense from public.create_expense(
+select expense_id into temporary phase7_expense from pg_temp.create_expense_fixture(
  'f9710000-0000-0000-0000-000000000001','phase7 expense',10,'CNY',1,'manual',
  jsonb_build_array(jsonb_build_object('participant_id',(select id from public.participants where activity_id='f9700000-0000-0000-0000-000000000001' and participant_order=0),'amount',10)),
  jsonb_build_array(jsonb_build_object('participant_id',(select id from public.participants where activity_id='f9700000-0000-0000-0000-000000000001' and participant_order=1),'amount',10)),
@@ -63,31 +65,17 @@ select throws_ok($$select public.update_activity_settings('f9700000-0000-0000-00
 select throws_ok($$select public.create_participant('f9700000-0000-0000-0000-000000000001','late',null)$$,'55000',null,'locked normal list rejects additions');
 select ok((select deleted from public.delete_expense((select expense_id from phase7_expense))), 'expense logical delete succeeds');
 do $$ begin perform public.archive_activity('f9700000-0000-0000-0000-000000000001'); end $$;
-select throws_ok($$select public.restore_expense((select expense_id from phase7_expense))$$,'55000',null,'restore rejects archived Activity');
 do $$ begin perform public.unarchive_activity('f9700000-0000-0000-0000-000000000001'); end $$;
-set local role postgres;
-select e.version into temporary phase7_restore_before from public.expenses e where e.id=(select expense_id from phase7_expense);
-grant select on phase7_restore_before to authenticated;
-set local role authenticated;
-select pg_temp.authenticate('f9700000-0000-0000-0000-000000000001');
-select * into temporary phase7_restore_result from public.restore_expense((select expense_id from phase7_expense));
-select ok((select restored from phase7_restore_result), 'restore_expense restores a deleted fact');
-select ok((select version=(select version+1 from phase7_restore_before) from phase7_restore_result), 'restore increments financial fact version exactly once');
-select ok((select not is_deleted and exists(select 1 from public.expense_debts where expense_id=(select expense_id from phase7_expense)) from public.expenses where id=(select expense_id from phase7_expense)), 'restore atomically rebuilds debt projection');
-select ok((select not restored and version=(select version from public.expenses where id=(select expense_id from phase7_expense)) from public.restore_expense((select expense_id from phase7_expense))), 'restore no-op does not change version');
-select pg_temp.authenticate('f9700000-0000-0000-0000-000000000003');
-select throws_ok($$select public.restore_expense((select expense_id from phase7_expense))$$,'42501',null,'non-member cannot restore expense');
 select pg_temp.authenticate('f9700000-0000-0000-0000-000000000001');
 
-with created as (select * from public.create_expense('f9710000-0000-0000-0000-000000000001','restore original',4,'CNY',1,'manual',jsonb_build_array(jsonb_build_object('participant_id',(select id from public.participants where activity_id='f9700000-0000-0000-0000-000000000001' and participant_order=0),'amount',4)),jsonb_build_array(jsonb_build_object('participant_id',(select id from public.participants where activity_id='f9700000-0000-0000-0000-000000000001' and participant_order=1),'amount',4)), '{}'::uuid[],now(),null,null)) select expense_id into temporary phase7_refund_original from created;
-with created as (select * from public.create_expense('f9710000-0000-0000-0000-000000000001','restore linked refund',-1,'CNY',1,'manual',jsonb_build_array(jsonb_build_object('participant_id',(select id from public.participants where activity_id='f9700000-0000-0000-0000-000000000001' and participant_order=0),'amount',-1)),jsonb_build_array(jsonb_build_object('participant_id',(select id from public.participants where activity_id='f9700000-0000-0000-0000-000000000001' and participant_order=1),'amount',-1)), '{}'::uuid[],now(),null,(select expense_id from phase7_refund_original))) select expense_id into temporary phase7_linked_refund from created;
+with created as (select * from pg_temp.create_expense_fixture('f9710000-0000-0000-0000-000000000001','restore original',4,'CNY',1,'manual',jsonb_build_array(jsonb_build_object('participant_id',(select id from public.participants where activity_id='f9700000-0000-0000-0000-000000000001' and participant_order=0),'amount',4)),jsonb_build_array(jsonb_build_object('participant_id',(select id from public.participants where activity_id='f9700000-0000-0000-0000-000000000001' and participant_order=1),'amount',4)), '{}'::uuid[],now(),null,null)) select expense_id into temporary phase7_refund_original from created;
+with created as (select * from pg_temp.create_expense_fixture('f9710000-0000-0000-0000-000000000001','restore linked refund',-1,'CNY',1,'manual',jsonb_build_array(jsonb_build_object('participant_id',(select id from public.participants where activity_id='f9700000-0000-0000-0000-000000000001' and participant_order=0),'amount',-1)),jsonb_build_array(jsonb_build_object('participant_id',(select id from public.participants where activity_id='f9700000-0000-0000-0000-000000000001' and participant_order=1),'amount',-1)), '{}'::uuid[],now(),null,(select expense_id from phase7_refund_original))) select expense_id into temporary phase7_linked_refund from created;
 select ok((select deleted from public.delete_expense((select expense_id from phase7_linked_refund))), 'linked refund can be logically deleted');
-select ok((select deleted from public.delete_expense((select expense_id from phase7_refund_original))), 'original can be deleted after refund deletion');
-select throws_ok($$select public.restore_expense((select expense_id from phase7_linked_refund))$$,'23514',null,'restore linked refund rejects deleted original');
-set local role postgres;
-select ok(coalesce((select is_deleted from public.expenses where id=(select expense_id from phase7_linked_refund)),false) and coalesce((select is_deleted from public.expenses where id=(select expense_id from phase7_refund_original)),false), 'failed linked refund restore leaves original and refund unchanged');
-set local role authenticated;
-select pg_temp.authenticate('f9700000-0000-0000-0000-000000000001');
+select throws_ok(
+  $$select public.delete_expense((select expense_id from phase7_refund_original))$$,
+  '23514', null,
+  'original remains financially locked after linked refund deletion'
+);
 
 do $$ begin perform public.create_sub_activity('f9700000-0000-0000-0000-000000000002','first sub-activity'); end $$;
 select throws_ok($$select public.create_participant('f9700000-0000-0000-0000-000000000002','late large',null)$$,'55000',null,'large list locked by first sub-activity');
@@ -140,13 +128,13 @@ select ok((select exists(select 1 from pg_policies where schemaname='storage' an
 select ok((select exists(select 1 from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename='expenses')), 'expenses are in Realtime publication');
 select ok((select count(*)=16 from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename in ('activities','activity_members','ledger_units','participants','participant_claims','expenses','transfers','expense_debts','bilateral_debts','transfer_allocations','transfer_components','prepayment_accounts','prepayment_usages','final_settlement_paths','attachments','transfer_disputes')), 'all integration tables are in Realtime publication');
 select ok((select count(*) > 0 from public.audit_logs where activity_id='f9700000-0000-0000-0000-000000000001'), 'successful collaboration writes are audited');
-select ok((select not has_function_privilege('anon','public.restore_expense(uuid)','execute')), 'anon cannot call restore RPC');
+select ok((select not has_function_privilege('anon','public.restore_expense(uuid)','execute') and not has_function_privilege('authenticated','public.restore_expense(uuid)','execute') and not has_function_privilege('service_role','public.restore_expense(uuid)','execute')), 'Expense restore RPC is retired for client and service roles');
 select ok((select not has_table_privilege('authenticated','public.transfer_disputes','insert')), 'authenticated cannot directly insert disputes');
 select ok((select not has_table_privilege('authenticated','public.activities','truncate')), 'authenticated cannot truncate business tables');
 select ok((select not has_table_privilege('authenticated','public.activities','trigger')), 'authenticated cannot create business triggers');
 select ok((select not has_table_privilege('authenticated','public.activities','references')), 'authenticated cannot add business references');
 select ok((select not has_table_privilege('authenticated','public.activity_members','update') and not has_table_privilege('authenticated','public.ledger_units','delete')), 'lifecycle direct update/delete are revoked');
-select ok((select has_function_privilege('authenticated','private.restore_expense_impl(uuid)','execute') and not has_function_privilege('anon','private.restore_expense_impl(uuid)','execute')), 'private implementations are not exposed to anon/Data API');
+select ok((select not has_function_privilege('authenticated','private.restore_expense_impl(uuid)','execute') and not has_function_privilege('service_role','private.restore_expense_impl(uuid)','execute')), 'retired private Expense restore implementation is not callable');
 select ok((select not has_table_privilege('anon','public.exchange_rate_cache','select') and not has_table_privilege('authenticated','public.exchange_rate_cache','insert')), 'exchange cache is read-only to clients');
 select ok((select not exists(select 1 from (values ('activities'),('expenses'),('transfers'),('attachments'),('audit_logs')) as x(table_name) where has_table_privilege('authenticated','public.'||x.table_name,'truncate') or has_table_privilege('authenticated','public.'||x.table_name,'trigger') or has_table_privilege('authenticated','public.'||x.table_name,'references'))), 'authenticated has no dangerous privileges on business tables');
 
@@ -162,10 +150,10 @@ select pg_temp.authenticate('f9700000-0000-0000-0000-000000000002');
 select throws_ok($$select public.claim_participant('f9700000-0000-0000-0000-000000000003',(select participant_id from phase7_deletable_participant))$$,'P0002',null,'deleted participant cannot be claimed');
 select pg_temp.authenticate('f9700000-0000-0000-0000-000000000001');
 
-select transfer_id into temporary phase7_transfer from public.create_settlement_transfer(
+select transfer_id into temporary phase7_transfer from pg_temp.create_settlement_transfer_fixture(
  'f9700000-0000-0000-0000-000000000001',
  (select id from public.participants where activity_id='f9700000-0000-0000-0000-000000000001' and participant_order=1),
- (select id from public.participants where activity_id='f9700000-0000-0000-0000-000000000001' and participant_order=0),10,now(),
+ (select id from public.participants where activity_id='f9700000-0000-0000-0000-000000000001' and participant_order=0),4,now(),
  (select id from public.participants where activity_id='f9700000-0000-0000-0000-000000000001' and participant_order=1));
 select ok((select created from public.add_transfer_dispute((select transfer_id from phase7_transfer),(select id from public.participants where activity_id='f9700000-0000-0000-0000-000000000001' and participant_order=0),'check')), 'related participant can add dispute marker');
 select financial_version into temporary phase7_dispute_version from public.activities where id='f9700000-0000-0000-0000-000000000001';

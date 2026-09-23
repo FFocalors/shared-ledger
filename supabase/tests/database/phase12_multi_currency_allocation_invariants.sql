@@ -1,6 +1,12 @@
+\set ON_ERROR_STOP on
+
+create extension if not exists pgtap with schema extensions;
+
 begin;
 
-select plan(9);
+\ir legacy_rpc_fixture_adapters.sql
+
+select plan(11);
 
 create function pg_temp.authenticate(p_user_id uuid)
 returns void
@@ -68,7 +74,7 @@ create temporary table phase12_ids(label text primary key, object_id uuid) on co
 select pg_temp.authenticate('f3100000-0000-0000-0000-000000000002');
 
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'f3200000-0000-0000-0000-000000000001', '47.2 EUR AA', 47.2, 'EUR', 7.6755,
     'aa'::public.expense_split_method,
     '[{"participant_id":"f3300000-0000-0000-0000-000000000001","amount":"47"},
@@ -88,7 +94,7 @@ select ok(
 );
 
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'f3200000-0000-0000-0000-000000000001', '4.04 USD four-party AA', 4.04, 'USD', 7,
     'aa'::public.expense_split_method,
     '[{"participant_id":"f3300000-0000-0000-0000-000000000001","amount":"2.02"},
@@ -111,7 +117,7 @@ select ok(
 );
 
 with x as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'f3200000-0000-0000-0000-000000000002', 'B owes A at 6', 100, 'USD', 6,
     'manual'::public.expense_split_method,
     '[{"participant_id":"f3300000-0000-0000-0000-000000000011","amount":"100"}]'::jsonb,
@@ -119,7 +125,7 @@ with x as (
     '{}'::uuid[],'2026-09-20 12:02:00+08',null,null,'money'
   )
 ), y as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'f3200000-0000-0000-0000-000000000002', 'B owes A at 8', 100, 'USD', 8,
     'manual'::public.expense_split_method,
     '[{"participant_id":"f3300000-0000-0000-0000-000000000011","amount":"100"}]'::jsonb,
@@ -127,7 +133,7 @@ with x as (
     '{}'::uuid[],'2026-09-20 12:03:00+08',null,null,'money'
   )
 ), z as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'f3200000-0000-0000-0000-000000000002', 'A owes B at 7', 100, 'USD', 7,
     'manual'::public.expense_split_method,
     '[{"participant_id":"f3300000-0000-0000-0000-000000000012","amount":"100"}]'::jsonb,
@@ -147,7 +153,7 @@ select ok(
 );
 
 with x as (
-  select * from public.create_settlement_transfer(
+  select * from pg_temp.create_settlement_transfer_fixture(
     'f3000000-0000-0000-0000-000000000002',
     'f3300000-0000-0000-0000-000000000012',
     'f3300000-0000-0000-0000-000000000011',
@@ -167,7 +173,7 @@ select ok(
 );
 
 with x as (
-  select * from public.create_settlement_transfer(
+  select * from pg_temp.create_settlement_transfer_fixture(
     'f3000000-0000-0000-0000-000000000002',
     'f3300000-0000-0000-0000-000000000012',
     'f3300000-0000-0000-0000-000000000011',
@@ -186,7 +192,7 @@ select ok(
 );
 
 with x as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'f3200000-0000-0000-0000-000000000003', '2 JPY', 2, 'JPY', 0.05,
     'manual'::public.expense_split_method,
     '[{"participant_id":"f3300000-0000-0000-0000-000000000021","amount":"2"}]'::jsonb,
@@ -196,7 +202,7 @@ with x as (
 )
 insert into phase12_ids select 'tiny_expense',expense_id from x;
 with x as (
-  select * from public.create_settlement_transfer(
+  select * from pg_temp.create_settlement_transfer_fixture(
     'f3000000-0000-0000-0000-000000000003',
     'f3300000-0000-0000-0000-000000000022',
     'f3300000-0000-0000-0000-000000000021',
@@ -212,7 +218,7 @@ select ok(
 );
 
 with x as (
-  select * from public.create_settlement_transfer(
+  select * from pg_temp.create_settlement_transfer_fixture(
     'f3000000-0000-0000-0000-000000000003',
     'f3300000-0000-0000-0000-000000000022',
     'f3300000-0000-0000-0000-000000000021',
@@ -231,10 +237,62 @@ select ok(
   'cumulative tiny transfers settle the original debt and final base tail'
 );
 
+with created as (
+  select * from pg_temp.create_expense_fixture(
+    'f3200000-0000-0000-0000-000000000003', '0.01 JPY zero-base debt', 0.01, 'JPY', 0.05,
+    'manual'::public.expense_split_method,
+    '[{"participant_id":"f3300000-0000-0000-0000-000000000021","amount":"0.01"}]'::jsonb,
+    '[{"participant_id":"f3300000-0000-0000-0000-000000000022","amount":"0.01"}]'::jsonb,
+    '{}'::uuid[],'2026-09-20 12:09:00+08',null,null,'money'
+  )
+)
+insert into phase12_ids select 'micro_001_expense',expense_id from created;
+with created as (
+  select * from pg_temp.create_settlement_transfer_fixture(
+    'f3000000-0000-0000-0000-000000000003',
+    'f3300000-0000-0000-0000-000000000022',
+    'f3300000-0000-0000-0000-000000000021',
+    0.01, 'JPY', '2026-09-20 12:09:01+08', null,
+    'f3400000-0000-0000-0000-000000000005'
+  )
+)
+insert into phase12_ids select 'micro_001_transfer',transfer_id from created;
+select ok(
+  (select sum(original_amount)=0.01 and sum(base_amount)=0 from public.transfer_allocations where transfer_id=(select object_id from phase12_ids where label='micro_001_transfer'))
+  and not exists(select 1 from public.bilateral_debts where activity_id='f3000000-0000-0000-0000-000000000003' and original_amount>0),
+  'a 0.01 JPY debt with zero base value is still allocated and settled in original currency'
+);
+
+with created as (
+  select * from pg_temp.create_expense_fixture(
+    'f3200000-0000-0000-0000-000000000003', '0.99 JPY zero-base debt', 0.99, 'JPY', 0.05,
+    'manual'::public.expense_split_method,
+    '[{"participant_id":"f3300000-0000-0000-0000-000000000021","amount":"0.99"}]'::jsonb,
+    '[{"participant_id":"f3300000-0000-0000-0000-000000000022","amount":"0.99"}]'::jsonb,
+    '{}'::uuid[],'2026-09-20 12:09:02+08',null,null,'money'
+  )
+)
+insert into phase12_ids select 'micro_099_expense',expense_id from created;
+with created as (
+  select * from pg_temp.create_settlement_transfer_fixture(
+    'f3000000-0000-0000-0000-000000000003',
+    'f3300000-0000-0000-0000-000000000022',
+    'f3300000-0000-0000-0000-000000000021',
+    0.99, 'JPY', '2026-09-20 12:09:03+08', null,
+    'f3400000-0000-0000-0000-000000000006'
+  )
+)
+insert into phase12_ids select 'micro_099_transfer',transfer_id from created;
+select ok(
+  (select sum(original_amount)=0.99 and sum(base_amount)=0 from public.transfer_allocations where transfer_id=(select object_id from phase12_ids where label='micro_099_transfer'))
+  and not exists(select 1 from public.bilateral_debts where activity_id='f3000000-0000-0000-0000-000000000003' and original_amount>0),
+  'a 0.99 JPY debt with zero base value is still allocated and settled in original currency'
+);
+
 do $replay$
 begin
   begin
-    perform * from public.create_settlement_transfer(
+    perform * from pg_temp.create_settlement_transfer_fixture(
       'f3000000-0000-0000-0000-000000000003',
       'f3300000-0000-0000-0000-000000000022',
       'f3300000-0000-0000-0000-000000000021',

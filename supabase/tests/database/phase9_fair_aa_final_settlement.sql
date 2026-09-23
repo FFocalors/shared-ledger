@@ -2,6 +2,8 @@
 
 begin;
 
+\ir legacy_rpc_fixture_adapters.sql
+
 create extension if not exists pgtap with schema extensions;
 select extensions.plan(1);
 
@@ -85,7 +87,7 @@ create temporary table phase9_expenses (
 
 -- Dinner: whr pays 156.2 and all three share equally.
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'fa900000-0000-0000-0000-000000000020', '晚餐', 156.2, 'CNY', 1, 'aa',
     '[{"participant_id":"fa900000-0000-0000-0000-000000000101","amount":"156.2"}]',
     '[]',
@@ -101,7 +103,7 @@ insert into phase9_expenses select 'dinner', expense_id from created;
 
 -- Mixue: zhy pays 13; zhy owes 6, hzl owes 7, whr owes 0 (omitted).
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'fa900000-0000-0000-0000-000000000020', '蜜雪', 13, 'CNY', 1, 'manual',
     '[{"participant_id":"fa900000-0000-0000-0000-000000000102","amount":"13"}]',
     '[{"participant_id":"fa900000-0000-0000-0000-000000000102","amount":"6"},{"participant_id":"fa900000-0000-0000-0000-000000000103","amount":"7"}]',
@@ -112,7 +114,7 @@ insert into phase9_expenses select 'mixue', expense_id from created;
 
 -- Highway: zhy pays 100 and whr owes the whole amount.
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'fa900000-0000-0000-0000-000000000020', '高速费', 100, 'CNY', 1, 'manual',
     '[{"participant_id":"fa900000-0000-0000-0000-000000000102","amount":"100"}]',
     '[{"participant_id":"fa900000-0000-0000-0000-000000000101","amount":"100"}]',
@@ -123,7 +125,7 @@ insert into phase9_expenses select 'highway', expense_id from created;
 
 -- Test bill: zhy pays 300 and all three share exactly 100 each.
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'fa900000-0000-0000-0000-000000000020', '测试账单', 300, 'CNY', 1, 'aa',
     '[{"participant_id":"fa900000-0000-0000-0000-000000000102","amount":"300"}]',
     '[]',
@@ -191,7 +193,7 @@ select pg_temp.assert_true(
 -- negative split independently proves truncation-toward-zero plus signed
 -- remainder distribution: -15.5 / 3 -> -5.2, -5.2, -5.1.
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'fa900000-0000-0000-0000-000000000020', '退款原账单', 15.5, 'CNY', 1, 'aa',
     '[{"participant_id":"fa900000-0000-0000-0000-000000000101","amount":"15.5"}]',
     '[]',
@@ -206,7 +208,7 @@ with created as (
 insert into phase9_expenses select 'refund_original', expense_id from created;
 
 with created as (
-  select * from public.create_expense(
+  select * from pg_temp.create_expense_fixture(
     'fa900000-0000-0000-0000-000000000020', '负数退款', -15.5, 'CNY', 1, 'aa',
     '[{"participant_id":"fa900000-0000-0000-0000-000000000101","amount":"-15.5"}]',
     '[]',
@@ -244,7 +246,7 @@ select pg_temp.assert_true(
 
 -- Updating the AA bill through the public path must preserve the same stable
 -- allocation even when the request array order changes again.
-select * from public.update_expense(
+select * from pg_temp.update_expense_fixture(
   (select expense_id from phase9_expenses where label = 'dinner'),
   'fa900000-0000-0000-0000-000000000020', '晚餐（更新）', 156.2, 'CNY', 1, 'aa',
   '[{"participant_id":"fa900000-0000-0000-0000-000000000101","amount":"156.2"}]',
@@ -296,8 +298,8 @@ select pg_temp.assert_true(
   'full rebuild must preserve the fair AA facts and final settlement plan'
 );
 
--- Soft deletion removes the bill from projections. Restoring it routes through
--- the same incremental rebuild and must recover the identical fair allocation.
+-- Soft deletion removes the bill from projections. Expense restoration is a
+-- retired lifecycle action, so the historical fact stays deleted.
 select pg_temp.assert_true(deleted, 'AA expense delete must succeed')
 from public.delete_expense(
   (select expense_id from phase9_expenses where label = 'dinner')
@@ -312,29 +314,11 @@ select pg_temp.assert_true(
   'deleted AA expense must be removed from debt projections'
 );
 
-select pg_temp.assert_true(restored, 'AA expense restore must succeed')
-from public.restore_expense(
-  (select expense_id from phase9_expenses where label = 'dinner')
-);
-
 select pg_temp.assert_true(
-  (
-    select array_agg(p.name || ':' || s.base_amount::text order by p.participant_order) =
-      array['whr:52.1', 'zhy:52.1', 'hzl:52.0']::text[]
-    from public.splits as s
-    join public.participants as p on p.id = s.participant_id
-    where s.expense_id = (select expense_id from phase9_expenses where label = 'dinner')
-  )
-  and (
-    select array_agg(
-      from_p.name || '>' || to_p.name || ':' || plan.amount::text
-      order by from_p.participant_order
-    ) = array['whr>zhy:95.9', 'hzl>zhy:159.0']::text[]
-    from public.preview_activity_settlement('fa900000-0000-0000-0000-000000000010') as plan
-    join public.participants as from_p on from_p.id = plan.from_participant_id
-    join public.participants as to_p on to_p.id = plan.to_participant_id
-  ),
-  'restored AA expense must recover the fair split and netted plan'
+  (select is_deleted from public.expenses where id = (select expense_id from phase9_expenses where label = 'dinner'))
+  and not has_function_privilege('authenticated', 'public.restore_expense(uuid)', 'EXECUTE')
+  and not has_function_privilege('service_role', 'public.restore_expense(uuid)', 'EXECUTE'),
+  'deleted AA Expense remains a historical fact and restore is retired'
 );
 
 reset role;

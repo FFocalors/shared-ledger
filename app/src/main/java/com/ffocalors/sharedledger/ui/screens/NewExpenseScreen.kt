@@ -1,16 +1,29 @@
 package com.ffocalors.sharedledger.ui.screens
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -26,6 +39,7 @@ import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.WarningAmber
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -454,25 +468,42 @@ fun NewExpenseScreen(
                             },
                         )
                     }
-                    if (mode != ExpenseFormMode.Refund && multiCurrencyEnabled && !draft.currency.equals(baseCurrency, ignoreCase = true)) {
-                        Text(
-                            text = when {
-                                (selectedExchangeRate?.rate?.toPlainString() ?: exchangeRate) != null -> {
-                                    val rate = selectedExchangeRate?.rate?.toPlainString() ?: exchangeRate.orEmpty()
-                                    val observedAt = selectedExchangeRate?.observedAt ?: exchangeRateObservedAt
-                                    "汇率 ${draft.currency} → $baseCurrency：$rate${observedAt?.let { "（ECB ${UiDateTimeFormatter.format(it)}）" }.orEmpty()}"
-                                }
-                                else -> "暂无 ${draft.currency} → $baseCurrency 汇率缓存，在线保存前请刷新"
-                            },
-                            style = SharedLedgerTextStyles.Label,
-                            color = if ((selectedExchangeRate?.source ?: exchangeRateSource) == "ECB_REFERENCE") MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
-                        )
-                        val observedAt = selectedExchangeRate?.observedAt ?: exchangeRateObservedAt
-                        if (!observedAt.isNullOrBlank() && isExchangeRateStale(observedAt)) {
-                            Text("ECB 参考汇率已超过 72 个工作小时，仍可在线保存", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.tertiary)
-                        }
-                        if (!hasRateForSave) {
-                            Text("当前币对没有可用汇率缓存，只能使用基础币种", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.error)
+                    AnimatedVisibility(
+                        visible = mode != ExpenseFormMode.Refund && multiCurrencyEnabled && !draft.currency.equals(baseCurrency, ignoreCase = true),
+                        enter = expandVertically(
+                            animationSpec = tween(com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Durations.Content),
+                        ) + fadeIn(
+                            animationSpec = tween(com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Durations.Content),
+                        ),
+                        exit = shrinkVertically(
+                            animationSpec = tween(com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Durations.Content),
+                        ) + fadeOut(
+                            animationSpec = tween(com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Durations.Content),
+                        ),
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
+                        ) {
+                            Text(
+                                text = when {
+                                    (selectedExchangeRate?.rate?.toPlainString() ?: exchangeRate) != null -> {
+                                        val rate = selectedExchangeRate?.rate?.toPlainString() ?: exchangeRate.orEmpty()
+                                        val observedAt = selectedExchangeRate?.observedAt ?: exchangeRateObservedAt
+                                        "汇率 ${draft.currency} → $baseCurrency：$rate${observedAt?.let { "（ECB ${UiDateTimeFormatter.format(it)}）" }.orEmpty()}"
+                                    }
+                                    else -> "暂无 ${draft.currency} → $baseCurrency 汇率缓存，在线保存前请刷新"
+                                },
+                                style = SharedLedgerTextStyles.Label,
+                                color = if ((selectedExchangeRate?.source ?: exchangeRateSource) == "ECB_REFERENCE") MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
+                            )
+                            val observedAt = selectedExchangeRate?.observedAt ?: exchangeRateObservedAt
+                            if (!observedAt.isNullOrBlank() && isExchangeRateStale(observedAt)) {
+                                Text("ECB 参考汇率已超过 72 个工作小时，仍可在线保存", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.tertiary)
+                            }
+                            if (!hasRateForSave) {
+                                Text("当前币对没有可用汇率缓存，只能使用基础币种", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.error)
+                            }
                         }
                     }
                 }
@@ -527,10 +558,37 @@ fun NewExpenseScreen(
                             SegmentedControl(options = listOf("手动分摊", "AA均摊"), selectedIndex = if (draft.splitMethod == ExpenseSplitMethod.Manual) 0 else 1, onSelected = { draft = draft.copy(splitMethod = if (it == 0) ExpenseSplitMethod.Manual else ExpenseSplitMethod.Aa) }, modifier = Modifier.widthIn(max = ComponentSizes.SegmentedControlMaxWidth), enabled = !presentationOnly)
                         }
                     }
-                    Surface(shape = CircleShape, color = if (splitTotal.compareTo(amount) == 0) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer) {
-                        Row(Modifier.padding(horizontal = SharedLedgerSpacing.MediumSmall, vertical = SharedLedgerSpacing.XSmall), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Rounded.CheckCircle, null, Modifier.size(SharedLedgerDimens.IconSmall))
-                            Text("已分配 ${currencySymbol(draft.currency)} ${splitTotal.toPlainString()} / ${currencySymbol(draft.currency)} ${amount.toPlainString()}", style = SharedLedgerTextStyles.Label)
+                    val isSplitBalanced = splitTotal.compareTo(amount) == 0
+                    val splitIndicatorBg by animateColorAsState(
+                        targetValue = if (isSplitBalanced) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer,
+                        animationSpec = tween(com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Durations.Content),
+                        label = "splitIndicatorBg",
+                    )
+                    val splitIndicatorContentColor by animateColorAsState(
+                        targetValue = if (isSplitBalanced) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer,
+                        animationSpec = tween(com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Durations.Content),
+                        label = "splitIndicatorContentColor",
+                    )
+                    Surface(
+                        shape = CircleShape,
+                        color = splitIndicatorBg,
+                        contentColor = splitIndicatorContentColor,
+                    ) {
+                        Row(
+                            Modifier.padding(horizontal = SharedLedgerSpacing.MediumSmall, vertical = SharedLedgerSpacing.XSmall),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                if (isSplitBalanced) Icons.Rounded.CheckCircle else Icons.Rounded.WarningAmber,
+                                contentDescription = null,
+                                modifier = Modifier.size(SharedLedgerDimens.IconSmall),
+                            )
+                            Spacer(Modifier.width(SharedLedgerSpacing.XSmall))
+                            Text(
+                                if (isSplitBalanced) "分摊已平账 ${currencySymbol(draft.currency)} ${splitTotal.toPlainString()}"
+                                else "已分配 ${currencySymbol(draft.currency)} ${splitTotal.toPlainString()} / ${currencySymbol(draft.currency)} ${amount.toPlainString()}",
+                                style = SharedLedgerTextStyles.Label,
+                            )
                         }
                     }
                     safeParticipants.forEachIndexed { index, participant ->
@@ -541,13 +599,92 @@ fun NewExpenseScreen(
                         )
                         if (draft.splitMethod == ExpenseSplitMethod.Manual) {
                             val value = draft.manualSplitAmounts[participant.id].orEmpty()
-                            ParticipantAmountRow(participantUi, value.toBigDecimalOrNull() ?: BigDecimal.ZERO, currencyCode = draft.currency, editable = !presentationOnly, editableAmount = value, onAmountChange = { draft = draft.copy(manualSplitAmounts = draft.manualSplitAmounts + (participant.id to it)) }, keypad = keypad)
+                            ParticipantAmountRow(
+                                participantUi,
+                                value.toBigDecimalOrNull() ?: BigDecimal.ZERO,
+                                currencyCode = draft.currency,
+                                editable = !presentationOnly,
+                                editableAmount = value,
+                                onAmountChange = { draft = draft.copy(manualSplitAmounts = draft.manualSplitAmounts + (participant.id to it)) },
+                                keypad = keypad,
+                            )
                         } else {
                             val selected = participant.id in draft.aaParticipantIds
-                            Surface(onClick = { draft = draft.copy(aaParticipantIds = if (selected) draft.aaParticipantIds - participant.id else draft.aaParticipantIds + participant.id) }, enabled = !presentationOnly, modifier = Modifier.fillMaxWidth(), shape = SharedLedgerRadius.Large, color = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = .35f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .4f), border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant)) {
-                                Row(Modifier.padding(SharedLedgerSpacing.Medium), verticalAlignment = Alignment.CenterVertically) {
-                                    Text(participant.name, Modifier.weight(1f), style = SharedLedgerTextStyles.Body)
-                                    Text(if (selected) "已选择" else "未选择", style = SharedLedgerTextStyles.Label, color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+                            val containerColor by animateColorAsState(
+                                targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                                animationSpec = tween(com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Durations.Content),
+                                label = "aaContainerColor",
+                            )
+                            val borderColor by animateColorAsState(
+                                targetValue = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.6f) else MaterialTheme.colorScheme.outlineVariant,
+                                animationSpec = tween(com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Durations.Content),
+                                label = "aaBorderColor",
+                            )
+                            Surface(
+                                onClick = {
+                                    draft = draft.copy(
+                                        aaParticipantIds = if (selected) draft.aaParticipantIds - participant.id else draft.aaParticipantIds + participant.id,
+                                    )
+                                },
+                                enabled = !presentationOnly,
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = SharedLedgerRadius.Large,
+                                color = containerColor,
+                                border = BorderStroke(SharedLedgerDimens.OutlineWidth, borderColor),
+                            ) {
+                                Row(
+                                    Modifier.padding(
+                                        horizontal = SharedLedgerSpacing.Medium,
+                                        vertical = SharedLedgerSpacing.MediumSmall,
+                                    ),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
+                                ) {
+                                    ParticipantAvatar(
+                                        name = participantUi.name,
+                                        background = participantUi.avatarBackground,
+                                        size = SharedLedgerDimens.AvatarSmall,
+                                    )
+                                    Text(
+                                        participant.name,
+                                        Modifier.weight(1f),
+                                        style = SharedLedgerTextStyles.Body,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                    if (selected) {
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(SharedLedgerRadius.Full)
+                                                .background(MaterialTheme.colorScheme.primary)
+                                                .padding(
+                                                    horizontal = SharedLedgerSpacing.Small,
+                                                    vertical = SharedLedgerSpacing.XSmall,
+                                                ),
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
+                                            ) {
+                                                Icon(
+                                                    Icons.Rounded.Check,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.onPrimary,
+                                                    modifier = Modifier.size(SharedLedgerDimens.IconSmall),
+                                                )
+                                                Text(
+                                                    "参与均摊",
+                                                    style = SharedLedgerTextStyles.Label,
+                                                    color = MaterialTheme.colorScheme.onPrimary,
+                                                )
+                                            }
+                                        }
+                                    } else {
+                                        Text(
+                                            "不参与",
+                                            style = SharedLedgerTextStyles.Label,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                        )
+                                    }
                                 }
                             }
                         }

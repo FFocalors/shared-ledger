@@ -1,7 +1,11 @@
 \set ON_ERROR_STOP on
 
+create extension if not exists pgtap with schema extensions;
+
 begin;
-select plan(8);
+
+\ir legacy_rpc_fixture_adapters.sql
+select extensions.plan(8);
 
 create function pg_temp.assert_true(p_condition boolean, p_message text)
 returns void language plpgsql as $function$
@@ -41,11 +45,11 @@ select pg_temp.authenticate('f1100000-0000-0000-0000-000000000002');
 create temporary table phase11_ids(label text primary key, object_id uuid) on commit drop;
 
 -- B owes A 100 USD (6.7 snapshot) and 100 CNY.
-select expense_id from public.create_expense(
+select expense_id from pg_temp.create_expense_fixture(
  'f1200000-0000-0000-0000-000000000001','USD bill',100,'USD',6.7,'manual',
  '[{"participant_id":"f1300000-0000-0000-0000-000000000001","amount":"100"}]',
  '[{"participant_id":"f1300000-0000-0000-0000-000000000002","amount":"100"}]','{}','2026-09-20 09:00:00+08',null,null);
-select expense_id from public.create_expense(
+select expense_id from pg_temp.create_expense_fixture(
  'f1200000-0000-0000-0000-000000000001','CNY bill',100,'CNY',1,'manual',
  '[{"participant_id":"f1300000-0000-0000-0000-000000000001","amount":"100"}]',
  '[{"participant_id":"f1300000-0000-0000-0000-000000000002","amount":"100"}]','{}','2026-09-20 10:00:00+08',null,null);
@@ -57,7 +61,7 @@ select ok(
 
 -- A multi-party Expense must split its original amount across debt rows rather
 -- than copying the full bill amount into every row.
-select expense_id from public.create_expense(
+select expense_id from pg_temp.create_expense_fixture(
  'f1200000-0000-0000-0000-000000000001','Multi debt bill',90,'USD',6.7,'manual',
  '[{"participant_id":"f1300000-0000-0000-0000-000000000003","amount":"90"}]',
  '[{"participant_id":"f1300000-0000-0000-0000-000000000001","amount":"45"},{"participant_id":"f1300000-0000-0000-0000-000000000002","amount":"45"}]','{}','2026-09-20 10:30:00+08',null,null);
@@ -66,7 +70,7 @@ select ok(
  'multi-party debt rows conserve the bill original amount');
 
 -- External settlement is capped and allocated in the same currency only.
-with x as (select * from public.create_settlement_transfer(
+with x as (select * from pg_temp.create_settlement_transfer_fixture(
  'f1000000-0000-0000-0000-000000000001','f1300000-0000-0000-0000-000000000002','f1300000-0000-0000-0000-000000000001',
  50,'USD','2026-09-20 11:00:00+08',null,'f1400000-0000-0000-0000-000000000001'))
 insert into phase11_ids select 'usd50', transfer_id from x;
@@ -76,7 +80,7 @@ select ok(
  'USD settlement consumes USD and records original/base allocation');
 
 -- Base settlement may consume all currency buckets by base value.
-with x as (select * from public.create_settlement_transfer(
+with x as (select * from pg_temp.create_settlement_transfer_fixture(
  'f1000000-0000-0000-0000-000000000001','f1300000-0000-0000-0000-000000000002','f1300000-0000-0000-0000-000000000001',
  50,'CNY','2026-09-20 12:00:00+08',null,'f1400000-0000-0000-0000-000000000002'))
 insert into phase11_ids select 'cny50', transfer_id from x;
@@ -88,7 +92,7 @@ select ok(
 do $test$
 begin
   begin
-    perform * from public.create_settlement_transfer(
+    perform * from pg_temp.create_settlement_transfer_fixture(
       'f1000000-0000-0000-0000-000000000001','f1300000-0000-0000-0000-000000000002','f1300000-0000-0000-0000-000000000001',
       1,'EUR',now(),null,'f1400000-0000-0000-0000-000000000003');
     raise exception 'unsupported settlement currency unexpectedly succeeded';
@@ -98,7 +102,7 @@ end;
 $test$;
 
 -- A reverse USD debt nets by original USD amount, not by differing snapshots.
-select expense_id from public.create_expense(
+select expense_id from pg_temp.create_expense_fixture(
  'f1200000-0000-0000-0000-000000000001','Reverse USD',20,'USD',6.9,'manual',
  '[{"participant_id":"f1300000-0000-0000-0000-000000000002","amount":"20"}]',
  '[{"participant_id":"f1300000-0000-0000-0000-000000000001","amount":"20"}]','{}','2026-09-20 13:00:00+08',null,null);
@@ -108,11 +112,11 @@ select ok(
 
 -- Replaying a request id returns the same fact without incrementing the count.
 select count(*) as before_count into temporary phase11_before from public.transfers;
-with x as (select * from public.create_settlement_transfer(
+with x as (select * from pg_temp.create_settlement_transfer_fixture(
  'f1000000-0000-0000-0000-000000000001','f1300000-0000-0000-0000-000000000002','f1300000-0000-0000-0000-000000000001',
   10,'USD','2026-09-20 14:00:00+08',null,'f1400000-0000-0000-0000-000000000004'))
 insert into phase11_ids select 'usd10', transfer_id from x;
-select * from public.create_settlement_transfer(
+select * from pg_temp.create_settlement_transfer_fixture(
  'f1000000-0000-0000-0000-000000000001','f1300000-0000-0000-0000-000000000002','f1300000-0000-0000-0000-000000000001',
  10,'USD','2026-09-20 14:00:00+08',null,'f1400000-0000-0000-0000-000000000004');
 select ok((select count(*)=(select before_count+1 from phase11_before) from public.transfers),'request id replay is idempotent');
@@ -131,7 +135,12 @@ $test$;
 select ok((select not is_deleted from public.expenses where title='USD bill'),'settled expense remains after rejected delete');
 
 select ok(
-  (select not has_function_privilege('authenticated','public.restore_expense(uuid)','EXECUTE')),
-  'restore expense is no longer executable by clients');
+  (select not has_function_privilege('anon','public.restore_expense(uuid)','EXECUTE')
+      and not has_function_privilege('authenticated','public.restore_expense(uuid)','EXECUTE')
+      and not has_function_privilege('service_role','public.restore_expense(uuid)','EXECUTE')
+      and not has_function_privilege('authenticated','private.restore_expense_impl(uuid)','EXECUTE')
+      and not has_function_privilege('service_role','private.restore_expense_impl(uuid)','EXECUTE')),
+  'restore expense has no client or service entry point');
 
+select * from extensions.finish();
 rollback;

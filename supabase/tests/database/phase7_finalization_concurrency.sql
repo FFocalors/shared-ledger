@@ -1,10 +1,11 @@
 \set ON_ERROR_STOP on
+\ir .dbtest_env.sql
 begin;
 create extension if not exists pgtap with schema extensions;
 create extension if not exists dblink with schema extensions;
 select extensions.plan(4);
 create function pg_temp.assert_true(p boolean,m text) returns void language plpgsql as $$begin if p is not true then raise exception '%',m; end if; end$$;
-select extensions.dblink_connect('p7_setup','host=supabase_db_shared-ledger port=5432 dbname=postgres user=postgres password=postgres');
+select extensions.dblink_connect('p7_setup',:'db_conninfo');
 select extensions.dblink_exec('p7_setup',$sql$
  insert into auth.users(instance_id,id,aud,role,email,encrypted_password,email_confirmed_at,raw_app_meta_data,raw_user_meta_data,created_at,updated_at) values
  ('00000000-0000-0000-0000-000000000000','fa700000-0000-0000-0000-000000000001','authenticated','authenticated','p7a@example.invalid',crypt('x',gen_salt('bf')),now(),'{}','{}',now(),now()),
@@ -17,8 +18,8 @@ select extensions.dblink_exec('p7_setup',$sql$
  commit
 $sql$);
 select extensions.dblink_disconnect('p7_setup');
-select extensions.dblink_connect('p7_a','host=supabase_db_shared-ledger port=5432 dbname=postgres user=postgres password=postgres');
-select extensions.dblink_connect('p7_b','host=supabase_db_shared-ledger port=5432 dbname=postgres user=postgres password=postgres');
+select extensions.dblink_connect('p7_a',:'db_conninfo');
+select extensions.dblink_connect('p7_b',:'db_conninfo');
 select extensions.dblink_exec('p7_a',$sql$set role authenticated; do $claims$ begin perform set_config('request.jwt.claims','{"sub":"fa700000-0000-0000-0000-000000000001","role":"authenticated"}',false); end $claims$;$sql$);
 select extensions.dblink_exec('p7_b',$sql$set role authenticated; do $claims$ begin perform set_config('request.jwt.claims','{"sub":"fa700000-0000-0000-0000-000000000002","role":"authenticated"}',false); end $claims$;$sql$);
 select extensions.dblink_send_query('p7_a','select public.p7_claim_attempt(''fa700000-0000-0000-0000-000000000001'')');
@@ -34,7 +35,7 @@ select pass('claim uniqueness remains intact');
 select extensions.dblink_disconnect('p7_a'); select extensions.dblink_disconnect('p7_b');
 
 -- Race participant creation against the first expense that locks the list.
-select extensions.dblink_connect('p7_setup_more','host=supabase_db_shared-ledger port=5432 dbname=postgres user=postgres password=postgres');
+select extensions.dblink_connect('p7_setup_more',:'db_conninfo');
 select extensions.dblink_exec('p7_setup_more',$sql$
   begin;
   insert into public.activities(id,join_code,name,type,base_currency,created_by)
@@ -56,7 +57,7 @@ select extensions.dblink_exec('p7_setup_more',$sql$
   create function public.p7_add_or_expense_attempt(p_mode text) returns text language plpgsql security invoker set search_path=''
   as $attempt$ begin
     if p_mode='add' then perform * from public.create_participant('fa710000-0000-0000-0000-000000000002','raced',null);
-    else perform * from public.create_expense('fa711000-0000-0000-0000-000000000002','race expense',10,'CNY',1,'manual','[{"participant_id":"fa720000-0000-0000-0000-000000000002","amount":10}]','[{"participant_id":"fa720000-0000-0000-0000-000000000002","amount":10}]','{}',pg_catalog.now(),null,null); end if;
+    else perform * from public.create_expense_auto_rate('fa711000-0000-0000-0000-000000000002','race expense',10,'CNY','manual','[{"participant_id":"fa720000-0000-0000-0000-000000000002","amount":10}]','[{"participant_id":"fa720000-0000-0000-0000-000000000002","amount":10}]','{}',pg_catalog.now(),null,null,'money'); end if;
     return 'ok'; exception when others then return sqlstate; end $attempt$;
   create function public.p7_attachment_attempt() returns text language plpgsql security invoker set search_path=''
   as $attempt$ begin
@@ -67,9 +68,9 @@ select extensions.dblink_exec('p7_setup_more',$sql$
 $sql$);
 select extensions.dblink_disconnect('p7_setup_more');
 
-select extensions.dblink_connect('p7_c','host=supabase_db_shared-ledger port=5432 dbname=postgres user=postgres password=postgres');
-select extensions.dblink_connect('p7_d','host=supabase_db_shared-ledger port=5432 dbname=postgres user=postgres password=postgres');
-select extensions.dblink_connect('p7_lock','host=supabase_db_shared-ledger port=5432 dbname=postgres user=postgres password=postgres');
+select extensions.dblink_connect('p7_c',:'db_conninfo');
+select extensions.dblink_connect('p7_d',:'db_conninfo');
+select extensions.dblink_connect('p7_lock',:'db_conninfo');
 select extensions.dblink_exec('p7_c','set role authenticated');
 select extensions.dblink_exec('p7_d','set role authenticated');
 select extensions.dblink_exec('p7_c',$sql$do $claims$ begin perform set_config('request.jwt.claims','{"sub":"fa700000-0000-0000-0000-000000000001","role":"authenticated"}',false); end $claims$;$sql$);
@@ -88,8 +89,8 @@ select pass('participant/expense race remains serialized');
 select extensions.dblink_disconnect('p7_c'); select extensions.dblink_disconnect('p7_d'); select extensions.dblink_disconnect('p7_lock');
 
 -- Two concurrent uploads may consume only the final tenth attachment slot.
-select extensions.dblink_connect('p7_e','host=supabase_db_shared-ledger port=5432 dbname=postgres user=postgres password=postgres');
-select extensions.dblink_connect('p7_f','host=supabase_db_shared-ledger port=5432 dbname=postgres user=postgres password=postgres');
+select extensions.dblink_connect('p7_e',:'db_conninfo');
+select extensions.dblink_connect('p7_f',:'db_conninfo');
 select extensions.dblink_exec('p7_e','set role authenticated'); select extensions.dblink_exec('p7_f','set role authenticated');
 select extensions.dblink_exec('p7_e',$sql$do $claims$ begin perform set_config('request.jwt.claims','{"sub":"fa700000-0000-0000-0000-000000000001","role":"authenticated"}',false); end $claims$;$sql$);
 select extensions.dblink_exec('p7_f',$sql$do $claims$ begin perform set_config('request.jwt.claims','{"sub":"fa700000-0000-0000-0000-000000000002","role":"authenticated"}',false); end $claims$;$sql$);
@@ -101,7 +102,5 @@ insert into p7_attachment_results select result from extensions.dblink_get_resul
 do $$ begin perform pg_temp.assert_true((select count(*)=1 from p7_attachment_results where result='ok') and (select count(*)=1 from p7_attachment_results where result='54000') and (select count(*)=10 from public.attachments where activity_id='fa710000-0000-0000-0000-000000000003' and status in ('pending','ready')),'attachment target limit is race safe'); end $$;
 select pass('attachment target limit is race safe');
 select extensions.dblink_disconnect('p7_e'); select extensions.dblink_disconnect('p7_f');
-select extensions.dblink_connect('p7_cleanup','host=supabase_db_shared-ledger port=5432 dbname=postgres user=postgres password=postgres');
-select extensions.dblink_exec('p7_cleanup','begin; drop function public.p7_add_or_expense_attempt(text); drop function public.p7_attachment_attempt(); delete from public.attachments where activity_id in (''fa710000-0000-0000-0000-000000000003''); delete from public.splits where expense_id in (select id from public.expenses where ledger_unit_id=''fa711000-0000-0000-0000-000000000002''); delete from public.payments where expense_id in (select id from public.expenses where ledger_unit_id=''fa711000-0000-0000-0000-000000000002''); delete from public.expenses where ledger_unit_id=''fa711000-0000-0000-0000-000000000002''; delete from public.participant_claims where activity_id in (''fa710000-0000-0000-0000-000000000001'',''fa710000-0000-0000-0000-000000000002''); delete from public.participants where activity_id in (''fa710000-0000-0000-0000-000000000001'',''fa710000-0000-0000-0000-000000000002''); delete from public.activity_members where activity_id in (''fa710000-0000-0000-0000-000000000001'',''fa710000-0000-0000-0000-000000000002'',''fa710000-0000-0000-0000-000000000003''); delete from public.ledger_units where activity_id in (''fa710000-0000-0000-0000-000000000001'',''fa710000-0000-0000-0000-000000000002'',''fa710000-0000-0000-0000-000000000003''); delete from public.activities where id in (''fa710000-0000-0000-0000-000000000001'',''fa710000-0000-0000-0000-000000000002'',''fa710000-0000-0000-0000-000000000003''); delete from auth.users where id in (''fa700000-0000-0000-0000-000000000001'',''fa700000-0000-0000-0000-000000000002''); drop function public.p7_claim_attempt(uuid); commit');
-select extensions.dblink_disconnect('p7_cleanup');
+-- Committed fixtures are discarded with the isolated test database.
 select * from extensions.finish(); rollback;

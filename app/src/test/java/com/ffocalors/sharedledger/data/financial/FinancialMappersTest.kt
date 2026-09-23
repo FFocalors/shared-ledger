@@ -25,6 +25,9 @@ class FinancialMappersTest {
         val fractional = Json.decodeFromString<FinancialPreviewRowDto>("""
             {"activity_id":"a1","from_participant_id":"p1","to_participant_id":"p2","amount":"10.0","currency":"CNY","source_financial_version": "7.5"}
         """.trimIndent())
+        val overflow = Json.decodeFromString<FinancialPreviewRowDto>("""
+            {"activity_id":"a1","from_participant_id":"p1","to_participant_id":"p2","amount":"10.0","currency":"CNY","source_financial_version": "9223372036854775808"}
+        """.trimIndent())
         val valid = Json.decodeFromString<FinancialPreviewRowDto>("""
             {"activity_id":"a1","from_participant_id":"p1","to_participant_id":"p2","amount":"10.0","currency":"CNY","source_financial_version":"7"}
         """.trimIndent())
@@ -32,6 +35,7 @@ class FinancialMappersTest {
         assertNull(missing.sourceFinancialVersion)
         assertNull(invalid.sourceFinancialVersion)
         assertNull(fractional.sourceFinancialVersion)
+        assertNull(overflow.sourceFinancialVersion)
         assertEquals(7L, valid.sourceFinancialVersion)
     }
 

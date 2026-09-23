@@ -367,6 +367,58 @@ private fun AuthenticatedNavHost(
         navController = navController,
         startDestination = SharedLedgerRoutes.HOME,
         modifier = modifier,
+        enterTransition = {
+            slideInHorizontally(
+                animationSpec = tween(
+                    durationMillis = com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Durations.Content,
+                    easing = com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Easing.Standard,
+                ),
+            ) { fullWidth -> (fullWidth * 0.22f).toInt() } + fadeIn(
+                animationSpec = tween(
+                    durationMillis = com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Durations.Content,
+                    easing = com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Easing.Standard,
+                ),
+            )
+        },
+        exitTransition = {
+            slideOutHorizontally(
+                animationSpec = tween(
+                    durationMillis = com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Durations.Content,
+                    easing = com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Easing.Standard,
+                ),
+            ) { fullWidth -> (-fullWidth * 0.12f).toInt() } + fadeOut(
+                animationSpec = tween(
+                    durationMillis = com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Durations.Content,
+                    easing = com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Easing.Standard,
+                ),
+            )
+        },
+        popEnterTransition = {
+            slideInHorizontally(
+                animationSpec = tween(
+                    durationMillis = com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Durations.Content,
+                    easing = com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Easing.Standard,
+                ),
+            ) { fullWidth -> (-fullWidth * 0.12f).toInt() } + fadeIn(
+                animationSpec = tween(
+                    durationMillis = com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Durations.Content,
+                    easing = com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Easing.Standard,
+                ),
+            )
+        },
+        popExitTransition = {
+            slideOutHorizontally(
+                animationSpec = tween(
+                    durationMillis = com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Durations.Content,
+                    easing = com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Easing.Standard,
+                ),
+            ) { fullWidth -> (fullWidth * 0.22f).toInt() } + fadeOut(
+                animationSpec = tween(
+                    durationMillis = com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Durations.Content,
+                    easing = com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Easing.Standard,
+                ),
+            )
+        },
     ) {
         composable(SharedLedgerRoutes.HOME) { backStackEntry ->
             androidx.compose.runtime.LaunchedEffect(currentUserId) {
