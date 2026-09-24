@@ -1,14 +1,14 @@
 # Business Logic 最终反向审计
 
-> 审计日期：2026-09-23  
-> 审计范围：当前业务基线、两份收口 migration、有效数据库测试、Android 客户端契约及指定构建结果。  
-> 判定：**BUSINESS LOGIC FREEZE: READY**。最终 clean-reset 数据库套件、Android 验证与文档反向一致性检查均通过。
+> 首次审计日期：2026-09-23；冻结后 AA 修复复核：2026-09-24。
+> 首次冻结判定：**BUSINESS LOGIC FREEZE v1.0: READY**。以下第 1–11 节保留首次收口的历史脉络，最新测试数据与 v1.1 状态以第 12 节为准。
+> v1.1 判定：**NOT READY**；`BUSINESS_LOGIC.md` §23 linked Refund 示例存在待人工裁决的方向冲突，新一轮 Judge 未达到 6/6 PASS。
 
 ## 1. 最终业务基线状态
 
 [BUSINESS_LOGIC.md](BUSINESS_LOGIC.md) 已重写为 24 节现行业务基线，覆盖产品范围、账本与参与人、逐操作权限、原币与 FX、Expense/Payment/Split、AA、债务、还款、预存、退款、Final Settlement、完成状态、并发、幂等、RPC 和验收规则。正文描述当前应有的行为，不保留旧业务承诺或开发过程。U03 的 true→false 行为和 C09 生命周期重试已加入验收例。
 
-本次未实现 Business Logic Verification Workflow。旧审计保留为历史审计资料；本文件与 BUSINESS_LOGIC.md 构成当前反向审计和业务基线。
+首次冻结时尚未实现 Business Logic Verification Workflow；随后已实现轻量 v0.1 Runner 和 v0.2 DeepSeek Judge。旧审计与首次冻结结论保留为历史资料，冻结后的复核结果记录于第 12 节。
 
 ## 2. 本次修复列表
 
@@ -17,6 +17,8 @@
 - Android 财务数据层切换到 auto-rate/v2 RPC，持久化原始 `request_id`/payload/version，并按币种解析财务状态；保留用户既有 UI 修改。
 - 数据库回归整理新增 U03 历史外币开关、C09 request replay、Refund 来源、客户端 RPC ACL 等合同测试；旧 Transfer restore 正向行为明确 RETIRED。C02 Refund fixture 增加固定发生时间，确保 TARGETED 目标集合随 Expense UUID 稳定。
 - BUSINESS_LOGIC.md 改写为唯一现行基线；本文件记录实现、测试与 Freeze 反向审计。
+
+2026-09-24 的 AA 原币债务修复使用新增 `20260924020249_fix_aa_original_currency_debt_preservation.sql`；没有修改上述历史 migration 或 `BUSINESS_LOGIC.md`。详见第 12 节。
 
 ## 3. C01–C11 处理结果
 
@@ -64,7 +66,7 @@
 
 ## 7. 当前数据库测试结果
 
-[TEST_STATUS.md](../../supabase/tests/database/TEST_STATUS.md) 按文件列出 PASS/RETIRED 状态；`legacy_rpc_fixture_adapters.sql` 仅作被 include 的 fixture。最新 clean-reset 隔离运行 **28 files / 185 pgTAP tests PASS**，所有当前有效测试通过，`phase8_transfer_restore.sql` 明确 RETIRED。C02 Refund fixture 已设置确定发生时间；该 C02 文件曾连续 3 次定向通过，最终全套也通过。U03 历史外币重建专项 14/14、C09 request replay（含 archive 与 soft-delete）专项 11/11 通过。Windows Supabase CLI 的 bind-mount 缺陷由 runner 回退到隔离数据库网络内的 `pg_prove` 3.36；全套在 clean/reset 数据库上完成。
+[TEST_STATUS.md](../../supabase/tests/database/TEST_STATUS.md) 按文件列出 PASS/RETIRED 状态；`legacy_rpc_fixture_adapters.sql` 仅作被 include 的 fixture。首次冻结 clean-reset 隔离运行 **28 files / 185 pgTAP tests PASS**；2026-09-24 新增 AA 专项后，从零应用 42 个 migration 的最新全套为 **29 files / 213 pgTAP tests PASS**，`phase8_transfer_restore.sql` 仍 RETIRED。C02 Refund fixture 已设置确定发生时间。Windows Supabase CLI 的 bind-mount 缺陷由 runner 回退到隔离数据库网络内的 `pg_prove` 3.36。
 
 ## 8. 并发测试结果
 
@@ -72,7 +74,7 @@
 
 ## 9. Android 测试结果
 
-当前 Android 验证通过：`testDebugUnitTest`（264 tests）、`assembleDebug`、`lintDebug`。临时 JDK 为 `C:\Users\zhy20\.jdks\openjdk-21.0.2`，未修改共享项目配置。Lint 无错误；已有仓库警告未阻断构建。
+Android 验证于首次冻结和本次 AA 修复后均通过：`testDebugUnitTest`（264 tests）、`assembleDebug`、`lintDebug`。临时 JDK 为 `C:\Users\zhy20\.jdks\openjdk-21.0.2`，未修改共享项目配置。Lint 无错误；已有仓库警告未阻断构建。
 
 ## 10. 已知限制
 
@@ -80,7 +82,7 @@
 - 产品不做银行转账对账、汇兑损益、任意文件/URL 附件、LedgerUnit 级预存、跨币种日常债务抵销或无现金多人债务环路冲销。
 - Final Settlement 是确定性建议，不承诺数学上全局最少付款笔数。
 
-## 11. Business Logic Freeze 判断
+## 11. 首次 Business Logic Freeze 判断（2026-09-23 历史结论）
 
 **BUSINESS LOGIC FREEZE: READY**
 
@@ -102,4 +104,41 @@
 | 12. Android 单元测试完整通过 | PASS：264 tests；build/lint 同过 |
 | 13. BUSINESS_LOGIC.md 与实现一致 | PASS：24 节业务规则、正式 RPC、view 字段和最新数据库测试相符；所有引用链接可解析 |
 
-最终审计完成；Business Logic Verification Workflow 可以在此冻结基线上开始独立设计。
+首次审计完成后，Business Logic Verification Workflow 已在该冻结基线上实现轻量 Runner 与 Judge。冻结后发现的 AA 缺陷及当前 v1.1 门槛见第 12 节。
+
+## 12. 冻结后 AA 原币债务修复与 v1.1 复核（2026-09-24）
+
+### 发现与根因
+
+v0.2 Judge 在旧 run `20260923T103210Z-560a671e` 中发现 `multi_payer_aa`：A、B 原币分别付款 60、40，三人 AA 原币 Split 为 33.3334、33.3333、33.3333，故 C 对 A、B 的原币债务应为 26.6666、6.6667。旧投影记录为 26.7000、6.6333；base 值 26.7、6.6 本身符合一位小数尾差分配。[原始 finding](../../verification/findings/multi_payer_aa.md)和旧 FAIL run 保留不变。
+
+首次污染发生在旧 `private.normalize_expense_debt_currency`：`private.rebuild_expense_debts_locked` 已从原币 Payment−Split 生成正确 pair，随后 normalizer 用 `round(ed.amount / fx_rate, 4)` 将已舍入 base 反算回非末行 `original_amount`，末行吸收原币总量尾差。`private.rebuild_bilateral_debts_locked` 再读取这些受污染的原币债务。因此这是实现缺陷，不是业务规则变更。
+
+### 修复与边界
+
+新增 [AA 原币债务修复 migration](../../supabase/migrations/20260924020249_fix_aa_original_currency_debt_preservation.sql)，不改历史 migration：normalizer 重新依据 Payment−Split 的逐人原币净额匹配债务双方和金额，只归一原币 pair，不用 base 反推原币；base 仍由原有独立尾差规则确定。双边投影对同一 FX snapshot 的反向债务使用来源行已保存的 base 尾差，防止 AA 负账抵销留下 0.1 虚影；不同历史 FX snapshot 时保留旧合同的原债汇率估值。原币剩余为零时不保留孤立 base 余额。
+
+迁移只回填当前未归档且未财务锁定的有效 Expense 投影；真实 Transfer/Final 来源保护的锁定历史行及归档历史快照不自动改写。因此既往已经锁定且受旧 normalizer 污染的历史数据不在本次自动修复范围内，需单独审计。没有修改 Expense、Settlement、Refund、Prepayment、Final、Android 或 Judge 的业务写入行为，也没有部署远端 Production。
+
+### 回归结果
+
+- 从零应用全部 **42 个 migration** 的隔离 Supabase 全套：**29 个有效文件 / 213 个 pgTAP 断言 PASS**；其中新增 [AA 原币债务专项](../../supabase/tests/database/aa_original_currency_debt_contract.sql)为 28/28，六个现有并发测试文件全部 PASS。`phase8_transfer_restore.sql` 继续 RETIRED。详细状态见 [TEST_STATUS.md](../../supabase/tests/database/TEST_STATUS.md)。
+- Android：`testDebugUnitTest` 264 项、`assembleDebug`、`lintDebug` 通过。Workflow 单元测试：32/32 通过。
+- 另一个从零迁移的本地 API/Auth 隔离项目运行原有 6 个 Smoke，全部 `EXECUTED`；新 run 的 `business_logic_commit` 均为修复提交 `663b12f27db390998a350897004f8e5e064c09b0`。其中 `multi_payer_aa` 新状态为 C→A 26.6666/base 26.7、C→B 6.6667/base 6.6，并获同一 `deepseek-v4.1-flash` Judge `PASS`。
+
+| Smoke 场景 | 新 run_id | Runner | 最新 Judge |
+| --- | --- | --- | --- |
+| `basic_single_payment` | `20260924T023014Z-dd332f6d` | EXECUTED | PASS |
+| `linked_refund_after_settlement` | `20260924T023015Z-076fe074` | EXECUTED | FAIL；首次网络 API_ERROR 已保留为 `judge.previous_error.json` |
+| `multi_payer_aa` | `20260924T023015Z-42c2cfe8` | EXECUTED | PASS |
+| `multiple_repayments` | `20260924T023016Z-84f4aa71` | EXECUTED | PASS |
+| `prepayment_before_debt` | `20260924T023016Z-d35a28c8` | EXECUTED | FAIL；判定已保留为 `judge.previous_fail.json` |
+| `targeted_partial_repayment` | `20260924T023017Z-5ec3ad34` | EXECUTED | PASS |
+
+### Judge 分歧与待确认事项
+
+`prepayment_before_debt` 的资金投影正确：先 B→A 预存 200，再生成 B→A 账单 100，`PrepaymentUsage` 用去 100，余额 100，当前 BilateralDebt 为零而 Activity 仍 active。Judge 唯一 FAIL 理由是 Expense `financial_locked=false`。但 `20260923032928_refund_limits_and_legacy_rpc_permissions.sql` 的列注释及锁定触发器明确规定 `prepayment_usages` 单独存在不触发永久锁；该场景没有触及账单的真实 Prepayment Settlement 来源，故此项为 Judge 对 Usage/Settlement 的混淆，不应改数据库迎合模型。
+
+`linked_refund_after_settlement` 的新旧 run 资金状态相同，均为负 Payment B 100、负 Split A 100，按原币 Payment−Split 产生 B→A 100；旧 Judge 判 PASS，新 Judge 判 FAIL 并要求 A→B。`BUSINESS_LOGIC.md` §23 验收例将“B 收款、A 受益”同时写成“方向相反的退款债务”，与 §6/§8 原币净额规则和现金归属相冲突。真正的 A→B 反向退款应由 A 收款、B 受益；既有 `critical_financial_ordering.sql` 的反向测试正使用这一组参与人。本次没有为取得 PASS 而修改业务代码、Smoke、Judge Prompt 或 `BUSINESS_LOGIC.md`。该规则方向须由业务方裁决。
+
+**BUSINESS LOGIC FREEZE v1.1: NOT READY**。AA 实现、数据库、并发、Android 与 Runner 门槛已通过；当前 Judge 为 4 PASS、2 FAIL（其中 linked Refund 首次调用曾网络错误），尚未达到 6/6 PASS，且 §23 的退款方向存在待人工确认的基线冲突。确认后应对文档或验收场景作最小一致性修订，再使用相同模型验证；不要把旧 FAIL 历史抹去。

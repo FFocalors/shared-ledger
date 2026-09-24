@@ -1,9 +1,10 @@
 # Database test status
 
-Verified 2026-09-23 against the isolated Supabase project `shared-ledger-isolated-dbtests` on port 55222, after a full reset with the current migrations. The final run used `Invoke-IsolatedDatabaseTests.ps1` and completed with **28 files / 185 pgTAP tests passing**. The C02 reverse-refund fixture explicitly timestamps the -60 refund one second before the -40 refund, so TARGETED allocation remains stable across generated UUIDs.
+Verified 2026-09-24 against a clean-reset isolated local Supabase project after applying all **42 migrations**. The final run used `Invoke-IsolatedDatabaseTests.ps1` and completed with **29 files / 213 pgTAP tests passing**. All six existing concurrency test files passed. The C02 reverse-refund fixture explicitly timestamps the -60 refund one second before the -40 refund, so TARGETED allocation remains stable across generated UUIDs.
 
 | Test file | Status | Traceable note |
 | --- | --- | --- |
+| `aa_original_currency_debt_contract.sql` | PASS | 28 assertions covering 100/3 AA, multi-payer AA, multiple creditors, foreign and negative AA, and zero-base micro foreign debt; original Payment/Split/net/Debt conservation remains independent of base rounding. |
 | `critical_financial_concurrency.sql` | PASS | Idempotent requests, version races, refund cap, prepayment and final-settlement races. |
 | `critical_financial_ordering.sql` | PASS | C02/C03 ordering, linked refunds, multi-currency views, and settlement rebuild behavior. The C02 -60/-40 refunds have explicit occurred-at ordering so both requested refund Expenses remain eligible deterministically. |
 | `exchange_rate_expense_snapshots.sql` | PASS | FX snapshot behavior against a deterministic cache fixture. |
@@ -35,5 +36,7 @@ Verified 2026-09-23 against the isolated Supabase project `shared-ledger-isolate
 | `phase8_transfer_restore.sql` | RETIRED | Historical positive-restore behavior conflicts with immutable Transfer facts; current revocation contract is covered by `transfer_restore_contract.sql`. The runner rejects explicit selection of this file. |
 
 `legacy_rpc_fixture_adapters.sql` is a transaction-local fixture helper included with `\ir`; it is not a standalone test and is excluded from the run. Business-flow fixtures use the v2 prepayment RPC so they exercise durable settlement allocations. Client privileges and production RPC behavior are checked independently in `rpc_client_contract.sql`.
+
+`phase8_transfer_restore.sql` remains **RETIRED** and is excluded from the 29 active test files; its replacement contract remains `transfer_restore_contract.sql`.
 
 On this Windows host, Supabase CLI 2.116 cannot bind-mount the test directory and reports a malformed `/` path. The runner detects that mount failure and executes the same SQL files with the cached `pg_prove` image on the isolated database network; the final database test result above is from that successful run. Concurrency fixtures that commit through `dblink` persist outside their caller transaction, so run the complete suite on a clean/reset isolated database.
