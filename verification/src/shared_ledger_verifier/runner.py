@@ -38,7 +38,7 @@ def _business_logic_commit() -> str | None:
     repository_root = verification_root().parent
     try:
         completed = subprocess.run(
-            ["git", "log", "-n1", "--format=%H", "--", BUSINESS_LOGIC_DOCUMENT],
+            ["git", "log", "-n1", "--format=%H", "--", BUSINESS_LOGIC_DOCUMENT, "supabase/migrations"],
             cwd=repository_root,
             check=True,
             capture_output=True,

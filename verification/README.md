@@ -1,8 +1,8 @@
-# Shared Ledger verification smoke workflow
+# Shared Ledger verification workflow
 
-This small workflow runs hand-written business scenarios against the repository's isolated local Supabase project and saves the operation trace and final business state. It complements the database and Android test suites; it does not replace them or decide whether a result is semantically correct.
+This small workflow runs hand-written business scenarios against an isolated local Supabase project and saves the operation trace and final business state. A separate DeepSeek Judge can compare a completed run with `docs/backend/BUSINESS_LOGIC.md`; it reports a business verdict but does not change the database or code.
 
-The current version has no LLM integration, reference model, general-purpose test DSL, or production database support. Scenarios describe business actions through the published RPCs.
+Scenarios describe business actions through the published RPCs. There is no reference model, general-purpose test DSL, or production database support.
 
 ## Prepare the local environment
 
@@ -23,7 +23,9 @@ python -m pip install -e .
 Copy-Item .env.example .env
 ```
 
-Get the local `ANON_KEY` from `supabase status -o env` for the selected stack and set it as `SUPABASE_ANON_KEY` in `verification/.env`. Set `SUPABASE_URL` to that stack's loopback API URL. Never put a production URL or service-role key in this file.
+Get the local `ANON_KEY` from `supabase status -o env` for the selected stack and set it as `SUPABASE_ANON_KEY` in `verification/.env`. Set `SUPABASE_URL` to that stack's loopback API URL. Set `DEEPSEEK_API_KEY` locally to enable judging; `DEEPSEEK_BASE_URL` and `DEEPSEEK_MODEL` may be left blank to use the client's defaults. Never put a production Supabase URL or service-role key in this file. Keep the DeepSeek key private: `.env` is ignored by Git, and credentials are not written to run artifacts or logs.
+
+For OpenCode Go, set `DEEPSEEK_BASE_URL=https://opencode.ai/zen/go` and `DEEPSEEK_MODEL=deepseek-v4.1-flash`; requests use `/v1/chat/completions` with a 120-second default timeout. Optionally set `DEEPSEEK_TIMEOUT_SECONDS` to a positive finite number of seconds to override the provider default (an explicit Python `timeout` argument takes precedence). Network/timeout, 429 and 5xx retries remain bounded to two retries per completion.
 
 ## Scenario v1
 
@@ -44,6 +46,17 @@ The runner reports each scenario, operation progress, execution status, and resu
 
 Each run is written under `verification/runs/<run_id>/`, with the input scenario, result summary, operation trace, and final state. Runs contain generated test data and are local output; review or remove them as needed.
 
+## Judge a completed run
+
+The Judge reads the run's `scenario.json` and `state_final.json`, together with the complete `docs/backend/BUSINESS_LOGIC.md`. From `verification/`, run one judgment or serially judge the newest `EXECUTED` run for each of the six configured Smoke scenarios:
+
+```powershell
+python -m shared_ledger_verifier judge runs/<run_id>
+python -m shared_ledger_verifier judge-all runs
+```
+
+Each judgment is saved as `judge.json` in its run directory. The CLI prints each verdict and totals for `PASS`, `FAIL`, `UNCERTAIN`, and `JUDGE_ERROR`. `API_ERROR` results also record a safe `error_kind` (`timeout`, `network`, `http`, or `invalid_response`) and optional `http_status`; the CLI prints these diagnostics without exception text or response bodies. The first three are business assessments; `JUDGE_ERROR` means the model response or request could not be used. A returned `FAIL` or `UNCERTAIN` is recorded for review and does not modify business code or data.
+
 ## Smoke scenarios
 
 - `basic_single_payment.json`: A pays 100 CNY; B bears it.
@@ -53,4 +66,4 @@ Each run is written under `verification/runs/<run_id>/`, with the input scenario
 - `linked_refund_after_settlement.json`: B settles the original debt, then a linked refund is received by B and benefits A.
 - `multiple_repayments.json`: B repays A's 100 CNY debt by FIFO installments of 30, 20, and 50.
 
-There is no DeepSeek or local-LLM code in this phase. The only proposed next step is a separate DeepSeek business judge that evaluates saved runs against `docs/backend/BUSINESS_LOGIC.md`.
+Only DeepSeek is supported; the workflow does not use a local LLM.

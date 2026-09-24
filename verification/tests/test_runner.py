@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import tempfile
 import unittest
 from decimal import Decimal
 from pathlib import Path
+from unittest.mock import patch
 
-from shared_ledger_verifier.runner import run_scenario
+from shared_ledger_verifier.runner import _business_logic_commit, run_scenario
 from shared_ledger_verifier.supabase import SupabaseConfigurationError, SupabaseRestClient
 
 
@@ -116,6 +118,19 @@ class FakeSupabase:
 
 
 class RunnerTests(unittest.TestCase):
+    def test_business_logic_commit_tracks_rules_and_migrations(self) -> None:
+        completed = subprocess.CompletedProcess(
+            args=[], returncode=0, stdout=f"{'b' * 40}\n", stderr=""
+        )
+        with patch("shared_ledger_verifier.runner.subprocess.run", return_value=completed) as run_git:
+            commit = _business_logic_commit()
+
+        self.assertEqual(commit, "b" * 40)
+        self.assertEqual(
+            run_git.call_args.args[0],
+            ["git", "log", "-n1", "--format=%H", "--", "docs/backend/BUSINESS_LOGIC.md", "supabase/migrations"],
+        )
+
     def test_authenticated_targeted_run_uses_fresh_version_and_decimal_strings(self) -> None:
         client = FakeSupabase()
         scenario = ROOT / "scenarios" / "smoke" / "targeted_partial_repayment.json"
