@@ -100,9 +100,9 @@ Settlement 是 Participant 间已经真实发生的付款。普通还款只能�
 
 ## 10. 指定账单还款
 
-TARGETED 还款只对服务端列出的当前有效 ExpenseDebt 候选生效。请求金额、币种、付款双方、目标 Expense、时间、behalf 和 expected financial version 一并进入服务端校验。已结算债务、Refund 后形成的反向债务和多币种账单按各自当前原币投影处理。
+TARGETED 还款只对服务端列出的当前有效 ExpenseDebt 候选生效。请求金额、币种、付款双方、目标 Expense、时间、behalf 和 expected financial version 一并进入服务端校验。已结算债务、Refund 后形成的新债务和多币种账单按各自当前原币投影处理。
 
-提交成功后保存不可重排的实际分配；重建不会把同一笔付款挪到其他 Expense。退款可形成新的反向债务，之后能通过新的 TARGETED/FIFO 真实付款清偿。作废会移除 Transfer 的当前效果，但不抹掉其分配/来源历史，也不解除已触及 Expense 的财务锁。
+提交成功后保存不可重排的实际分配；重建不会把同一笔付款挪到其他 Expense。退款可形成新债务，其方向由退款的负 Payment/Split 原币净额决定；之后能通过新的 TARGETED/FIFO 真实付款清偿。作废会移除 Transfer 的当前效果，但不抹掉其分配/来源历史，也不解除已触及 Expense 的财务锁。
 
 实现依据：[候选、预览、提交与不可变分配](../../supabase/migrations/20260921051720_targeted_expense_repayment_contract.sql)、[目标还款回归](../../supabase/tests/database/targeted_expense_repayment.sql)、[多币种目标还款回归](../../supabase/tests/database/targeted_expense_repayment_multicurrency.sql)。
 ## 11. Transfer
@@ -141,7 +141,7 @@ Refund 使用负 Expense 表示，不另建 Refund 账本。未关联 original_e
 
 上限只统计当前未逻辑删除的 Refund；删除退款会释放可用额度。只要曾经存在 linked refund，原 Expense 财务锁不会解除，即使退款后来全部删除。标题、备注和图标可经 presentation-only 更新；金额、币种、汇率、Payment、Split、LedgerUnit、时间及其他财务事实不可重写。
 
-还款发生后再产生 linked refund 时，Refund 依据当前未结账务和不可变真实还款历史建立反向债务，不会冲销已结清的真实 Transfer。
+还款发生后再产生 linked refund 时，已发生的真实 Transfer 保留、不被退款冲销。Refund 依据负 Payment/Split 的原币净额建立新债务；方向取决于实际退款接收人与受益人，可能与原债务同向或反向。
 
 实现依据：[Refund 来源、上限、永久锁和 FX 继承](../../supabase/migrations/20260923032928_refund_limits_and_legacy_rpc_permissions.sql)、[Refund 合同](../../supabase/tests/database/linked_refund_contract.sql)、[关闭多币种后的历史 Refund](../../supabase/tests/database/u03_historical_foreign_currency.sql)、[结算后退款排序](../../supabase/tests/database/critical_financial_ordering.sql)。
 
@@ -172,7 +172,7 @@ multi_currency_enabled 表示是否允许创建新的外币财务事实，不代
 
 Expense、Payment、Split、Transfer、Transfer 的 source/allocation/path、Prepayment Return 与 Refund 来源标记是原始事实。Debt、Allocation、Usage、Account、Final plan 和 completed 状态是从事实重建的投影。
 
-Expense 在尚无真实 Transfer 来源或 linked refund 历史时，可按权限及当前版本修改财务字段。普通 Settlement、TARGETED allocation、Prepayment Settlement 或 Final path 触及 Expense，或 Expense 成为 linked refund 来源后，其财务字段及 Payment/Split 永久锁定；Transfer 后来 void 也不解除该锁。锁定后仅允许 title、note、icon_key 等展示字段经 presentation-only RPC 修改。
+Expense 在尚无真实 Transfer 来源或 linked refund 历史时，可按权限及当前版本修改财务字段。普通 Settlement、TARGETED allocation、真实 Prepayment Settlement Transfer 来源或 Final path 触及 Expense，或 Expense 成为 linked refund 来源后，其财务字段及 Payment/Split 永久锁定；Transfer 后来 void 也不解除该锁。后续投影生成的 PrepaymentUsage 本身不是真实 Transfer 来源，不会单独设置 `financial_locked`。锁定后仅允许 title、note、icon_key 等展示字段经 presentation-only RPC 修改。
 
 Transfer 资金字段、request_id 和来源历史不可修改或删除。Transfer void 保留真实发生记录和历史 allocations，不恢复为 active。Append-only 来源表阻止直接重写财务历史。
 
@@ -250,7 +250,7 @@ create_final_settlement_v2(activity_id, from_participant_id, to_participant_id, 
 实现依据：[公开 finance RPC 签名和 ACL 检查](../../supabase/tests/database/rpc_client_contract.sql)、[legacy 权限撤销与正式入口 grants](../../supabase/migrations/20260923032928_refund_limits_and_legacy_rpc_permissions.sql)、[Android Expense 调用](../../app/src/main/java/com/ffocalors/sharedledger/data/expense/ExpenseRepository.kt)、[Android Transfer 调用](../../app/src/main/java/com/ffocalors/sharedledger/data/transfer/TransferRepository.kt)、[Android Financial 调用](../../app/src/main/java/com/ffocalors/sharedledger/data/financial/FinancialRemoteDataSource.kt)。
 ## 23. 验收示例
 
-1. A 为 B 付款 100、B 承担 100。先登记 B 向 A 的 100 真实还款，再关联 100 退款并由 B 收款、A 受益。已发生还款必须保留，并产生方向相反的退款债务。
+1. A 为 B 付款 100、B 承担 100。先登记 B 向 A 的 100 真实还款，再关联 100 退款并由 B 收款、A 受益。已发生还款必须保留；B 收到归 A 所有的退款，形成新的 B→A 100 债务。若改由 A 收款、B 受益，才形成 A→B 的反向债务。
 2. A 在 B 处预存 100；同时有 A→B 100 与 B→A 100 的同币 ExpenseDebt。反向债务抵销后不生成 PrepaymentUsage，账户仍有 100。
 3. 原 Expense 1000 可关联 200、300、500 三笔有效 Refund；再退任意正精度金额都失败。删除其中一笔可释放额度，但原 Expense 永久财务锁继续存在。
 4. 单人自付自担的 100 Expense 保存 Expense、Payment、Split，不生成 ExpenseDebt。多付款/分摊时两组各自守恒。
