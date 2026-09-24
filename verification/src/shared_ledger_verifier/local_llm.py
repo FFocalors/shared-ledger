@@ -151,11 +151,11 @@ class LocalLLMClient:
         try:
             response = self._transport(request, self.timeout)
         except (TimeoutError, socket.timeout):
-            raise LocalLLMError("TIMEOUT") from None
+            raise LocalLLMError("TIMEOUT", elapsed_seconds=round(time.monotonic() - started, 3)) from None
         except (URLError, OSError) as error:
             if isinstance(getattr(error, "reason", None), (TimeoutError, socket.timeout)):
-                raise LocalLLMError("TIMEOUT") from None
-            raise LocalLLMError("NETWORK_ERROR") from None
+                raise LocalLLMError("TIMEOUT", elapsed_seconds=round(time.monotonic() - started, 3)) from None
+            raise LocalLLMError("NETWORK_ERROR", elapsed_seconds=round(time.monotonic() - started, 3)) from None
         elapsed = round(time.monotonic() - started, 3)
         if response.status != 200:
             body_lower = response.body.lower()

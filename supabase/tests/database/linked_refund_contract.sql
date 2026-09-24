@@ -2,7 +2,28 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select extensions.plan(16);
+select extensions.plan(18);
+
+select extensions.ok(
+  (select p.provolatile = 'v'
+   from pg_catalog.pg_proc p
+   join pg_catalog.pg_namespace n on n.oid = p.pronamespace
+   where n.nspname = 'private'
+     and p.proname = 'resolve_expense_fx_snapshot'
+     and pg_catalog.pg_get_function_identity_arguments(p.oid) =
+       'p_ledger_unit_id uuid, p_original_currency character, p_original_expense_id uuid, p_existing_expense_id uuid'),
+  'linked-refund FX snapshot resolver is VOLATILE so it may acquire row locks'
+);
+select extensions.ok(
+  (select pg_catalog.pg_get_functiondef(p.oid) ~* 'for[[:space:]]+share'
+   from pg_catalog.pg_proc p
+   join pg_catalog.pg_namespace n on n.oid = p.pronamespace
+   where n.nspname = 'private'
+     and p.proname = 'resolve_expense_fx_snapshot'
+     and pg_catalog.pg_get_function_identity_arguments(p.oid) =
+       'p_ledger_unit_id uuid, p_original_currency character, p_original_expense_id uuid, p_existing_expense_id uuid'),
+  'linked-refund FX snapshot resolver retains the parent row share lock'
+);
 
 insert into auth.users(instance_id,id,aud,role,email,encrypted_password,raw_app_meta_data,raw_user_meta_data,created_at,updated_at)
 values ('00000000-0000-0000-0000-000000000000','c4900000-0000-0000-0000-000000000001','authenticated','authenticated','refund-contract@example.invalid',crypt('x',gen_salt('bf')),'{}','{}',now(),now());

@@ -66,10 +66,34 @@ Each judgment is saved as `judge.json` in its run directory. The CLI prints each
 - `linked_refund_after_settlement.json`: B settles the original debt, then a linked refund is received by B and benefits A.
 - `multiple_repayments.json`: B repays A's 100 CNY debt by FIFO installments of 30, 20, and 50.
 
-The Business Judge uses DeepSeek. To check whether LM Studio can generate valid Scenario JSON v1 before developing the local generator, run this from `verification/`:
+The Business Judge uses DeepSeek. To run the one-shot local LLM Probe v2, run this from `verification/`:
 
 ```powershell
 py -3.12 -m shared_ledger_verifier local-llm-probe
 ```
 
-Set `LOCAL_LLM_BASE_URL` in the ignored `.env` file if the local server differs from `http://127.0.0.1:1234/v1`. The probe discovers the actual model ID through `/models`; `LOCAL_LLM_MODEL` may be left blank. Set `LOCAL_LLM_API_KEY` only if LM Studio requires authentication. The probe validates LM Studio output with the existing Scenario Loader, without running Supabase scenarios or invoking the DeepSeek Judge. Its generated files and result are kept in the ignored `verification/local_llm_probe/` directory.
+Set `LOCAL_LLM_BASE_URL` in the ignored `.env` file if the local server differs from `http://127.0.0.1:1234/v1`; `LOCAL_LLM_TIMEOUT_SECONDS` defaults to 180. The probe discovers the actual model ID through `/models`; `LOCAL_LLM_MODEL` may be left blank. Set `LOCAL_LLM_API_KEY` only if LM Studio requires authentication. Probe v2.1 parses headings from `docs/backend/BUSINESS_LOGIC.md` and sends only the mapped sections for `expense_aa`, `targeted_repayment`, and `prepayment_refund`, once each in that order. It uses `json_schema` Structured Output with operation-specific `oneOf` / `const` constraints and immediately validates each result with the existing Scenario Loader, without repairing JSON, executing Supabase scenarios, or invoking the DeepSeek Judge. The ignored `verification/local_llm_probe/probe_v2_1_result.json` records section titles, input size, token usage when available, elapsed time, and Loader outcomes; generated scenarios are saved alongside it. Earlier v2 probe results remain untouched.
+
+## Generate a case (Workflow v0.3, stage 1)
+
+From `verification/`, generate one case for a supported focus:
+
+```powershell
+py -3.12 -m shared_ledger_verifier generate-case --focus expense_aa
+```
+
+The local Qwen model receives the focus-specific sections dynamically selected from `BUSINESS_LOGIC.md` and returns a lightweight raw business case. The separate DeepSeek Scenario Compiler receives that raw case, the complete business logic document, and the Scenario v1 input contract. Its Scenario JSON is passed unchanged to the existing Loader. If the Loader rejects it, the Compiler may make one repair request using the raw case, prior output, and Loader error; there is no manual repair. This command does **not** run Supabase or invoke the business Judge.
+
+Each invocation writes an ignored directory under `verification/local_llm_probe/generated_cases/`. It contains `raw_case.json`, `compiler_result.json` (parsed Scenario attempts and Loader diagnostics, without provider reasoning), `scenario.json` (last compiled output), and `result.json` with model names, business logic commit, timings, repair count, and Loader status. Failed requests may have fewer artifacts if the corresponding stage produced no usable output. The CLI exits successfully only when the final Scenario passes the Loader.
+
+## Run one generated case end to end (Workflow v0.3, stage 2)
+
+With the isolated local Supabase stack and both model endpoints configured in `verification/.env`, run one focus from `verification/`:
+
+```powershell
+py -3.12 -m shared_ledger_verifier run-generated-case --focus expense_aa
+```
+
+The command generates a fresh Qwen raw case, compiles it with DeepSeek (at most one Loader-guided repair), validates it with the existing Loader, executes it with the existing Runner against loopback Supabase, and asks the separate DeepSeek Judge to assess the saved final state. It stops before judging if compilation or execution fails. A Judge verdict of `FAIL` or `UNCERTAIN` is saved as returned; it does not trigger a rerun or change the Scenario. Each invocation has its own run ID, test identity, and business data. The existing loopback URL and credential checks apply; do not point this command at Production.
+
+The ignored case directory under `verification/local_llm_probe/generated_cases/` contains `raw_case.json`, `compiler_result.json`, `scenario.json`, `result.json`, `operations.jsonl`, `state_final.json`, and `judge.json` as far as each stage completes. `result.json` records models, business logic commit, stage latencies, Loader/Runner results, Judge verdict, and Compiler repair count. Credentials, authorization headers, and provider reasoning are excluded. The CLI exits successfully only after an `EXECUTED` run and a parsed `PASS`, `FAIL`, or `UNCERTAIN` verdict. This command runs one case; it does not start batch generation.

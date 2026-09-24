@@ -156,38 +156,54 @@ def _judge_all(runs_dir: Path) -> int:
 
 
 def _local_llm_probe() -> int:
-    from .local_llm import LocalLLMError, run_probe
+    from .local_llm import LocalLLMError
+    from .local_llm_v2 import run_probe_v2
 
     try:
-        result = run_probe()
+        result = run_probe_v2()
     except LocalLLMError as error:
-        print(f"LOCAL LLM PROBE: NOT READY ({error.category})")
+        print(f"LOCAL LLM PROBE V2: NOT READY ({error.category})")
         return 1
-    print(f"LM Studio             {'OK' if result['server_reachable'] else 'FAILED'}")
-    print(f"Model count           {result['model_count'] if result['model_count'] is not None else '-'}")
-    print("Model IDs             " + ", ".join(json.dumps(value) for value in result["model_ids"]))
-    print(f"Model                 {json.dumps(result['model']) if result['model'] else '-'}")
-    print(f"Chat Completion       {'OK' if result['chat_completion_ok'] else 'FAILED'}")
-    print(f"Structured Output     {'OK' if result['structured_output_supported'] else 'FAILED'}")
-    print(f"Business Logic chars  {result['business_logic_characters'] if result['business_logic_characters'] is not None else '-'}")
-    for name, label in (("simple", "Simple Scenario"), ("combined", "Combined Scenario")):
-        value = result[f"{name}_scenario_valid"]
-        status = "VALID" if value is True else "INVALID" if value is False else "FAILED" if result.get("failed_step") == name else "SKIPPED"
-        print(f"{label:<22}{status}")
-    for name, step in result["steps"].items():
-        usage = f", prompt_tokens={step['prompt_tokens']}, completion_tokens={step['completion_tokens']}" if "prompt_tokens" in step and "completion_tokens" in step else ""
-        print(f"{name}: HTTP {step['http_status']}, {step['elapsed_seconds']:.3f}s{usage}")
+    print(f"Model: {result['model'] or '-'}")
     if result["error_category"]:
-        print(f"Error category        {result['error_category']}")
-        if result.get("failed_step"):
-            print(f"Failed step           {result['failed_step']}")
-        if result["error_category"] == "TIMEOUT":
-            print(f"Request timeout       {result['request_timeout_seconds']:.0f}s")
-        if result.get("loader_error"):
-            print(f"Loader                {result['loader_error']}")
-    ready = result["simple_scenario_valid"] is True and result["combined_scenario_valid"] is True
-    print(f"LOCAL LLM PROBE: {'READY' if ready else 'NOT READY'}")
-    return 0 if ready else 1
+        print(f"Setup error: {result['error_category']}")
+    for focus, entry in result["focus_results"].items():
+        elapsed = "-" if entry["elapsed_seconds"] is None else f"{entry['elapsed_seconds']:.3f}s"
+        print(f"{focus}: {entry['status']} | input={entry['input_characters']} chars | "
+              f"prompt={entry['prompt_tokens']} completion={entry['completion_tokens']} | "
+              f"elapsed={elapsed} | Loader={entry['loader_status']}")
+        if entry["error_category"]:
+            print(f"  {entry['error_category']}: {entry.get('loader_error') or entry.get('error_summary') or ''}")
+    print(f"LOCAL LLM PROBE V2: {'READY' if result['ready'] else 'NOT READY'}")
+    return 0 if result["ready"] else 1
+
+
+def _generate_case(focus: str) -> int:
+    from .generate_case import generate_case
+
+    result = generate_case(focus)
+    print(f"{focus}: {result['status']} | Loader={result['loader_result'] or '-'} "
+          f"| repair_count={result['repair_count']}")
+    print(f"Artifacts: {result['output_dir']}")
+    if result["error_category"]:
+        print(f"Error: {result['error_category']}")
+    if result["loader_error"]:
+        print(f"Loader: {result['loader_error']}")
+    return 0 if result["status"] == "VALID" else 1
+
+
+def _run_generated_case(focus: str) -> int:
+    from .run_generated_case import run_generated_case
+
+    result = run_generated_case(focus)
+    print(f"{focus}: {result['status']} | run_id={result.get('run_id') or '-'} "
+          f"| Loader={result.get('loader_result') or '-'} "
+          f"| Runner={result.get('runner_result') or '-'} "
+          f"| Judge={result.get('judge_verdict') or '-'}")
+    print(f"Artifacts: {result['output_dir']}")
+    if result.get("error_category"):
+        print(f"Error: {result['error_category']}")
+    return 0 if result["status"] == "COMPLETE" else 1
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -203,11 +219,36 @@ def main(argv: list[str] | None = None) -> int:
         "judge-all", help="judge the newest EXECUTED run for each Smoke scenario"
     )
     judge_all_parser.add_argument("runs_dir", type=Path)
-    commands.add_parser("local-llm-probe", help="probe LM Studio and validate two generated Scenario v1 files")
+    commands.add_parser("local-llm-probe", help="probe LM Studio with three focused Scenario v1 generations")
+    generate_parser = commands.add_parser(
+        "generate-case", help="generate one raw case, compile it, and validate Scenario v1"
+    )
+    generate_parser.add_argument("--focus", choices=("expense_aa", "targeted_repayment", "prepayment_refund"),
+                                 required=True)
+    generated_run_parser = commands.add_parser(
+        "run-generated-case", help="generate, compile, run locally, and judge one case"
+    )
+    generated_run_parser.add_argument(
+        "--focus", choices=("expense_aa", "targeted_repayment", "prepayment_refund"), required=True
+    )
+    web_parser = commands.add_parser("web", help="launch local verification web dashboard")
+    web_parser.add_argument("--host", default="127.0.0.1", help="host to bind (default: 127.0.0.1)")
+    web_parser.add_argument("--port", type=int, default=8000, help="port to bind (default: 8000)")
+    web_parser.add_argument("--no-browser", action="store_true", help="do not auto open browser")
     args = parser.parse_args(argv)
+
+    if args.command == "web":
+        from .web import start_server
+        return start_server(host=args.host, port=args.port, open_browser=not args.no_browser)
 
     if args.command == "local-llm-probe":
         return _local_llm_probe()
+
+    if args.command == "generate-case":
+        return _generate_case(args.focus)
+
+    if args.command == "run-generated-case":
+        return _run_generated_case(args.focus)
 
     if args.command == "run":
         result = run_scenario(args.scenario, progress=_progress)

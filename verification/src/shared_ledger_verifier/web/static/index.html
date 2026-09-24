@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shared Ledger 验证控制台</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- 顶部导航 -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <h1>Shared Ledger</h1>
+          <span class="subtitle">Verification Console (本地轻量面板)</span>
+        </div>
+      </div>
+
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-tab="dashboard">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          仪表盘
+        </button>
+        <button class="nav-tab" data-tab="run">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          运行工作流
+        </button>
+        <button class="nav-tab" data-tab="cases">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Case 列表
+        </button>
+        <button class="nav-tab" data-tab="issues">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          问题队列
+          <span class="badge badge-alert" id="issues-count-badge">0</span>
+        </button>
+      </nav>
+
+      <div class="header-status" id="env-status-badge">
+        <span class="status-dot"></span>
+        <span class="status-text">检查本地环境...</span>
+      </div>
+    </header>
+
+    <!-- 主体内容区 -->
+    <main class="app-main">
+      <!-- 视图 1：仪表盘 -->
+      <section id="view-dashboard" class="view-section active">
+        <div class="section-header">
+          <div>
+            <h2>验证概览</h2>
+            <p class="section-desc">汇总本地所有生成的案例产物与 Smoke 运行判定结果</p>
+          </div>
+          <button class="btn btn-secondary" onclick="loadDashboardData()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            刷新数据
+          </button>
+        </div>
+
+        <!-- 核心统计指标卡片 -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-label">总案例数</span>
+            <div class="stat-value" id="stat-total-cases">-</div>
+            <span class="stat-sub" id="stat-cases-source">扫描自 generated_cases / runs</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-label">业务裁决 (Judge) 分布</span>
+            <div class="stat-value-group">
+              <span class="stat-pill pass" id="stat-pass">PASS 0</span>
+              <span class="stat-pill fail" id="stat-fail">FAIL 0</span>
+              <span class="stat-pill uncertain" id="stat-uncertain">UNCERTAIN 0</span>
+              <span class="stat-pill error" id="stat-error">ERROR 0</span>
+            </div>
+            <span class="stat-sub">基于 DeepSeek Judge 判决与执行异常</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-label">Loader VALID 率</span>
+            <div class="stat-value" id="stat-loader-rate">-</div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill" id="stat-loader-bar" style="width: 0%"></div>
+            </div>
+            <span class="stat-sub" id="stat-loader-detail">验证通过 / 校验总数</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-label">Runner 执行成功率</span>
+            <div class="stat-value" id="stat-runner-rate">-</div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill green" id="stat-runner-bar" style="width: 0%"></div>
+            </div>
+            <span class="stat-sub" id="stat-runner-detail">EXECUTED / 进入执行总数</span>
+          </div>
+        </div>
+
+        <!-- 耗时与 Focus 分布双列卡片 -->
+        <div class="dashboard-row">
+          <!-- 平均耗时看板 -->
+          <div class="card latency-card">
+            <div class="card-header">
+              <h3>流水线平均耗时分析</h3>
+              <span class="tag">单位: 秒 (s)</span>
+            </div>
+            <div class="card-body">
+              <div class="latency-list">
+                <div class="latency-item">
+                  <span class="stage-name">Qwen Generator</span>
+                  <span class="stage-time" id="lat-gen">-</span>
+                </div>
+                <div class="latency-item">
+                  <span class="stage-name">DeepSeek Compiler</span>
+                  <span class="stage-time" id="lat-comp">-</span>
+                </div>
+                <div class="latency-item">
+                  <span class="stage-name">Supabase Runner</span>
+                  <span class="stage-time" id="lat-run">-</span>
+                </div>
+                <div class="latency-item">
+                  <span class="stage-name">DeepSeek Judge</span>
+                  <span class="stage-time" id="lat-judge">-</span>
+                </div>
+                <div class="latency-item total">
+                  <span class="stage-name">端到端平均总耗时</span>
+                  <span class="stage-time" id="lat-total">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 按 Focus 结果统计 -->
+          <div class="card focus-card">
+            <div class="card-header">
+              <h3>按 Focus 场景统计</h3>
+            </div>
+            <div class="card-body">
+              <table class="simple-table" id="focus-stats-table">
+                <thead>
+                  <tr>
+                    <th>Focus 场景</th>
+                    <th>总数</th>
+                    <th>PASS</th>
+                    <th>FAIL</th>
+                    <th>ERROR</th>
+                    <th>通过率</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="6" class="text-center text-muted">加载中...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 最近运行 -->
+        <div class="card recent-card">
+          <div class="card-header">
+            <h3>最近案例动态</h3>
+            <button class="btn btn-sm btn-outline" onclick="switchTab('cases')">查看全部 Case</button>
+          </div>
+          <div class="card-body">
+            <div class="recent-cases-list" id="recent-cases-list">
+              <div class="text-muted">加载最近案例...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 视图 2：运行工作流 -->
+      <section id="view-run" class="view-section">
+        <div class="section-header">
+          <div>
+            <h2>启动测试工作流</h2>
+            <p class="section-desc">复用现有 Python Workflow：Qwen Generator → DeepSeek Compiler → Loader → Runner → Judge</p>
+          </div>
+        </div>
+
+        <div class="run-control-card card">
+          <div class="card-body">
+            <form id="workflow-run-form" class="run-form">
+              <div class="form-group">
+                <label for="select-focus">测试 Focus 业务场景</label>
+                <select id="select-focus" class="form-control" required>
+                  <option value="expense_aa">expense_aa (AA 制均摊支出与债务)</option>
+                  <option value="targeted_repayment">targeted_repayment (定向清偿指定借款)</option>
+                  <option value="prepayment_refund">prepayment_refund (预付款划扣与关联原消费退款)</option>
+                </select>
+                <span class="form-hint">对应 docs/backend/BUSINESS_LOGIC.md 核心业务规则章节</span>
+              </div>
+
+              <div class="form-group">
+                <label for="input-count">生成数量</label>
+                <div class="count-input-wrapper">
+                  <input type="number" id="input-count" class="form-control" value="1" min="1" max="10" required>
+                  <span class="form-hint">批次连续生成 1 ~ 10 个测试用例</span>
+                </div>
+              </div>
+
+              <div class="form-action">
+                <button type="submit" id="btn-start-run" class="btn btn-primary btn-lg">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  启动测试工作流
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- 当前流水线进度展示 -->
+        <div class="pipeline-progress-card card" id="pipeline-card" style="display: none;">
+          <div class="card-header">
+            <div>
+              <h3>实时流水线进度</h3>
+              <span class="badge badge-info" id="pipeline-batch-info">批次处理中...</span>
+            </div>
+            <div id="pipeline-status-text" class="text-muted">准备就绪</div>
+          </div>
+          <div class="card-body">
+            <!-- 5 阶段指示器 -->
+            <div class="pipeline-stepper">
+              <div class="pipe-step" id="step-generator">
+                <div class="step-icon">1</div>
+                <div class="step-content">
+                  <div class="step-title">Generator</div>
+                  <div class="step-model">Qwen (Local LLM)</div>
+                  <div class="step-status" id="status-generator">等待中</div>
+                </div>
+              </div>
+              <div class="pipe-connector"></div>
+
+              <div class="pipe-step" id="step-compiler">
+                <div class="step-icon">2</div>
+                <div class="step-content">
+                  <div class="step-title">Compiler</div>
+                  <div class="step-model">DeepSeek</div>
+                  <div class="step-status" id="status-compiler">等待中</div>
+                </div>
+              </div>
+              <div class="pipe-connector"></div>
+
+              <div class="pipe-step" id="step-loader">
+                <div class="step-icon">3</div>
+                <div class="step-content">
+                  <div class="step-title">Loader</div>
+                  <div class="step-model">Scenario v1</div>
+                  <div class="step-status" id="status-loader">等待中</div>
+                </div>
+              </div>
+              <div class="pipe-connector"></div>
+
+              <div class="pipe-step" id="step-runner">
+                <div class="step-icon">4</div>
+                <div class="step-content">
+                  <div class="step-title">Runner</div>
+                  <div class="step-model">Local Supabase</div>
+                  <div class="step-status" id="status-runner">等待中</div>
+                </div>
+              </div>
+              <div class="pipe-connector"></div>
+
+              <div class="pipe-step" id="step-judge">
+                <div class="step-icon">5</div>
+                <div class="step-content">
+                  <div class="step-title">Judge</div>
+                  <div class="step-model">DeepSeek</div>
+                  <div class="step-status" id="status-judge">等待中</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 本次生成结果展示区 -->
+            <div class="pipeline-result-box" id="pipeline-result-box" style="display: none;">
+              <h4>本次运行生成产物</h4>
+              <div id="pipeline-result-content"></div>
+            </div>
+
+            <!-- 流水线事件日志 -->
+            <div class="pipeline-log-box">
+              <div class="log-box-header">
+                <span>实时执行日志</span>
+                <button class="btn btn-sm btn-link" onclick="clearPipelineLogs()">清空日志</button>
+              </div>
+              <div class="log-stream" id="pipeline-logs"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 视图 3：Case 列表 -->
+      <section id="view-cases" class="view-section">
+        <div class="section-header">
+          <div>
+            <h2>Case 列表</h2>
+            <p class="section-desc">已扫描的所有运行案例，支持按结果、Focus 及关键词过滤</p>
+          </div>
+          <button class="btn btn-secondary" onclick="loadCasesList()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            刷新列表
+          </button>
+        </div>
+
+        <!-- 过滤工具条 -->
+        <div class="filter-toolbar card">
+          <div class="filter-group">
+            <span class="filter-label">裁决结果:</span>
+            <div class="btn-group" id="filter-verdict-group">
+              <button class="btn btn-filter active" data-verdict="ALL">全部</button>
+              <button class="btn btn-filter" data-verdict="PASS">PASS</button>
+              <button class="btn btn-filter" data-verdict="FAIL">FAIL</button>
+              <button class="btn btn-filter" data-verdict="UNCERTAIN">UNCERTAIN</button>
+              <button class="btn btn-filter" data-verdict="ERROR">ERROR</button>
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <span class="filter-label">Focus:</span>
+            <select id="filter-focus-select" class="form-control form-control-sm">
+              <option value="ALL">全部 Focus</option>
+              <option value="expense_aa">expense_aa</option>
+              <option value="targeted_repayment">targeted_repayment</option>
+              <option value="prepayment_refund">prepayment_refund</option>
+            </select>
+          </div>
+
+          <div class="filter-group search-group">
+            <input type="text" id="filter-search-input" class="form-control form-control-sm" placeholder="搜索 ID 或 Run ID...">
+          </div>
+        </div>
+
+        <!-- 数据表格 -->
+        <div class="card table-card">
+          <table class="data-table" id="cases-data-table">
+            <thead>
+              <tr>
+                <th>Run ID / Case 标识</th>
+                <th>Focus 场景</th>
+                <th>生成时间</th>
+                <th>Runner 状态</th>
+                <th>Judge 结果</th>
+                <th>耗时</th>
+                <th>产物</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="8" class="text-center text-muted">加载案例数据...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 视图 4：Case 详情 -->
+      <section id="view-detail" class="view-section">
+        <div class="section-header">
+          <div class="detail-header-left">
+            <button class="btn btn-sm btn-secondary" onclick="goBackFromDetail()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+              返回列表
+            </button>
+            <h2 id="detail-title">Case 详情</h2>
+          </div>
+          <div class="detail-badges" id="detail-badges"></div>
+        </div>
+
+        <!-- 详情元数据信息条 -->
+        <div class="card detail-meta-card">
+          <div class="meta-item">
+            <span class="meta-label">Focus 场景</span>
+            <span class="meta-val" id="meta-focus">-</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Run ID</span>
+            <span class="meta-val" id="meta-run-id">-</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">记录时间</span>
+            <span class="meta-val" id="meta-time">-</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">总体耗时</span>
+            <span class="meta-val" id="meta-latency">-</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">使用的模型</span>
+            <span class="meta-val" id="meta-models">-</span>
+          </div>
+        </div>
+
+        <!-- 6 大产物查看 Tabs -->
+        <div class="artifacts-viewer card">
+          <div class="artifacts-tabs">
+            <button class="art-tab active" data-art="raw_case">1. Raw Case</button>
+            <button class="art-tab" data-art="compiler_result">2. Compiler 结果</button>
+            <button class="art-tab" data-art="scenario">3. Scenario v1</button>
+            <button class="art-tab" data-art="operations">4. Operations 轨迹</button>
+            <button class="art-tab" data-art="state_final">5. Final State</button>
+            <button class="art-tab" data-art="judge">6. Judge 判定</button>
+          </div>
+
+          <div class="artifacts-content">
+            <div class="artifact-toolbar">
+              <span class="artifact-filename" id="art-current-filename">raw_case.json</span>
+              <button class="btn btn-sm btn-outline" id="btn-copy-artifact">复制 JSON</button>
+            </div>
+            <pre class="code-preview" id="art-code-display"><code>加载中...</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- 视图 5：问题队列 -->
+      <section id="view-issues" class="view-section">
+        <div class="section-header">
+          <div>
+            <h2>问题队列 (Issue Queue)</h2>
+            <p class="section-desc">集中聚合所有 FAIL、UNCERTAIN、COMPILER_INVALID、RUNNER_FAILED 及 JUDGE_ERROR 异常案例</p>
+          </div>
+          <button class="btn btn-secondary" onclick="loadIssueQueue()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            刷新问题
+          </button>
+        </div>
+
+        <!-- 问题类型简要统计 -->
+        <div class="issue-summary-cards">
+          <div class="issue-card fail">
+            <span class="issue-count" id="issue-count-fail">0</span>
+            <span class="issue-name">FAIL (业务判定失败)</span>
+          </div>
+          <div class="issue-card uncertain">
+            <span class="issue-count" id="issue-count-uncertain">0</span>
+            <span class="issue-name">UNCERTAIN (判定存疑)</span>
+          </div>
+          <div class="issue-card compiler">
+            <span class="issue-count" id="issue-count-compiler">0</span>
+            <span class="issue-name">COMPILER_INVALID (编译校验不通过)</span>
+          </div>
+          <div class="issue-card runner">
+            <span class="issue-count" id="issue-count-runner">0</span>
+            <span class="issue-name">RUNNER_FAILED (RPC 执行异常)</span>
+          </div>
+          <div class="issue-card judge-err">
+            <span class="issue-count" id="issue-count-judge">0</span>
+            <span class="issue-name">JUDGE_ERROR (裁判模型异常)</span>
+          </div>
+        </div>
+
+        <!-- 异常案例列表 -->
+        <div class="issues-list" id="issues-list-container">
+          <div class="text-center text-muted card" style="padding: 40px;">加载问题队列中...</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div id="toast" class="toast"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

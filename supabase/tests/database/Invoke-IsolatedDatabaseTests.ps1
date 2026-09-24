@@ -47,10 +47,10 @@ function Get-FreePortBlock([int] $count) {
 
 function Set-TomlSectionPort([string] $Text, [string] $Section, [string] $Key, [int] $Port) {
     $pattern = "(?ms)(^\[$([regex]::Escape($Section))\]\s*\r?\n(?:(?!^\[).)*?^$([regex]::Escape($Key))\s*=\s*)\d+"
-    $updated = [regex]::Replace($Text, $pattern, ('$1' + $Port), 1)
+    $updated = [regex]::Replace($Text, $pattern, ('${1}' + $Port), 1)
     if ($updated -ceq $Text) {
         $sectionHeader = "(?m)(^\[$([regex]::Escape($Section))\]\s*\r?\n)"
-        $updated = [regex]::Replace($Text, $sectionHeader, ('$1' + $Key + ' = ' + $Port + "`r`n"), 1)
+        $updated = [regex]::Replace($Text, $sectionHeader, ('${1}' + $Key + ' = ' + $Port + "`r`n"), 1)
     }
     if ($updated -ceq $Text) { throw "Could not set [$Section].$Key in isolated config.toml." }
     return $updated
