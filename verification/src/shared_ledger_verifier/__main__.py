@@ -155,6 +155,41 @@ def _judge_all(runs_dir: Path) -> int:
     return 1 if counts["JUDGE_ERROR"] else 0
 
 
+def _local_llm_probe() -> int:
+    from .local_llm import LocalLLMError, run_probe
+
+    try:
+        result = run_probe()
+    except LocalLLMError as error:
+        print(f"LOCAL LLM PROBE: NOT READY ({error.category})")
+        return 1
+    print(f"LM Studio             {'OK' if result['server_reachable'] else 'FAILED'}")
+    print(f"Model count           {result['model_count'] if result['model_count'] is not None else '-'}")
+    print("Model IDs             " + ", ".join(json.dumps(value) for value in result["model_ids"]))
+    print(f"Model                 {json.dumps(result['model']) if result['model'] else '-'}")
+    print(f"Chat Completion       {'OK' if result['chat_completion_ok'] else 'FAILED'}")
+    print(f"Structured Output     {'OK' if result['structured_output_supported'] else 'FAILED'}")
+    print(f"Business Logic chars  {result['business_logic_characters'] if result['business_logic_characters'] is not None else '-'}")
+    for name, label in (("simple", "Simple Scenario"), ("combined", "Combined Scenario")):
+        value = result[f"{name}_scenario_valid"]
+        status = "VALID" if value is True else "INVALID" if value is False else "FAILED" if result.get("failed_step") == name else "SKIPPED"
+        print(f"{label:<22}{status}")
+    for name, step in result["steps"].items():
+        usage = f", prompt_tokens={step['prompt_tokens']}, completion_tokens={step['completion_tokens']}" if "prompt_tokens" in step and "completion_tokens" in step else ""
+        print(f"{name}: HTTP {step['http_status']}, {step['elapsed_seconds']:.3f}s{usage}")
+    if result["error_category"]:
+        print(f"Error category        {result['error_category']}")
+        if result.get("failed_step"):
+            print(f"Failed step           {result['failed_step']}")
+        if result["error_category"] == "TIMEOUT":
+            print(f"Request timeout       {result['request_timeout_seconds']:.0f}s")
+        if result.get("loader_error"):
+            print(f"Loader                {result['loader_error']}")
+    ready = result["simple_scenario_valid"] is True and result["combined_scenario_valid"] is True
+    print(f"LOCAL LLM PROBE: {'READY' if ready else 'NOT READY'}")
+    return 0 if ready else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="shared-ledger-verifier")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -168,7 +203,11 @@ def main(argv: list[str] | None = None) -> int:
         "judge-all", help="judge the newest EXECUTED run for each Smoke scenario"
     )
     judge_all_parser.add_argument("runs_dir", type=Path)
+    commands.add_parser("local-llm-probe", help="probe LM Studio and validate two generated Scenario v1 files")
     args = parser.parse_args(argv)
+
+    if args.command == "local-llm-probe":
+        return _local_llm_probe()
 
     if args.command == "run":
         result = run_scenario(args.scenario, progress=_progress)

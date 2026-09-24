@@ -4,3 +4,4 @@ __pycache__/
 *.egg-info/
 runs/*
 !runs/.gitkeep
+local_llm_probe/

@@ -66,4 +66,10 @@ Each judgment is saved as `judge.json` in its run directory. The CLI prints each
 - `linked_refund_after_settlement.json`: B settles the original debt, then a linked refund is received by B and benefits A.
 - `multiple_repayments.json`: B repays A's 100 CNY debt by FIFO installments of 30, 20, and 50.
 
-Only DeepSeek is supported; the workflow does not use a local LLM.
+The Business Judge uses DeepSeek. To check whether LM Studio can generate valid Scenario JSON v1 before developing the local generator, run this from `verification/`:
+
+```powershell
+py -3.12 -m shared_ledger_verifier local-llm-probe
+```
+
+Set `LOCAL_LLM_BASE_URL` in the ignored `.env` file if the local server differs from `http://127.0.0.1:1234/v1`. The probe discovers the actual model ID through `/models`; `LOCAL_LLM_MODEL` may be left blank. Set `LOCAL_LLM_API_KEY` only if LM Studio requires authentication. The probe validates LM Studio output with the existing Scenario Loader, without running Supabase scenarios or invoking the DeepSeek Judge. Its generated files and result are kept in the ignored `verification/local_llm_probe/` directory.
