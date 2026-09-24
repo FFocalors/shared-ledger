@@ -2,7 +2,7 @@
 
 > 首次审计日期：2026-09-23；冻结后 AA 修复复核：2026-09-24。
 > 首次冻结判定：**BUSINESS LOGIC FREEZE v1.0: READY**。以下第 1–11 节保留首次收口的历史脉络，最新测试数据与 v1.1 状态以第 12 节为准。
-> v1.1 判定：**NOT READY**；`BUSINESS_LOGIC.md` §23 linked Refund 示例存在待人工裁决的方向冲突，新一轮 Judge 未达到 6/6 PASS。
+> v1.1 判定：**BUSINESS LOGIC FREEZE v1.1: READY**。AA 修复、最小规则澄清、全套回归及基于新基线的六项 Judge 均已完成。
 
 ## 1. 最终业务基线状态
 
@@ -124,21 +124,22 @@ v0.2 Judge 在旧 run `20260923T103210Z-560a671e` 中发现 `multi_payer_aa`：A
 
 - 从零应用全部 **42 个 migration** 的隔离 Supabase 全套：**29 个有效文件 / 213 个 pgTAP 断言 PASS**；其中新增 [AA 原币债务专项](../../supabase/tests/database/aa_original_currency_debt_contract.sql)为 28/28，六个现有并发测试文件全部 PASS。`phase8_transfer_restore.sql` 继续 RETIRED。详细状态见 [TEST_STATUS.md](../../supabase/tests/database/TEST_STATUS.md)。
 - Android：`testDebugUnitTest` 264 项、`assembleDebug`、`lintDebug` 通过。Workflow 单元测试：32/32 通过。
-- 另一个从零迁移的本地 API/Auth 隔离项目运行原有 6 个 Smoke，全部 `EXECUTED`；新 run 的 `business_logic_commit` 均为修复提交 `663b12f27db390998a350897004f8e5e064c09b0`。其中 `multi_payer_aa` 新状态为 C→A 26.6666/base 26.7、C→B 6.6667/base 6.6，并获同一 `deepseek-v4.1-flash` Judge `PASS`。
+- 永久保留 [Multi-Payer AA 回归场景](../../verification/scenarios/regression/multi_payer_aa_original_currency.json)，不依赖数据库 UUID；原 Smoke 场景没有删改。
+- 另一个从零迁移的本地 API/Auth 隔离项目，在最终规则澄清提交后重新运行原有 6 个 Smoke，全部 `EXECUTED`；六项 Runner/Judge 的 `business_logic_commit` 均为 `12fc5401f6e7f25ce9e110b47d9feda2722795cf`。其中 `multi_payer_aa` 新状态为 C→A 26.6666/base 26.7、C→B 6.6667/base 6.6。相同 `deepseek-v4.1-flash` Judge 最终 **6 PASS / 0 FAIL / 0 UNCERTAIN / 0 JUDGE_ERROR**。
 
 | Smoke 场景 | 新 run_id | Runner | 最新 Judge |
 | --- | --- | --- | --- |
-| `basic_single_payment` | `20260924T023014Z-dd332f6d` | EXECUTED | PASS |
-| `linked_refund_after_settlement` | `20260924T023015Z-076fe074` | EXECUTED | FAIL；首次网络 API_ERROR 已保留为 `judge.previous_error.json` |
-| `multi_payer_aa` | `20260924T023015Z-42c2cfe8` | EXECUTED | PASS |
-| `multiple_repayments` | `20260924T023016Z-84f4aa71` | EXECUTED | PASS |
-| `prepayment_before_debt` | `20260924T023016Z-d35a28c8` | EXECUTED | FAIL；判定已保留为 `judge.previous_fail.json` |
-| `targeted_partial_repayment` | `20260924T023017Z-5ec3ad34` | EXECUTED | PASS |
+| `basic_single_payment` | `20260924T072905Z-15792760` | EXECUTED | PASS |
+| `linked_refund_after_settlement` | `20260924T072905Z-5ba8cbda` | EXECUTED | PASS |
+| `multi_payer_aa` | `20260924T072906Z-af9584bb` | EXECUTED | PASS |
+| `multiple_repayments` | `20260924T072906Z-04cb55f8` | EXECUTED | PASS |
+| `prepayment_before_debt` | `20260924T072907Z-9c847e18` | EXECUTED | PASS |
+| `targeted_partial_repayment` | `20260924T072907Z-ab422f11` | EXECUTED | PASS |
 
-### Judge 分歧与待确认事项
+### 首轮 Judge 分歧、业务裁决与已知限制
 
-`prepayment_before_debt` 的资金投影正确：先 B→A 预存 200，再生成 B→A 账单 100，`PrepaymentUsage` 用去 100，余额 100，当前 BilateralDebt 为零而 Activity 仍 active。Judge 唯一 FAIL 理由是 Expense `financial_locked=false`。但 `20260923032928_refund_limits_and_legacy_rpc_permissions.sql` 的列注释及锁定触发器明确规定 `prepayment_usages` 单独存在不触发永久锁；该场景没有触及账单的真实 Prepayment Settlement 来源，故此项为 Judge 对 Usage/Settlement 的混淆，不应改数据库迎合模型。
+首轮新 run 的 `prepayment_before_debt` 资金投影正确：先 B→A 预存 200，再生成 B→A 账单 100，`PrepaymentUsage` 用去 100，余额 100，当前 BilateralDebt 为零而 Activity 仍 active。Judge 首轮 FAIL 理由是 Expense `financial_locked=false`。`20260923032928_refund_limits_and_legacy_rpc_permissions.sql` 的列注释及锁定触发器明确规定 Usage 单独存在不触发永久锁；该场景没有触及账单的真实 Prepayment Settlement 来源。现已在 `BUSINESS_LOGIC.md` §16 明确区分两者，最终新 run 判 PASS；首轮 `judge.previous_fail.json` 仍保存。
 
-`linked_refund_after_settlement` 的新旧 run 资金状态相同，均为负 Payment B 100、负 Split A 100，按原币 Payment−Split 产生 B→A 100；旧 Judge 判 PASS，新 Judge 判 FAIL 并要求 A→B。`BUSINESS_LOGIC.md` §23 验收例将“B 收款、A 受益”同时写成“方向相反的退款债务”，与 §6/§8 原币净额规则和现金归属相冲突。真正的 A→B 反向退款应由 A 收款、B 受益；既有 `critical_financial_ordering.sql` 的反向测试正使用这一组参与人。本次没有为取得 PASS 而修改业务代码、Smoke、Judge Prompt 或 `BUSINESS_LOGIC.md`。该规则方向须由业务方裁决。
+首轮 `linked_refund_after_settlement` 先出现网络 `API_ERROR`，重试后 Judge 判 FAIL，要求 A→B；但旧、新 run 的资金状态相同，均为负 Payment B 100、负 Split A 100，按原币 Payment−Split 产生 B→A 100。用户明确裁决“B 收款、A 受益；B 再付 A”。因此仅澄清 `BUSINESS_LOGIC.md` §10/§13/§23：退款债务方向由实际负 Payment/Split 决定，本例 B→A；若 A 收款、B 受益才是 A→B。最终新 run 判 PASS。首次网络错误的 `judge.previous_error.json` 和首轮 FAIL 保留为历史；原旧 PASS run 与原 AA FAIL run 也未修改。
 
-**BUSINESS LOGIC FREEZE v1.1: NOT READY**。AA 实现、数据库、并发、Android 与 Runner 门槛已通过；当前 Judge 为 4 PASS、2 FAIL（其中 linked Refund 首次调用曾网络错误），尚未达到 6/6 PASS，且 §23 的退款方向存在待人工确认的基线冲突。确认后应对文档或验收场景作最小一致性修订，再使用相同模型验证；不要把旧 FAIL 历史抹去。
+**BUSINESS LOGIC FREEZE v1.1: READY**，范围是已验证的本地业务实现与训练前规则基线。实现修复提交为 `663b12f27db390998a350897004f8e5e064c09b0`；用户裁决后的业务文档基线提交为 `12fc5401f6e7f25ce9e110b47d9feda2722795cf`。未改 Judge Prompt、DeepSeek Client、Smoke 输入或旧运行记录。远端 Production 尚未部署；可能受旧 normalizer 影响且已财务锁定的历史数据须在后续单独审计，不能把本地 fresh-run PASS 当作远端存量数据已回填的证明。
