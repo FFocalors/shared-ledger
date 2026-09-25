@@ -25,13 +25,18 @@ from decimal import Decimal
 from typing import Callable
 
 from .models import (
+    ArchiveActivity,
     CreateExpense,
     CreatePrepayment,
+    CreateSubActivity,
     FifoRepayment,
+    FinalSettlement,
     LinkedRefund,
+    PreviewFinalSettlement,
     ReturnPrepayment,
     Scenario,
     TargetedRepayment,
+    UnarchiveActivity,
     VoidTransfer,
 )
 
@@ -52,6 +57,14 @@ EDGE_TAGS = (
     "multiple_creditors",
     "remaining_prepayment",
     "full_settlement",
+    "fx_conversion",
+    "cross_currency_settlement",
+    "multi_hop_path",
+    "plan_invalidated",
+    "sub_activity_split",
+    "refund_cap_boundary",
+    "cumulative_refund",
+    "cancel_archive",
 )
 
 
@@ -74,6 +87,15 @@ class FocusSpec:
     edge_tags: tuple[str, ...]
     goal: str
     contract: Callable[[Scenario], str | None]
+    # Activity preconditions.  Most focuses run on a normal CNY-only activity;
+    # multi_currency and large_activity need a different envelope.
+    activity_types: tuple[str, ...] = ("normal",)
+    base_currency: str = "CNY"
+    multi_currency: bool = False
+    # Base currency of the amounts the plan writes; differs for FX focuses.
+    plan_currency: str = "CNY"
+    # Fractional digits the plan's amounts use (4 is the loader limit for foreign amounts).
+    plan_amount_scale: int = 1
 
     @property
     def is_smoke(self) -> bool:
@@ -112,12 +134,12 @@ def _aa_residual_exists(amount: Decimal, count: int) -> bool:
 
 
 def _common(scenario: Scenario, spec: FocusSpec) -> str | None:
-    if scenario.activity.type != "normal":
-        return "expected a normal (non-large) activity"
-    if scenario.activity.base_currency != "CNY":
-        return "expected base currency CNY"
-    if scenario.activity.multi_currency_enabled:
-        return "expected multi_currency_enabled false"
+    if scenario.activity.type not in spec.activity_types:
+        return f"expected activity type in {list(spec.activity_types)}"
+    if scenario.activity.base_currency != spec.base_currency:
+        return f"expected base currency {spec.base_currency}"
+    if scenario.activity.multi_currency_enabled != spec.multi_currency:
+        return f"expected multi_currency_enabled {spec.multi_currency}"
     low, high = spec.participants
     count = len(scenario.participants)
     if not low <= count <= high:
@@ -431,6 +453,138 @@ def _contract_mixed_flow(scenario: Scenario, spec: FocusSpec) -> str | None:
     return None
 
 
+def _contract_multi_currency(scenario: Scenario, spec: FocusSpec) -> str | None:
+    """A foreign-currency expense whose original and base amounts diverge."""
+    foreign = [
+        op
+        for op in _expenses(scenario)
+        if isinstance(op, CreateExpense) and op.amount > 0 and op.currency != spec.base_currency
+    ]
+    if not foreign:
+        return f"expected a positive expense in a currency other than {spec.base_currency}"
+    expense = foreign[0]
+    if expense.split_method != "manual":
+        return "expected a manual split so the foreign-currency debt direction is determined"
+    creditors = [n for n in set(expense.splits) | set(expense.payments) if _net(expense, n) < 0]
+    debtors = [n for n in set(expense.splits) | set(expense.payments) if _net(expense, n) > 0]
+    if not creditors or not debtors:
+        return "the foreign-currency expense must create a real cross-participant debt"
+    return None
+
+
+def _contract_final_settlement(scenario: Scenario, spec: FocusSpec) -> str | None:
+    """Preview the server plan, execute an item of it, and keep the plan observable."""
+    operations = scenario.operations
+    executions = [op for op in operations if isinstance(op, FinalSettlement)]
+    if not executions:
+        return "expected at least one final_settlement execution"
+    first_execution = operations.index(executions[0])
+    if not any(isinstance(op, PreviewFinalSettlement) for op in operations[:first_execution]):
+        return "expected a preview_final_settlement before the first execution"
+    expenses = [op for op in _expenses(scenario) if isinstance(op, CreateExpense) and op.amount > 0]
+    if len(expenses) < 2:
+        return "expected at least two expenses so the final plan needs a path"
+    debtors: set[str] = set()
+    creditors: set[str] = set()
+    for expense in expenses:
+        if expense.split_method != "manual":
+            return "expected manual splits so the settlement topology is determined"
+        for name in set(expense.splits) | set(expense.payments):
+            value = _net(expense, name)
+            if value > 0:
+                debtors.add(name)
+            elif value < 0:
+                creditors.add(name)
+    if len(debtors) < 2 or len(creditors) < 2:
+        return f"expected at least 2 debtors and 2 creditors, found {len(debtors)} and {len(creditors)}"
+    return None
+
+
+def _contract_large_activity(scenario: Scenario, spec: FocusSpec) -> str | None:
+    """A large activity whose expenses live inside distinct sub-activities."""
+    sub_refs = {op.ref for op in scenario.operations if isinstance(op, CreateSubActivity)}
+    if len(sub_refs) < 2:
+        return f"expected at least 2 sub-activities, found {len(sub_refs)}"
+    used = {op.ledger_unit_ref for op in _expenses(scenario) if op.ledger_unit_ref}
+    if len(used) < 2:
+        return "expected expenses inside at least 2 different sub-activities"
+    if not used <= sub_refs:
+        return "every ledger_unit_ref must name an earlier create_sub_activity"
+    return None
+
+
+def _contract_refund_boundary(scenario: Scenario, spec: FocusSpec) -> str | None:
+    """Linked refunds pushed towards their cumulative cap, but never past it."""
+    refunds = [op for op in scenario.operations if isinstance(op, LinkedRefund)]
+    if not refunds:
+        return "expected at least one linked_refund"
+    best = Decimal(0)
+    for refund in refunds:
+        source = next(
+            (
+                op
+                for op in scenario.operations
+                if isinstance(op, CreateExpense) and op.ref == refund.original_expense_ref
+            ),
+            None,
+        )
+        if source is None or source.amount <= 0:
+            return "a linked refund must reference an earlier positive expense"
+        total = sum(
+            (
+                -op.amount
+                for op in refunds
+                if op.original_expense_ref == refund.original_expense_ref
+            ),
+            Decimal(0),
+        )
+        if total > source.amount:
+            return f"cumulative refunds {total} exceed the source amount {source.amount}"
+        best = max(best, total / source.amount)
+    if best < Decimal("0.9"):
+        return f"expected refunds to reach at least 90% of their source amount, reached {best:.2f}"
+    return None
+
+
+def _contract_completion_archive(scenario: Scenario, spec: FocusSpec) -> str | None:
+    """Either settle everything and archive, or archive unsettled and unarchive."""
+    archives = [
+        index for index, op in enumerate(scenario.operations) if isinstance(op, ArchiveActivity)
+    ]
+    if not archives:
+        return "expected at least one archive_activity"
+    first = archives[0]
+    tail = scenario.operations[first + 1:]
+    unarchived = [op for op in tail if isinstance(op, UnarchiveActivity)]
+    if tail and not unarchived:
+        return "nothing may follow archive_activity except unarchive_activity"
+
+    debt = Decimal(0)
+    repaid = Decimal(0)
+    for operation in scenario.operations:
+        if (
+            isinstance(operation, CreateExpense)
+            and operation.amount > 0
+            and operation.split_method == "manual"
+        ):
+            for name in set(operation.splits) | set(operation.payments):
+                value = _net(operation, name)
+                if value > 0:
+                    debt += value
+        elif isinstance(operation, (FifoRepayment, TargetedRepayment)):
+            repaid += operation.amount
+
+    if unarchived:
+        if debt > 0 and repaid >= debt:
+            return "a cancelled archive must leave debt outstanding when it is archived"
+    else:
+        if first != len(scenario.operations) - 1:
+            return "archive_activity must be the final operation"
+        if debt <= 0 or repaid < debt:
+            return f"expected the whole {debt} debt to be settled before archiving, repaid {repaid}"
+    return None
+
+
 # --------------------------------------------------------------------------
 # Registry
 # --------------------------------------------------------------------------
@@ -448,12 +602,21 @@ def _spec(
     edge_tags: tuple[str, ...],
     goal: str,
     contract: Callable[[Scenario, FocusSpec], str | None],
+    *,
+    activity_types: tuple[str, ...] = ("normal",),
+    base_currency: str = "CNY",
+    multi_currency: bool = False,
+    plan_currency: str = "CNY",
+    plan_amount_scale: int = 1,
 ) -> FocusSpec:
     """Build a spec whose stored contract also applies the shared preconditions."""
     placeholder = FocusSpec(
         name=name, tier=tier, title=title, sections=sections, participants=participants,
         payers=payers, amount_patterns=amount_patterns, operation_counts=operation_counts,
         edge_tags=edge_tags, goal=goal, contract=lambda scenario: None,
+        activity_types=activity_types, base_currency=base_currency,
+        multi_currency=multi_currency, plan_currency=plan_currency,
+        plan_amount_scale=plan_amount_scale,
     )
 
     def bound(scenario: Scenario, _spec: FocusSpec = placeholder) -> str | None:
@@ -576,6 +739,48 @@ _register(_spec(
     ("partial_repayment", "remaining_prepayment", "multiple_creditors"),
     "A longer flow that combines a prepayment with a refund or a repayment in one activity.",
     _contract_mixed_flow,
+))
+
+_register(_spec(
+    "multi_currency", COVERAGE_TIER, "多币种原币/base 分离", (5, 7, 8, 15), (3, 5), (1,),
+    ("divisible", "non_divisible", "decimal"), (2, 3),
+    ("fx_conversion", "cross_currency_settlement"),
+    "A foreign-currency expense whose original amount and base amount diverge through the "
+    "server FX snapshot, then a repayment against the resulting foreign-currency debt.",
+    _contract_multi_currency,
+    base_currency="CNY", multi_currency=True, plan_currency="EUR", plan_amount_scale=2,
+))
+_register(_spec(
+    "final_settlement", COVERAGE_TIER, "最终结算计划执行", (5, 8, 9, 14, 16), (4, 5), (1,),
+    ("divisible", "non_divisible", "decimal"), (6, 7),
+    ("multi_hop_path", "plan_invalidated", "partial_repayment"),
+    "Several debts among three or more participants, a previewed final plan, and execution of "
+    "one complete suggestion item, with an external payment in between.",
+    _contract_final_settlement,
+))
+_register(_spec(
+    "large_activity", COVERAGE_TIER, "大型活动与子活动", (2, 5, 6, 8, 12), (3, 5), (1,),
+    ("divisible", "non_divisible", "decimal"), (5,),
+    ("sub_activity_split", "remaining_prepayment"),
+    "A large activity with several sub-activities: expenses booked inside different "
+    "sub-activities against one shared member pool, and a large-activity prepayment.",
+    _contract_large_activity,
+    activity_types=("large",),
+))
+_register(_spec(
+    "refund_boundary", COVERAGE_TIER, "退款上限边界", (5, 13, 16), (3, 4), (1,),
+    ("divisible", "non_divisible", "decimal"), (3, 4), ("partial_repayment", "refund_cap_boundary", "cumulative_refund"),
+    "Linked refunds that are partial, cumulative, and pushed to the source expense cap, "
+    "including a refund after the original debt has been settled.",
+    _contract_refund_boundary,
+))
+_register(_spec(
+    "completion_archive", COVERAGE_TIER, "完成判定与归档", (5, 6, 8, 9, 12, 18), (3, 4), (1,),
+    ("divisible", "non_divisible", "decimal"), (3, 4),
+    ("full_settlement", "cancel_archive", "remaining_prepayment"),
+    "Either settle every debt and archive the completed activity, or archive while debt or a "
+    "prepayment balance remains and then cancel the archive.",
+    _contract_completion_archive,
 ))
 
 # ``targeted_repayment`` belongs to both tiers: it is the historical smoke focus

@@ -15,8 +15,10 @@ from typing import Any, Callable, Generator
 from ..coverage import compute_coverage, load_case_records
 from ..duplicates import mark_duplicates, scenario_fingerprint
 from ..focus_contract import ALL_FOCUSES, FocusDefinitionError, focus_spec
+from ..fx_fixture import ensure_fx_fixture, requires_fx_fixture
 from ..generate_case import _has_secret, _safe_error
 from ..local_llm_v2 import FOCUS_SECTIONS
+from ..pipeline import PipelineConfig, build_batch_plans, run_pipeline, summarise_pipeline
 from ..run_generated_case import run_generated_case
 from ..supabase import load_local_env, verification_root
 
@@ -893,87 +895,144 @@ class WorkflowOrchestrator:
             if not batch:
                 return
             batch["status"] = "running"
+            focuses = list(batch["focuses"])
+            per_focus = batch["focus_counts"][focuses[0]]
+            seed_base = batch["seed_base"]
 
-        tasks = batch["tasks"]
-        total_count = batch["total_count"]
-        self._broadcast_event(batch_id, "batch_started", {
-            "focus": batch["focus"],
-            "focuses": batch["focuses"],
-            "total_count": total_count,
-            "seed_base": batch["seed_base"],
-        })
-
-        for case_idx, task in enumerate(tasks, start=1):
-            focus = task["focus"]
-            seed = task["seed"]
+        try:
+            plans = build_batch_plans(focuses, per_focus=per_focus, seed_base=seed_base)
+        except (FocusDefinitionError, ValueError) as exc:
             with self.lock:
-                batch["current_index"] = case_idx
-                batch["current_focus"] = focus
-                batch["current_seed"] = seed
-
-            self._broadcast_event(batch_id, "case_started", {
-                "case_index": case_idx,
-                "total_count": total_count,
-                "focus": focus,
-                "seed": seed,
-            })
-
-            def on_progress(stage: str, status: str, details: dict[str, Any]) -> None:
-                with self.lock:
-                    batch["current_stage"] = stage
-                self._broadcast_event(batch_id, "stage_progress", {
-                    "case_index": case_idx,
-                    "total_count": total_count,
-                    "stage": stage,
-                    "status": status,
-                    "details": details,
-                })
-
-            try:
-                result = run_generated_case(focus, seed=seed, on_progress=on_progress)
-                case_id = Path(result["output_dir"]).name if result.get("output_dir") else None
-                with self.lock:
-                    batch["completed_cases"].append(result)
-                self._broadcast_event(batch_id, "case_completed", {
-                    "case_index": case_idx,
-                    "total_count": total_count,
-                    "case_id": case_id,
-                    "result": {
-                        "status": result.get("status"),
-                        "run_id": result.get("run_id"),
-                        "judge_verdict": result.get("judge_verdict"),
-                        "runner_result": result.get("runner_result"),
-                        "loader_result": result.get("loader_result"),
-                        "focus_result": result.get("focus_result"),
-                        "plan_seed": result.get("plan_seed"),
-                    },
-                })
-            except Exception as exc:
-                safe_err = _safe_error(exc)
-                self._broadcast_event(batch_id, "case_failed", {
-                    "case_index": case_idx,
-                    "total_count": total_count,
-                    "error": safe_err,
-                })
+                batch["status"] = "failed"
+                batch["error"] = _safe_error(exc)
+            self._broadcast_event(batch_id, "batch_failed", {"error": _safe_error(exc)})
+            return
 
         with self.lock:
-            batch["status"] = "completed"
+            batch["total_count"] = len(plans)
+
+        fx_ready = None
+        if any(requires_fx_fixture(plan.focus) for plan in plans):
+            try:
+                fixture = ensure_fx_fixture()
+                fx_ready = fixture["ready"]
+            except Exception:
+                fx_ready = False
+
+        config, clamped = PipelineConfig.from_env().resolved()
+        self._broadcast_event(batch_id, "batch_started", {
+            "focus": batch["focus"],
+            "focuses": focuses,
+            "total_count": len(plans),
+            "seed_base": seed_base,
+            "pipeline": {
+                **{key: value for key, value in vars(config).items()},
+                "generator_clamped": clamped,
+                "fx_fixture_ready": fx_ready,
+            },
+        })
+
+        seen: set[str] = set()
+
+        def index_of(seed: Any) -> int:
+            try:
+                return int(seed) - seed_base + 1
+            except (TypeError, ValueError):
+                return 0
+
+        def on_progress(event: dict[str, Any]) -> None:
+            case_id = str(event.get("case_id") or "")
+            stage = str(event.get("stage") or "")
+            with self.lock:
+                batch["current_stage"] = stage
+                batch["current_focus"] = event.get("focus")
+                batch["in_flight"] = len(seen)
+            if case_id and case_id not in seen:
+                # The pipeline has no single "current case"; a case is started
+                # when its first event arrives, and cases overlap by design.
+                seen.add(case_id)
+                self._broadcast_event(batch_id, "case_started", {
+                    "case_index": index_of(event.get("plan_seed")),
+                    "total_count": len(plans),
+                    "focus": event.get("focus"),
+                    "seed": event.get("plan_seed"),
+                    "case_id": case_id,
+                })
+            self._broadcast_event(batch_id, "stage_progress", {
+                "case_index": index_of(event.get("plan_seed")),
+                "total_count": len(plans),
+                "case_id": case_id,
+                "focus": event.get("focus"),
+                "seed": event.get("plan_seed"),
+                "stage": stage,
+                "status": event.get("status"),
+                "details": event.get("details") or {},
+            })
+
+        def on_case_done(result: dict[str, Any]) -> None:
+            case_id = Path(result["output_dir"]).name if result.get("output_dir") else None
+            with self.lock:
+                batch["completed_cases"].append(result)
+            self._broadcast_event(batch_id, "case_completed", {
+                "case_index": index_of(result.get("plan_seed")),
+                "total_count": len(plans),
+                "case_id": case_id,
+                "focus": result.get("focus"),
+                "seed": result.get("plan_seed"),
+                "result": {
+                    "status": result.get("status"),
+                    "run_id": result.get("run_id"),
+                    "judge_verdict": result.get("judge_verdict"),
+                    "runner_result": result.get("runner_result"),
+                    "loader_result": result.get("loader_result"),
+                    "focus_result": result.get("focus_result"),
+                    "plan_seed": result.get("plan_seed"),
+                },
+            })
+
+        failure: str | None = None
+        pipeline_summary: dict[str, Any] | None = None
+        try:
+            payload = run_pipeline(
+                plans,
+                config=config,
+                on_progress=on_progress,
+                on_case_done=on_case_done,
+            )
+            pipeline_summary = summarise_pipeline(payload)
+        except Exception as exc:
+            failure = _safe_error(exc)
+
+        with self.lock:
+            batch["status"] = "failed" if failure else "completed"
+            if failure:
+                batch["error"] = failure
+            batch["coverage"] = None
+            batch["pipeline"] = pipeline_summary
             case_ids = [
                 Path(item["output_dir"]).name
                 for item in batch["completed_cases"] if item.get("output_dir")
             ]
-        summary = None
-        try:
-            summary = compute_coverage(load_case_records(self.scanner.generated_cases_dir, case_ids=case_ids))
-            summary.pop("cases", None)
-        except Exception:
-            summary = None
+        if failure is None:
+            try:
+                summary = compute_coverage(
+                    load_case_records(self.scanner.generated_cases_dir, case_ids=case_ids)
+                )
+                summary.pop("cases", None)
+                with self.lock:
+                    batch["coverage"] = summary
+            except Exception:
+                pass
+        if failure:
+            self._broadcast_event(batch_id, "batch_failed", {"error": failure})
+            return
         with self.lock:
-            batch["coverage"] = summary
+            coverage = batch["coverage"]
         self._broadcast_event(batch_id, "batch_completed", {
-            "total_count": total_count,
+            "total_count": len(plans),
             "completed_count": len(case_ids),
-            "coverage": summary,
+            "coverage": coverage,
+            "pipeline": pipeline_summary,
         })
 
     def get_batch_status(self, batch_id: str) -> dict[str, Any] | None:

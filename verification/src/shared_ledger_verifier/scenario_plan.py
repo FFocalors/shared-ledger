@@ -50,6 +50,11 @@ def _one_decimal(value: Decimal) -> str:
     return format(value.quantize(Decimal("0.1")), "f")
 
 
+def _fmt(value: Decimal, scale: int) -> str:
+    """Render a Decimal with exactly ``scale`` fractional digits."""
+    return format(value.quantize(Decimal(1).scaleb(-scale)), "f")
+
+
 def _tenths(value: Decimal) -> int:
     return int((value * 10).to_integral_value())
 
@@ -94,14 +99,15 @@ def _rng(focus: str, seed: int) -> random.Random:
     return random.Random(int(digest[:16], 16))
 
 
-def _partition(total: Decimal, count: int, rng: random.Random) -> list[Decimal]:
-    """Split ``total`` into ``count`` strictly positive one-decimal parts."""
-    units = _tenths(total)
+def _partition(total: Decimal, count: int, rng: random.Random, scale: int = 1) -> list[Decimal]:
+    """Split ``total`` into ``count`` strictly positive parts of ``scale`` digits."""
+    step = Decimal(1).scaleb(-scale)
+    units = int((total / step).to_integral_value())
     if units < count:
         raise FocusDefinitionError(f"amount {total} is too small to split {count} ways")
     cuts = sorted(rng.sample(range(1, units), count - 1))
     edges = [0, *cuts, units]
-    return [Decimal(edges[i + 1] - edges[i]) / 10 for i in range(count)]
+    return [Decimal(edges[i + 1] - edges[i]) * step for i in range(count)]
 
 
 def _distinct_partition(total: Decimal, count: int, rng: random.Random) -> list[Decimal]:
@@ -123,11 +129,12 @@ def _debt_pair(amount: Decimal, rng: random.Random) -> tuple[Decimal, Decimal]:
     return half, Decimal(_one_decimal(amount - half))
 
 
-def _partial(debt: Decimal, rng: random.Random) -> Decimal:
-    """Pick an amount strictly between zero and ``debt``, with one decimal."""
-    if debt <= Decimal("0.1"):
+def _partial(debt: Decimal, rng: random.Random, scale: int = 1) -> Decimal:
+    """Pick an amount strictly between zero and ``debt`` at the given scale."""
+    step = Decimal(1).scaleb(-scale)
+    if debt <= step:
         return debt
-    parts = _partition(debt, 2, rng)
+    parts = _partition(debt, 2, rng, scale)
     return min(parts) if min(parts) > 0 else debt
 
 
@@ -174,11 +181,13 @@ def plan_for(focus: str, seed: int) -> ScenarioPlan:
         rng.sample(spec.edge_tags, min(2, len(spec.edge_tags))), amount, participant_count
     )
     steps, amounts = _build_steps(
-        focus, participants, payer_count, amount, amount_pattern, edge_tags, rng
+        focus, participants, payer_count, amount, amount_pattern, edge_tags, rng,
+        scale=spec.plan_amount_scale,
     )
     # Every branch may hand back Decimals; the plan stores plain decimal strings.
     normalized = tuple(
-        value if isinstance(value, str) else _one_decimal(Decimal(value)) for value in amounts
+        value if isinstance(value, str) else _fmt(Decimal(value), spec.plan_amount_scale)
+        for value in amounts
     )
     plan = ScenarioPlan(
         seed=seed,
@@ -188,7 +197,7 @@ def plan_for(focus: str, seed: int) -> ScenarioPlan:
         amount_pattern=amount_pattern,
         operation_count=len(steps),
         edge_tags=edge_tags,
-        currency="CNY",
+        currency=spec.plan_currency,
         participants=participants,
         amounts=normalized,
         steps=tuple(steps),
@@ -224,8 +233,8 @@ def check_plan(plan: ScenarioPlan) -> str | None:
         return f"operation_count {plan.operation_count} is not in {spec.operation_counts}"
     if len(plan.steps) != plan.operation_count:
         return "step count does not match operation_count"
-    if plan.currency != "CNY":
-        return "every registered focus is CNY-only"
+    if plan.currency != spec.plan_currency:
+        return f"plan currency {plan.currency} does not match the focus currency {spec.plan_currency}"
     unknown_tags = set(plan.edge_tags) - set(spec.edge_tags)
     if unknown_tags:
         return f"edge tags {sorted(unknown_tags)} are not declared by the focus"
@@ -234,8 +243,10 @@ def check_plan(plan: ScenarioPlan) -> str | None:
             value = Decimal(amount)
         except Exception:
             return f"amount {amount!r} is not a decimal string"
-        if max(0, -value.as_tuple().exponent) > 1:
-            return f"amount {amount!r} has more than one fractional digit"
+        if max(0, -value.as_tuple().exponent) > spec.plan_amount_scale:
+            return (
+                f"amount {amount!r} has more than {spec.plan_amount_scale} fractional digit(s)"
+            )
     if plan.focus == "aa_rounding":
         first = Decimal(plan.amounts[0])
         if not _residual_exists(first, plan.participant_count):
@@ -275,13 +286,14 @@ def _build_steps(
     amount_pattern: str,
     edge_tags: tuple[str, ...],
     rng: random.Random,
+    scale: int = 1,
 ) -> tuple[list[str], list[str]]:
     """Return (operation steps, the amounts those steps use).
 
     Every branch states concrete numbers and actors so that the raw-case model
     and the Compiler both encode the same facts.
     """
-    total = _one_decimal(amount)
+    total = _fmt(amount, scale)
     others = list(participants[1:])
     payer_names = participants[:payer_count]
     if payer_count >= len(participants):
@@ -481,6 +493,134 @@ def _build_steps(
         return steps, [total, _one_decimal(debt), _one_decimal(rest), _one_decimal(part),
                        prepay, _one_decimal(refund)]
 
+    if focus == "multi_currency":
+        creditor, debtor = participants[0], participants[1]
+        total_fx = Decimal(rng.choice(("12.34", "48.75", "7.20", "99.99", "3.05", "25.60")))
+        total = _fmt(total_fx, 2)
+        debt_fx, rest_fx = _partition(total_fx, 2, rng, scale=2)
+        repay_fx = _partial(debt_fx, rng, scale=2)
+        other = participants[2:]
+        steps = [
+            f"1. create_expense: amount {total} EUR — a FOREIGN currency; the activity base "
+            f"currency stays CNY and the server resolves the FX snapshot, so the stored base "
+            f"amount will differ from {total}. split_method manual, {creditor} pays {total} EUR, "
+            f"splits {{ {debtor}: {_fmt(debt_fx, 2)}, {creditor}: {_fmt(rest_fx, 2)} }}"
+            + (f", with {', '.join(other)} bearing nothing" if other else "")
+            + f". {debtor} therefore owes {creditor} {_fmt(debt_fx, 2)} EUR.",
+            f"2. fifo_repayment: {debtor} repays {creditor} {_fmt(repay_fx, 2)} EUR against that "
+            f"foreign-currency debt, leaving part of it outstanding.",
+        ]
+        return steps, [total, _fmt(debt_fx, 2), _fmt(rest_fx, 2), _fmt(repay_fx, 2)]
+
+    if focus == "final_settlement":
+        payer, debtor_b, debtor_c = participants[0], participants[1], participants[2]
+        # The third expense's payer must differ from the participant who bears it.
+        payer_d = participants[3] if len(participants) > 3 else participants[2]
+        first, second, third = _partition(amount, 3, rng)
+        first, second, third = (_one_decimal(first), _one_decimal(second), _one_decimal(third))
+        external = _one_decimal(_partial(Decimal(second), rng))
+        steps = [
+            f"1. create_expense: amount {first} CNY, split_method manual, {payer} pays {first}, "
+            f"splits {{ {debtor_b}: {first} }} so {debtor_b} owes {payer} {first}.",
+            f"2. create_expense: amount {second} CNY, split_method manual, {payer} pays {second}, "
+            f"splits {{ {debtor_c}: {second} }} so {debtor_c} owes {payer} {second}.",
+            f"3. create_expense: amount {third} CNY, split_method manual, {payer_d} pays {third}, "
+            f"splits {{ {payer}: {third} }} so {payer} owes {payer_d} {third}.",
+            "4. preview_final_settlement: mode base_unified. Record the plan the server offers "
+            "right now — no accounts are written by a preview.",
+            f"5. fifo_repayment: {debtor_c} repays {payer} {external} CNY outside the plan. This is "
+            f"strictly less than the {second} CNY that {debtor_c} owes {payer}, so it is accepted, "
+            f"and it makes the plan recorded in step 4 stale.",
+            "6. preview_final_settlement: mode base_unified. The plan recorded here must differ "
+            "from step 4 because of the external payment.",
+            "7. final_settlement: mode base_unified. Execute the FIRST item of the CURRENT plan "
+            "exactly as offered; do not choose an amount.",
+        ]
+        return steps, [first, second, third, external]
+
+    if focus == "large_activity":
+        payer, debtor = participants[0], participants[1]
+        third = participants[2] if len(participants) > 2 else participants[1]
+        one, two = _partition(amount, 2, rng)
+        one, two = _one_decimal(one), _one_decimal(two)
+        prepay = _one_decimal(amount)
+        steps = [
+            '1. create_sub_activity: name "Trip".',
+            '2. create_sub_activity: name "Hotel".',
+            f"3. create_expense inside the first sub-activity: use ledger_unit_ref sub_1, amount "
+            f"{one} CNY, split_method manual, {payer} pays {one}, splits {{ {debtor}: {one} }} so "
+            f"{debtor} owes {payer} {one}.",
+            f"4. create_expense inside the second sub-activity: use ledger_unit_ref sub_2, amount "
+            f"{two} CNY, split_method manual, {third} pays {two}, splits {{ {debtor}: {two} }} so "
+            f"{debtor} owes {third} {two}.",
+            f"5. create_prepayment at the ACTIVITY level (not inside a sub-activity): owner "
+            f"{debtor} pays {prepay} CNY to custodian {payer}.",
+        ]
+        return steps, [one, two, prepay]
+
+    if focus == "refund_boundary":
+        payer, bearer = participants[0], participants[1]
+        total = _one_decimal(amount)
+        cap_exact = "refund_cap_boundary" in edge_tags and "cumulative_refund" in edge_tags
+        first = _one_decimal(Decimal(total) / 2)
+        second = _one_decimal(Decimal(total) - Decimal(first)) if cap_exact else _one_decimal(
+            (Decimal(total) - Decimal(first)) * Decimal("0.8")
+        )
+        settled_first = "partial_repayment" in edge_tags
+        steps = []
+        index = 1
+        steps.append(
+            f"{index}. create_expense: amount {total} CNY, split_method manual, {payer} pays "
+            f"{total}, splits {{ {bearer}: {total} }} so {bearer} owes {payer} {total}."
+        )
+        index += 1
+        if settled_first:
+            steps.append(
+                f"{index}. fifo_repayment: {bearer} repays {payer} the whole {total} CNY, so the "
+                f"original debt is already settled before any refund happens."
+            )
+            index += 1
+        steps.append(
+            f"{index}. linked_refund of expense_1: amount -{first} CNY, received by {payer} and "
+            f"benefiting {bearer}; payments and manual splits are negative and each sum to "
+            f"exactly -{first}."
+        )
+        index += 1
+        steps.append(
+            f"{index}. linked_refund of expense_1: amount -{second} CNY, again received by {payer} "
+            f"and benefiting {bearer}. Together the two refunds come to "
+            f"{_one_decimal(Decimal(first) + Decimal(second))} CNY against the {total} CNY source, "
+            f"so they stay within the cumulative cap."
+        )
+        return steps, [total, first, second]
+
+    if focus == "completion_archive":
+        payer, bearer = participants[0], participants[1]
+        total = _one_decimal(amount)
+        cancelled = "cancel_archive" in edge_tags
+        steps = [
+            f"1. create_expense: amount {total} CNY, split_method manual, {payer} pays {total}, "
+            f"splits {{ {bearer}: {total} }} so {bearer} owes {payer} {total}."
+        ]
+        if cancelled:
+            steps.append(
+                "2. archive_activity: archive even though the debt is still outstanding; the "
+                "activity is read-only afterwards."
+            )
+            steps.append(
+                "3. unarchive_activity: cancel the archive so the activity is writable again."
+            )
+        else:
+            steps.append(
+                f"2. fifo_repayment: {bearer} repays {payer} the whole {total} CNY, so no debt "
+                f"remains and the activity can complete."
+            )
+            steps.append(
+                "3. archive_activity: archive the fully settled activity. It must be the last "
+                "operation."
+            )
+        return steps, [total]
+
     raise FocusDefinitionError(f"no plan skeleton for focus {focus}")
 
 
@@ -492,12 +632,15 @@ def render_plan(plan: ScenarioPlan) -> str:
         f"FOCUS: {plan.focus} — {spec.title}\n"
         f"AIM: {spec.goal}\n"
         f"Use exactly these participants, in this order: {', '.join(plan.participants)}.\n"
-        f"Currency: {plan.currency} only, multi_currency_enabled false, activity type normal.\n"
+        f"Amounts below are in {plan.currency}. Activity: type {spec.activity_types[0]}, "
+        f"base_currency {spec.base_currency}, multi_currency_enabled "
+        f"{'true' if spec.multi_currency else 'false'}.\n"
         f"Amount pattern: {plan.amount_pattern}. Edge tags to realise: {tags}.\n"
         f"Required operation shape (follow the order and the exact amounts):\n"
         + "\n".join(f"  {step}" for step in plan.steps)
-        + "\nEvery amount above is a decimal string with at most one fractional digit. "
-        "Payments must sum exactly to their expense amount; manual splits must also sum exactly."
+        + f"\nEvery amount above is a decimal string with at most {spec.plan_amount_scale} "
+        "fractional digit(s). Payments must sum exactly to their expense amount; manual splits "
+        "must also sum exactly."
     )
 
 

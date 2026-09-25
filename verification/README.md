@@ -183,3 +183,76 @@ The dashboard exposes the same counters at `GET /api/coverage`, includes them in
 run form accepts `{"focuses": [...], "count": N, "seed": S}` to start a
 multi-focus batch; the SSE endpoint replays a batch's earlier events to a late
 subscriber and returns 404 for an unknown batch.
+
+## Mass verification pipeline
+
+Generating and validating one case is latency-bound on three different services.
+Running cases strictly one at a time leaves the local model idle for most of a
+batch, because a case spends the bulk of its time waiting for DeepSeek. The
+batch runner is therefore a producer/consumer pipeline:
+
+```
+ScenarioPlans -> [generator x1] -> [compiler xN] -> [runner xM] -> [judge xK] -> results
+```
+
+The local generator does exactly one request at a time (LM Studio is configured
+with `Max Concurrent Predictions = 1`), so it never competes with itself, but it
+also never waits for DeepSeek: as soon as one raw case is written it picks up the
+next plan. DeepSeek calls from the compiler and the judge share one global
+semaphore, so the provider sees a bounded number of concurrent requests.
+
+Worker counts and queue bounds are environment-configurable:
+
+```
+LOCAL_GENERATOR_WORKERS=1     # clamped to 1: the local model is single-request
+COMPILER_WORKERS=2
+RUNNER_WORKERS=2
+JUDGE_WORKERS=4
+DEEPSEEK_MAX_CONCURRENCY=4
+RAW_QUEUE_SIZE=20
+COMPILED_QUEUE_SIZE=20
+JUDGE_QUEUE_SIZE=20
+```
+
+Every queue is bounded, so a slow judge applies backpressure to the runner and
+then to the compiler instead of growing memory without limit. Each case keeps its
+own directory, run id, Supabase test user and activity, so concurrency never
+mixes case data, and every progress event carries the case id so the dashboard
+routes them without cross-talk. A case that fails at any stage is recorded and
+the batch continues; nothing is retried to improve a verdict.
+
+`coverage-run` pre-generates every ScenarioPlan for the batch (unique seeds, a
+configurable focus mix) and then runs the pipeline. Use `--sequential` for the
+old one-case-at-a-time behaviour.
+
+```powershell
+py -3.12 -m shared_ledger_verifier coverage-run --per-focus 3 --seed-base 1
+py -3.12 -m shared_ledger_verifier coverage-run --focus multi_currency --per-focus 4
+py -3.12 -m shared_ledger_verifier coverage-run --per-focus 2 --sequential
+```
+
+### Local FX fixture
+
+The `multi_currency` focus needs a server FX snapshot, and the production cache
+is filled by a job that talks to an external provider -- which a verification run
+must never depend on. `fx-fixture` writes a fixed set of rates into the local
+`exchange_rate_cache` so every foreign-currency case converts at a known rate:
+
+```powershell
+py -3.12 -m shared_ledger_verifier fx-fixture
+```
+
+`coverage-run` applies it automatically when any selected focus needs it. These
+are fixed local test rates, not real ECB reference rates, and only the local
+development database is touched: no migration, RPC or business rule changes.
+
+### Focuses added after the first wave
+
+`multi_currency`, `final_settlement`, `large_activity`, `refund_boundary` and
+`completion_archive` bring the registry to 21 focuses. They needed five new
+Scenario operations -- `create_sub_activity`, `final_settlement`,
+`preview_final_settlement`, `archive_activity`, `unarchive_activity` -- plus an
+optional `ledger_unit_ref` on expenses so a booking can name the sub-activity it
+belongs to. `final_settlement` names only the parties and the mode: section 14
+fixes the amount and currency from the server's current plan, so the Runner reads
+the plan and executes one complete suggestion item as offered.

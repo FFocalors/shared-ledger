@@ -65,12 +65,15 @@ class ScenarioPlanTests(unittest.TestCase):
             scaled = int((amount * Decimal(10_000)).to_integral_value())
             self.assertNotEqual(scaled % plan.participant_count, 0, f"seed {seed} amount {amount}")
 
-    def test_amounts_stay_inside_the_base_currency_scale(self):
+    def test_amounts_stay_inside_the_declared_plan_scale(self):
         for focus in ALL_FOCUSES:
+            scale = focus_spec(focus).plan_amount_scale
             for seed in _SEEDS:
                 for amount in plan_for(focus, seed).amounts:
                     value = Decimal(amount)
-                    self.assertLessEqual(max(0, -value.as_tuple().exponent), 1, f"{focus}/{seed}")
+                    self.assertLessEqual(
+                        max(0, -value.as_tuple().exponent), scale, f"{focus}/{seed}"
+                    )
 
     def test_participant_rosters_are_loader_safe_refs(self):
         for focus in ALL_FOCUSES:

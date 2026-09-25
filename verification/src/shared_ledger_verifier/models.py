@@ -33,6 +33,8 @@ class CreateExpense:
     split_method: SplitMethod
     splits: Mapping[str, Decimal] | None = None
     aa_participants: tuple[str, ...] = ()
+    # Optional sub-activity this expense belongs to; None means the root ledger unit.
+    ledger_unit_ref: str | None = None
     type: Literal["create_expense"] = field(default="create_expense", init=False)
 
 
@@ -47,6 +49,7 @@ class LinkedRefund:
     split_method: SplitMethod
     splits: Mapping[str, Decimal] | None = None
     aa_participants: tuple[str, ...] = ()
+    ledger_unit_ref: str | None = None
     type: Literal["linked_refund"] = field(default="linked_refund", init=False)
 
 
@@ -98,6 +101,61 @@ class VoidTransfer:
     type: Literal["void_transfer"] = field(default="void_transfer", init=False)
 
 
+@dataclass(frozen=True, slots=True)
+class CreateSubActivity:
+    """A sub-activity (LedgerUnit) of a large activity; holds its own expenses.
+
+    ``create_sub_activity(activity_id, name)`` inherits the parent activity's
+    type, base currency and multi-currency setting, so the scenario names only
+    a ref and a display name.
+    """
+
+    ref: str
+    name: str
+    type: Literal["create_sub_activity"] = field(default="create_sub_activity", init=False)
+
+
+FinalSettlementMode: TypeAlias = Literal["base_unified", "original_currency"]
+
+
+@dataclass(frozen=True, slots=True)
+class FinalSettlement:
+    """One complete suggestion item from the server's current final plan.
+
+    Section 14: the client executes a suggested item as-is; it never chooses a
+    partial amount. The amount and currency therefore come from the server plan
+    at execution time rather than from the scenario.
+    """
+
+    ref: str
+    mode: FinalSettlementMode
+    # Optional: omitted means "take the first item of the current server plan".
+    from_participant: str | None = None
+    to_participant: str | None = None
+    type: Literal["final_settlement"] = field(default="final_settlement", init=False)
+
+
+@dataclass(frozen=True, slots=True)
+class PreviewFinalSettlement:
+    """Read-only snapshot of the current final plan; changes no financial fact."""
+
+    ref: str
+    mode: FinalSettlementMode
+    type: Literal["preview_final_settlement"] = field(default="preview_final_settlement", init=False)
+
+
+@dataclass(frozen=True, slots=True)
+class ArchiveActivity:
+    ref: str
+    type: Literal["archive_activity"] = field(default="archive_activity", init=False)
+
+
+@dataclass(frozen=True, slots=True)
+class UnarchiveActivity:
+    ref: str
+    type: Literal["unarchive_activity"] = field(default="unarchive_activity", init=False)
+
+
 Operation: TypeAlias = (
     CreateExpense
     | LinkedRefund
@@ -106,6 +164,11 @@ Operation: TypeAlias = (
     | CreatePrepayment
     | ReturnPrepayment
     | VoidTransfer
+    | CreateSubActivity
+    | FinalSettlement
+    | PreviewFinalSettlement
+    | ArchiveActivity
+    | UnarchiveActivity
 )
 
 

@@ -214,13 +214,40 @@ def _run_generated_case(focus: str, seed: int | None = None) -> int:
     return 0 if result["status"] == "COMPLETE" else 1
 
 
-def _coverage_run(focuses: list[str], per_focus: int, seed_base: int) -> int:
-    """Run a coverage batch: one ScenarioPlan-driven case per (focus, seed)."""
+def _fx_fixture() -> int:
+    from .fx_fixture import ensure_fx_fixture
+
+    try:
+        status = ensure_fx_fixture()
+    except Exception as exc:
+        print(f"FX fixture failed: {exc}", file=sys.stderr)
+        return 1
+    print(f"local FX fixture: {status['present_pairs']}/{status['expected_pairs']} pairs "
+          f"({status['note']})")
+    for rate in status["rates"]:
+        print(f"  {rate}")
+    return 0 if status["ready"] else 1
+
+
+def _coverage_run(
+    focuses: list[str],
+    per_focus: int,
+    seed_base: int,
+    *,
+    sequential: bool = False,
+) -> int:
+    """Run a coverage batch: one ScenarioPlan-driven case per (focus, seed).
+
+    Plans are all generated up front, then executed by the parallel pipeline
+    unless ``--sequential`` is given.
+    """
     import json
     from datetime import datetime, timezone
 
     from .coverage import compute_coverage, load_case_records
     from .focus_contract import ALL_FOCUSES, COVERAGE_FOCUSES
+    from .fx_fixture import ensure_fx_fixture, requires_fx_fixture
+    from .pipeline import PipelineConfig, build_batch_plans, run_pipeline, summarise_pipeline
     from .run_generated_case import run_generated_case
     from .supabase import verification_root
 
@@ -230,20 +257,60 @@ def _coverage_run(focuses: list[str], per_focus: int, seed_base: int) -> int:
         print(f"unsupported focus: {', '.join(unknown)}", file=sys.stderr)
         return 2
 
+    plans = build_batch_plans(selected, per_focus=per_focus, seed_base=seed_base)
+    print(f"planned {len(plans)} cases across {len(selected)} focuses "
+          f"(seeds {seed_base}..{seed_base + len(plans) - 1})")
+
+    if any(requires_fx_fixture(plan.focus) for plan in plans):
+        try:
+            status = ensure_fx_fixture()
+        except Exception as exc:
+            print(f"could not prepare the local FX fixture: {exc}", file=sys.stderr)
+            return 2
+        print(f"local FX fixture ready: {status['present_pairs']}/{status['expected_pairs']} pairs "
+              f"({status['note']})")
+
     case_ids: list[str] = []
-    for focus in selected:
-        for offset in range(per_focus):
-            seed = seed_base + offset
-            result = run_generated_case(focus, seed=seed)
-            case_id = Path(result["output_dir"]).name
-            case_ids.append(case_id)
+    pipeline_summary = None
+
+    if sequential:
+        for plan in plans:
+            result = run_generated_case(plan.focus, plan=plan)
+            case_ids.append(Path(result["output_dir"]).name)
             print(
-                f"{focus:24s} seed={seed:<4d} {result['status']:<15s} "
+                f"{plan.focus:24s} seed={plan.seed:<4d} {result['status']:<15s} "
                 f"focus={result.get('focus_result') or '-':<14s} "
                 f"runner={result.get('runner_result') or '-':<9s} "
                 f"judge={result.get('judge_verdict') or '-'}"
             )
             sys.stdout.flush()
+    else:
+        def report_progress(event: dict) -> None:
+            if event.get("stage") == "coverage":
+                return
+            print(f"  [{event.get('case_id', '?')[:24]}] {event.get('stage')}: "
+                  f"{event.get('status')}", flush=True)
+
+        def report_done(result: dict) -> None:
+            case_ids.append(Path(result["output_dir"]).name)
+            print(
+                f"{result.get('focus'):24s} seed={result.get('plan_seed')!s:<4s} "
+                f"{result.get('status'):<15s} "
+                f"focus={result.get('focus_result') or '-':<14s} "
+                f"runner={result.get('runner_result') or '-':<9s} "
+                f"judge={result.get('judge_verdict') or '-'}",
+                flush=True,
+            )
+
+        payload = run_pipeline(
+            plans,
+            config=PipelineConfig.from_env(),
+            on_progress=report_progress,
+            on_case_done=report_done,
+        )
+        pipeline_summary = summarise_pipeline(payload)
+        if payload.get("generator_clamped"):
+            print("note: LOCAL_GENERATOR_WORKERS was clamped to 1 (single local prediction)")
 
     records = load_case_records(
         verification_root() / "local_llm_probe" / "generated_cases", case_ids=case_ids
@@ -254,7 +321,10 @@ def _coverage_run(focuses: list[str], per_focus: int, seed_base: int) -> int:
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     report_path = report_dir / f"coverage_{stamp}.json"
     report_path.write_text(
-        json.dumps({"case_ids": case_ids, "summary": summary}, ensure_ascii=False, indent=2) + "\n",
+        json.dumps(
+            {"case_ids": case_ids, "summary": summary, "pipeline": pipeline_summary},
+            ensure_ascii=False, indent=2,
+        ) + "\n",
         encoding="utf-8",
     )
 
@@ -271,6 +341,16 @@ def _coverage_run(focuses: list[str], per_focus: int, seed_base: int) -> int:
           f"repairs={summary['compiler_repair_count']}")
     print("judge: " + ", ".join(f"{key}={value}" for key, value in verdicts.items())
           + f" | pass_rate={summary['pass_rate']}")
+    if pipeline_summary is not None:
+        elapsed = pipeline_summary["elapsed_seconds"]
+        print(f"pipeline: {pipeline_summary['cases']} cases in {elapsed:.0f}s "
+              f"({pipeline_summary['cases_per_hour']} cases/hour) "
+              f"| queue_max={pipeline_summary['queue_max']} "
+              f"| deepseek_timeouts={pipeline_summary['deepseek_timeouts']}")
+        if pipeline_summary["worker_failures"]:
+            for failure in pipeline_summary["worker_failures"]:
+                print(f"  worker failure: {failure}")
+        print(f"workers: {pipeline_summary['config']}")
     flagged = [
         case for case in summary["cases"]
         if case["judge_verdict"] in ("FAIL", "UNCERTAIN", "JUDGE_ERROR")
@@ -329,6 +409,14 @@ def main(argv: list[str] | None = None) -> int:
     coverage_parser.add_argument(
         "--seed-base", type=int, default=1, help="first ScenarioPlan seed (default 1)",
     )
+    coverage_parser.add_argument(
+        "--sequential", action="store_true",
+        help="run cases one at a time instead of the parallel pipeline",
+    )
+    commands.add_parser(
+        "fx-fixture",
+        help="write the deterministic local FX rates the multi_currency focus needs",
+    )
     web_parser = commands.add_parser("web", help="launch local verification web dashboard")
     web_parser.add_argument("--host", default="127.0.0.1", help="host to bind (default: 127.0.0.1)")
     web_parser.add_argument("--port", type=int, default=8000, help="port to bind (default: 8000)")
@@ -349,7 +437,12 @@ def main(argv: list[str] | None = None) -> int:
         return _run_generated_case(args.focus, args.seed)
 
     if args.command == "coverage-run":
-        return _coverage_run(args.focus, args.per_focus, args.seed_base)
+        return _coverage_run(
+            args.focus, args.per_focus, args.seed_base, sequential=args.sequential
+        )
+
+    if args.command == "fx-fixture":
+        return _fx_fixture()
 
     if args.command == "run":
         result = run_scenario(args.scenario, progress=_progress)

@@ -71,10 +71,14 @@ class FocusContractTests(unittest.TestCase):
             "fifo_repayment", "targeted_repayment", "multiple_repayments",
             "prepayment_before_debt", "prepayment_after_debt", "prepayment_return",
             "linked_refund", "negative_expense", "void_transfer", "mixed_flow",
+            # second wave: the remaining high-value business domains
+            "multi_currency", "final_settlement", "large_activity", "refund_boundary",
+            "completion_archive",
         }
         self.assertEqual(set(COVERAGE_FOCUSES), expected)
         self.assertEqual(set(SMOKE_FOCUSES), {"expense_aa", "targeted_repayment", "prepayment_refund"})
         self.assertEqual(set(ALL_FOCUSES), expected | {"expense_aa", "prepayment_refund"})
+        self.assertEqual(len(ALL_FOCUSES), 21)
 
     def test_every_focus_declares_a_business_goal_and_dimensions(self):
         for name in ALL_FOCUSES:

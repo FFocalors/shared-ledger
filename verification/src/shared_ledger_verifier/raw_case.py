@@ -18,6 +18,11 @@ from .supabase import verification_root
 EVENT_TYPES = (
     "expense", "fifo_repayment", "targeted_repayment", "prepayment",
     "prepayment_return", "linked_refund", "void_transfer",
+    # Structural and lifecycle steps, so a raw case can describe the shape of a
+    # large activity, a final settlement or an archive instead of hiding it in
+    # the wording of an expense.
+    "sub_activity", "final_settlement", "preview_final_settlement",
+    "archive", "unarchive",
 )
 SMOKE_CNY_FOCUSES = frozenset({"expense_aa", "targeted_repayment", "prepayment_refund"})
 # Every registered focus runs on a CNY-only activity, so the raw-case currency is
@@ -170,6 +175,7 @@ def generate_raw_case(
     focus: str, *, client: LocalLLMClient | None = None,
     business_logic_path: Path | None = None,
     plan: ScenarioPlan | None = None,
+    business_logic: str | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Generate once; return raw case and non-secret provenance/performance metadata.
 
@@ -181,11 +187,15 @@ def generate_raw_case(
     if plan is not None and plan.focus != focus:
         raise RawCaseError("PLAN_FOCUS_MISMATCH")
     client = client or LocalLLMClient.from_env()
-    path = business_logic_path or verification_root().parent / "docs/backend/BUSINESS_LOGIC.md"
-    try:
-        document = path.read_text(encoding="utf-8")
-    except OSError:
-        raise LocalLLMError("BUSINESS_LOGIC_UNAVAILABLE") from None
+    if business_logic is not None:
+        # The pipeline reads the rule document once per batch, not once per case.
+        document = business_logic
+    else:
+        path = business_logic_path or verification_root().parent / "docs/backend/BUSINESS_LOGIC.md"
+        try:
+            document = path.read_text(encoding="utf-8")
+        except OSError:
+            raise LocalLLMError("BUSINESS_LOGIC_UNAVAILABLE") from None
     headings, sections = select_business_sections(document, focus)
     if not client.model:
         ids, _, _ = client.models()

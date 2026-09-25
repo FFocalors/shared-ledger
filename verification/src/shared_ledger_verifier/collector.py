@@ -49,7 +49,7 @@ def collect_state(
     activity_rows = client.select(
         "activities",
         filters={"id": f"eq.{activity_id}"},
-        columns="id,type,base_currency,multi_currency_enabled,financial_version",
+        columns="id,type,base_currency,multi_currency_enabled,financial_version,archived_at",
     )
     if not activity_rows:
         raise RuntimeError("Activity state was not visible to its authenticated creator")
@@ -325,6 +325,16 @@ def collect_state(
     ]
     normalized_paths.sort(key=lambda row: (row["transfer_ref"] or "", row["path_no"] or 0, row["hop_no"] or 0))
 
+    normalized_units = [
+        {
+            "ref": row.get("name"),
+            "name": row.get("name"),
+            "type": row.get("type"),
+            "is_deleted": bool(row.get("is_deleted", False)),
+        }
+        for row in sorted(ledger_units, key=lambda item: str(item.get("created_at") or ""))
+    ]
+
     statuses = client.select(
         "activity_financial_status",
         filters={"activity_id": f"eq.{activity_id}"},
@@ -338,6 +348,7 @@ def collect_state(
             "base_currency": activity.get("base_currency"),
             "multi_currency_enabled": activity.get("multi_currency_enabled"),
             "financial_version": activity.get("financial_version"),
+            "is_archived": activity.get("archived_at") is not None,
             "financial_status": status.get("financial_status"),
             "completed": status.get("completed"),
             "has_unsettled_debt": status.get("has_unsettled_debt"),
@@ -368,4 +379,5 @@ def collect_state(
         "prepayment_accounts": normalized_accounts,
         "prepayment_usages": normalized_usages,
         "final_settlement_paths": normalized_paths,
+        "ledger_units": normalized_units,
     }

@@ -277,3 +277,54 @@ def test_api_workflow_live() -> None:
     assert "server_time" in data
     assert "latest_completed" in data
 
+def test_batch_runs_on_the_pipeline_with_per_case_events() -> None:
+    """A dashboard batch pre-generates plans and streams pipeline events."""
+    from shared_ledger_verifier.pipeline import build_batch_plans
+
+    scanner = VerificationScanner()
+    orchestrator = WorkflowOrchestrator(scanner)
+    batch_id = orchestrator.create_batch(["multi_payer_aa"], count=2, seed=5)
+    queue = orchestrator.subscribe(batch_id)
+
+    plans = build_batch_plans(["multi_payer_aa"], per_focus=2, seed_base=5)
+    seen_events: list[tuple[str, dict[str, Any]]] = []
+
+    def fake_run_pipeline(plans_arg, *, config=None, on_progress=None, on_case_done=None, **kwargs):
+        produced = []
+        for index, plan in enumerate(plans_arg, start=1):
+            on_progress({"case_id": f"case-{index}", "focus": plan.focus,
+                         "plan_seed": plan.seed, "stage": "generator", "status": "completed",
+                         "details": {}})
+            result = {
+                "focus": plan.focus, "plan_seed": plan.seed, "status": "COMPLETE",
+                "focus_result": "FOCUS_VALID", "runner_result": "EXECUTED",
+                "judge_verdict": "PASS", "error_category": None,
+                "output_dir": str(scanner.generated_cases_dir / f"case-{index}"),
+            }
+            produced.append(result)
+            on_case_done(result)
+        return {"results": produced, "stats": {"elapsed_seconds": 1.0, "queue_max": {"raw": 1}},
+                "config": {}, "generator_clamped": False, "worker_failures": []}
+
+    with patch("shared_ledger_verifier.web.service.build_batch_plans", return_value=plans),          patch("shared_ledger_verifier.web.service.run_pipeline", side_effect=fake_run_pipeline):
+        orchestrator._execute_batch(batch_id)
+
+    while not queue.empty():
+        payload = queue.get_nowait()
+        seen_events.append((payload["event"], payload["data"]))
+
+    kinds = [kind for kind, _ in seen_events]
+    assert kinds[0] == "batch_started"
+    assert kinds[-1] == "batch_completed"
+    assert kinds.count("case_started") == 2
+    assert kinds.count("case_completed") == 2
+    # Every stage event carries its case id, so concurrent cases cannot be confused.
+    stage_events = [data for kind, data in seen_events if kind == "stage_progress"]
+    assert stage_events and all(event.get("case_id") for event in stage_events)
+    started = seen_events[0][1]
+    assert started["pipeline"]["generator_workers"] == 1
+    completed = seen_events[-1][1]
+    assert completed["completed_count"] == 2
+    assert completed["pipeline"]["cases_per_hour"] == 7200.0
+    batch = orchestrator.get_batch(batch_id)
+    assert batch["status"] == "completed"

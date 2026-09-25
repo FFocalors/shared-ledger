@@ -12,14 +12,19 @@ from uuid import UUID
 
 from .models import (
     ActivitySpec,
+    ArchiveActivity,
     CreateExpense,
     CreatePrepayment,
+    CreateSubActivity,
     FifoRepayment,
+    FinalSettlement,
     LinkedRefund,
     Operation,
+    PreviewFinalSettlement,
     ReturnPrepayment,
     Scenario,
     TargetedRepayment,
+    UnarchiveActivity,
     VoidTransfer,
 )
 
@@ -39,7 +44,13 @@ _OPERATION_TYPES = {
     "return_prepayment",
     "linked_refund",
     "void_transfer",
+    "create_sub_activity",
+    "final_settlement",
+    "preview_final_settlement",
+    "archive_activity",
+    "unarchive_activity",
 }
+_FINAL_SETTLEMENT_MODES = {"base_unified", "original_currency"}
 
 
 def load_scenario(path: str | Path) -> Scenario:
@@ -96,6 +107,7 @@ def _parse_scenario(document: Any) -> Scenario:
     transfer_refs: set[str] = set()
     voided_transfer_refs: set[str] = set()
     operation_refs: set[str] = set()
+    ledger_unit_refs: set[str] = set()
     operations: list[Operation] = []
 
     for index, operation_value in enumerate(operations_value):
@@ -104,13 +116,32 @@ def _parse_scenario(document: Any) -> Scenario:
             operation_value,
             location,
             participant_set,
-            activity.base_currency,
+            activity,
             expense_refs,
             transfer_refs,
             voided_transfer_refs,
             operation_refs,
+            ledger_unit_refs,
         )
         operations.append(operation)
+
+    # Section 18: an archived activity is read-only, so archiving must be the
+    # last financial fact; only unarchive_activity may follow it.
+    archived = False
+    for index, operation in enumerate(operations):
+        if isinstance(operation, ArchiveActivity):
+            if archived:
+                _fail(f"scenario.operations[{index}]", "the activity is already archived")
+            archived = True
+        elif isinstance(operation, UnarchiveActivity):
+            if not archived:
+                _fail(f"scenario.operations[{index}]", "the activity is not archived")
+            archived = False
+        elif archived:
+            _fail(
+                f"scenario.operations[{index}]",
+                "no operation may follow archive_activity before unarchive_activity",
+            )
 
     return Scenario(
         schema_version=1,
@@ -161,16 +192,18 @@ def _parse_operation(
     value: Any,
     location: str,
     participants: set[str],
-    base_currency: str,
+    activity: ActivitySpec,
     expense_refs: dict[str, tuple[Decimal, str]],
     transfer_refs: set[str],
     voided_transfer_refs: set[str],
     operation_refs: set[str],
+    ledger_unit_refs: set[str],
 ) -> Operation:
     raw = _object(value, location)
     operation_type = _string(raw.get("type"), f"{location}.type")
     if operation_type not in _OPERATION_TYPES:
         _fail(f"{location}.type", f"unsupported operation type {operation_type!r}")
+    base_currency = activity.base_currency
 
     if operation_type in {"create_expense", "linked_refund"}:
         return _parse_expense_operation(
@@ -181,6 +214,7 @@ def _parse_operation(
             base_currency,
             expense_refs,
             operation_refs,
+            ledger_unit_refs,
         )
 
     if operation_type in {"targeted_repayment", "fifo_repayment"}:
@@ -206,6 +240,18 @@ def _parse_operation(
             operation_refs,
         )
 
+    if operation_type == "create_sub_activity":
+        return _parse_sub_activity(raw, location, activity, operation_refs, ledger_unit_refs)
+
+    if operation_type == "final_settlement":
+        return _parse_final_settlement(raw, location, participants, operation_refs, transfer_refs)
+
+    if operation_type == "preview_final_settlement":
+        return _parse_preview_final_settlement(raw, location, operation_refs)
+
+    if operation_type in {"archive_activity", "unarchive_activity"}:
+        return _parse_activity_lifecycle(raw, location, operation_type, operation_refs)
+
     return _parse_void_transfer(raw, location, transfer_refs, voided_transfer_refs)
 
 
@@ -217,12 +263,19 @@ def _parse_expense_operation(
     base_currency: str,
     expense_refs: dict[str, tuple[Decimal, str]],
     operation_refs: set[str],
+    ledger_unit_refs: set[str],
 ) -> CreateExpense | LinkedRefund:
     required = {"type", "ref", "title", "amount", "currency", "payments"}
     if operation_type == "linked_refund":
         required.add("original_expense_ref")
-    optional = {"split_method", "splits", "aa_participants"}
+    optional = {"split_method", "splits", "aa_participants", "ledger_unit_ref"}
     _keys(raw, location, required=required, optional=optional)
+
+    ledger_unit_ref: str | None = None
+    if "ledger_unit_ref" in raw:
+        ledger_unit_ref = _identifier(raw["ledger_unit_ref"], f"{location}.ledger_unit_ref")
+        if ledger_unit_ref not in ledger_unit_refs:
+            _fail(f"{location}.ledger_unit_ref", "must reference an earlier create_sub_activity")
 
     ref = _new_operation_ref(raw["ref"], f"{location}.ref", operation_refs)
     title = _string(raw["title"], f"{location}.title")
@@ -285,6 +338,7 @@ def _parse_expense_operation(
         "split_method": split_method,
         "splits": MappingProxyType(splits) if splits is not None else None,
         "aa_participants": aa_participants,
+        "ledger_unit_ref": ledger_unit_ref,
     }
     if operation_type == "linked_refund":
         return LinkedRefund(original_expense_ref=original_expense_ref, **common)
@@ -362,6 +416,81 @@ def _parse_prepayment(
     if operation_type == "create_prepayment":
         return CreatePrepayment(ref, owner, custodian, amount, currency)
     return ReturnPrepayment(ref, owner, custodian, amount, currency)
+
+
+def _parse_sub_activity(
+    raw: dict[str, Any],
+    location: str,
+    activity: ActivitySpec,
+    operation_refs: set[str],
+    ledger_unit_refs: set[str],
+) -> CreateSubActivity:
+    """A LedgerUnit inside a large activity; holds its own expenses.
+
+    The sub-activity inherits the parent's type, base currency and
+    multi-currency setting, so only a ref and a display name are accepted.
+    """
+    _keys(raw, location, required={"type", "ref", "name"}, optional=set())
+    ref = _new_operation_ref(raw["ref"], f"{location}.ref", operation_refs)
+    name = _string(raw["name"], f"{location}.name")
+    ledger_unit_refs.add(ref)
+    return CreateSubActivity(ref, name)
+
+
+def _parse_final_settlement(
+    raw: dict[str, Any],
+    location: str,
+    participants: set[str],
+    operation_refs: set[str],
+    transfer_refs: set[str],
+) -> FinalSettlement:
+    """Execute one complete suggestion item of the current server plan.
+
+    Section 14 fixes the amount and currency from the server plan, so the
+    scenario names only the parties and the mode.
+    """
+    _keys(raw, location, required={"type", "ref", "mode"},
+          optional={"from_participant", "to_participant"})
+    ref = _new_operation_ref(raw["ref"], f"{location}.ref", operation_refs)
+    from_participant = None
+    to_participant = None
+    if ("from_participant" in raw) != ("to_participant" in raw):
+        _fail(location, "from_participant and to_participant must be supplied together")
+    if "from_participant" in raw:
+        from_participant = _participant_ref(
+            raw["from_participant"], f"{location}.from_participant", participants
+        )
+        to_participant = _participant_ref(
+            raw["to_participant"], f"{location}.to_participant", participants
+        )
+        if from_participant == to_participant:
+            _fail(location, "final settlement participants must be different")
+    mode = _string(raw["mode"], f"{location}.mode")
+    if mode not in _FINAL_SETTLEMENT_MODES:
+        _fail(f"{location}.mode", 'must be "base_unified" or "original_currency"')
+    transfer_refs.add(ref)
+    return FinalSettlement(ref, mode, from_participant, to_participant)
+
+
+def _parse_preview_final_settlement(
+    raw: dict[str, Any], location: str, operation_refs: set[str]
+) -> PreviewFinalSettlement:
+    _keys(raw, location, required={"type", "ref", "mode"}, optional=set())
+    ref = _new_operation_ref(raw["ref"], f"{location}.ref", operation_refs)
+    mode = _string(raw["mode"], f"{location}.mode")
+    if mode not in _FINAL_SETTLEMENT_MODES:
+        _fail(f"{location}.mode", 'must be "base_unified" or "original_currency"')
+    return PreviewFinalSettlement(ref, mode)
+
+
+def _parse_activity_lifecycle(
+    raw: dict[str, Any], location: str, operation_type: str, operation_refs: set[str]
+) -> ArchiveActivity | UnarchiveActivity:
+    _keys(raw, location, required={"type", "ref"}, optional=set())
+    ref = _new_operation_ref(raw["ref"], f"{location}.ref", operation_refs)
+    if operation_type == "archive_activity":
+        return ArchiveActivity(ref)
+    return UnarchiveActivity(ref)
 
 
 def _parse_void_transfer(

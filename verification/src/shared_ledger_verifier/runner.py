@@ -10,14 +10,19 @@ from pathlib import Path
 from typing import Any, Callable, Mapping
 
 from . import (
+    ArchiveActivity,
     CreateExpense,
     CreatePrepayment,
+    CreateSubActivity,
     FifoRepayment,
+    FinalSettlement,
     LinkedRefund,
+    PreviewFinalSettlement,
     ReturnPrepayment,
     Scenario,
     ScenarioValidationError,
     TargetedRepayment,
+    UnarchiveActivity,
     VoidTransfer,
     load_scenario,
 )
@@ -176,6 +181,19 @@ def _summary(operation: Any) -> dict[str, Any]:
         }
     if isinstance(operation, VoidTransfer):
         return {"transfer_ref": operation.transfer_ref, "reason": operation.reason}
+    if isinstance(operation, CreateSubActivity):
+        return {"ref": operation.ref, "name": operation.name}
+    if isinstance(operation, FinalSettlement):
+        return {
+            "ref": operation.ref,
+            "from_participant": operation.from_participant,
+            "to_participant": operation.to_participant,
+            "mode": operation.mode,
+        }
+    if isinstance(operation, PreviewFinalSettlement):
+        return {"ref": operation.ref, "mode": operation.mode}
+    if isinstance(operation, (ArchiveActivity, UnarchiveActivity)):
+        return {"ref": operation.ref}
     return {}
 
 
@@ -246,6 +264,7 @@ def run_scenario(
     expense_ids: dict[str, str] = {}
     transfer_ids: dict[str, str] = {}
     ledger_unit_id: str | None = None
+    ledger_unit_ids: dict[str, str] = {}
     request_ids: dict[str, str] = {}
     setup_complete = False
 
@@ -371,7 +390,11 @@ def run_scenario(
                         rpc_name,
                         _expense_payload(
                             operation,
-                            ledger_unit_id=ledger_unit_id,
+                            ledger_unit_id=(
+                                ledger_unit_ids.get(operation.ledger_unit_ref, ledger_unit_id)
+                                if operation.ledger_unit_ref
+                                else ledger_unit_id
+                            ),
                             participant_ids=participant_ids,
                             occurred_at=_occurred_at(started_at, step),
                             original_expense_id=original_id,
@@ -487,6 +510,115 @@ def run_scenario(
                         rpc_name,
                     )
                     trace["result"] = {"voided": bool(response.get("voided", True))}
+                elif isinstance(operation, CreateSubActivity):
+                    rpc_name = "create_sub_activity"
+                    record = _record(
+                        api.rpc(
+                            rpc_name,
+                            {"activity_id": activity_id, "name": operation.name},
+                        ),
+                        rpc_name,
+                    )
+                    unit_id = str(record.get("ledger_unit_id") or "")
+                    if not unit_id:
+                        raise RuntimeError("create_sub_activity response omitted ledger_unit_id")
+                    ledger_unit_ids[operation.ref] = unit_id
+                    trace["result"] = {
+                        "name": record.get("created_name"),
+                        "ledger_unit_type": record.get("created_type"),
+                    }
+                elif isinstance(operation, PreviewFinalSettlement):
+                    # Read-only: record the plan the server would offer right now.
+                    rpc_name = "preview_final_settlement_v2"
+                    rows = api.rpc(rpc_name, {"p_activity_id": activity_id, "p_mode": operation.mode})
+                    rows = rows if isinstance(rows, list) else ([rows] if rows else [])
+                    ref_by_id = {value: key for key, value in participant_ids.items()}
+                    trace["result"] = {
+                        "mode": operation.mode,
+                        "plan": [
+                            {
+                                "from": ref_by_id.get(str(row.get("from_participant_id")), "unknown"),
+                                "to": ref_by_id.get(str(row.get("to_participant_id")), "unknown"),
+                                "amount": _decimal_text(Decimal(str(row["amount"])))
+                                if row.get("amount") is not None else None,
+                                "currency": row.get("currency"),
+                                "is_prepayment_return": bool(row.get("is_prepayment_return")),
+                            }
+                            for row in rows
+                        ],
+                    }
+                elif isinstance(operation, FinalSettlement):
+                    # Section 14: execute one complete suggestion item as-is.
+                    rpc_name = "execute_final_settlement_v2"
+                    rows = api.rpc(
+                        "preview_final_settlement_v2",
+                        {"p_activity_id": activity_id, "p_mode": operation.mode},
+                    )
+                    rows = rows if isinstance(rows, list) else ([rows] if rows else [])
+                    if operation.from_participant is None:
+                        # Section 14: execute one complete suggestion item; with no
+                        # parties named, take the first item of the current plan.
+                        match = rows[0] if rows else None
+                    else:
+                        wanted_from = participant_ids[operation.from_participant]
+                        wanted_to = participant_ids[operation.to_participant]
+                        match = next(
+                            (
+                                row for row in rows
+                                if str(row.get("from_participant_id")) == wanted_from
+                                and str(row.get("to_participant_id")) == wanted_to
+                            ),
+                            None,
+                        )
+                    if match is None:
+                        raise RuntimeError(
+                            "the current final plan offers no item to execute"
+                        )
+                    wanted_from = str(match.get("from_participant_id"))
+                    wanted_to = str(match.get("to_participant_id"))
+                    version = _version(api, activity_id)
+                    request_id = request_ids.setdefault(operation.ref, str(uuid.uuid4()))
+                    payload = {
+                        "activity_id": activity_id,
+                        "from_participant_id": wanted_from,
+                        "to_participant_id": wanted_to,
+                        "amount": _decimal_text(Decimal(str(match["amount"]))),
+                        "currency": str(match["currency"]),
+                        "mode": operation.mode,
+                        "expected_financial_version": version,
+                        "request_id": request_id,
+                        "occurred_at": _occurred_at(started_at, step),
+                        # Section 4: any member may submit the current suggestion.
+                        "on_behalf_of_participant_id": None,
+                    }
+                    response, replayed = _retry_idempotent_rpc(api, rpc_name, payload)
+                    record = _record(response, rpc_name)
+                    identifier = str(record.get("transfer_id") or "")
+                    if not identifier:
+                        raise RuntimeError("execute_final_settlement_v2 response omitted transfer_id")
+                    transfer_ids[operation.ref] = identifier
+                    trace["financial_version"] = version
+                    trace["result"] = {
+                        "amount": _decimal_text(Decimal(str(record["amount"])))
+                        if record.get("amount") is not None else None,
+                        "currency": record.get("currency"),
+                        "mode": record.get("mode"),
+                        "financial_version": record.get("financial_version"),
+                    }
+                    if replayed:
+                        trace["replayed_after_network_error"] = True
+                elif isinstance(operation, (ArchiveActivity, UnarchiveActivity)):
+                    rpc_name = (
+                        "archive_activity"
+                        if isinstance(operation, ArchiveActivity) else "unarchive_activity"
+                    )
+                    record = _record(api.rpc(rpc_name, {"p_activity_id": activity_id}), rpc_name)
+                    trace["result"] = {
+                        "archived": bool(record.get("archived")),
+                        "changed": bool(record.get("changed")),
+                        "completed": bool(record.get("completed")),
+                        "warning": record.get("warning"),
+                    }
                 else:
                     raise RuntimeError(f"Unsupported operation type: {operation_name}")
             except Exception as exc:

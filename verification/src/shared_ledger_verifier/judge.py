@@ -39,10 +39,12 @@ _SCENARIO_FIELDS = {
 _SCENARIO_ACTIVITY_FIELDS = {"type", "base_currency", "multi_currency_enabled"}
 _SCENARIO_OPERATION_FIELDS = {
     "create_expense": {
-        "type", "ref", "title", "amount", "currency", "payments", "split_method", "splits", "aa_participants"
+        "type", "ref", "title", "amount", "currency", "payments", "split_method", "splits",
+        "aa_participants", "ledger_unit_ref",
     },
     "linked_refund": {
-        "type", "ref", "original_expense_ref", "title", "amount", "currency", "payments", "split_method", "splits", "aa_participants"
+        "type", "ref", "original_expense_ref", "title", "amount", "currency", "payments",
+        "split_method", "splits", "aa_participants", "ledger_unit_ref",
     },
     "fifo_repayment": {"type", "ref", "from_participant", "to_participant", "amount", "currency"},
     "targeted_repayment": {
@@ -55,6 +57,11 @@ _SCENARIO_OPERATION_FIELDS = {
         "type", "ref", "owner_participant", "custodian_participant", "amount", "currency"
     },
     "void_transfer": {"type", "transfer_ref", "reason"},
+    "create_sub_activity": {"type", "ref", "name"},
+    "final_settlement": {"type", "ref", "from_participant", "to_participant", "mode"},
+    "preview_final_settlement": {"type", "ref", "mode"},
+    "archive_activity": {"type", "ref"},
+    "unarchive_activity": {"type", "ref"},
 }
 _STATE_LIST_FIELDS = {
     "participants": {"ref", "order", "is_deleted"},
@@ -81,11 +88,15 @@ _STATE_LIST_FIELDS = {
         "transfer_ref", "path_no", "hop_no", "from", "to", "amount", "type", "currency", "original_amount",
         "base_amount",
     },
+    "ledger_units": {"ref", "name", "type", "is_deleted"},
 }
-_STATE_REQUIRED_FIELDS = {"activity", *_STATE_LIST_FIELDS}
+# ``ledger_units`` was added with the large-activity focus, so runs saved
+# before it must stay judgeable: it is filtered like the others but not required.
+_STATE_OPTIONAL_LIST_FIELDS = {"ledger_units"}
+_STATE_REQUIRED_FIELDS = {"activity", *(_STATE_LIST_FIELDS.keys() - _STATE_OPTIONAL_LIST_FIELDS)}
 _STATE_ACTIVITY_FIELDS = {
     "type", "base_currency", "multi_currency_enabled", "financial_status", "completed", "has_unsettled_debt",
-    "total_debt", "total_prepayment", "prepayment_by_currency",
+    "total_debt", "total_prepayment", "prepayment_by_currency", "is_archived",
 }
 _SENSITIVE_PATTERNS = (
     re.compile(r"\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{8,}\b"),
@@ -193,7 +204,7 @@ def _safe_state(path: Path) -> dict[str, Any]:
     )
     state: dict[str, Any] = {"activity": safe_activity}
     for field, allowed_fields in _STATE_LIST_FIELDS.items():
-        state[field] = _safe_rows(raw[field], allowed_fields)
+        state[field] = _safe_rows(raw.get(field, []), allowed_fields)
     for expense in state["expenses"]:
         for field in ("payments", "splits"):
             expense[field] = _safe_rows(expense.get(field, []), {"participant", "amount", "base_amount"})
