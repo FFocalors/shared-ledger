@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .deepseek import DeepSeekClient
+from .scenario_plan import ScenarioPlan, render_plan
 
 
 class CompilerError(ValueError):
@@ -121,11 +122,15 @@ def compile_once(
     loader_error: str | None = None,
     client: DeepSeekClient | None = None,
     smoke_currency: str | None = None,
+    plan: ScenarioPlan | None = None,
 ) -> CompilerResult:
     """Make one Compiler request and parse its Scenario output.
 
     Pass both ``prior_output`` and ``loader_error`` for the caller's single
-    repair attempt. This function does not call the Loader or retry.
+    repair attempt; ``loader_error`` carries whichever gate rejected the
+    previous Scenario (the Loader or the focus contract). When ``plan`` is
+    supplied its shape is authoritative and is restated to the model. This
+    function does not call the Loader or retry.
     """
 
     if not isinstance(raw_case, dict):
@@ -142,6 +147,13 @@ def compile_once(
         "Scenario JSON v1 input contract:\n" + SCENARIO_V1_CONTRACT,
         "Raw business case:\n" + json.dumps(raw_case, ensure_ascii=False, indent=2),
     ]
+    if plan is not None:
+        user_parts.append(
+            "This case was generated from a ScenarioPlan. The plan is authoritative: the "
+            "compiled Scenario must use exactly its participants, amounts, split methods and "
+            "operation order. Do not add, drop, reorder or re-amount anything.\n"
+            + render_plan(plan)
+        )
     if smoke_currency is not None:
         user_parts.append(
             f"This basic smoke focus is {smoke_currency}-only. Set activity.base_currency "
@@ -155,10 +167,10 @@ def compile_once(
             else json.dumps(prior_output, ensure_ascii=False, indent=2)
         )
         user_parts.append(
-            "The previous Compiler output failed the Scenario Loader. "
-            "Repair it once, preserving the raw case intent.\n"
+            "The previous Compiler output was rejected. Repair it once, preserving the raw "
+            "case intent and the ScenarioPlan shape.\n"
             "Previous output:\n" + rendered_prior + "\n"
-            "Loader error:\n" + loader_error
+            "Rejection reason:\n" + loader_error
         )
     started = time.monotonic()
     response_text = compiler_client.complete(_SYSTEM_PROMPT, "\n\n".join(user_parts))

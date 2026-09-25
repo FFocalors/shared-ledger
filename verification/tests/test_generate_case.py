@@ -170,6 +170,104 @@ class GenerateCaseTests(unittest.TestCase):
         self.assertFalse((self.root / "secret/raw_case.json").exists())
         compile_mock.assert_not_called()
 
+    # -- focus contract gate ----------------------------------------------
+
+    @staticmethod
+    def _focus_invalid() -> dict:
+        """Loader-valid, but a single payer never exercises the expense_aa focus."""
+        document = deepcopy(VALID)
+        document["operations"][0]["payments"] = {"A": "120.0"}
+        return document
+
+    @patch("shared_ledger_verifier.generate_case.compile_once")
+    @patch("shared_ledger_verifier.generate_case.generate_raw_case")
+    def test_focus_mismatch_is_distinct_from_loader_invalid(self, raw, compile_mock):
+        raw.return_value = (deepcopy(RAW), META)
+        compile_mock.return_value = compiled(self._focus_invalid())
+        result = self.run_case("mismatch")
+        self.assertEqual(result["status"], "FOCUS_MISMATCH")
+        self.assertEqual(result["loader_result"], "VALID")
+        self.assertEqual(result["focus_result"], "FOCUS_MISMATCH")
+        self.assertEqual(result["error_category"], "FOCUS_MISMATCH")
+        self.assertIn("positive payers", result["focus_error"])
+        self.assertEqual(result["repair_count"], 1)
+        self.assertEqual(compile_mock.call_count, 2)
+        attempts = json.loads((self.root / "mismatch/compiler_result.json").read_text())["attempts"]
+        self.assertEqual(attempts[-1]["loader_result"], "VALID")
+        self.assertEqual(attempts[-1]["focus_result"], "FOCUS_MISMATCH")
+
+    @patch("shared_ledger_verifier.generate_case.compile_once")
+    @patch("shared_ledger_verifier.generate_case.generate_raw_case")
+    def test_focus_mismatch_repairs_once_and_can_pass(self, raw, compile_mock):
+        raw.return_value = (deepcopy(RAW), META)
+        compile_mock.side_effect = [compiled(self._focus_invalid()), compiled(VALID, repair=True)]
+        result = self.run_case("mismatch_repaired")
+        self.assertEqual(result["status"], "VALID")
+        self.assertEqual(result["focus_result"], "FOCUS_VALID")
+        self.assertIsNone(result["focus_error"])
+        self.assertEqual(result["repair_count"], 1)
+        self.assertIn("positive payers", compile_mock.call_args.kwargs["loader_error"])
+
+    @patch("shared_ledger_verifier.generate_case.compile_once")
+    @patch("shared_ledger_verifier.generate_case.generate_raw_case")
+    def test_focus_valid_case_records_fingerprints(self, raw, compile_mock):
+        raw.return_value = (deepcopy(RAW), META)
+        compile_mock.return_value = compiled(VALID)
+        result = self.run_case("fingerprinted")
+        self.assertIsNotNone(result["scenario_fingerprint"])
+        self.assertIsNotNone(result["raw_case_fingerprint"])
+
+    @patch("shared_ledger_verifier.generate_case.compile_once")
+    @patch("shared_ledger_verifier.generate_case.generate_raw_case")
+    def test_plan_is_recorded_and_forwarded_to_the_generator(self, raw, compile_mock):
+        from shared_ledger_verifier.scenario_plan import plan_for
+
+        plan = plan_for("expense_aa", 11)
+        roster = list(plan.participants)
+        planned_raw = {**deepcopy(RAW), "participants": roster}
+        amount = plan.amounts[0]
+        payments = {
+            roster[index]: plan.amounts[1 + index] for index in range(plan.payer_count)
+        }
+        planned_valid = deepcopy(VALID)
+        planned_valid["participants"] = roster
+        planned_valid["operations"][0]["amount"] = amount
+        planned_valid["operations"][0]["payments"] = payments
+        planned_valid["operations"][0]["aa_participants"] = roster
+        raw.return_value = (planned_raw, META)
+        compile_mock.return_value = compiled(planned_valid)
+        result = self.run_case("planned", plan=plan)
+        self.assertEqual(result["status"], "VALID")
+        self.assertEqual(result["plan_seed"], 11)
+        self.assertEqual(result["plan_fingerprint"], plan.fingerprint())
+        self.assertIs(raw.call_args.kwargs["plan"], plan)
+        self.assertIs(compile_mock.call_args.kwargs["plan"], plan)
+        saved = json.loads((self.root / "planned/plan.json").read_text(encoding="utf-8"))
+        self.assertEqual(saved["seed"], 11)
+        self.assertEqual(saved["focus"], "expense_aa")
+
+    @patch("shared_ledger_verifier.generate_case.compile_once")
+    @patch("shared_ledger_verifier.generate_case.generate_raw_case")
+    def test_seed_derives_a_plan_without_an_explicit_one(self, raw, compile_mock):
+        raw.return_value = (deepcopy(RAW), META)
+        compile_mock.return_value = compiled(VALID)
+        result = self.run_case("seeded", seed=4)
+        self.assertEqual(result["plan_seed"], 4)
+        self.assertTrue((self.root / "seeded/plan.json").is_file())
+
+    @patch("shared_ledger_verifier.generate_case.compile_once")
+    @patch("shared_ledger_verifier.generate_case.generate_raw_case")
+    def test_raw_case_ignoring_the_plan_roster_is_rejected(self, raw, compile_mock):
+        from shared_ledger_verifier.scenario_plan import plan_for
+
+        plan = plan_for("expense_aa", 2)  # roster is alice/bob/carol, not A/B/C
+        raw.return_value = (deepcopy(RAW), META)
+        compile_mock.return_value = compiled(VALID)
+        result = self.run_case("roster", plan=plan)
+        self.assertEqual(result["status"], "RAW_CASE_ERROR")
+        self.assertEqual(result["error_category"], "PLAN_PARTICIPANTS_IGNORED")
+        compile_mock.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

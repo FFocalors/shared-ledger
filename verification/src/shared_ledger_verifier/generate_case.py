@@ -1,6 +1,10 @@
 """Generate one raw business case, compile it, and validate Scenario v1.
 
 This stage never executes a scenario or asks the business Judge for a verdict.
+It applies two gates in order: the Scenario Loader (is this a legal Scenario v1
+document?) and the focus contract (does it actually exercise the business shape
+its focus claims?). A document that passes the Loader but fails its focus
+contract is reported as ``FOCUS_MISMATCH`` and must not be counted as coverage.
 """
 
 from __future__ import annotations
@@ -15,11 +19,14 @@ from pathlib import Path
 from typing import Any, Callable
 
 from .deepseek import DeepSeekApiError, DeepSeekConfigurationError
+from .duplicates import raw_case_fingerprint, scenario_fingerprint
+from .focus_contract import check_focus
 from .loader import ScenarioValidationError, load_scenario
 from .local_llm import LocalLLMError
 from .local_llm_v2 import FOCUS_SECTIONS
 from .raw_case import RawCaseError, SMOKE_CNY_FOCUSES, generate_raw_case
 from .scenario_compiler import CompilerError, compile_once
+from .scenario_plan import ScenarioPlan, plan_for
 from .supabase import verification_root
 
 
@@ -93,14 +100,22 @@ def generate_case(
     output_dir: Path | None = None,
     business_logic_path: Path | None = None,
     on_progress: Callable[[str, str, dict[str, Any]], None] | None = None,
+    plan: ScenarioPlan | None = None,
+    seed: int | None = None,
 ) -> dict[str, Any]:
     """Run one Qwen request and at most two Compiler requests.
 
-    The second Compiler request is only for a Scenario that the Loader rejected.
-    Returned diagnostics contain controlled categories and redacted Loader text.
+    ``plan`` (or a ``seed`` from which one is derived) fixes the business shape
+    the model must encode.  The second Compiler request is used when the Loader
+    or the focus contract rejected the first Scenario.  Returned diagnostics
+    contain controlled categories and redacted Loader text.
     """
-    if focus not in FOCUS_SECTIONS:
+    if focus not in FOCUS_SECTIONS and focus not in _registry_names():
         raise ValueError(f"unsupported focus: {focus}")
+    if plan is None and seed is not None:
+        plan = plan_for(focus, seed)
+    if plan is not None and plan.focus != focus:
+        raise ValueError(f"plan focus {plan.focus!r} does not match requested focus {focus!r}")
     output_dir = Path(output_dir) if output_dir else _output_directory(focus)
     business_logic_path = (Path(business_logic_path) if business_logic_path else
                            verification_root().parent / "docs/backend/BUSINESS_LOGIC.md")
@@ -108,6 +123,10 @@ def generate_case(
     result: dict[str, Any] = {
         "focus": focus,
         "status": "PENDING",
+        "plan_seed": plan.seed if plan is not None else None,
+        "plan_fingerprint": plan.fingerprint() if plan is not None else None,
+        "focus_result": None,
+        "focus_error": None,
         "local_model": None,
         "compiler_model": None,
         "business_logic_commit": _business_logic_commit(business_logic_path),
@@ -119,6 +138,8 @@ def generate_case(
         "error_category": None,
         "output_dir": str(output_dir),
     }
+    if plan is not None:
+        _write_json(output_dir / "plan.json", plan.as_dict())
 
     def save() -> dict[str, Any]:
         _write_json(output_dir / "result.json", result)
@@ -134,15 +155,22 @@ def generate_case(
         return save()
 
     if on_progress:
-        on_progress("generator", "running", {"focus": focus})
+        on_progress("generator", "running", {"focus": focus, "seed": result["plan_seed"]})
     try:
         raw_case, local_meta = generate_raw_case(
-            focus, client=local_client, business_logic_path=business_logic_path,
+            focus, client=local_client, business_logic_path=business_logic_path, plan=plan,
         )
     except (RawCaseError, LocalLLMError) as error:
         if on_progress:
             on_progress("generator", "failed", {"error": error.category})
         result.update(status="RAW_CASE_ERROR", error_category=error.category)
+        return save()
+    if plan is not None and tuple(raw_case.get("participants") or ()) != plan.participants:
+        # The plan fixes the roster; a different roster means the model did not
+        # encode the plan and the case cannot satisfy its focus contract.
+        if on_progress:
+            on_progress("generator", "failed", {"error": "PLAN_PARTICIPANTS_IGNORED"})
+        result.update(status="RAW_CASE_ERROR", error_category="PLAN_PARTICIPANTS_IGNORED")
         return save()
     if focus in SMOKE_CNY_FOCUSES and raw_case.get("currency") != "CNY":
         if on_progress:
@@ -160,6 +188,7 @@ def generate_case(
             "latency": local_meta.get("generation_latency_seconds"),
         })
     _write_json(output_dir / "raw_case.json", raw_case)
+    result["raw_case_fingerprint"] = raw_case_fingerprint(raw_case)
     for key in ("local_model", "business_logic_sections", "business_logic_characters",
                 "input_characters", "generation_latency_seconds", "prompt_tokens", "completion_tokens"):
         value = local_meta.get(key)
@@ -169,17 +198,21 @@ def generate_case(
 
     attempts: list[dict[str, Any]] = []
     prior_output: dict[str, Any] | None = None
-    loader_error: str | None = None
+    rejection: str | None = None
     for attempt_no in range(2):
         if attempt_no:
             result["repair_count"] = 1
         if on_progress:
-            on_progress("compiler", "running", {"attempt": attempt_no + 1, "repair": bool(attempt_no)})
+            on_progress("compiler", "running", {
+                "attempt": attempt_no + 1, "repair": bool(attempt_no),
+                "reason": None if rejection is None else "rejected",
+            })
         try:
             compiled = compile_once(
                 raw_case, business_logic, client=compiler_client,
-                prior_output=prior_output, loader_error=loader_error,
+                prior_output=prior_output, loader_error=rejection,
                 smoke_currency="CNY" if focus in SMOKE_CNY_FOCUSES else None,
+                plan=plan,
             )
         except CompilerError as error:
             if on_progress:
@@ -215,28 +248,63 @@ def generate_case(
         _write_json(output_dir / "compiler_result.json", {"attempts": attempts})
         scenario_path = output_dir / "scenario.json"
         _write_json(scenario_path, compiled.scenario)
+        result["scenario_fingerprint"] = scenario_fingerprint(compiled.scenario)
+
+        # Gate 1: the Scenario Loader.
         try:
             load_scenario(scenario_path)
             _validate_smoke_currency(compiled.scenario, focus)
         except ScenarioValidationError as error:
-            loader_error = _safe_error(error)
+            rejection = _safe_error(error)
             if on_progress:
-                on_progress("loader", "failed", {"error": loader_error, "can_retry": attempt_no == 0})
-            result.update(loader_result="INVALID", loader_error=loader_error)
+                on_progress("loader", "failed", {"error": rejection, "can_retry": attempt_no == 0})
+            result.update(loader_result="INVALID", loader_error=rejection)
             attempts[-1]["loader_result"] = "INVALID"
-            attempts[-1]["loader_error"] = loader_error
+            attempts[-1]["loader_error"] = rejection
             _write_json(output_dir / "compiler_result.json", {"attempts": attempts})
             prior_output = compiled.scenario
             save()
             continue
+        result.update(loader_result="VALID", loader_error=None)
+
+        # Gate 2: the focus contract. A legal document that does not exercise
+        # its focus is a FOCUS_MISMATCH, not a valid coverage sample.
+        focus_result, focus_error = check_focus(load_scenario(scenario_path), focus)
+        attempts[-1]["focus_result"] = focus_result
+        attempts[-1]["focus_error"] = focus_error
+        result.update(focus_result=focus_result, focus_error=focus_error)
+        if focus_result != "FOCUS_VALID":
+            rejection = focus_error
+            if on_progress:
+                on_progress("focus", "failed", {
+                    "error": focus_error, "can_retry": attempt_no == 0,
+                })
+            attempts[-1]["loader_result"] = "VALID"
+            _write_json(output_dir / "compiler_result.json", {"attempts": attempts})
+            prior_output = compiled.scenario
+            save()
+            continue
+
         attempts[-1]["loader_result"] = "VALID"
         _write_json(output_dir / "compiler_result.json", {"attempts": attempts})
         if on_progress:
             on_progress("loader", "completed", {"loader_result": "VALID"})
+            on_progress("focus", "completed", {"focus_result": "FOCUS_VALID"})
         result.update(status="VALID", loader_result="VALID", loader_error=None)
         return save()
 
+    if result.get("focus_result") == "FOCUS_MISMATCH":
+        if on_progress:
+            on_progress("focus", "failed", {"error": "FOCUS_MISMATCH"})
+        result.update(status="FOCUS_MISMATCH", error_category="FOCUS_MISMATCH")
+        return save()
     if on_progress:
         on_progress("loader", "failed", {"error": "LOADER_INVALID"})
     result.update(status="COMPILER_INVALID", error_category="LOADER_INVALID")
     return save()
+
+
+def _registry_names() -> frozenset[str]:
+    from .focus_contract import ALL_FOCUSES
+
+    return frozenset(ALL_FOCUSES)

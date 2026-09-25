@@ -97,3 +97,89 @@ py -3.12 -m shared_ledger_verifier run-generated-case --focus expense_aa
 The command generates a fresh Qwen raw case, compiles it with DeepSeek (at most one Loader-guided repair), validates it with the existing Loader, executes it with the existing Runner against loopback Supabase, and asks the separate DeepSeek Judge to assess the saved final state. It stops before judging if compilation or execution fails. A Judge verdict of `FAIL` or `UNCERTAIN` is saved as returned; it does not trigger a rerun or change the Scenario. Each invocation has its own run ID, test identity, and business data. The existing loopback URL and credential checks apply; do not point this command at Production.
 
 The ignored case directory under `verification/local_llm_probe/generated_cases/` contains `raw_case.json`, `compiler_result.json`, `scenario.json`, `result.json`, `operations.jsonl`, `state_final.json`, and `judge.json` as far as each stage completes. `result.json` records models, business logic commit, stage latencies, Loader/Runner results, Judge verdict, and Compiler repair count. Credentials, authorization headers, and provider reasoning are excluded. The CLI exits successfully only after an `EXECUTED` run and a parsed `PASS`, `FAIL`, or `UNCERTAIN` verdict. This command runs one case; it does not start batch generation.
+
+## Coverage framework (focus contracts, ScenarioPlan, duplicates)
+
+Running a case is not the same as covering a behaviour. Three additions make a
+batch report what it actually verified.
+
+### Focus contracts
+
+`focus_contract.py` owns a registry of 16 focuses. Each entry declares the
+business shape it stands for (participant range, payer count, amount patterns,
+operation count, edge tags) and a contract: a predicate over a parsed Scenario
+that is decidable from the scenario alone, with no database access.
+
+The pipeline gates on two things in order. The Loader answers "is this a legal
+Scenario v1 document?"; the focus contract answers "does it exercise the
+behaviour its focus claims?". A document that passes the Loader but fails its
+contract is reported as `FOCUS_MISMATCH`: it is still executed and judged,
+because it exercises real business logic, but it is excluded from every coverage
+denominator. Both gates share the single permitted Compiler repair.
+
+`expense_aa`, `targeted_repayment` and `prepayment_refund` are the historical
+E2E smoke focuses and keep their original contracts. The formal coverage focuses
+are `single_payer_aa`, `multi_payer_aa`, `aa_rounding`, `manual_split`,
+`fifo_repayment`, `targeted_repayment`, `multiple_repayments`,
+`prepayment_before_debt`, `prepayment_after_debt`, `prepayment_return`,
+`linked_refund`, `negative_expense`, `void_transfer`, and `mixed_flow`.
+
+### ScenarioPlan
+
+`scenario_plan.py` derives a reproducible business shape from `(focus, seed)`.
+A plan fixes the participant roster, how many of them pay, the exact amounts,
+the amount pattern and the operation sequence, and is handed to both the Qwen
+generator and the DeepSeek Compiler as facts they must encode. The same seed
+always yields the same plan and therefore the same business data; different
+seeds walk the variation space (participant_count 3-5, payer_count 1-3,
+`divisible` / `non_divisible` / `decimal` / `large` / `small` amounts, 1-5
+operations, and edge tags such as `rounding_residual`, `partial_repayment`,
+`multiple_creditors`, `remaining_prepayment`, `full_settlement`).
+
+`plan_for` validates every plan against its focus spec before it reaches a
+model, so an unsatisfiable plan fails at planning time rather than burning a
+generation request.
+
+```powershell
+py -3.12 -m shared_ledger_verifier generate-case --focus multi_payer_aa --seed 3
+py -3.12 -m shared_ledger_verifier run-generated-case --focus void_transfer --seed 1
+```
+
+Omit `--seed` for the legacy behaviour (no plan). A run writes `plan.json`
+alongside the other artifacts and records `plan_seed` and `plan_fingerprint` in
+`result.json`.
+
+### Duplicate detection and unique-valid coverage
+
+`duplicates.py` reduces each scenario to a structural digest that maps every
+participant ref and operation ref to its position, so renaming refs or rewording
+titles does not change it, while changing any amount, payer, split method or
+topology does. The first case carrying a given `(focus, fingerprint)` is
+canonical; later ones are `DUPLICATE_CASE`.
+
+`coverage.py` turns this into the batch counters. `unique_valid_count` -- focus
+contract satisfied, Loader valid, and not a structural repeat -- is the only
+denominator any pass rate may use. A run of 30 cases that all encode one
+scenario has a coverage of one, however green the pipeline looks.
+
+### Run a coverage batch
+
+```powershell
+py -3.12 -m shared_ledger_verifier coverage-run --per-focus 3 --seed-base 1
+py -3.12 -m shared_ledger_verifier coverage-run --focus multi_payer_aa --focus aa_rounding --per-focus 2
+```
+
+`coverage-run` runs every formal coverage focus (or the ones named with
+`--focus`), one case per `(focus, seed)`, then prints `generated_count`,
+`focus_valid_count`, `focus_mismatch_count`, `duplicate_count`,
+`unique_valid_count`, `distinct_scenarios`, the Judge verdict distribution and
+the pass rate over unique valid coverage, and writes the full summary under
+`local_llm_probe/coverage_reports/`.
+
+The dashboard exposes the same counters at `GET /api/coverage`, includes them in
+`GET /api/dashboard` under `coverage`, marks each case with `focus_status`,
+`duplicate`, `duplicate_of` and `coverage_status`, and accepts
+`GET /api/cases?coverage=UNIQUE_VALID|DUPLICATE|FOCUS_MISMATCH|NOT_VALID`. The
+run form accepts `{"focuses": [...], "count": N, "seed": S}` to start a
+multi-focus batch; the SSE endpoint replays a batch's earlier events to a late
+subscriber and returns 404 for an unknown batch.

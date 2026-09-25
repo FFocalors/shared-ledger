@@ -120,7 +120,7 @@ class RunGeneratedCaseTests(unittest.TestCase):
             with contextlib.redirect_stdout(output):
                 code = cli.main(["run-generated-case", "--focus", "expense_aa"])
         self.assertEqual(code, 0)
-        run.assert_called_once_with("expense_aa")
+        run.assert_called_once_with("expense_aa", seed=None)
         self.assertIn("Judge=FAIL", output.getvalue())
 
     def test_cli_reports_stage_failure_without_secret_bearing_text(self) -> None:

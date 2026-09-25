@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from .focus_contract import FocusDefinitionError, focus_sections
 from .loader import ScenarioValidationError, load_scenario
 from .local_llm import LocalLLMClient, LocalLLMError, _response_format
 from .models import CreateExpense, CreatePrepayment, LinkedRefund, TargetedRepayment
@@ -28,9 +29,17 @@ _NEGATIVE_MONEY = {"type": "string", "pattern": "^-(?:0\\.[1-9]|[1-9][0-9]*(?:\\
 
 
 def select_business_sections(document: str, focus: str) -> tuple[list[str], str]:
-    """Select actual level-two Markdown sections by parsed section number."""
-    if focus not in FOCUS_SECTIONS:
-        raise LocalLLMError("INVALID_FOCUS")
+    """Select actual level-two Markdown sections by parsed section number.
+
+    The focus registry is the single source of truth; ``FOCUS_SECTIONS`` remains
+    as the legacy probe table and as a fallback for any focus it alone defines.
+    """
+    try:
+        numbers = focus_sections(focus)
+    except FocusDefinitionError:
+        if focus not in FOCUS_SECTIONS:
+            raise LocalLLMError("INVALID_FOCUS") from None
+        numbers = FOCUS_SECTIONS[focus]
     matches = list(_HEADING.finditer(document))
     found: dict[int, tuple[str, str]] = {}
     for index, match in enumerate(matches):
@@ -39,9 +48,9 @@ def select_business_sections(document: str, focus: str) -> tuple[list[str], str]
             raise LocalLLMError("BUSINESS_LOGIC_SECTION_DUPLICATE")
         end = matches[index + 1].start() if index + 1 < len(matches) else len(document)
         found[number] = (match.group(0), document[match.start():end].strip())
-    if any(number not in found for number in FOCUS_SECTIONS[focus]):
+    if any(number not in found for number in numbers):
         raise LocalLLMError("BUSINESS_LOGIC_SECTION_MISSING")
-    selected = [found[number] for number in FOCUS_SECTIONS[focus]]
+    selected = [found[number] for number in numbers]
     return [heading for heading, _ in selected], "\n\n".join(body for _, body in selected)
 
 

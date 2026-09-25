@@ -437,7 +437,15 @@ def run_scenario(
                         "amount": _decimal_text(operation.amount),
                         "currency": operation.currency,
                         "occurred_at": _occurred_at(started_at, step),
-                        "on_behalf_of_participant_id": None,
+                        # Section 4: creating a prepayment needs no behalf, but a
+                        # Return follows the ordinary claim/Creator-behalf rule and
+                        # moves money Custodian -> Owner, so the payer (the
+                        # custodian) is the party the caller acts for.
+                        "on_behalf_of_participant_id": (
+                            None
+                            if isinstance(operation, CreatePrepayment)
+                            else participant_ids[operation.custodian_participant]
+                        ),
                         "expected_financial_version": version,
                         "request_id": request_id,
                     }

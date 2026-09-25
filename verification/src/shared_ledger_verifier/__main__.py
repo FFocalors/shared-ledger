@@ -8,10 +8,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from .focus_contract import ALL_FOCUSES
 from .runner import run_scenario
 
 
 VERDICTS = ("PASS", "FAIL", "UNCERTAIN", "JUDGE_ERROR")
+FOCUS_CHOICES = tuple(ALL_FOCUSES)
 
 
 def _progress(event: dict[str, object]) -> None:
@@ -178,32 +180,109 @@ def _local_llm_probe() -> int:
     return 0 if result["ready"] else 1
 
 
-def _generate_case(focus: str) -> int:
+def _generate_case(focus: str, seed: int | None = None) -> int:
     from .generate_case import generate_case
 
-    result = generate_case(focus)
+    result = generate_case(focus, seed=seed)
     print(f"{focus}: {result['status']} | Loader={result['loader_result'] or '-'} "
-          f"| repair_count={result['repair_count']}")
+          f"| Focus={result['focus_result'] or '-'} | repair_count={result['repair_count']}"
+          + (f" | seed={result['plan_seed']}" if result.get("plan_seed") is not None else ""))
     print(f"Artifacts: {result['output_dir']}")
     if result["error_category"]:
         print(f"Error: {result['error_category']}")
+    if result["focus_error"]:
+        print(f"Focus: {result['focus_error']}")
     if result["loader_error"]:
         print(f"Loader: {result['loader_error']}")
     return 0 if result["status"] == "VALID" else 1
 
 
-def _run_generated_case(focus: str) -> int:
+def _run_generated_case(focus: str, seed: int | None = None) -> int:
     from .run_generated_case import run_generated_case
 
-    result = run_generated_case(focus)
+    result = run_generated_case(focus, seed=seed)
     print(f"{focus}: {result['status']} | run_id={result.get('run_id') or '-'} "
           f"| Loader={result.get('loader_result') or '-'} "
+          f"| Focus={result.get('focus_result') or '-'} "
           f"| Runner={result.get('runner_result') or '-'} "
           f"| Judge={result.get('judge_verdict') or '-'}")
     print(f"Artifacts: {result['output_dir']}")
+    if result.get("focus_error"):
+        print(f"Focus: {result['focus_error']}")
     if result.get("error_category"):
         print(f"Error: {result['error_category']}")
     return 0 if result["status"] == "COMPLETE" else 1
+
+
+def _coverage_run(focuses: list[str], per_focus: int, seed_base: int) -> int:
+    """Run a coverage batch: one ScenarioPlan-driven case per (focus, seed)."""
+    import json
+    from datetime import datetime, timezone
+
+    from .coverage import compute_coverage, load_case_records
+    from .focus_contract import ALL_FOCUSES, COVERAGE_FOCUSES
+    from .run_generated_case import run_generated_case
+    from .supabase import verification_root
+
+    selected = focuses or list(COVERAGE_FOCUSES)
+    unknown = [focus for focus in selected if focus not in ALL_FOCUSES]
+    if unknown:
+        print(f"unsupported focus: {', '.join(unknown)}", file=sys.stderr)
+        return 2
+
+    case_ids: list[str] = []
+    for focus in selected:
+        for offset in range(per_focus):
+            seed = seed_base + offset
+            result = run_generated_case(focus, seed=seed)
+            case_id = Path(result["output_dir"]).name
+            case_ids.append(case_id)
+            print(
+                f"{focus:24s} seed={seed:<4d} {result['status']:<15s} "
+                f"focus={result.get('focus_result') or '-':<14s} "
+                f"runner={result.get('runner_result') or '-':<9s} "
+                f"judge={result.get('judge_verdict') or '-'}"
+            )
+            sys.stdout.flush()
+
+    records = load_case_records(
+        verification_root() / "local_llm_probe" / "generated_cases", case_ids=case_ids
+    )
+    summary = compute_coverage(records)
+    report_dir = verification_root() / "local_llm_probe" / "coverage_reports"
+    report_dir.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    report_path = report_dir / f"coverage_{stamp}.json"
+    report_path.write_text(
+        json.dumps({"case_ids": case_ids, "summary": summary}, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    verdicts = summary["judge_verdicts"]
+    print()
+    print(f"generated={summary['generated_count']} "
+          f"focus_valid={summary['focus_valid_count']} "
+          f"focus_mismatch={summary['focus_mismatch_count']} "
+          f"duplicate={summary['duplicate_count']} "
+          f"unique_valid={summary['unique_valid_count']} "
+          f"distinct_scenarios={summary['distinct_scenarios']}")
+    print(f"loader_valid={summary['loader_valid_count']} "
+          f"runner_executed={summary['runner_executed_count']} "
+          f"repairs={summary['compiler_repair_count']}")
+    print("judge: " + ", ".join(f"{key}={value}" for key, value in verdicts.items())
+          + f" | pass_rate={summary['pass_rate']}")
+    flagged = [
+        case for case in summary["cases"]
+        if case["judge_verdict"] in ("FAIL", "UNCERTAIN", "JUDGE_ERROR")
+        or case["focus_status"] == "FOCUS_MISMATCH"
+    ]
+    if flagged:
+        print("needs review:")
+        for case in flagged:
+            print(f"  {case['case_id']} [{case['focus']}] judge={case['judge_verdict']} "
+                  f"focus={case['focus_status']} {case['focus_error'] or ''}")
+    print(f"report: {report_path}")
+    return 0 if summary["focus_mismatch_count"] == 0 else 1
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -223,13 +302,32 @@ def main(argv: list[str] | None = None) -> int:
     generate_parser = commands.add_parser(
         "generate-case", help="generate one raw case, compile it, and validate Scenario v1"
     )
-    generate_parser.add_argument("--focus", choices=("expense_aa", "targeted_repayment", "prepayment_refund"),
-                                 required=True)
+    generate_parser.add_argument("--focus", choices=sorted(FOCUS_CHOICES), required=True)
+    generate_parser.add_argument(
+        "--seed", type=int, default=None,
+        help="ScenarioPlan seed; omit to generate without a plan",
+    )
     generated_run_parser = commands.add_parser(
         "run-generated-case", help="generate, compile, run locally, and judge one case"
     )
+    generated_run_parser.add_argument("--focus", choices=sorted(FOCUS_CHOICES), required=True)
     generated_run_parser.add_argument(
-        "--focus", choices=("expense_aa", "targeted_repayment", "prepayment_refund"), required=True
+        "--seed", type=int, default=None,
+        help="ScenarioPlan seed; omit to generate without a plan",
+    )
+    coverage_parser = commands.add_parser(
+        "coverage-run",
+        help="run a ScenarioPlan-driven coverage batch and report unique valid coverage",
+    )
+    coverage_parser.add_argument(
+        "--focus", action="append", default=[], choices=sorted(FOCUS_CHOICES),
+        help="focus to include; repeatable. Defaults to every formal coverage focus.",
+    )
+    coverage_parser.add_argument(
+        "--per-focus", type=int, default=3, help="cases per focus (default 3)",
+    )
+    coverage_parser.add_argument(
+        "--seed-base", type=int, default=1, help="first ScenarioPlan seed (default 1)",
     )
     web_parser = commands.add_parser("web", help="launch local verification web dashboard")
     web_parser.add_argument("--host", default="127.0.0.1", help="host to bind (default: 127.0.0.1)")
@@ -245,10 +343,13 @@ def main(argv: list[str] | None = None) -> int:
         return _local_llm_probe()
 
     if args.command == "generate-case":
-        return _generate_case(args.focus)
+        return _generate_case(args.focus, args.seed)
 
     if args.command == "run-generated-case":
-        return _run_generated_case(args.focus)
+        return _run_generated_case(args.focus, args.seed)
+
+    if args.command == "coverage-run":
+        return _coverage_run(args.focus, args.per_focus, args.seed_base)
 
     if args.command == "run":
         result = run_scenario(args.scenario, progress=_progress)

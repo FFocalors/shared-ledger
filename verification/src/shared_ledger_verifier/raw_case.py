@@ -8,8 +8,10 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
+from .focus_contract import ALL_FOCUSES, FocusDefinitionError, focus_spec
 from .local_llm import LocalLLMClient, LocalLLMError, _response_format
 from .local_llm_v2 import FOCUS_SECTIONS, select_business_sections
+from .scenario_plan import ScenarioPlan, render_plan
 from .supabase import verification_root
 
 
@@ -18,6 +20,10 @@ EVENT_TYPES = (
     "prepayment_return", "linked_refund", "void_transfer",
 )
 SMOKE_CNY_FOCUSES = frozenset({"expense_aa", "targeted_repayment", "prepayment_refund"})
+# Every registered focus runs on a CNY-only activity, so the raw-case currency is
+# pinned for all of them; unregistered focus names keep the schema unconstrained.
+CNY_ONLY_FOCUSES = frozenset(ALL_FOCUSES)
+KNOWN_FOCUSES = frozenset(ALL_FOCUSES) | frozenset(FOCUS_SECTIONS)
 
 # The intentionally small contract leaves accounting normalization to the Compiler.
 # Each event is a plain-language business intent, not a Scenario JSON v1 operation.
@@ -104,13 +110,14 @@ def parse_raw_case(content: str, *, required_currency: str | None = None) -> dic
 
 def _schema_for_focus(focus: str) -> dict[str, Any]:
     schema = deepcopy(RAW_CASE_SCHEMA)
-    if focus in SMOKE_CNY_FOCUSES:
+    if focus in CNY_ONLY_FOCUSES:
         schema["properties"]["currency"] = {"type": "string", "const": "CNY"}
     return schema
 
 
-def _messages(focus: str, sections: str) -> list[dict[str, str]]:
-    guidance = {
+def _guidance(focus: str) -> str:
+    """Bespoke guidance for the historical smoke focuses, else the registry goal."""
+    bespoke = {
         "expense_aa": (
             "Use a normal CNY activity with A, B, C. Describe one shared expense, "
             "two or three payers, and an equal AA share for all three. No repayment, "
@@ -126,7 +133,21 @@ def _messages(focus: str, sections: str) -> list[dict[str, str]]:
             "to a custodian, a later shared expense, then a partial refund linked to that "
             "previous expense. State who receives the refund and who benefits."
         ),
-    }[focus]
+    }
+    if focus in bespoke:
+        return bespoke[focus]
+    return focus_spec(focus).goal
+
+
+def _messages(focus: str, sections: str, plan: ScenarioPlan | None = None) -> list[dict[str, str]]:
+    if plan is not None:
+        task = (
+            "Encode this fixed ScenarioPlan as a raw business case. The plan is authoritative: "
+            "use exactly the participants, amounts, payers and operation order it states, and do "
+            "not invent, drop, or reorder any of them.\n\n" + render_plan(plan)
+        )
+    else:
+        task = _guidance(focus)
     return [
         {"role": "system", "content": (
             "Create one original raw business test case using the supplied BUSINESS_LOGIC.md "
@@ -137,7 +158,7 @@ def _messages(focus: str, sections: str) -> list[dict[str, str]]:
             "Judge verdict, or database internal fields."
         )},
         {"role": "user", "content": (
-            guidance + " Express amounts in the intent as clear decimal currency amounts; "
+            task + " Express amounts in the intent as clear decimal currency amounts; "
             "do not worry about exact payment/split conservation, titles, refs, or Loader field "
             "names. Use ordinary semantic references such as 'previous expense' where useful. "
             "Generate exactly one case.\n\nRelevant BUSINESS_LOGIC.md sections:\n" + sections
@@ -148,14 +169,17 @@ def _messages(focus: str, sections: str) -> list[dict[str, str]]:
 def generate_raw_case(
     focus: str, *, client: LocalLLMClient | None = None,
     business_logic_path: Path | None = None,
+    plan: ScenarioPlan | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Generate once; return raw case and non-secret provenance/performance metadata.
 
     Raises ``RawCaseError`` for malformed model output and ``LocalLLMError`` for
     unavailable source/model or API errors. It never retries or writes files.
     """
-    if focus not in FOCUS_SECTIONS:
+    if focus not in KNOWN_FOCUSES:
         raise RawCaseError("INVALID_FOCUS")
+    if plan is not None and plan.focus != focus:
+        raise RawCaseError("PLAN_FOCUS_MISMATCH")
     client = client or LocalLLMClient.from_env()
     path = business_logic_path or verification_root().parent / "docs/backend/BUSINESS_LOGIC.md"
     try:
@@ -166,7 +190,7 @@ def generate_raw_case(
     if not client.model:
         ids, _, _ = client.models()
         client.select_model(ids)
-    messages = _messages(focus, sections)
+    messages = _messages(focus, sections, plan)
     completion = client.complete(
         messages,
         max_tokens=1024,
@@ -174,10 +198,12 @@ def generate_raw_case(
     )
     raw = parse_raw_case(
         completion.content,
-        required_currency="CNY" if focus in SMOKE_CNY_FOCUSES else None,
+        required_currency="CNY" if focus in CNY_ONLY_FOCUSES else None,
     )
     return raw, {
         "focus": focus,
+        "plan_seed": plan.seed if plan is not None else None,
+        "plan_fingerprint": plan.fingerprint() if plan is not None else None,
         "local_model": client.model,
         "business_logic_sections": headings,
         "business_logic_characters": len(sections),

@@ -43,6 +43,17 @@ class FakeSupabase:
                     "financial_version": self.version,
                 }
             ]
+        if name in ("create_prepayment_v2", "create_prepayment_return_v2"):
+            self.version += 1
+            return [
+                {
+                    "transfer_id": "transfer-prepay-1",
+                    "amount": payload["amount"],
+                    "currency": payload["currency"],
+                    "financial_version": self.version,
+                    "new_prepayment_balance": "60.0",
+                }
+            ]
         raise AssertionError(f"unexpected RPC {name}")
 
     def select(self, table: str, *, filters=None, columns="*", limit=1000):
@@ -158,6 +169,37 @@ class RunnerTests(unittest.TestCase):
             self.assertEqual(durable["transfer_ref"], "transfer_1")
             self.assertEqual(durable["payment_amount"], "40.0")
         self.assertTrue(client.closed)
+
+    def test_prepayment_return_acts_on_behalf_of_the_custodian(self) -> None:
+        # Section 4 lets any member create a prepayment without a behalf, but a
+        # Return follows the ordinary claim/Creator-behalf rule and moves money
+        # Custodian -> Owner, so the custodian is the party the caller acts for.
+        client = FakeSupabase()
+        scenario = {
+            "schema_version": 1,
+            "scenario_id": "prepay_return_behalf",
+            "description": "A prepays B, then B returns part of it.",
+            "activity": {"type": "normal", "base_currency": "CNY", "multi_currency_enabled": False},
+            "participants": ["A", "B"],
+            "operations": [
+                {"type": "create_prepayment", "ref": "prepay_1", "owner_participant": "A",
+                 "custodian_participant": "B", "amount": "100.0", "currency": "CNY"},
+                {"type": "return_prepayment", "ref": "return_1", "owner_participant": "A",
+                 "custodian_participant": "B", "amount": "40.0", "currency": "CNY"},
+            ],
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "scenario.json"
+            path.write_text(json.dumps(scenario), encoding="utf-8")
+            result = run_scenario(path, runs_dir=Path(temporary) / "runs", client=client)
+        self.assertEqual(result["status"], "EXECUTED")
+        created = next(payload for name, payload in client.rpc_calls if name == "create_prepayment_v2")
+        returned = next(
+            payload for name, payload in client.rpc_calls if name == "create_prepayment_return_v2"
+        )
+        self.assertIsNone(created["on_behalf_of_participant_id"])
+        self.assertEqual(returned["on_behalf_of_participant_id"], "participant-b")
+        self.assertEqual(returned["owner_participant_id"], "participant-a")
 
     def test_invalid_scenario_writes_all_artifacts_without_auth(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

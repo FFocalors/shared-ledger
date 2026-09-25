@@ -15,9 +15,15 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from ..local_llm_v2 import FOCUS_SECTIONS
+from ..focus_contract import COVERAGE_FOCUSES, SMOKE_FOCUSES
 from ..supabase import load_local_env
-from .service import VerificationScanner, WorkflowOrchestrator, scanner_instance, orchestrator_instance
+from .service import (
+    VerificationScanner,
+    WorkflowOrchestrator,
+    focus_catalog,
+    orchestrator_instance,
+    scanner_instance,
+)
 
 
 @asynccontextmanager
@@ -46,8 +52,19 @@ STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 
 class RunWorkflowRequest(BaseModel):
-    focus: str = Field(..., description="Focus scenario (e.g., expense_aa, targeted_repayment, prepayment_refund)")
-    count: int = Field(default=1, ge=1, le=10, description="Number of cases to generate and run")
+    focus: str | None = Field(
+        default=None, description="Single focus (kept for compatibility; e.g. expense_aa)"
+    )
+    focuses: list[str] | None = Field(
+        default=None, description="One or more coverage focuses; takes precedence over focus"
+    )
+    count: int = Field(default=1, ge=1, le=10, description="Cases per focus, each with its own ScenarioPlan seed")
+    seed: int | None = Field(default=None, ge=0, description="First ScenarioPlan seed; defaults to 1")
+
+    def selected_focuses(self) -> list[str]:
+        if self.focuses:
+            return [focus for focus in self.focuses if focus]
+        return [self.focus] if self.focus else []
 
 
 @app.get("/api/dashboard")
@@ -60,6 +77,10 @@ def get_dashboard() -> dict[str, Any]:
 def list_cases(
     verdict: str = Query(default="ALL", description="Filter by verdict: ALL, PASS, FAIL, UNCERTAIN, ERROR"),
     focus: str = Query(default="ALL", description="Filter by focus: ALL or specific focus name"),
+    coverage: str = Query(
+        default="ALL",
+        description="Filter by coverage: ALL, UNIQUE_VALID, DUPLICATE, FOCUS_MISMATCH, NOT_VALID",
+    ),
     search: str = Query(default="", description="Search substring in run_id or case_id"),
 ) -> list[dict[str, Any]]:
     """List all scanned cases with flexible filtering."""
@@ -68,6 +89,7 @@ def list_cases(
 
     verdict_upper = verdict.strip().upper()
     focus_lower = focus.strip().lower()
+    coverage_upper = coverage.strip().upper()
     search_lower = search.strip().lower()
 
     for c in cases:
@@ -84,6 +106,11 @@ def list_cases(
         if focus_lower != "all":
             c_focus = (c.get("focus") or "").lower()
             if c_focus != focus_lower:
+                continue
+
+        # Coverage filter
+        if coverage_upper != "ALL":
+            if (c.get("coverage_status") or "NOT_VALID").upper() != coverage_upper:
                 continue
 
         # Search filter
@@ -117,11 +144,9 @@ def get_config_info() -> dict[str, Any]:
     """Return backend status without exposing sensitive credentials."""
     load_local_env()
     return {
-        "supported_focuses": [
-            {"id": "expense_aa", "name": "AA 制均摊消费 (expense_aa)", "desc": "包含均摊支出与债务创建"},
-            {"id": "targeted_repayment", "name": "定向还款 (targeted_repayment)", "desc": "指定清偿具体债务凭据"},
-            {"id": "prepayment_refund", "name": "预付款与关联退款 (prepayment_refund)", "desc": "预付款核销与关联原消费退款"},
-        ],
+        "supported_focuses": focus_catalog(),
+        "smoke_focuses": list(SMOKE_FOCUSES),
+        "coverage_focuses": list(COVERAGE_FOCUSES),
         "env_status": {
             "has_supabase_url": bool(os.environ.get("SUPABASE_URL")),
             "has_supabase_anon_key": bool(os.environ.get("SUPABASE_ANON_KEY")),
@@ -134,20 +159,38 @@ def get_config_info() -> dict[str, Any]:
     }
 
 
+@app.get("/api/coverage")
+def get_coverage() -> dict[str, Any]:
+    """Unique-valid coverage counters over every generated case on disk."""
+    return scanner_instance.get_coverage_report()
+
+
 @app.post("/api/workflow/run")
 def run_workflow(req: RunWorkflowRequest) -> dict[str, Any]:
     """Trigger a new workflow test batch in the background."""
+    focuses = req.selected_focuses()
+    if not focuses:
+        raise HTTPException(status_code=400, detail="At least one focus is required")
     try:
-        batch_id = orchestrator_instance.create_batch(req.focus, req.count)
+        batch_id = orchestrator_instance.create_batch(focuses, req.count, req.seed)
         orchestrator_instance.run_batch_in_background(batch_id)
         return {
             "status": "started",
             "batch_id": batch_id,
-            "focus": req.focus,
+            "focuses": focuses,
+            "focus": focuses[0] if len(focuses) == 1 else "multi",
             "count": req.count,
+            "total_count": req.count * len(focuses),
+            "seed_base": req.seed if req.seed is not None else 1,
         }
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/api/workflow/live")
+def get_workflow_live() -> dict[str, Any]:
+    """Retrieve live execution status across all runners (Web UI or Claude Code / CLI)."""
+    return scanner_instance.get_live_execution(orchestrator_instance)
 
 
 @app.get("/api/workflow/status/{batch_id}")
@@ -161,7 +204,15 @@ def get_workflow_status(batch_id: str) -> dict[str, Any]:
 
 @app.get("/api/workflow/events/{batch_id}")
 async def stream_workflow_events(batch_id: str) -> StreamingResponse:
-    """Server-Sent Events endpoint streaming pipeline progress in real-time."""
+    """Server-Sent Events endpoint streaming pipeline progress in real-time.
+
+    The orchestrator replays the batch's events so far to a late subscriber, so
+    a client that attaches after the run request still sees ``batch_started``
+    and every earlier case.  An unknown batch is a 404 rather than an endless
+    keepalive stream.
+    """
+    if orchestrator_instance.get_batch(batch_id) is None:
+        raise HTTPException(status_code=404, detail="Batch not found")
     queue = orchestrator_instance.subscribe(batch_id)
 
     async def event_generator():

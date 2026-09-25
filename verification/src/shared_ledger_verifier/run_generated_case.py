@@ -11,9 +11,13 @@ from typing import Any, Callable
 from .generate_case import _has_secret, _safe_error, generate_case
 from .judge import judge_run
 from .runner import run_scenario
+from .scenario_plan import ScenarioPlan
 
 
 _VERDICTS = {"PASS", "FAIL", "UNCERTAIN"}
+# A scenario that satisfies the Loader but not its focus contract is still worth
+# executing -- it exercises real business logic -- but it is not coverage.
+_EXECUTABLE = {"VALID", "FOCUS_MISMATCH"}
 
 
 def _save(path: Path, result: dict[str, Any]) -> dict[str, Any]:
@@ -42,10 +46,13 @@ def run_generated_case(
     runner: Callable[..., dict[str, Any]] | None = None,
     judge: Callable[..., dict[str, Any]] | None = None,
     on_progress: Callable[[str, str, dict[str, Any]], None] | None = None,
+    plan: ScenarioPlan | None = None,
+    seed: int | None = None,
 ) -> dict[str, Any]:
     """Generate, compile, validate, execute, and judge one fresh case.
 
-    The existing generator does the only allowed Compiler repair. The Runner
+    ``plan`` (or a ``seed`` that derives one) fixes the business shape.  The
+    existing generator does the only allowed Compiler repair.  The Runner
     creates a fresh test identity and activity; its local-only URL validation
     remains the sole database connection policy. Failures never trigger an E2E
     retry, and a failed Runner is never sent to the Judge.
@@ -57,12 +64,20 @@ def run_generated_case(
         output_dir=output_dir,
         business_logic_path=business_logic_path,
         on_progress=on_progress,
+        plan=plan,
+        seed=seed,
     )
     case_dir = Path(generated["output_dir"])
     result: dict[str, Any] = {
         "status": "PENDING",
         "focus": focus,
         "run_id": None,
+        "plan_seed": generated.get("plan_seed"),
+        "plan_fingerprint": generated.get("plan_fingerprint"),
+        "focus_result": generated.get("focus_result"),
+        "focus_error": generated.get("focus_error"),
+        "scenario_fingerprint": generated.get("scenario_fingerprint"),
+        "raw_case_fingerprint": generated.get("raw_case_fingerprint"),
         "local_generator_model": generated.get("local_model"),
         "compiler_model": generated.get("compiler_model"),
         "judge_model": None,
@@ -81,7 +96,7 @@ def run_generated_case(
         "run_dir": None,
     }
     result_path = case_dir / "result.json"
-    if generated.get("status") != "VALID":
+    if generated.get("status") not in _EXECUTABLE:
         result["status"] = (
             "COMPILER_INVALID" if generated.get("status") == "COMPILER_INVALID"
             else "GENERATION_ERROR"
@@ -90,6 +105,8 @@ def run_generated_case(
             on_progress("runner", "skipped", {"reason": "generation_failed"})
             on_progress("judge", "skipped", {"reason": "generation_failed"})
         return _save(result_path, result)
+    if generated.get("status") == "FOCUS_MISMATCH" and on_progress:
+        on_progress("coverage", "excluded", {"reason": "FOCUS_MISMATCH"})
 
     execute = runner or run_scenario
     started = perf_counter()
@@ -167,10 +184,13 @@ def run_generated_case(
                 "error": result["error_category"],
             })
     else:
-        result.update(status="COMPLETE", error_category=None)
+        result.update(status="COMPLETE")
+        if result.get("focus_result") != "FOCUS_MISMATCH":
+            result["error_category"] = None
         if on_progress:
             on_progress("judge", "completed", {
                 "verdict": judgment.get("verdict"),
                 "latency": result["judge_latency_seconds"],
+                "focus_result": result.get("focus_result"),
             })
     return _save(result_path, result)
