@@ -26,15 +26,20 @@ from typing import Any
 
 # Fixed rates, both directions, so whichever way the server asks the answer is
 # known.  The reciprocal pairs are consistent to ten decimal places.
+# Section 5 / the ECB snapshot migration fix the direction: the cache stores the
+# QUOTE-TO-BASE rate r(base)/r(quote) for an ECB source where r(X) is "X per EUR".
+# With r(CNY) = 7.85 and r(EUR) = 1, the (base=CNY, quote=EUR) row is therefore
+# 7.85, and base_amount = original_amount * that row.  Getting this backwards
+# makes every foreign base amount wrong by the square of the rate.
 FIXTURE_RATES: tuple[tuple[str, str, str], ...] = (
-    ("EUR", "CNY", "7.8500000000"),
-    ("CNY", "EUR", "0.1273885350"),
-    ("USD", "CNY", "7.1200000000"),
-    ("CNY", "USD", "0.1404494382"),
-    ("JPY", "CNY", "0.0480000000"),
+    ("CNY", "EUR", "7.8500000000"),
+    ("EUR", "CNY", "0.1273885350"),
+    ("CNY", "USD", "7.1200000000"),
+    ("USD", "CNY", "0.1404494382"),
     ("CNY", "JPY", "20.8333333333"),
-    ("GBP", "CNY", "9.1500000000"),
-    ("CNY", "GBP", "0.1092896175"),
+    ("JPY", "CNY", "0.0480000000"),
+    ("CNY", "GBP", "9.1500000000"),
+    ("GBP", "CNY", "0.1092896175"),
 )
 FIXTURE_OBSERVED_AT = "2026-01-02 00:00:00+00"
 # ``private.resolve_fx_snapshot`` only accepts rows whose source is

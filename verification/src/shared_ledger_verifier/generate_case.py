@@ -301,6 +301,7 @@ def stage_compile(
                 on_progress("compiler", "failed", {"error": error.category})
             result.update(status="COMPILER_INVALID", error_category=error.category)
             _write_json(run.output_dir / "compiler_result.json", {"attempts": run.attempts})
+            run.save()
             return run
         except (DeepSeekApiError, DeepSeekConfigurationError) as error:
             err_kind = error.error_kind if isinstance(error, DeepSeekApiError) else "CONFIGURATION_ERROR"
@@ -308,6 +309,7 @@ def stage_compile(
                 on_progress("compiler", "failed", {"error": err_kind})
             result.update(status="COMPILER_ERROR", error_category=err_kind)
             _write_json(run.output_dir / "compiler_result.json", {"attempts": run.attempts})
+            run.save()
             return run
         result["compiler_model"] = compiled.model if not _has_secret(compiled.model) else None
         result["compiler_latency_seconds"] = round(
@@ -317,6 +319,7 @@ def stage_compile(
                 on_progress("compiler", "failed", {"error": "FORBIDDEN_CONTENT"})
             result.update(status="COMPILER_INVALID", error_category="FORBIDDEN_CONTENT")
             _write_json(run.output_dir / "compiler_result.json", {"attempts": run.attempts})
+            run.save()
             return run
         if on_progress:
             on_progress("compiler", "completed", {

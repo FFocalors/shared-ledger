@@ -1,0 +1,212 @@
+{
+  "batch": {
+    "batch_id": "mass_500_20260925",
+    "seed_range": [1000, 1499],
+    "focus_mix": {
+      "single_payer_aa": 30, "manual_split": 30, "expense_aa": 30,
+      "multi_payer_aa": 40, "aa_rounding": 30,
+      "fifo_repayment": 30, "targeted_repayment": 30, "multiple_repayments": 30,
+      "prepayment_before_debt": 25, "prepayment_after_debt": 25,
+      "prepayment_return": 20, "prepayment_refund": 20,
+      "linked_refund": 25, "negative_expense": 20, "refund_boundary": 25,
+      "void_transfer": 20, "mixed_flow": 15,
+      "multi_currency": 20, "large_activity": 15,
+      "final_settlement": 10, "completion_archive": 10
+    },
+    "report": "verification/findings/MASS_VERIFICATION_500.md"
+  },
+  "codex_action_required": [
+    {
+      "issue_id": "MASS500-001",
+      "classification": "BUSINESS_BUG",
+      "severity": "HIGH",
+      "confidence": 0.9,
+      "affected_focus": "single_payer_aa",
+      "occurrence_count": 1,
+      "reproduction_count": 1,
+      "representative_case_ids": ["20260925T085415387133Z_single_payer_aa_e4ce0d"],
+      "expected_behavior": "A 0.3 CNY AA expense paid in full by one participant and split equally over 5 participants carries a 0.06 CNY original share for each of the four debtors. That is a valid funding fact: section 6 says an expense must not be refused, section 7 fixes the original share, and section 8 explicitly requires keeping a debt whose base amount rounds to zero (JPY 0.01 -> base 0.0). The Expense, its payments and its splits must be persisted.",
+      "actual_behavior": "create_expense_auto_rate fails with SQLSTATE 23514 'expense base debt allocation cannot be negative'. Nothing is stored: no expense, no payments, no splits, no debts. The activity is left with zero financial facts.",
+      "suspected_root_area": "private.rebuild_expense_debts_locked base-amount allocation (supabase/migrations/20260923022250_business_logic_finalization.sql around lines 409-419): each debtor-creditor pair's base is rounded independently with round(original_amount * fx, 1) and the LAST pair is then set to (creditor base net - already allocated). When the independently rounded pairs already exceed the creditor's base net, that plug is negative and the whole transaction aborts.",
+      "trigger_condition": "(n-1) * round(P/n, 1) > P, where P is the expense amount and n the number of AA participants, with a single payer who also bears a share. Observed example: P=0.3, n=5 -> share 0.06 rounds to 0.1, 4 debtors x 0.1 = 0.4 > 0.3. Verified non-triggering neighbours: P=0.4 (0.4 > 0.4 false), P=0.6, P=1.2, P=3.3.",
+      "evidence": [
+        "case 20260925T085415387133Z_single_payer_aa_e4ce0d: scenario.json create_expense amount 0.3 CNY, payments {alice: 0.3}, split_method aa over 5 participants",
+        "operations.jsonl step 1: create_expense status failed, error_code 23514, error_message 'expense base debt allocation cannot be negative'",
+        "re-run of the identical saved scenario reproduced the failure (repro run 20260925T12xxxxZ, recorded under the case's repro/ directory)"
+      ],
+      "recommended_for_codex": true
+    },
+    {
+      "issue_id": "MASS500-002",
+      "classification": "BUSINESS_BUG",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "affected_focus": "multi_payer_aa, aa_rounding, single_payer_aa, expense_aa",
+      "occurrence_count": 13,
+      "reproduction_count": 1,
+      "representative_case_ids": [
+        "20260925T085255934396Z_single_payer_aa_26b856",
+        "20260925T090136257374Z_multi_payer_aa_edbd8f",
+        "20260925T090531538463Z_aa_rounding_181076"
+      ],
+      "expected_behavior": "Section 5 requires base-currency amounts at one decimal and states that base rounding must not erase a non-zero original debt or change debtor/creditor. Section 7 fixes the AA split tail allocation by stable participant order. Whether each ExpenseDebt's base amount must equal its own split's base amount is NOT stated by sections 5, 7 or 8.",
+      "actual_behavior": "The original-currency debts are exactly right and the base splits follow section 7 (tail distributed by stable order, not dumped on the last participant). The ExpenseDebt/BilateralDebt base amounts however conserve only the AGGREGATE: the 0.1 base residual is pushed wholly onto the last debt row, so individual debts deviate from their own split base by up to 0.1 CNY. Example (1.2 CNY, 5-way AA, alice pays all): base splits 0.3/0.3/0.2/0.2/0.2, but debt base amounts 0.2/0.2/0.2/0.3.",
+      "suspected_root_area": "Cross-debt base-currency residual strategy in private.rebuild_expense_debts_locked, the same code path as MASS500-001. The rule document does not define it.",
+      "rule_gap_note": "The Judge itself returned UNCERTAIN on two of these cases with the reason 'the rules do not specify how to allocate the AA rounding residual'. The implementation is defensible under the current text; the actionable question is whether BUSINESS_LOGIC.md should state the cross-debt base tail rule or the implementation should make each debt base reconcile with its split base.",
+      "evidence": [
+        "13 anomalous cases across four AA-family focuses, all reporting ExpenseDebt/BilateralDebt base_amount mismatches of exactly 0.1",
+        "Original-currency amounts in every case equal the section 7 values exactly",
+        "Reproduction of case 20260925T085255934396Z_single_payer_aa_26b856: FAIL -> FAIL",
+        "Two UNCERTAIN verdicts (20260925T090429689882Z_multi_payer_aa_2f3faf, 20260925T090507228954Z_aa_rounding_9ec9b0) describe the same gap"
+      ],
+      "recommended_for_codex": true
+    },
+    {
+      "issue_id": "MASS500-003",
+      "classification": "BUSINESS_BUG",
+      "severity": "MEDIUM",
+      "confidence": 0.5,
+      "affected_focus": "multi_currency",
+      "occurrence_count": 7,
+      "reproduction_count": 0,
+      "representative_case_ids": [
+        "20260925T114525433875Z_multi_currency_0a4c6b",
+        "20260925T114617032517Z_multi_currency_c78474"
+      ],
+      "expected_behavior": "Section 5 requires a Transfer's allocation facts to reference the source ExpenseDebt's original amount, base amount and historical FX. The Judge reads transfer_allocations.amount as the settled amount in the payment currency.",
+      "actual_behavior": "For a foreign-currency settlement, transfer_allocations.amount holds the BASE-currency value (e.g. 14.6000 for a 1.8600 EUR transfer at FX 7.85), duplicating base_amount, while original_amount correctly holds 1.8600 and the durable transfer_expense_allocations row correctly holds payment_amount 1.8600 / original_amount 1.8600 / base_amount 14.6. No funding fact is wrong; the bare amount column is base-denominated and undocumented.",
+      "suspected_root_area": "transfer_allocations projection column semantics for foreign-currency settlements.",
+      "reproduction_note": "Reproduction of the representative case returned FAIL -> PASS, so the Judge is not stable on this issue. Confidence lowered to 0.5. This may be a column-semantics ambiguity rather than a defect.",
+      "evidence": [
+        "7 of 19 valid multi_currency cases fail on this single field",
+        "Every affected state carries the correct original_amount, base_amount and payment_amount alongside",
+        "Reproduction: case 20260925T114525433875Z_multi_currency_0a4c6b FAIL -> PASS (not reproduced)"
+      ],
+      "recommended_for_codex": true
+    },
+    {
+      "issue_id": "MASS500-004",
+      "classification": "BUSINESS_BUG",
+      "severity": "LOW",
+      "confidence": 0.6,
+      "affected_focus": "expense_aa",
+      "occurrence_count": 1,
+      "reproduction_count": 0,
+      "representative_case_ids": ["20260925T085848194345Z_expense_aa_3376ea"],
+      "expected_behavior": "Section 5: Activity base-currency amounts use one decimal. total_debt is rendered at one decimal (20.0), so its sibling summary total_prepayment should be too.",
+      "actual_behavior": "activity_financial_status.total_prepayment is '0.0000' (four decimals) while total_debt is '20.0' (one decimal). The underlying value is zero, so no funding fact is affected.",
+      "suspected_root_area": "activity_financial_status.total_prepayment rendering precision.",
+      "evidence": [
+        "state_final.json activity: total_debt '20.0', total_prepayment '0.0000'",
+        "Same field observed at four decimals in the multi_currency rerun as well"
+      ],
+      "dissent": "The DeepSeek analyst classified this as JUDGE_FALSE_POSITIVE (confidence 0.84) on the grounds that the field is zero. It is listed here because section 5 is explicit about base-currency precision and the two sibling summaries disagree; Codex may decide it is cosmetic.",
+      "recommended_for_codex": true
+    }
+  ],
+  "recorded_but_not_for_codex": [
+    {
+      "issue_id": "MASS500-N01",
+      "classification": "BAD_SCENARIO",
+      "severity": null,
+      "confidence": 0.85,
+      "affected_focus": "final_settlement",
+      "occurrence_count": 2,
+      "representative_case_ids": [
+        "20260925T101931278679Z_final_settlement_e9d006",
+        "20260925T102058890009Z_final_settlement_aa36ff"
+      ],
+      "reason": "The generated final_settlement plans hard-coded settlement parties that the server plan did not offer, and one plan ran an external repayment that consumed the debt the later settlement targeted. Both were plan-design defects of the verification harness; the plan generator was corrected (participant floor raised to 4, repayment moved before the settlement) and both seeds now execute and PASS.",
+      "recommended_for_codex": false
+    },
+    {
+      "issue_id": "MASS500-N02",
+      "classification": "JUDGE_FALSE_POSITIVE",
+      "severity": null,
+      "confidence": 0.8,
+      "affected_focus": "multi_currency, single_payer_aa",
+      "occurrence_count": 2,
+      "representative_case_ids": ["20260925T101304651576Z_multi_currency_2bc71d"],
+      "reason": "Judge arithmetic error: it expected allocation base_amount 0.3 for 1.93 EUR of a 23.10 EUR debt whose base is 3.0 CNY at FX 0.1273885350. 1.93 * 0.1273885350 = 0.2459, which rounds to 0.2, the observed value.",
+      "recommended_for_codex": false
+    },
+    {
+      "issue_id": "MASS500-N03",
+      "classification": "ENVIRONMENT",
+      "severity": null,
+      "confidence": 0.72,
+      "affected_focus": "refund_boundary",
+      "occurrence_count": 1,
+      "representative_case_ids": ["20260925T095808662518Z_refund_boundary_05aff7"],
+      "reason": "The Judge response was rejected as FORBIDDEN_CONTENT; the run itself executed and its state matches the rules.",
+      "recommended_for_codex": false
+    },
+    {
+      "issue_id": "MASS500-N04",
+      "classification": "WORKFLOW",
+      "severity": null,
+      "confidence": 0.9,
+      "affected_focus": "multi_currency (all 20 cases of the first run)",
+      "occurrence_count": 20,
+      "representative_case_ids": [],
+      "reason": "The local FX fixture seeded the exchange_rate_cache with the two directions of every pair swapped. The documented convention is rate = r(base)/r(quote) for ECB r(X) = X per EUR, so the (CNY, EUR) row must be 7.85, not 0.1273885350. Every foreign base amount in the first run was therefore off by the square of the rate. The fixture was corrected and the 20 multi_currency cases re-run; the analysis uses only the corrected data.",
+      "recommended_for_codex": false
+    },
+    {
+      "issue_id": "MASS500-N05",
+      "classification": "WORKFLOW",
+      "severity": null,
+      "confidence": 0.95,
+      "affected_focus": "all",
+      "occurrence_count": 1,
+      "representative_case_ids": ["20260925T114736234437Z_multi_currency_a0f319"],
+      "reason": "Harness defect: stage_compile did not persist result.json on the CompilerError and DeepSeekApiError paths, so those cases kept a stale PENDING status on disk while the in-memory pipeline reported the correct terminal status. Fixed (three terminal paths now call run.save()).",
+      "recommended_for_codex": false
+    }
+  ],
+  "post_review_resolution": {
+    "note": "The codex_action_required list above is the original 500-case snapshot; these resolutions are the current manual review and fix state.",
+    "MASS500-001": {
+      "verdict": "CONFIRMED_BUSINESS_BUG",
+      "status": "FIXED_LOCAL_VERIFIED",
+      "migration": "20260925133211_fix_negative_expense_base_debt_allocation.sql",
+      "replay_run_id": "20260925T134146Z-8d36f68b"
+    },
+    "MASS500-002": {
+      "verdict": "DOCUMENTATION_AMBIGUITY",
+      "status": "RULE_CLARIFIED",
+      "rule": "A single ExpenseDebt base amount need not equal the participant's Split base or base net; preserve original debt, nonnegative base rows, and aggregate base conservation."
+    },
+    "MASS500-003": {
+      "verdict": "OBSERVABILITY_ISSUE",
+      "status": "FIELD_UNITS_DOCUMENTED"
+    },
+    "MASS500-004": {
+      "verdict": "OBSERVABILITY_ISSUE",
+      "status": "NUMERIC_REPRESENTATION_DOCUMENTED"
+    }
+  },
+  "pass_audit_summary": {
+    "pass_cases": 431,
+    "audited": 34,
+    "sample_rate": 0.079,
+    "compiler_preserved_intent": 33,
+    "compiler_drift_cases": ["20260925T095331085933Z_negative_expense_897e9e"],
+    "focus_contract_genuine": 28,
+    "focus_not_genuine_cases": [
+      "20260925T091200439506Z_fifo_repayment_5550c3",
+      "20260925T090904049243Z_fifo_repayment_ffa476",
+      "20260925T100058216717Z_refund_boundary_66af76",
+      "20260925T094613574473Z_prepayment_refund_e4fa38",
+      "20260925T094551577114Z_prepayment_refund_54e520",
+      "20260925T094349734886Z_prepayment_refund_cf22a9"
+    ],
+    "judge_missed_anything": 8,
+    "notable_missed_findings": [
+      "prepayment_return: return_prepayment responses report new_prepayment_balance as null although the account balance changes",
+      "linked_refund: an operation response reports financial_version 1 while the activity reached 2 (same row-vs-activity ambiguity reported earlier)",
+      "mixed_flow: prepayment_accounts.base_balance is null although the activity is CNY-only (same ambiguity reported earlier)",
+      "aa_rounding: base split amounts differ from amount * fx_rate, which section 7 explicitly prescribes"
+    ]
+  }
+}

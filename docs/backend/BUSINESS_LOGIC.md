@@ -57,7 +57,7 @@ Activity Creator 同时是成员，但仅有明确授予的管理权限。非成
 
 Expense 创建和编辑必须满足：原币金额非零、币种是三位大写代码、汇率为正；Payment 与 Split 各自合计等于 Expense 原币金额；每个 Participant 在一份 Payment/Split 中至多出现一次；金额符号须与 Expense 符号相同；base currency 金额符合 1 位小数精度。自动汇率只能由服务端快照解析，客户端没有生产手工 FX 写入口。
 
-base amount 舍入不得抹掉非零原币债务或改变债务双方。Transfer 不按发生日做 ECB 重估；其分配事实引用来源 ExpenseDebt 的原币、base 金额和历史 FX。
+base amount 舍入不得抹掉非零原币债务或改变债务双方。Transfer 不按发生日做 ECB 重估；其分配事实引用来源 ExpenseDebt 的原币、base 金额和历史 FX。当前贡献投影 `transfer_allocations.amount` 以 Activity base currency 计价；来源原币金额见 `original_amount`，真实 Transfer 的支付币种金额见不可变来源记录 `transfer_expense_allocations.payment_amount`，不得把这三个字段视为同一币种金额。
 
 实现依据：[base 金额归一](../../supabase/migrations/20260830151327_base_amount_normalization.sql)、[FX snapshot 与债务重建](../../supabase/migrations/20260923022250_business_logic_finalization.sql)、[自动 FX 和 Refund 快照约束](../../supabase/migrations/20260923032928_refund_limits_and_legacy_rpc_permissions.sql)。
 
@@ -73,7 +73,7 @@ Payment 记录实际付款人，Split 记录最终承担人。两者独立表达
 
 ## 7. AA
 
-AA 原币金额在所选 Participant 间等分，以原币 4 位小数保存。base amount 尾差按 participant_order、id 稳定顺序逐个分配最小单位，正负金额对称处理；尾差不全部压给最后一人。
+AA 原币金额在所选 Participant 间等分，以原币 4 位小数保存。这里的 base amount 尾差规则适用于 Split：按 participant_order、id 稳定顺序逐个分配最小单位，正负金额对称处理；尾差不全部压给最后一人。ExpenseDebt 的 base 分配另见第 8 节。
 
 例如 base 金额 100.0 由 3 人 AA，base 分别为 33.4、33.3、33.3，合计 100.0。外币 AA 先保持原币守恒，再独立归一 base amount。手动分摊由调用者明确提供原币金额；base rounding 不改写原币分摊。
 
@@ -82,11 +82,13 @@ AA 原币金额在所选 Participant 间等分，以原币 4 位小数保存。b
 
 每笔 Expense 独立生成 ExpenseDebt，再形成当前 BilateralDebt。债务由 Payment 与 Split 的原币差额决定。正向债务表示承担人欠实际付款人。Participant pair 与币种共同决定债务维度；不同币种不互相抵销。
 
+ExpenseDebt 保留原币净额确定的 debtor、creditor、original_amount 和 Expense 的历史 FX；base_amount 是这些债务的独立折算与尾差分配结果，不要求某一条债务的 base_amount 等于同一 Participant 的 Split base 金额或 base net。债务 base 金额均不得为负，合计等于该 Expense 各债权人正向 Payment−Split base net 的合计。正常情况下，按稳定 pair 顺序逐条折算，末条承接总额尾差；若这样会使末条为负，则以原币债务金额为权重，把既定 base 总额按 0.1 最小单位分配给各 pair，并以稳定 pair 顺序处理同余数。该分配不改写原币债务或历史资金事实。
+
 base amount 不能重新决定 debtor/creditor。原币非零但 base 舍入为零的外币 Debt 仍须保留、参与完成判定，并可按原币清偿。例如 JPY 0.01 折算后 base 为 0.0，仍是一笔有效的 0.01 JPY 债务。
 
 不进行无现金多人环路冲销。若 A 欠 B、B 欠 C、C 欠 A，即使每人净额为零，三条 BilateralDebt 仍存在；系统不创建虚假 Transfer 或 Allocation，Activity 保持 active。
 
-实现依据：[原币债务与投影重建](../../supabase/migrations/20260923022250_business_logic_finalization.sql)、[原币/零 base 分配边界](../../supabase/tests/database/phase12_multi_currency_allocation_invariants.sql)。
+实现依据：[原币债务与投影重建](../../supabase/migrations/20260923022250_business_logic_finalization.sql)、[负补差的非负分配修复](../../supabase/migrations/20260925133211_fix_negative_expense_base_debt_allocation.sql)、[原币/零 base 分配边界](../../supabase/tests/database/phase12_multi_currency_allocation_invariants.sql)、[小额 AA 回归](../../supabase/tests/database/mass500_micro_aa_debt_allocation.sql)。
 
 ## 9. Settlement
 
@@ -192,7 +194,7 @@ Transfer 不删除、不恢复。成员或 Creator 对有效 Transfer 执行一�
 
 Activity completed 是自动计算值：不存在任何非零原币 BilateralDebt，且不存在任何币种的正预存余额。是否还有 Final plan 不是独立完成条件；真实债务环路只要仍有非零 BilateralDebt，Activity 就保持 active。Dispute 不改变 completed。
 
-activity_financial_status 的 has_unsettled_debt 按任意币种原币 Debt 是否非零判断。total_debt 仅作 base currency 金额参考。total_prepayment 只统计 base currency 账户；不得把多币余额相加伪装成 base 总额。prepayment_by_currency 输出正余额行，结构为 [{currency, balance}]，按币种排序。
+activity_financial_status 的 has_unsettled_debt 按任意币种原币 Debt 是否非零判断。total_debt 仅作 base currency 金额参考。total_prepayment 只统计 base currency 账户；不得把多币余额相加伪装成 base 总额。该汇总字段沿用账户余额的四位小数数值表示，因而可显示为 `0.0000`；尾随零不代表出现四位有效的 base currency 资金金额。prepayment_by_currency 输出正余额行，结构为 [{currency, balance}]，按币种排序。
 
 participant_financial_status 的 receivable/payable/net_balance 是 base currency 兼容汇总。balance_by_currency 输出各币种原币 Debt 与同币 Prepayment 的 receivable、payable、net_balance，按币种排序。完成状态不依赖可能互相抵销的 base numeric 合计。
 

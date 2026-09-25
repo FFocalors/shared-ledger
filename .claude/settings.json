@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -rniE \"sk-[a-z0-9]{16,}|eyJ[A-Za-z0-9_-]{20,}|service_role|api[_-]?key[\\\\\"']?\\\\s*[:=]\\\\s*[\\\\\"'][^\\\\\"']{12,}\" verification/findings/ supabase/migrations/20260925133211_fix_negative_expense_base_debt_allocation.sql supabase/tests/database/mass500_micro_aa_debt_allocation.sql verification/src/shared_ledger_verifier/anomaly_analysis.py verification/tests/test_anomaly_analysis.py)",
+      "Bash(awk '/\\\\r$/{c++} END{print c\" CRLF lines\"}' supabase/migrations/20260925133211_fix_negative_expense_base_debt_allocation.sql)",
+      "Bash(git add *)",
+      "Bash(git check-ignore *)"
+    ]
+  }
+}
