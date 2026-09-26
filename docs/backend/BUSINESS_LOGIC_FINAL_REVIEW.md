@@ -1,8 +1,8 @@
 # Business Logic 最终反向审计
 
-> 首次审计日期：2026-09-23；冻结后 AA 修复复核：2026-09-24。
-> 首次冻结判定：**BUSINESS LOGIC FREEZE v1.0: READY**。以下第 1–11 节保留首次收口的历史脉络，最新测试数据与 v1.1 状态以第 12 节为准。
-> v1.1 判定：**BUSINESS LOGIC FREEZE v1.1: READY**。AA 修复、最小规则澄清、全套回归及基于新基线的六项 Judge 均已完成。
+> 首次审计日期：2026-09-23；冻结后 AA 修复复核：2026-09-24；Post-Mass Verification 复核：2026-09-26。
+> 首次冻结判定：**BUSINESS LOGIC FREEZE v1.0: READY**。第 1–11 节保留首次收口的历史脉络，第 12 节记录 v1.1。
+> 当前判定见第 13 节：**BUSINESS LOGIC FREEZE v1.2: READY**。v1.2 将确定性回归、MASS500/MASS2000 生成场景验证、异常复核和规则澄清合并为当前训练与客户端集成的业务基线。
 
 ## 1. 最终业务基线状态
 
@@ -143,3 +143,41 @@ v0.2 Judge 在旧 run `20260923T103210Z-560a671e` 中发现 `multi_payer_aa`：A
 首轮 `linked_refund_after_settlement` 先出现网络 `API_ERROR`，重试后 Judge 判 FAIL，要求 A→B；但旧、新 run 的资金状态相同，均为负 Payment B 100、负 Split A 100，按原币 Payment−Split 产生 B→A 100。用户明确裁决“B 收款、A 受益；B 再付 A”。因此仅澄清 `BUSINESS_LOGIC.md` §10/§13/§23：退款债务方向由实际负 Payment/Split 决定，本例 B→A；若 A 收款、B 受益才是 A→B。最终新 run 判 PASS。首次网络错误的 `judge.previous_error.json` 和首轮 FAIL 保留为历史；原旧 PASS run 与原 AA FAIL run 也未修改。
 
 **BUSINESS LOGIC FREEZE v1.1: READY**，范围是已验证的本地业务实现与训练前规则基线。实现修复提交为 `663b12f27db390998a350897004f8e5e064c09b0`；用户裁决后的业务文档基线提交为 `12fc5401f6e7f25ce9e110b47d9feda2722795cf`。未改 Judge Prompt、DeepSeek Client、Smoke 输入或旧运行记录。远端 Production 尚未部署；可能受旧 normalizer 影响且已财务锁定的历史数据须在后续单独审计，不能把本地 fresh-run PASS 当作远端存量数据已回填的证明。
+
+## 13. Post-Mass Verification 冻结与 v1.2（2026-09-26）
+
+### 13.1 冻结结论与范围
+
+本次冻结表示：核心业务实现和确定性回归之外，又完成了两轮 AI 生成业务验证、异常聚类、代表样本复核及规则歧义收口。`BUSINESS_LOGIC.md` 是当前业务规则唯一基线；本节和 findings 索引记录证据、裁定与边界，不另立规则副本。
+
+**在当前已知业务规则、确定性测试以及 MASS500/MASS2000 生成场景覆盖范围内，没有尚未解决的已确认业务逻辑缺陷。** 这不表示系统绝对没有 Bug，也不证明未覆盖的生产数据、环境或业务形状不存在问题。
+
+### 13.2 确定性验证
+
+- 数据库：43 个 migrations 从零应用；隔离本地 Supabase 全套为 30 个独立 pgTAP 文件、223 条断言通过；6 个并发测试文件通过。详见 [数据库测试状态](../../supabase/tests/database/TEST_STATUS.md) 和 [MASS500-001 修复记录](../../verification/findings/MASS500_001_FIX.md)。MASS2000 启动前另做了 43/43 clean reset，但没有再次运行整套 pgTAP。
+- Android：`testDebugUnitTest` 264 项、`assembleDebug`、`lintDebug` 通过，结果来自 MASS500 修复复核记录之后的最近一次 Android 验证；MASS2000 阶段没有 Android 代码改动，也没有重跑 Android 套件。
+- Verification 离线测试：最新记录为 **166 passed**，包含 MASS2000-N05 Loader/Compiler 终态保护及 MASS2000-N06 `multiple_repayments` 计划边界回归。大范围 seed 压力抽样属于额外运行证据，不等同于全部写入普通单测。
+
+### 13.3 AI 大规模业务验证
+
+- MASS500：456 个批次内唯一有效场景；MASS2000：1572 个批次内唯一有效场景，覆盖 21 个 focus。两批次内唯一数相加为 2028；现存报告没有做跨批次内容哈希去重，因此不将 2028 宣称为跨批次全局唯一数。
+- 覆盖普通消费、AA、多付款人、手工分摊、FIFO/TARGETED/多次还款、预存、退款/负消费、Transfer void、多币种、大型活动、Final Settlement、完成与归档等形状。
+- MASS500 报告记载约 1.94 小时、257.5 cases/hour；MASS2000 约 7.88 小时、253.8 cases/hour。两轮的 Judge/环境/workflow 异常均经分类复核；原始 run 和扫描时的候选快照保留。
+
+### 13.4 业务缺陷处置与规则收口
+
+- 已确认并修复 `multi_payer_aa` 原币债务污染；该历史问题由 v1.1 §12 和对应修复 migration/回归记录。
+- MASS500-001 小额 AA 产生负 base debt plug 已由 `20260925133211_fix_negative_expense_base_debt_allocation.sql` 修复，并有 `mass500_micro_aa_debt_allocation.sql` 回归。
+- MASS500 其余候选已裁定：ExpenseDebt 单条 base 尾差属于已澄清规则；`transfer_allocations.amount` 的字段单位可观测性和 `total_prepayment` 尾随零位属于非资金错误。
+- MASS2000 三项最终均未确认数据库业务缺陷：MASS2000-001 是 AA 与 manual Split 尾差规则范围歧义，MASS2000-002 是 base-currency numeric 表示精度，MASS2000-003 是稳定债务配对顺序与 Final Settlement 输出排序契约的文档歧义。实现保持不变，澄清已写入 [BUSINESS_LOGIC.md](BUSINESS_LOGIC.md) §5、§7–8、§14、§21。
+- 扫描期间发现的 MASS2000-N05/N06 是 Verification workflow 缺陷，已在 Verification 代码和离线回归中修复；它们不是数据库业务规则变更。
+- 经过最终复核，MASS500/MASS2000 findings 中没有遗留待修的 CRITICAL/HIGH Business Bug，也没有遗留已确认但未处置的业务 Bug 候选。逐项裁定见 [Verification Findings 索引](../../verification/findings/README.md)。
+
+### 13.5 仍然存在的边界
+
+- MASS2000 抽查记录了 Compiler 在 2 个 `refund_boundary` 样本中改动退款金额、14 个 focus 未真正命中、`final_settlement` plan 偏弱，以及多个 projection/version 字段可观测性不足。这些均是已记录的 Verification 覆盖或可观测性限制，不作为已修复的业务保证；见 MASS2000 报告 §5–6。
+- MASS500 的历史 PASS 抽查还记录了 `negative_expense` Compiler 参与者名单漂移。原候选/run 保留，报告将其归为验证输入问题；本冻结不宣称这些工具链缺口已经全部修复。
+- 没有验证 Production 部署、远端存量数据回填、真实外汇服务或真实客户端设备端到端流程。历史上被财务锁定且可能受旧 AA normalizer 影响的数据范围仍按 v1.1 §12 单独审计。
+- 最终 Settlement 建议是确定性计划，不承诺数学上的全局最少付款笔数；未覆盖的业务状态和并发组合仍可能存在缺陷。
+
+**BUSINESS LOGIC FREEZE v1.2: READY**。当前 `BUSINESS_LOGIC.md` 已收口为后续客户端集成与业务逻辑验证 Workflow 使用的唯一基线。该结论限于已记录的实现、确定性回归和两轮生成场景的实际覆盖范围。

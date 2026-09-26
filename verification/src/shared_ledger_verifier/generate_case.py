@@ -280,6 +280,11 @@ def stage_compile(
     if run.raw_case is None or result["status"] != "PENDING":
         return run
     raw_case = run.raw_case
+    # The terminal status must describe the LAST attempt. Reading it back out of
+    # `result` mixes attempts: a repair that fails the Loader would otherwise
+    # inherit the previous attempt's focus result and be treated as executable.
+    loader_ok = False
+    focus_state: str | None = None
 
     for attempt_no in range(2):
         if attempt_no:
@@ -344,6 +349,8 @@ def stage_compile(
                 on_progress("loader", "failed",
                             {"error": run.rejection, "can_retry": attempt_no == 0})
             result.update(loader_result="INVALID", loader_error=run.rejection)
+            loader_ok = False
+            focus_state = None
             run.attempts[-1]["loader_result"] = "INVALID"
             run.attempts[-1]["loader_error"] = run.rejection
             _write_json(run.output_dir / "compiler_result.json", {"attempts": run.attempts})
@@ -351,6 +358,7 @@ def stage_compile(
             run.save()
             continue
         result.update(loader_result="VALID", loader_error=None)
+        loader_ok = True
 
         # Gate 2: the focus contract. A legal document that does not exercise
         # its focus is a FOCUS_MISMATCH, not a valid coverage sample.
@@ -358,6 +366,7 @@ def stage_compile(
         run.attempts[-1]["focus_result"] = focus_result
         run.attempts[-1]["focus_error"] = focus_error
         result.update(focus_result=focus_result, focus_error=focus_error)
+        focus_state = focus_result
         if focus_result != "FOCUS_VALID":
             run.rejection = focus_error
             if on_progress:
@@ -377,14 +386,19 @@ def stage_compile(
         result.update(status="VALID", loader_result="VALID", loader_error=None)
         return run
 
-    if result.get("focus_result") == "FOCUS_MISMATCH":
+    if loader_ok and focus_state == "FOCUS_MISMATCH":
         if on_progress:
             on_progress("focus", "failed", {"error": "FOCUS_MISMATCH"})
-        result.update(status="FOCUS_MISMATCH", error_category="FOCUS_MISMATCH")
+        result.update(status="FOCUS_MISMATCH", error_category="FOCUS_MISMATCH",
+                      focus_result="FOCUS_MISMATCH")
+        run.save()
         return run
+    # The last attempt did not pass the Loader, whatever an earlier one did.
     if on_progress:
         on_progress("loader", "failed", {"error": "LOADER_INVALID"})
-    result.update(status="COMPILER_INVALID", error_category="LOADER_INVALID")
+    result.update(status="COMPILER_INVALID", error_category="LOADER_INVALID",
+                  loader_result="INVALID")
+    run.save()
     return run
 
 

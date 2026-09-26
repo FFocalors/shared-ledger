@@ -76,6 +76,20 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(result["loader_result"], "INVALID")
         self.assertIsNone(result["run_id"])
 
+    def test_a_loader_rejected_scenario_never_reaches_the_runner(self) -> None:
+        # Defence in depth: even if a status says "executable", a scenario the
+        # Loader rejected must not be sent to the database.
+        self.generated.update(status="VALID", loader_result="INVALID",
+                              error_category=None)
+
+        def forbidden(*args, **kwargs):
+            self.fail("the Runner must not be called for a Loader-rejected scenario")
+
+        result = self.execute(runner=forbidden, judge=forbidden)
+        self.assertEqual(result["status"], "COMPILER_INVALID")
+        self.assertEqual(result["error_category"], "LOADER_INVALID")
+        self.assertIsNone(result["run_id"])
+
     def test_runner_failure_stops_before_judge(self) -> None:
         def failed_runner(*args, **kwargs):
             return {"status": "FAILED", "run_id": "run-1", "run_dir": str(self.run_dir),

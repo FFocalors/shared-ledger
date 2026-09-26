@@ -1,6 +1,6 @@
 # Database test status
 
-Verified 2026-09-24 against a clean-reset isolated local Supabase project after applying all **42 migrations**. The final run used `Invoke-IsolatedDatabaseTests.ps1` and completed with **29 files / 213 pgTAP tests passing**. All six existing concurrency test files passed. The C02 reverse-refund fixture explicitly timestamps the -60 refund one second before the -40 refund, so TARGETED allocation remains stable across generated UUIDs.
+Latest full deterministic run: clean-reset isolated local Supabase, **43 migrations**, **30 standalone test files / 223 pgTAP assertions passing**; all six concurrency test files passed. This includes `mass500_micro_aa_debt_allocation.sql`, which covers the MASS500-001 regression. The run is recorded in [MASS500_001_FIX.md](../../../verification/findings/MASS500_001_FIX.md). MASS2000 also verified a fresh 43/43 migration reset before its scan; it did not rerun the full pgTAP or Android suites. The C02 reverse-refund fixture explicitly timestamps the -60 refund one second before the -40 refund, so TARGETED allocation remains stable across generated UUIDs.
 
 | Test file | Status | Traceable note |
 | --- | --- | --- |
@@ -11,6 +11,7 @@ Verified 2026-09-24 against a clean-reset isolated local Supabase project after 
 | `fix_original_currency_debt_projection.sql` | PASS | Original-currency repayment allocation and projection rebuild. |
 | `idempotency_request_replay_contract.sql` | PASS | Exact retry result, payload/actor/operation binding, archived retry, and no duplicate transfer. |
 | `linked_refund_contract.sql` | PASS | Refund linkage, cumulative cap, permanent source lock, and FX snapshot inheritance. |
+| `mass500_micro_aa_debt_allocation.sql` | PASS | MASS500-001 regression: tiny multi-participant AA debt base allocations remain nonnegative and conserve the base total. |
 | `phase10_sub_activity_delete_restore.sql` | PASS | Delete/restore lifecycle and immutable settlement-history rejection. |
 | `phase11_multi_currency_settlement.sql` | PASS | Multi-currency settlement behavior. |
 | `phase12_multi_currency_allocation_invariants.sql` | PASS | Allocation invariants across currencies and zero-base rows. |

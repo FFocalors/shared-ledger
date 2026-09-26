@@ -55,6 +55,9 @@ def _fmt(value: Decimal, scale: int) -> str:
     return format(value.quantize(Decimal(1).scaleb(-scale)), "f")
 
 
+_MULTI_REPAYMENT_MIN_TENTHS = 4
+
+
 def _tenths(value: Decimal) -> int:
     return int((value * 10).to_integral_value())
 
@@ -177,6 +180,10 @@ def plan_for(focus: str, seed: int) -> ScenarioPlan:
     amount_pattern = rng.choice(spec.amount_patterns)
     participants = PARTICIPANT_NAMES[:participant_count]
     amount = _pick_amount(amount_pattern, participant_count, rng)
+    if focus == "multiple_repayments" and _tenths(amount) < _MULTI_REPAYMENT_MIN_TENTHS:
+        # Two positive instalments need two tenths, and a partial plan needs a
+        # third left over; a smaller total cannot express the focus at all.
+        amount = Decimal("0.4")
     edge_tags = _realisable_tags(
         rng.sample(spec.edge_tags, min(2, len(spec.edge_tags))), amount, participant_count
     )
@@ -330,6 +337,13 @@ def _build_steps(
     if focus in {"fifo_repayment", "targeted_repayment", "multiple_repayments"}:
         creditor, debtor = participants[0], participants[1]
         debt, rest = _debt_pair(amount, rng)
+        if focus == "multiple_repayments":
+            # `plan_for` guarantees enough tenths; give the debtor the larger
+            # share when the random split left too little for the instalments.
+            needed = 2 if "full_settlement" in edge_tags else 3
+            if _tenths(debt) < needed:
+                debt = Decimal(_one_decimal(amount - Decimal("0.1")))
+                rest = Decimal(_one_decimal(amount)) - debt
         steps = [
             f"1. create_expense: amount {total} CNY, split_method manual, {creditor} pays {total}, "
             f"splits {{ {debtor}: {_one_decimal(debt)}, {creditor}: {_one_decimal(rest)} }} so "

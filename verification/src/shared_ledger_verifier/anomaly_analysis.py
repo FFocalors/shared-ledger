@@ -34,6 +34,7 @@ CLASSIFICATIONS = (
     "JUDGE_FALSE_POSITIVE",
     "ENVIRONMENT",
     "WORKFLOW",
+    "DOCUMENTATION_AMBIGUITY",
     "UNKNOWN",
 )
 SEVERITIES = ("CRITICAL", "HIGH", "MEDIUM", "LOW", "NONE")
@@ -248,7 +249,7 @@ final database projections and the Judge's verdict with its differences.
 Decide, from BUSINESS_LOGIC.md rules and the observed state:
 1. real: is the anomaly a genuine deviation from the rules?
 2. classification: exactly one of BUSINESS_BUG, BAD_SCENARIO,
-   JUDGE_FALSE_POSITIVE, ENVIRONMENT, WORKFLOW, UNKNOWN.
+   JUDGE_FALSE_POSITIVE, ENVIRONMENT, WORKFLOW, DOCUMENTATION_AMBIGUITY, UNKNOWN.
    - BUSINESS_BUG: the database/projection contradicts a documented rule.
    - BAD_SCENARIO: the generated scenario itself is unreasonable, degenerate or
      asks for something the rules never promise.
@@ -256,6 +257,11 @@ Decide, from BUSINESS_LOGIC.md rules and the observed state:
      Judge misread it or applied an undocumented expectation.
    - ENVIRONMENT: transport, timeout, HTTP or provider failure.
    - WORKFLOW: the verification harness misbehaved (runner bug, missing fixture).
+   - DOCUMENTATION_AMBIGUITY: the state is defensible under the current text but
+     the rules do not clearly settle the question, so the observation should be
+     resolved by clarifying BUSINESS_LOGIC.md rather than by changing code. Use
+     this when you believe the implementation may be right AND the document
+     leaves room for a different reading.
    - UNKNOWN: the supplied evidence does not settle it.
 3. severity: only for BUSINESS_BUG; one of CRITICAL, HIGH, MEDIUM, LOW
    (NONE otherwise).

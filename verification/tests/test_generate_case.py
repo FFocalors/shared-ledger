@@ -210,6 +210,26 @@ class GenerateCaseTests(unittest.TestCase):
 
     @patch("shared_ledger_verifier.generate_case.compile_once")
     @patch("shared_ledger_verifier.generate_case.generate_raw_case")
+    def test_repair_that_breaks_the_loader_is_compiler_invalid(self, raw, compile_mock):
+        # The terminal status must describe the LAST attempt. A repair that fails
+        # the Loader must not inherit attempt 1's focus result and become
+        # executable -- that handed the Runner a scenario the Loader rejected.
+        raw.return_value = (deepcopy(RAW), META)
+        broken = deepcopy(VALID)
+        broken["operations"][0]["payments"]["B"] = "50.0"
+        compile_mock.side_effect = [compiled(self._focus_invalid()), compiled(broken, repair=True)]
+        result = self.run_case("repair_broke_loader")
+        self.assertEqual(result["status"], "COMPILER_INVALID")
+        self.assertEqual(result["loader_result"], "INVALID")
+        self.assertEqual(result["error_category"], "LOADER_INVALID")
+        self.assertEqual(result["repair_count"], 1)
+        self.assertEqual(compile_mock.call_count, 2)
+        # and the outcome is persisted, not left at the previous attempt's state
+        saved = json.loads((self.root / "repair_broke_loader/result.json").read_text(encoding="utf-8"))
+        self.assertEqual(saved["status"], "COMPILER_INVALID")
+
+    @patch("shared_ledger_verifier.generate_case.compile_once")
+    @patch("shared_ledger_verifier.generate_case.generate_raw_case")
     def test_focus_valid_case_records_fingerprints(self, raw, compile_mock):
         raw.return_value = (deepcopy(RAW), META)
         compile_mock.return_value = compiled(VALID)

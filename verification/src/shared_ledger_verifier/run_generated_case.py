@@ -44,7 +44,13 @@ def stage_execute(
 ) -> CaseRun:
     """Execute the compiled scenario against loopback Supabase."""
     result = run.result
-    if result.get("status") not in _EXECUTABLE:
+    if result.get("status") not in _EXECUTABLE or result.get("loader_result") != "VALID":
+        # `loader_result` is asserted as well: a scenario the Loader rejected
+        # must never reach the database, whatever status an earlier stage left.
+        if result.get("status") in _EXECUTABLE:
+            result["status"] = "COMPILER_INVALID"
+            result["error_category"] = result.get("error_category") or "LOADER_INVALID"
+            run.save()
         if on_progress:
             on_progress("runner", "skipped", {"reason": "generation_failed"})
         return run

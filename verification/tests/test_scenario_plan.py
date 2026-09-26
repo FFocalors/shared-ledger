@@ -113,5 +113,25 @@ class ScenarioPlanTests(unittest.TestCase):
         self.assertIn("fractional", check_plan(broken_amount) or "")
 
 
+class PlanRobustnessTests(unittest.TestCase):
+    """The generator must never raise, whatever the seed."""
+
+    def test_no_seed_in_a_wide_range_can_break_plan_generation(self):
+        # A latent crash used to appear at seed 277 for multiple_repayments,
+        # where a 0.1 CNY debt could not be split into instalments.
+        for focus in ALL_FOCUSES:
+            for seed in range(0, 900):
+                with self.subTest(focus=focus, seed=seed):
+                    plan = plan_for(focus, seed)
+                    self.assertIsNone(check_plan(plan))
+
+    def test_multiple_repayments_always_has_expressible_instalments(self):
+        for seed in range(0, 4000):
+            plan = plan_for("multiple_repayments", seed)
+            with self.subTest(seed=seed):
+                self.assertGreaterEqual(Decimal(plan.amounts[0]), Decimal("0.4"))
+                self.assertGreaterEqual(len(plan.steps), 3)
+
+
 if __name__ == "__main__":
     unittest.main()

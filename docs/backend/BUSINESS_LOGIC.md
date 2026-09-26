@@ -57,7 +57,7 @@ Activity Creator 同时是成员，但仅有明确授予的管理权限。非成
 
 Expense 创建和编辑必须满足：原币金额非零、币种是三位大写代码、汇率为正；Payment 与 Split 各自合计等于 Expense 原币金额；每个 Participant 在一份 Payment/Split 中至多出现一次；金额符号须与 Expense 符号相同；base currency 金额符合 1 位小数精度。自动汇率只能由服务端快照解析，客户端没有生产手工 FX 写入口。
 
-base amount 舍入不得抹掉非零原币债务或改变债务双方。Transfer 不按发生日做 ECB 重估；其分配事实引用来源 ExpenseDebt 的原币、base 金额和历史 FX。当前贡献投影 `transfer_allocations.amount` 以 Activity base currency 计价；来源原币金额见 `original_amount`，真实 Transfer 的支付币种金额见不可变来源记录 `transfer_expense_allocations.payment_amount`，不得把这三个字段视为同一币种金额。
+base amount 舍入不得抹掉非零原币债务或改变债务双方。Transfer 不按发生日做 ECB 重估；其分配事实引用来源 ExpenseDebt 的原币、base 金额和历史 FX。当前贡献投影 `transfer_allocations.amount` 以 Activity base currency 计价；来源原币金额见 `original_amount`，真实 Transfer 的支付币种金额见不可变来源记录 `transfer_expense_allocations.payment_amount`，不得把这三个字段视为同一币种金额。`transfer_allocations.amount` 的 `numeric(20,4)` 表示可能显示末尾零位（如 `49.5000`）；比较金额应按十进制数值，末尾零位不代表额外资金或另一种舍入规则。
 
 实现依据：[base 金额归一](../../supabase/migrations/20260830151327_base_amount_normalization.sql)、[FX snapshot 与债务重建](../../supabase/migrations/20260923022250_business_logic_finalization.sql)、[自动 FX 和 Refund 快照约束](../../supabase/migrations/20260923032928_refund_limits_and_legacy_rpc_permissions.sql)。
 
@@ -73,14 +73,16 @@ Payment 记录实际付款人，Split 记录最终承担人。两者独立表达
 
 ## 7. AA
 
-AA 原币金额在所选 Participant 间等分，以原币 4 位小数保存。这里的 base amount 尾差规则适用于 Split：按 participant_order、id 稳定顺序逐个分配最小单位，正负金额对称处理；尾差不全部压给最后一人。ExpenseDebt 的 base 分配另见第 8 节。
+AA 原币金额在所选 Participant 间等分，以原币 4 位小数保存。AA Split 的 base amount 尾差按 participant_order、id 稳定顺序逐个分配最小单位，正负金额对称处理；尾差不全部压给最后一人。此公平分配规则仅适用于 AA Split，ExpenseDebt 的 base 分配另见第 8 节。
 
-例如 base 金额 100.0 由 3 人 AA，base 分别为 33.4、33.3、33.3，合计 100.0。外币 AA 先保持原币守恒，再独立归一 base amount。手动分摊由调用者明确提供原币金额；base rounding 不改写原币分摊。
+例如 base 金额 100.0 由 3 人 AA，base 分别为 33.4、33.3、33.3，合计 100.0。外币 AA 先保持原币守恒，再独立归一 base amount。手动分摊由调用者明确提供原币金额；各条 Split 的 base amount 先按原币金额和历史 FX 独立舍入到 0.1，再把与 Expense base 总额的差额分配给 participant_order、id 稳定顺序中的最后一人。负 Expense 同样遵守金额符号和原币、base 各自守恒；base rounding 不改写原币分摊。
 
-实现依据：[公平 base 尾差分配](../../supabase/migrations/20260910133739_fair_aa_base_allocation.sql)、[公平 AA 与最终结算回归](../../supabase/tests/database/phase9_fair_aa_final_settlement.sql)。
+实现依据：[公平 base 尾差分配](../../supabase/migrations/20260910133739_fair_aa_base_allocation.sql)、[manual Split base 补差](../../supabase/migrations/20260830151327_base_amount_normalization.sql)、[公平 AA 与最终结算回归](../../supabase/tests/database/phase9_fair_aa_final_settlement.sql)、[manual Split 回归](../../supabase/tests/database/phase2c_base_amount_normalization.sql)。
 ## 8. Debt
 
 每笔 Expense 独立生成 ExpenseDebt，再形成当前 BilateralDebt。债务由 Payment 与 Split 的原币差额决定。正向债务表示承担人欠实际付款人。Participant pair 与币种共同决定债务维度；不同币种不互相抵销。
+
+多债权人、多债务人时，分别按 participant_order、id 对原币净额排序，以累计金额区间的交集确定 debtor→creditor 配对和原币金额。配对顺序可稳定重建，不按姓名或客户端输入顺序决定。
 
 ExpenseDebt 保留原币净额确定的 debtor、creditor、original_amount 和 Expense 的历史 FX；base_amount 是这些债务的独立折算与尾差分配结果，不要求某一条债务的 base_amount 等于同一 Participant 的 Split base 金额或 base net。债务 base 金额均不得为负，合计等于该 Expense 各债权人正向 Payment−Split base net 的合计。正常情况下，按稳定 pair 顺序逐条折算，末条承接总额尾差；若这样会使末条为负，则以原币债务金额为权重，把既定 base 总额按 0.1 最小单位分配给各 pair，并以稳定 pair 顺序处理同余数。该分配不改写原币债务或历史资金事实。
 
@@ -157,6 +159,8 @@ base_unified 将普通 Debt 按 Activity base currency 结算，来源分配仍�
 
 Final Settlement 可用多跳路径将当前债务转为参与人之间的端点付款。算法确定且可重建，可减少付款步骤，但不保证数学上全局最少笔数。纯债务环路不会自动创建 Transfer；Activity 保持 active。
 
+最终建议由服务端当前投影生成，返回顺序按 from_participant_id、to_participant_id、currency 排列，不按参与人显示姓名排列。执行时服务端重新校验当前 financial_version 与提交的建议项；财务状态变化后须获取新计划。不同测试身份产生不同 Participant ID 时，即使业务形状相同，也不保证建议列表的姓名顺序相同。
+
 作废 Final Transfer 保留历史，并将当前付款容量释放回建议；若仍有债务，可按新 financial_version 创建新 Transfer。作废 path 不再占可执行额度。任一 Activity Member 可提交当前建议，无需认领转账双方。
 
 实现依据：[Final Settlement v2 计划与执行](../../supabase/migrations/20260920142845_multi_currency_prepayment_final_settlement_core.sql)、[void 重执行、环路与 Usage 排序](../../supabase/tests/database/critical_financial_ordering.sql)、[Final Settlement 测试](../../supabase/tests/database/phase6_final_settlement.sql)。
@@ -224,6 +228,8 @@ payload 至少包含 Activity、双方或 Owner/Custodian、金额、归一币�
 ## 21. 原始事实与 Projection
 
 Expense、Payment、Split、Transfer、TransferComponent、Refund source、Transfer source allocation/path 记录原始输入或已发生资金动作。ExpenseDebt、TransferAllocation 当前贡献、PrepaymentUsage、PrepaymentAccount、BilateralDebt、Final preview 与 financial status 是基于这些事实重建的结果。
+
+当前贡献投影中的 `transfer_allocations.amount` 是 Activity base currency 数值；数据库可按 `numeric(20,4)` 输出末尾零位。展示格式不改变其资金含义，跨投影核对时应按十进制数值比较。
 
 重建必须稳定保留真实 Transfer 的债务来源与金额；只能让 voided Transfer 退出当前资金效果，不可删除或改写来源历史。Expense 删除、Refund 创建/删除、Transfer 登记/作废等操作触发必要投影更新。服务端内部可执行 Activity 全量重建；客户端不能直接写投影表。
 

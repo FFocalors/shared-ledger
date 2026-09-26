@@ -1,0 +1,268 @@
+{
+  "batch": {
+    "batch_id": "mass_2000_20260926",
+    "seed_range": [
+      10000,
+      11999
+    ],
+    "code_baseline": "2835119 (MASS500-001 fix + BUSINESS_LOGIC rulings for 002/003/004)",
+    "migrations": 43,
+    "focus_mix": {
+      "single_payer_aa": 100,
+      "multi_payer_aa": 170,
+      "aa_rounding": 90,
+      "manual_split": 60,
+      "expense_aa": 30,
+      "fifo_repayment": 100,
+      "targeted_repayment": 100,
+      "multiple_repayments": 100,
+      "prepayment_before_debt": 80,
+      "prepayment_after_debt": 80,
+      "prepayment_return": 70,
+      "prepayment_refund": 70,
+      "linked_refund": 110,
+      "negative_expense": 80,
+      "refund_boundary": 110,
+      "multi_currency": 250,
+      "void_transfer": 90,
+      "mixed_flow": 60,
+      "large_activity": 100,
+      "final_settlement": 75,
+      "completion_archive": 75
+    },
+    "report": "verification/findings/MASS_VERIFICATION_2000.md"
+  },
+  "post_review_resolution": {
+    "review_date": "2026-09-26",
+    "historical_scan_classifications_preserved": true,
+    "note": "The original codex_action_required entries are the MASS2000 scan snapshot. Use these resolutions for current business-fix decisions.",
+    "confirmed_business_bugs_remaining": 0,
+    "issues": [
+      {
+        "issue_id": "MASS2000-001",
+        "verdict": "DOCUMENTATION_AMBIGUITY",
+        "severity": "LOW",
+        "business_code_change_required": false,
+        "resolution": "The existing phase2c_base_amount_normalization.sql pgTAP requires the manual Split base residual to go to the last participant in stable participant_order/id order. The fair_aa_base_allocation.sql function applies its distributed residual rule only to split_method=aa. Section 7 wording made the AA-only rule appear to cover every Split. Keep the manual algorithm and clarify the AA/manual distinction; original and base totals conserve. No historical data rewrite.",
+      "next_action": "Completed: BUSINESS_LOGIC.md section 7 now distinguishes AA from manual Split; preserve both existing algorithms and regression contracts."
+      },
+      {
+        "issue_id": "MASS2000-002",
+        "verdict": "NOT_A_BUG",
+        "severity": "NONE",
+        "business_code_change_required": false,
+        "resolution": "transfer_allocations.amount has base-currency semantics; a numeric(20,4) representation such as 49.5000 equals 49.5. The observed scale difference does not change financial value.",
+      "next_action": "Completed: closed the business-bug candidate and clarified numeric display precision in BUSINESS_LOGIC.md sections 5 and 21."
+      },
+      {
+        "issue_id": "MASS2000-003",
+        "verdict": "DOCUMENTATION_AMBIGUITY",
+        "severity": "NONE",
+        "business_code_change_required": false,
+        "resolution": "Debt pairing and final-settlement plan construction use deterministic server ordering. A plan item cannot be inferred by participant name across separate runs with new UUIDs; the current server plan and financial version govern execution.",
+      "next_action": "Completed: BUSINESS_LOGIC.md sections 8 and 14 clarify deterministic ordering scope and the authoritative server-plan execution contract."
+      }
+    ]
+  },
+  "codex_action_required": [
+    {
+      "issue_id": "MASS2000-001",
+      "classification": "BUSINESS_BUG",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "affected_focus": "multi_currency",
+      "occurrence_count": 60,
+      "occurrence_note": "60 of 248 foreign-currency cases carry a base residual (the other 188 conserve under independent rounding). All 60 place the residual on the last participant; the Judge flagged 28 of them.",
+      "reproduction_count": 1,
+      "reproduction_note": "The underlying data pattern is 60/60 deterministic. Judge replay of a flagged scenario: 2 trials, 1 reproduced (FAIL -> FAIL) and 1 not (FAIL -> PASS), so the Judge is inconsistent about whether this is a violation.",
+      "representative_case_ids": [
+        "20260925T210621303015Z_multi_currency_0328f5",
+        "20260925T215714989116Z_multi_currency_434277",
+        "20260925T221010741568Z_multi_currency_faf8cd"
+      ],
+      "expected_behavior": "Section 7 states the base-amount residual rule for Split: minimum units are handed out one at a time in stable participant_order/id order and 'the residual is not pushed entirely onto the last participant'. A manual Split is still a Split, so a foreign-currency manual split whose independently rounded base amounts miss the expense base by 0.1 should give that 0.1 to the first participant in stable order.",
+      "actual_behavior": "For every foreign-currency manual split with a residual, the entire residual is placed on the LAST participant in the split map. Example (12.34 EUR, fx 7.85, base total 96.9): alice 4.21 EUR -> 33.0, bob 8.13 EUR -> 63.9. Independent rounding gives 33.0 and 63.8 (sum 96.8, residual +0.1), and the observed result pushes that +0.1 onto bob. Stable order would give alice 33.1 / bob 63.8. Observed pattern: last absorbs, 60/60.",
+      "contrast_evidence": "The SAME projection behaves correctly on the CNY AA path: aa_rounding 89/89, multi_payer_aa 61/61 and single_payer_aa 43/43 follow stable order with zero last-absorbs cases. So the reference behaviour is implemented and the FX manual path diverges from it deterministically.",
+      "scope_question_for_codex": "Section 7's residual sentence says it applies to 'Split'; its worked example is AA, and the manual-split sentence only says the caller provides the original amounts. If Codex reads the residual rule as AA-only, this becomes DOCUMENTATION_AMBIGUITY rather than a defect; if it applies to every Split (the natural reading of '适用于 Split'), the manual-split base allocation is wrong. Either way the document and the implementation currently disagree.",
+      "not_a_duplicate_of": "MASS500-002 was about ExpenseDebt base allocation and was explicitly ruled permissible by the new section 8. This is about Split base allocation, which section 7 governs directly.",
+      "suspected_root_area": "Base-currency split normalization in the Expense path (private.create_expense_impl / the split base normalization that mirrors base_amount_normalization), specifically the residual branch used when split_method is manual and the expense currency differs from the base currency.",
+      "evidence": [
+        "60/60 residual cases place the whole residual on the last participant; 0/60 use stable order",
+        "CNY AA splits use stable order 193/193, so the two paths disagree",
+        "Original-currency splits and base totals are correct in every affected case, so no funding fact is changed",
+        "Judge cluster multi_currency_split_tail_stable_order (28 members) with the same root area"
+      ],
+      "recommended_for_codex": true
+    },
+    {
+      "issue_id": "MASS2000-002",
+      "classification": "DOCUMENTATION_AMBIGUITY",
+      "severity": "NONE",
+      "confidence": 0.85,
+      "affected_focus": "fifo_repayment, multi_currency",
+      "occurrence_count": 4,
+      "reproduction_count": 0,
+      "representative_case_ids": [
+        "20260925T175822134636Z_fifo_repayment_c280e1",
+        "20260925T215714989116Z_multi_currency_dbe83e"
+      ],
+      "expected_behavior": "The Judge applies section 5's one-decimal rule for base-currency amounts to transfer_allocations.amount.",
+      "actual_behavior": "transfer_allocations.amount is written with four decimals (49.5000, 3.3000). The value is the correct base-currency amount; only the printed scale differs. Section 5 states the one-decimal requirement for Expense creation and editing, and the new section 18 clarification already accepts four-decimal representations for the total_prepayment projection.",
+      "suspected_root_area": "transfer_allocations.amount column scale.",
+      "recommendation": "State in section 5 or 21 whether transfer_allocations.amount must be normalized to one decimal, or that projection fields keep the numeric representation of their source column. No code change is obviously required.",
+      "evidence": [
+        "4 anomalies, all and only about the decimal scale of that one field",
+        "The value equals the correct base amount in every case"
+      ],
+      "recommended_for_codex": true
+    },
+    {
+      "issue_id": "MASS2000-003",
+      "classification": "DOCUMENTATION_AMBIGUITY",
+      "severity": "NONE",
+      "confidence": 0.92,
+      "affected_focus": "final_settlement, manual_split, multi_payer_aa",
+      "occurrence_count": 5,
+      "reproduction_count": 0,
+      "representative_case_ids": [
+        "20260925T174435431906Z_manual_split_fb162f",
+        "20260925T233240297578Z_final_settlement_6b596d",
+        "20260925T235431911974Z_final_settlement_3ebf90"
+      ],
+      "expected_behavior": "Not determinable from the current document.",
+      "actual_behavior": "Judge UNCERTAIN verdicts whose stated reason is that the rules do not determine the answer: which creditors pair with which debtors when several of each exist, and which item order the base_unified final plan uses. Section 14 fixes the execution contract (one complete suggestion item, matched against the current server plan) but does not describe how the plan itself is built or ordered.",
+      "suspected_root_area": "BUSINESS_LOGIC.md sections 8 and 14.",
+      "recommendation": "Either document the pairing and plan-ordering rules, or state explicitly that the client must treat the server plan as authoritative without re-deriving it. No code change implied.",
+      "evidence": [
+        "5 UNCERTAIN verdicts across three focuses with the same stated reason",
+        "DeepSeek cluster judge_uncertain_underspecified_algorithms, confidence 0.92"
+      ],
+      "recommended_for_codex": true
+    }
+  ],
+  "recorded_but_not_for_codex": [
+    {
+      "issue_id": "MASS2000-N01",
+      "classification": "JUDGE_FALSE_POSITIVE",
+      "severity": null,
+      "confidence": 0.85,
+      "affected_focus": "mixed_flow, large_activity",
+      "occurrence_count": 2,
+      "representative_case_ids": [
+        "20260925T225729838924Z_mixed_flow_886de3",
+        "20260925T230540496604Z_large_activity_d5ec34"
+      ],
+      "reason": "The Judge demanded a PrepaymentUsage settling a debt owed to a THIRD party. Section 12 dimensions a prepayment account by Activity/Owner/Custodian and forbids consuming it against obligations in another direction, so an account held by carol with custodian alice cannot settle a carol-to-bob debt. Verified on both members: the recorded state matches section 12 exactly. The DeepSeek analyst rated this BUSINESS_BUG/HIGH (0.85); that rating is rejected here.",
+      "recommended_for_codex": false
+    },
+    {
+      "issue_id": "MASS2000-N02",
+      "classification": "JUDGE_FALSE_POSITIVE",
+      "severity": null,
+      "confidence": 0.8,
+      "affected_focus": "final_settlement",
+      "occurrence_count": 5,
+      "representative_case_ids": [
+        "20260925T233321143557Z_final_settlement_30420c",
+        "20260925T234329807807Z_final_settlement_63cebc",
+        "20260925T235238101709Z_final_settlement_444b40"
+      ],
+      "reason": "Two arguments the Judge makes about final settlement are both contradicted by cases it passes. (a) 'transfer_allocations has no row for the final-settlement transfer': passing final_settlement cases have exactly the same shape (the contribution lives in final_settlement_paths and in the immutable transfer_expense_allocations), so the Judge is inconsistent, not the projection. (b) 'final1 settles only exp1 and leaves other debts unaddressed': section 14 requires executing ONE complete suggestion item at a time, so leaving the remaining plan unexecuted is the documented behaviour.",
+      "recommended_for_codex": false
+    },
+    {
+      "issue_id": "MASS2000-N03",
+      "classification": "JUDGE_FALSE_POSITIVE",
+      "severity": null,
+      "confidence": 0.9,
+      "affected_focus": "aa_rounding, linked_refund, refund_boundary, multi_currency",
+      "occurrence_count": 6,
+      "representative_case_ids": [
+        "20260925T173049290751Z_aa_rounding_eb1c92",
+        "20260925T195219907708Z_prepayment_refund_151a15",
+        "20260925T200419303205Z_refund_boundary_9f50d1"
+      ],
+      "reason": "Individually verified Judge errors. aa_rounding_eb1c92: the Judge forgot that bob also paid 0.8, so it expected bob's debt to be 5.8667 when 2.5333 is exactly the split-minus-payment net. prepayment_refund_151a15: the Judge inverted the refund direction; the receiver (alice) becomes the debtor and the beneficiary (carol) the creditor, which is the same shape verified correct in the previous round. refund_boundary_9f50d1: the Judge called a preserved source ExpenseDebt inconsistent with an empty BilateralDebt, but section 8/21 keep ExpenseDebt as the per-expense source projection while BilateralDebt carries the current net.",
+      "recommended_for_codex": false
+    },
+    {
+      "issue_id": "MASS2000-N04",
+      "classification": "ENVIRONMENT",
+      "severity": null,
+      "confidence": 0.9,
+      "affected_focus": "multiple",
+      "occurrence_count": 7,
+      "representative_case_ids": [],
+      "reason": "Judge responses rejected as FORBIDDEN_CONTENT. The runs themselves executed and their states are unaffected.",
+      "recommended_for_codex": false
+    },
+    {
+      "issue_id": "MASS2000-N05",
+      "classification": "WORKFLOW",
+      "severity": null,
+      "confidence": 0.95,
+      "affected_focus": "multiple",
+      "occurrence_count": 13,
+      "representative_case_ids": [
+        "20260925T173731098208Z_manual_split_efc76a"
+      ],
+      "reason": "Harness defect found and fixed during this batch: when the repair attempt failed the Loader, the terminal status was taken from the EARLIER attempt, so a Loader-rejected scenario was marked executable and handed to the Runner (SCENARIO_FORMAT failures). stage_compile now decides from the last attempt and stage_execute refuses any scenario whose loader_result is not VALID. The 13 cases are reclassified as COMPILER_INVALID and excluded from the anomaly pool.",
+      "recommended_for_codex": false
+    },
+    {
+      "issue_id": "MASS2000-N06",
+      "classification": "WORKFLOW",
+      "severity": null,
+      "confidence": 0.9,
+      "affected_focus": "multiple_repayments",
+      "occurrence_count": 34,
+      "representative_case_ids": [],
+      "reason": "Plan generator crash: a 0.1 CNY debt cannot be split into two instalments, so plan_for('multiple_repayments', seed) raised for 34 of 12000 seeds. Fixed by flooring the amount and rebalancing the debtor share; 21 focuses x 12000 seeds now generate without error.",
+      "recommended_for_codex": false
+    },
+    {
+      "issue_id": "MASS2000-N07",
+      "classification": "BAD_SCENARIO",
+      "severity": null,
+      "confidence": 0.7,
+      "affected_focus": "final_settlement",
+      "occurrence_count": 4,
+      "representative_case_ids": [
+        "20260925T235238101709Z_final_settlement_02e228",
+        "20260925T235637518663Z_final_settlement_796286"
+      ],
+      "reason": "The harness's final_settlement plans are still weak: two cases failed at runtime because the plan could not offer the item the scenario named. This is a plan-design limitation on the verification side, not a business defect.",
+      "recommended_for_codex": false
+    }
+  ],
+  "pass_audit_summary": {
+    "pass_cases": 1916,
+    "unique_valid_pass": 1522,
+    "audited": 95,
+    "sample_rate": 0.05,
+    "usable_responses": 95,
+    "compiler_preserved_intent": 93,
+    "compiler_drift_cases": [
+      "20260925T205449783595Z_refund_boundary_1efa5d",
+      "20260925T204448743363Z_refund_boundary_5d3570"
+    ],
+    "compiler_drift_note": "Both drift cases are refund_boundary, where the Compiler moved a refund amount by 0.1 to sit on the cap (-3.1 -> -3.2, -39.9 -> -40.0). Tooling issue, not a business finding.",
+    "focus_contract_genuine": 81,
+    "focus_not_genuine_by_focus": {
+      "fifo_repayment": 6,
+      "refund_boundary": 2,
+      "prepayment_refund": 2,
+      "final_settlement": 2,
+      "negative_expense": 1,
+      "completion_archive": 1
+    },
+    "judge_missed_anything": 29,
+    "judge_miss_triage": {
+      "base_normalisation_semantics_already_ruled": 10,
+      "source_expensedebt_vs_current_bilateraldebt": 8,
+      "known_observability_ambiguity": 8,
+      "transfer_allocations_field_semantics": 3,
+      "genuine_misses_found": 0
+    }
+  }
+}
