@@ -1,13 +1,23 @@
 package com.ffocalors.sharedledger.ui.screens
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -51,12 +61,9 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -71,6 +78,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -93,6 +104,7 @@ import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.NumericKeypadState
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
+import com.ffocalors.sharedledger.ui.components.RollingCurrencyText
 import com.ffocalors.sharedledger.ui.components.SegmentedControl
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButtonTone
@@ -105,6 +117,8 @@ import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.components.numericKeypadTarget
 import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
 import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
+import com.ffocalors.sharedledger.ui.components.specularMachinedBorder
+import com.ffocalors.sharedledger.ui.theme.rememberSharedLedgerHaptics
 import com.ffocalors.sharedledger.ui.theme.AvatarBackground
 import com.ffocalors.sharedledger.ui.theme.ComponentSizes
 import com.ffocalors.sharedledger.ui.theme.SageGreen
@@ -190,6 +204,7 @@ fun TransferScreen(
     var selectedExpenseIds by remember(mode) { mutableStateOf<Set<String>>(emptySet()) }
     val keypad = remember { NumericKeypadState() }
     val focusManager = LocalFocusManager.current
+    val haptics = rememberSharedLedgerHaptics()
 
     val activeCandidates = when (candidateScope) {
         TransferCandidateScope.PERSONAL -> state.candidates
@@ -463,43 +478,46 @@ fun TransferScreen(
                         val isButtonLoading = state.isSubmitting || isAwaitingPreviewToConfirm
                         val loadingMessage = if (state.isSubmitting) "提交中…" else "核算中…"
 
-                        Surface(
-                            onClick = {
-                                if (!isInputValid || state.isSubmitting) return@Surface
-                                if (isActuallyReady) {
-                                    onConfirm(
-                                        TransferDraft(
-                                            activityId = activityId,
-                                            ledgerUnitId = ledgerUnitId,
-                                            mode = mode,
-                                            participantId = selected.participantId,
-                                            amount = amountText,
-                                            onBehalfOfParticipantId = selectedOnBehalfId,
-                                            candidateKey = selected.candidateKey,
-                                            currency = selectedCurrencyOption?.normalizedCurrencyCode ?: state.baseCurrency,
-                                            allocationMode = allocationMode,
-                                            targetExpenseIds = selectedExpenseIds.toList(),
-                                            expectedFinancialVersion = selectedExpectedVersion,
-                                        ),
-                                    )
-                                } else {
-                                    isAwaitingPreviewToConfirm = true
-                                }
-                            },
-                            enabled = isInputValid && !isButtonLoading,
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(SharedLedgerDimens.ButtonHeight),
-                            shape = SharedLedgerRadius.Full,
-                            color = animatedContainerColor,
-                            contentColor = animatedContentColor,
+                                .height(SharedLedgerDimens.ButtonHeight)
+                                .clip(SharedLedgerRadius.Full)
+                                .background(animatedContainerColor)
+                                .specularMachinedBorder(shape = SharedLedgerRadius.Full)
+                                .clickable(
+                                    enabled = !isButtonLoading,
+                                    role = androidx.compose.ui.semantics.Role.Button,
+                                    onClick = {
+                                        if (!isInputValid || state.isSubmitting) {
+                                            haptics.reject()
+                                            return@clickable
+                                        }
+                                        haptics.click()
+                                        if (isActuallyReady) {
+                                            onConfirm(
+                                                TransferDraft(
+                                                    activityId = activityId,
+                                                    ledgerUnitId = ledgerUnitId,
+                                                    mode = mode,
+                                                    participantId = selected.participantId,
+                                                    amount = amountText,
+                                                    onBehalfOfParticipantId = selectedOnBehalfId,
+                                                    candidateKey = selected.candidateKey,
+                                                    currency = selectedCurrencyOption?.normalizedCurrencyCode ?: state.baseCurrency,
+                                                    allocationMode = allocationMode,
+                                                    targetExpenseIds = selectedExpenseIds.toList(),
+                                                    expectedFinancialVersion = selectedExpectedVersion,
+                                                ),
+                                            )
+                                        } else {
+                                            isAwaitingPreviewToConfirm = true
+                                        }
+                                    },
+                                )
+                                .padding(horizontal = SharedLedgerSpacing.Large),
+                            contentAlignment = Alignment.Center,
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(horizontal = SharedLedgerSpacing.Large),
-                                contentAlignment = Alignment.Center,
-                            ) {
                                 if (isButtonLoading) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
@@ -534,7 +552,6 @@ fun TransferScreen(
                                         )
                                     }
                                 }
-                            }
                         }
                     }
                 }
@@ -621,6 +638,7 @@ fun TransferScreen(
                                 candidateScope = candidateScope,
                                 currencyCode = state.baseCurrency,
                                 onSelectIndex = { index ->
+                                    haptics.tick()
                                     selectedIndex = index
                                     val option = defaultTransferCurrencyOption(
                                         currencyOptions = participants[index].currencyOptions,
@@ -811,17 +829,16 @@ private fun CounterpartySelectionSection(
                         animationSpec = tween(SharedLedgerMotion.Durations.TabIndicator),
                         label = "chipBg",
                     )
-                    val borderStroke = if (isCurrent) {
-                        BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary)
-                    } else {
-                        BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant)
-                    }
+                    val chipBorderColor = if (isCurrent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+                    val chipBorderWidth = if (isCurrent) 1.5.dp else SharedLedgerDimens.OutlineWidth
 
-                    Surface(
-                        onClick = { onSelectIndex(index) },
-                        shape = SharedLedgerRadius.Full,
-                        color = chipBg,
-                        border = borderStroke,
+                    Box(
+                        modifier = Modifier
+                            .clip(SharedLedgerRadius.Full)
+                            .background(chipBg)
+                            .border(chipBorderWidth, chipBorderColor, SharedLedgerRadius.Full)
+                            .specularMachinedBorder(shape = SharedLedgerRadius.Full)
+                            .clickable { onSelectIndex(index) },
                     ) {
                         Row(
                             modifier = Modifier.padding(
@@ -863,7 +880,9 @@ private fun CounterpartySelectionSection(
 
         // 当前选中对象的名片大卡
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .specularMachinedBorder(shape = SharedLedgerRadius.ExtraLarge),
             shape = SharedLedgerRadius.ExtraLarge,
             colors = CardDefaults.cardColors(containerColor = SurfaceWarmLowest),
             border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant),
@@ -882,9 +901,10 @@ private fun CounterpartySelectionSection(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        Surface(
-                            shape = SharedLedgerRadius.Full,
-                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                        Box(
+                            modifier = Modifier
+                                .clip(SharedLedgerRadius.Full)
+                                .background(MaterialTheme.colorScheme.tertiaryContainer),
                         ) {
                             Text(
                                 text = "代记转账",
@@ -905,28 +925,62 @@ private fun CounterpartySelectionSection(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
-                        ) {
-                            Text(
-                                text = selected.fromParticipantName,
-                                style = SharedLedgerTextStyles.CardTitle,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                            Icon(
-                                imageVector = Icons.Rounded.SwapHoriz,
-                                contentDescription = "转账给",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(SharedLedgerDimens.IconMedium),
-                            )
-                            Text(
-                                text = selected.toParticipantName,
-                                style = SharedLedgerTextStyles.CardTitle,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
+                        // 仅左侧代记双方姓名随上方选择左右滑动
+                        AnimatedContent(
+                            targetState = selectedIndex,
+                            transitionSpec = {
+                                val slideDistanceRatio = 3
+                                val springSpec = spring<IntOffset>(
+                                    dampingRatio = 0.85f,
+                                    stiffness = 380f,
+                                )
+                                if (targetState > initialState) {
+                                    (slideInHorizontally(animationSpec = springSpec) { fullWidth -> fullWidth / slideDistanceRatio } +
+                                        fadeIn(animationSpec = tween(durationMillis = 200, easing = FastOutSlowInEasing)))
+                                        .togetherWith(
+                                            slideOutHorizontally(animationSpec = springSpec) { fullWidth -> -fullWidth / slideDistanceRatio } +
+                                                fadeOut(animationSpec = tween(durationMillis = 160, easing = FastOutSlowInEasing))
+                                        )
+                                } else {
+                                    (slideInHorizontally(animationSpec = springSpec) { fullWidth -> -fullWidth / slideDistanceRatio } +
+                                        fadeIn(animationSpec = tween(durationMillis = 200, easing = FastOutSlowInEasing)))
+                                        .togetherWith(
+                                            slideOutHorizontally(animationSpec = springSpec) { fullWidth -> fullWidth / slideDistanceRatio } +
+                                                fadeOut(animationSpec = tween(durationMillis = 160, easing = FastOutSlowInEasing))
+                                        )
+                                }
+                            },
+                            contentAlignment = Alignment.CenterStart,
+                            label = "counterpartyOnBehalfSlide",
+                            modifier = Modifier
+                                .weight(1f)
+                                .clipToBounds(),
+                        ) { targetIndex ->
+                            val currentTarget = participants.getOrNull(targetIndex) ?: selected
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
+                            ) {
+                                Text(
+                                    text = currentTarget.fromParticipantName,
+                                    style = SharedLedgerTextStyles.CardTitle,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                                Icon(
+                                    imageVector = Icons.Rounded.SwapHoriz,
+                                    contentDescription = "转账给",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(SharedLedgerDimens.IconMedium),
+                                )
+                                Text(
+                                    text = currentTarget.toParticipantName,
+                                    style = SharedLedgerTextStyles.CardTitle,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                            }
                         }
 
+                        // 右侧金额固定原地不动，维持 RollingCurrencyText 数字滚动动效
                         AmountDisplay(
                             amount = selected.amount,
                             currencyCode = currencyCode,
@@ -942,29 +996,63 @@ private fun CounterpartySelectionSection(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
-                        ) {
-                            ParticipantAvatar(
-                                name = selected.participant.name,
-                                background = selected.participant.avatarBackground,
-                                size = SharedLedgerDimens.AvatarLarge,
-                            )
-                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                Text(
-                                    text = selected.participant.name,
-                                    style = SharedLedgerTextStyles.CardTitle,
-                                    color = MaterialTheme.colorScheme.onSurface,
+                        // 仅左侧头像和名字随上方选择左右平滑滑动
+                        AnimatedContent(
+                            targetState = selectedIndex,
+                            transitionSpec = {
+                                val slideDistanceRatio = 3
+                                val springSpec = spring<IntOffset>(
+                                    dampingRatio = 0.85f,
+                                    stiffness = 380f,
                                 )
-                                Text(
-                                    text = if (isTransfer) "待结清欠款对象" else "待收款债务人",
-                                    style = SharedLedgerTextStyles.Label,
-                                    color = MaterialTheme.colorScheme.outline,
+                                if (targetState > initialState) {
+                                    (slideInHorizontally(animationSpec = springSpec) { fullWidth -> fullWidth / slideDistanceRatio } +
+                                        fadeIn(animationSpec = tween(durationMillis = 200, easing = FastOutSlowInEasing)))
+                                        .togetherWith(
+                                            slideOutHorizontally(animationSpec = springSpec) { fullWidth -> -fullWidth / slideDistanceRatio } +
+                                                fadeOut(animationSpec = tween(durationMillis = 160, easing = FastOutSlowInEasing))
+                                        )
+                                } else {
+                                    (slideInHorizontally(animationSpec = springSpec) { fullWidth -> -fullWidth / slideDistanceRatio } +
+                                        fadeIn(animationSpec = tween(durationMillis = 200, easing = FastOutSlowInEasing)))
+                                        .togetherWith(
+                                            slideOutHorizontally(animationSpec = springSpec) { fullWidth -> fullWidth / slideDistanceRatio } +
+                                                fadeOut(animationSpec = tween(durationMillis = 160, easing = FastOutSlowInEasing))
+                                        )
+                                }
+                            },
+                            contentAlignment = Alignment.CenterStart,
+                            label = "counterpartyIdentitySlide",
+                            modifier = Modifier
+                                .weight(1f)
+                                .clipToBounds(),
+                        ) { targetIndex ->
+                            val currentTarget = participants.getOrNull(targetIndex) ?: selected
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+                            ) {
+                                ParticipantAvatar(
+                                    name = currentTarget.participant.name,
+                                    background = currentTarget.participant.avatarBackground,
+                                    size = SharedLedgerDimens.AvatarLarge,
                                 )
+                                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    Text(
+                                        text = currentTarget.participant.name,
+                                        style = SharedLedgerTextStyles.CardTitle,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                    Text(
+                                        text = if (isTransfer) "待结清欠款对象" else "待收款债务人",
+                                        style = SharedLedgerTextStyles.Label,
+                                        color = MaterialTheme.colorScheme.outline,
+                                    )
+                                }
                             }
                         }
 
+                        // 右侧应付/应收金额固定原地不动，维持 RollingCurrencyText 数字滚动动效
                         Column(horizontalAlignment = Alignment.End) {
                             Text(
                                 text = if (isTransfer) "应付金额" else "应收金额",
@@ -1026,8 +1114,27 @@ private fun TransferAmountHeroCard(
     val isFullSettled = currentVal != null && targetDebtCap > BigDecimal.ZERO && currentVal.compareTo(targetDebtCap) == 0
     val isPartialSettled = currentVal != null && targetDebtCap > BigDecimal.ZERO && currentVal > BigDecimal.ZERO && currentVal < targetDebtCap
 
+    val haptics = rememberSharedLedgerHaptics()
+    var wasFullSettled by remember { mutableStateOf(isFullSettled) }
+    LaunchedEffect(isFullSettled) {
+        if (isFullSettled && !wasFullSettled) {
+            haptics.snap()
+        }
+        wasFullSettled = isFullSettled
+    }
+
+    var wasOverMax by remember { mutableStateOf(isOverMax) }
+    LaunchedEffect(isOverMax) {
+        if (isOverMax && !wasOverMax) {
+            haptics.reject()
+        }
+        wasOverMax = isOverMax
+    }
+
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .specularMachinedBorder(shape = SharedLedgerRadius.ExtraLarge),
         shape = SharedLedgerRadius.ExtraLarge,
         colors = CardDefaults.cardColors(containerColor = SurfaceWarmLowest),
         border = BorderStroke(
@@ -1080,10 +1187,11 @@ private fun TransferAmountHeroCard(
                         onSelected = onCurrencyChange,
                     )
                 } else {
-                    Surface(
-                        shape = SharedLedgerRadius.Full,
-                        color = SurfaceWarmLow,
-                        border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant),
+                    Box(
+                        modifier = Modifier
+                            .clip(SharedLedgerRadius.Full)
+                            .background(SurfaceWarmLow)
+                            .border(BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant), SharedLedgerRadius.Full),
                     ) {
                         Text(
                             text = currencyCode,
@@ -1120,10 +1228,20 @@ private fun TransferAmountHeroCard(
                 },
                 trailingContent = if (amountText.isNotBlank()) {
                     @Composable {
-                        IconButton(onClick = { onAmountChange("") }) {
+                        Box(
+                            modifier = Modifier
+                                .size(SharedLedgerDimens.TopBarActionSize)
+                                .clip(CircleShape)
+                                .clickable(
+                                    role = androidx.compose.ui.semantics.Role.Button,
+                                    onClick = { onAmountChange("") },
+                                )
+                                .semantics { contentDescription = "清除金额" },
+                            contentAlignment = Alignment.Center,
+                        ) {
                             Icon(
                                 imageVector = Icons.Rounded.Clear,
-                                contentDescription = "清除金额",
+                                contentDescription = null,
                                 tint = MaterialTheme.colorScheme.outline,
                                 modifier = Modifier.size(SharedLedgerDimens.IconSmall),
                             )
@@ -1140,7 +1258,12 @@ private fun TransferAmountHeroCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 // 限额说明 / 实时结清状态
-                Column(modifier = Modifier.weight(1f)) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = SharedLedgerSpacing.Small),
+                    verticalArrangement = Arrangement.Center,
+                ) {
                     when {
                         isOverMax -> {
                             Row(
@@ -1154,10 +1277,12 @@ private fun TransferAmountHeroCard(
                                     modifier = Modifier.size(14.dp),
                                 )
                                 Text(
-                                    text = "金额已超过当前上限",
+                                    text = "已超出结清上限",
                                     style = SharedLedgerTextStyles.Label,
                                     color = MaterialTheme.colorScheme.error,
                                     fontWeight = FontWeight.Medium,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
                                 )
                             }
                         }
@@ -1177,6 +1302,7 @@ private fun TransferAmountHeroCard(
                                     style = SharedLedgerTextStyles.Label,
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.SemiBold,
+                                    maxLines = 1,
                                 )
                             }
                         }
@@ -1193,67 +1319,71 @@ private fun TransferAmountHeroCard(
                                     modifier = Modifier.size(14.dp),
                                 )
                                 Text(
-                                    text = "未全部结清 · 还差 ${MoneyFormatter.format(diff, currencyCode, fractionDigits)}",
+                                    text = "还差",
                                     style = SharedLedgerTextStyles.Label,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                RollingCurrencyText(
+                                    amount = diff,
+                                    currencyCode = currencyCode,
+                                    fractionDigitsOverride = fractionDigits,
+                                    textStyle = SharedLedgerTextStyles.Label.copy(fontWeight = FontWeight.Medium),
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
                         }
                         else -> {
-                            Text(
-                                text = "未全部结清 · 最多可结清 ${MoneyFormatter.format(targetDebtCap, currencyCode, fractionDigits)}",
-                                style = SharedLedgerTextStyles.Label,
-                                color = MaterialTheme.colorScheme.outline,
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                Text(
+                                    text = "最多可结清",
+                                    style = SharedLedgerTextStyles.Label,
+                                    color = MaterialTheme.colorScheme.outline,
+                                )
+                                RollingCurrencyText(
+                                    amount = targetDebtCap,
+                                    currencyCode = currencyCode,
+                                    fractionDigitsOverride = fractionDigits,
+                                    textStyle = SharedLedgerTextStyles.Label.copy(fontWeight = FontWeight.Medium),
+                                    color = MaterialTheme.colorScheme.outline,
+                                )
+                            }
                         }
                     }
                 }
 
-                // 快捷填充 Chip：全部结清 vs 已全部结清
-                if (isFullSettled) {
-                    Surface(
-                        shape = SharedLedgerRadius.Full,
-                        color = MaterialTheme.colorScheme.primaryContainer,
+                // 快捷填充 Chip：仅在未完全结清且有债务上限时显示自动补齐按钮
+                if (!isFullSettled && targetDebtCap > BigDecimal.ZERO) {
+                    Box(
+                        modifier = Modifier
+                            .clip(SharedLedgerRadius.Full)
+                            .background(MaterialTheme.colorScheme.secondaryContainer)
+                            .specularMachinedBorder(shape = SharedLedgerRadius.Full)
+                            .clickable(
+                                role = androidx.compose.ui.semantics.Role.Button,
+                                onClick = {
+                                    haptics.snap()
+                                    onFillMax()
+                                },
+                            )
+                            .semantics { contentDescription = "全部结清" },
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = SharedLedgerSpacing.Medium, vertical = 6.dp),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Check,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.size(14.dp),
-                            )
-                            Text(
-                                text = "已全部结清",
-                                style = SharedLedgerTextStyles.ActionLabel,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                        }
-                    }
-                } else {
-                    Surface(
-                        onClick = onFillMax,
-                        shape = SharedLedgerRadius.Full,
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = SharedLedgerSpacing.Medium, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(3.dp),
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.FlashOn,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                modifier = Modifier.size(14.dp),
+                                modifier = Modifier.size(13.dp),
                             )
                             Text(
                                 text = "全部结清",
-                                style = SharedLedgerTextStyles.ActionLabel,
+                                style = SharedLedgerTextStyles.ActionLabel.copy(fontSize = 12.sp),
                                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                                 fontWeight = FontWeight.Medium,
                             )
@@ -1282,8 +1412,12 @@ private fun AllocationStrategySection(
     onSelectedExpensesChange: (Set<String>) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val haptics = rememberSharedLedgerHaptics()
+
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .specularMachinedBorder(shape = SharedLedgerRadius.ExtraLarge),
         shape = SharedLedgerRadius.ExtraLarge,
         colors = CardDefaults.cardColors(containerColor = SurfaceWarmLowest),
         border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant),
@@ -1321,10 +1455,11 @@ private fun AllocationStrategySection(
                 enter = fadeIn() + expandVertically(),
                 exit = fadeOut() + shrinkVertically(),
             ) {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = SharedLedgerRadius.Medium,
-                    color = SurfaceWarmLow,
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(SharedLedgerRadius.Medium)
+                        .background(SurfaceWarmLow),
                 ) {
                     Row(
                         modifier = Modifier.padding(SharedLedgerSpacing.Medium),
@@ -1368,41 +1503,45 @@ private fun AllocationStrategySection(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Row(horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall)) {
-                            TextButton(
-                                onClick = {
-                                    onSelectedExpensesChange(eligibleExpenses.map { it.expenseId }.toSet())
-                                },
-                                contentPadding = PaddingValues(horizontal = SharedLedgerSpacing.Small, vertical = 0.dp),
+                            Box(
+                                modifier = Modifier
+                                    .clip(SharedLedgerRadius.Small)
+                                    .clickable(role = androidx.compose.ui.semantics.Role.Button) {
+                                        haptics.tick()
+                                        onSelectedExpensesChange(eligibleExpenses.map { it.expenseId }.toSet())
+                                    }
+                                    .padding(horizontal = SharedLedgerSpacing.Small, vertical = 4.dp),
                             ) {
-                                Text("全选", style = SharedLedgerTextStyles.ActionLabel)
+                                Text("全选", style = SharedLedgerTextStyles.ActionLabel, color = MaterialTheme.colorScheme.primary)
                             }
-                            TextButton(
-                                onClick = { onSelectedExpensesChange(emptySet()) },
-                                contentPadding = PaddingValues(horizontal = SharedLedgerSpacing.Small, vertical = 0.dp),
+                            Box(
+                                modifier = Modifier
+                                    .clip(SharedLedgerRadius.Small)
+                                    .clickable(role = androidx.compose.ui.semantics.Role.Button) {
+                                        haptics.tick()
+                                        onSelectedExpensesChange(emptySet())
+                                    }
+                                    .padding(horizontal = SharedLedgerSpacing.Small, vertical = 4.dp),
                             ) {
-                                Text("清空", style = SharedLedgerTextStyles.ActionLabel)
+                                Text("清空", style = SharedLedgerTextStyles.ActionLabel, color = MaterialTheme.colorScheme.primary)
                             }
                         }
                     }
 
                     if (eligibleExpenses.isEmpty()) {
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = SharedLedgerRadius.Medium,
-                            color = SurfaceWarmLow,
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(SharedLedgerRadius.Medium)
+                                .background(SurfaceWarmLow)
+                                .padding(SharedLedgerSpacing.Large),
+                            contentAlignment = Alignment.Center,
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(SharedLedgerSpacing.Large),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text(
-                                    text = "当前币种下没有可供指定抵扣的账单",
-                                    style = SharedLedgerTextStyles.BodySecondary,
-                                    color = MaterialTheme.colorScheme.outline,
-                                )
-                            }
+                            Text(
+                                text = "当前币种下没有可供指定抵扣的账单",
+                                style = SharedLedgerTextStyles.BodySecondary,
+                                color = MaterialTheme.colorScheme.outline,
+                            )
                         }
                     } else {
                         val allocationPreview = if (previewMatches) previewLines.associateBy { it.expenseId } else emptyMap()
@@ -1427,20 +1566,23 @@ private fun AllocationStrategySection(
                                         expense.remainingBaseAmount
                                     }
 
-                                    Surface(
-                                        onClick = {
-                                            onSelectedExpensesChange(
-                                                if (isSelected) selectedExpenseIds - expense.expenseId
-                                                else selectedExpenseIds + expense.expenseId,
-                                            )
-                                        },
-                                        modifier = Modifier.fillMaxWidth(),
-                                        shape = SharedLedgerRadius.Large,
-                                        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else SurfaceWarmLow,
-                                        border = BorderStroke(
-                                            SharedLedgerDimens.OutlineWidth,
-                                            if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-                                        ),
+                                    val itemBorderColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+                                    val itemBg = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else SurfaceWarmLow
+
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(SharedLedgerRadius.Large)
+                                            .background(itemBg)
+                                            .border(SharedLedgerDimens.OutlineWidth, itemBorderColor, SharedLedgerRadius.Large)
+                                            .specularMachinedBorder(shape = SharedLedgerRadius.Large)
+                                             .clickable {
+                                                haptics.snap()
+                                                onSelectedExpensesChange(
+                                                    if (isSelected) selectedExpenseIds - expense.expenseId
+                                                    else selectedExpenseIds + expense.expenseId,
+                                                )
+                                            },
                                     ) {
                                         Column(modifier = Modifier.padding(SharedLedgerSpacing.Medium)) {
                                             Row(
@@ -1451,6 +1593,7 @@ private fun AllocationStrategySection(
                                                 Checkbox(
                                                     checked = isSelected,
                                                     onCheckedChange = { checked ->
+                                                        haptics.snap()
                                                         onSelectedExpensesChange(
                                                             if (checked) selectedExpenseIds + expense.expenseId
                                                             else selectedExpenseIds - expense.expenseId,
@@ -1570,6 +1713,8 @@ private fun OnBehalfPickerCard(
     onSelected: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val haptics = rememberSharedLedgerHaptics()
+
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = SharedLedgerRadius.ExtraLarge,
@@ -1602,14 +1747,24 @@ private fun OnBehalfPickerCard(
                 if (currentParticipantId != null) {
                     item(key = "self") {
                         val isSelf = selectedId == null
-                        Surface(
-                            onClick = { onSelected(null) },
-                            shape = SharedLedgerRadius.Full,
-                            color = if (isSelf) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmLow,
-                            border = BorderStroke(
-                                SharedLedgerDimens.OutlineWidth,
-                                if (isSelf) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-                            ),
+                        Box(
+                            modifier = Modifier
+                                .clip(SharedLedgerRadius.Full)
+                                .background(if (isSelf) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmLow)
+                                .border(
+                                    BorderStroke(
+                                        SharedLedgerDimens.OutlineWidth,
+                                        if (isSelf) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                                    ),
+                                    SharedLedgerRadius.Full,
+                                )
+                                .clickable(
+                                    role = androidx.compose.ui.semantics.Role.RadioButton,
+                                    onClick = {
+                                        haptics.tick()
+                                        onSelected(null)
+                                    },
+                                ),
                         ) {
                             Text(
                                 text = "本人",
@@ -1624,14 +1779,24 @@ private fun OnBehalfPickerCard(
 
                 itemsIndexed(options) { _, option ->
                     val isOptionSelected = selectedId == option.participantId
-                    Surface(
-                        onClick = { onSelected(option.participantId) },
-                        shape = SharedLedgerRadius.Full,
-                        color = if (isOptionSelected) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmLow,
-                        border = BorderStroke(
-                            SharedLedgerDimens.OutlineWidth,
-                            if (isOptionSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-                        ),
+                    Box(
+                        modifier = Modifier
+                            .clip(SharedLedgerRadius.Full)
+                            .background(if (isOptionSelected) MaterialTheme.colorScheme.primaryContainer else SurfaceWarmLow)
+                            .border(
+                                BorderStroke(
+                                    SharedLedgerDimens.OutlineWidth,
+                                    if (isOptionSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                                ),
+                                SharedLedgerRadius.Full,
+                            )
+                            .clickable(
+                                role = androidx.compose.ui.semantics.Role.RadioButton,
+                                onClick = {
+                                    haptics.tick()
+                                    onSelected(option.participantId)
+                                },
+                            ),
                     ) {
                         Text(
                             text = option.participantName,

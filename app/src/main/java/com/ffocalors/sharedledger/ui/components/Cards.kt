@@ -76,7 +76,9 @@ fun SettlementSummaryCard(
 ) {
     val breathing = rememberSummaryBreathing()
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .specularMachinedBorder(SharedLedgerRadius.ExtraLarge, highlightAlpha = 0.32f),
         shape = SharedLedgerRadius.ExtraLarge,
         colors = CardDefaults.cardColors(containerColor = SurfaceWarmLowest),
         border = BorderStroke(
@@ -617,7 +619,8 @@ fun ExpenseCard(
                 .semantics {
                     if (expense.isDeleted) stateDescription = "已删除，不计入统计"
                 }
-                .pressInnerShadow(SharedLedgerRadius.Large, pressScale.shadowAlpha),
+                .pressInnerShadow(SharedLedgerRadius.Large, pressScale.shadowAlpha)
+                .specularMachinedBorder(SharedLedgerRadius.Large, highlightAlpha = 0.26f),
         ),
         interactionSource = pressScale.interactionSource,
         shape = SharedLedgerRadius.Large,

@@ -3,7 +3,9 @@ package com.ffocalors.sharedledger.ui.screens
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,11 +17,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
@@ -35,16 +41,29 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.material3.ripple
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalDensity
+import kotlinx.coroutines.launch
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -68,6 +87,8 @@ import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
 import com.ffocalors.sharedledger.ui.components.StatusChip
 import com.ffocalors.sharedledger.ui.components.rememberPressScaleState
 import com.ffocalors.sharedledger.ui.components.pressInnerShadow
+import com.ffocalors.sharedledger.ui.components.specularMachinedBorder
+import com.ffocalors.sharedledger.ui.theme.rememberSharedLedgerHaptics
 import com.ffocalors.sharedledger.ui.demo.DemoData
 import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.DeepCharcoal
@@ -105,10 +126,24 @@ fun HomeScreen(
     userId: String = "",
     onProfileClick: (() -> Unit)? = null,
 ) {
-    var selectedTab by rememberSaveable { mutableStateOf(HomeTab.InProgress) }
+    val pagerState = rememberPagerState(initialPage = 0) { HomeTab.entries.size }
+    val coroutineScope = rememberCoroutineScope()
     var sheetVisible by rememberSaveable { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val hazeState = rememberSharedLedgerHazeState()
+    val haptics = rememberSharedLedgerHaptics()
+
+    // 翻页到位时触发磁吸咬合触觉反馈（过滤初次进入）
+    var isInitialSettled by remember { mutableStateOf(true) }
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.settledPage }.collect {
+            if (isInitialSettled) {
+                isInitialSettled = false
+            } else {
+                haptics.snap()
+            }
+        }
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -140,6 +175,7 @@ fun HomeScreen(
                 ) {
                     FloatingActionButton(
                         onClick = {
+                            haptics.click()
                             onFabClick()
                             sheetVisible = true
                         },
@@ -164,69 +200,74 @@ fun HomeScreen(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.TopCenter,
         ) {
-            LazyColumn(
+            Column(
                 modifier = Modifier
                     .widthIn(max = SharedLedgerDimens.ContentMaxWidth)
                     .fillMaxSize()
-                    .sharedLedgerHazeSource(hazeState),
-                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
-                contentPadding = PaddingValues(
-                    top = innerPadding.calculateTopPadding(),
-                    bottom = innerPadding.calculateBottomPadding() + SharedLedgerDimens.FabClearance,
-                ),
+                    .padding(top = innerPadding.calculateTopPadding()),
             ) {
-            item {
+                // 固定在顶部的标签切换栏（带连续平滑滑动指示器）
                 HomeTabs(
-                    selectedTab = selectedTab,
-                    onSelected = { selectedTab = it },
+                    pagerState = pagerState,
+                    onTabSelected = { tab ->
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(
+                                page = tab.ordinal,
+                                animationSpec = spring(
+                                    dampingRatio = 0.85f,
+                                    stiffness = 380f,
+                                ),
+                            )
+                        }
+                    },
                     modifier = Modifier.padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
                 )
-            }
 
-            if (isLoading) {
-                items(3, key = { "home-skeleton-$it" }) {
-                    HomeActivityCardSkeleton(modifier = Modifier.animateItem())
-                }
-            } else if (errorMessage != null) {
-                item { ErrorState(message = errorMessage, onRetry = onRetry) }
-            } else if (selectedTab == HomeTab.InProgress) {
-                val visibleActivities = activities.filter { it.status != ActivityStatus.Archived }
-                if (visibleActivities.isEmpty()) {
-                    item {
-                        EmptyState(
-                            title = "暂无进行中的活动",
-                            description = "点击右下角按钮创建或加入一个活动。",
-                        )
+                // 左右横滑与点击联动的双页面 HorizontalPager
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                ) { page ->
+                    val tab = HomeTab.entries[page]
+                    val contentPadding = PaddingValues(
+                        top = SharedLedgerSpacing.Medium,
+                        bottom = innerPadding.calculateBottomPadding() + SharedLedgerDimens.FabClearance,
+                    )
+                    when (tab) {
+                        HomeTab.InProgress -> {
+                            val visibleActivities = activities.filter { it.status != ActivityStatus.Archived }
+                            HomeActivityList(
+                                activities = visibleActivities,
+                                isLoading = isLoading,
+                                errorMessage = errorMessage,
+                                onRetry = onRetry,
+                                onActivityClick = onActivityClick,
+                                showAmount = true,
+                                emptyTitle = "暂无进行中的活动",
+                                emptyDescription = "点击右下角按钮创建或加入一个活动。",
+                                contentPadding = contentPadding,
+                                hazeState = hazeState,
+                            )
+                        }
+                        HomeTab.Archived -> {
+                            val archivedActivities = activities.filter { it.status == ActivityStatus.Archived }
+                            HomeActivityList(
+                                activities = archivedActivities,
+                                isLoading = isLoading,
+                                errorMessage = errorMessage,
+                                onRetry = onRetry,
+                                onActivityClick = onActivityClick,
+                                showAmount = false,
+                                emptyTitle = "暂无已归档活动",
+                                emptyDescription = null,
+                                contentPadding = contentPadding,
+                                hazeState = hazeState,
+                            )
+                        }
                     }
-                } else {
-                    items(visibleActivities, key = { it.activityId }) { activity ->
-                        HomeActivityCard(
-                            activity = activity,
-                            onClick = { onActivityClick(activity) },
-                            modifier = Modifier
-                                .animateItem()
-                                .padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
-                            showAmount = true,
-                        )
-                    }
                 }
-            } else {
-                val archivedActivities = activities.filter { it.status == ActivityStatus.Archived }
-                if (archivedActivities.isEmpty()) {
-                    item { EmptyState(title = "暂无已归档活动") }
-                } else {
-                    items(archivedActivities, key = { it.activityId }) { activity ->
-                        HomeActivityCard(
-                            activity = activity,
-                            onClick = { onActivityClick(activity) },
-                            showAmount = false,
-                            modifier = Modifier
-                                .animateItem()
-                                .padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
-                        )
-                    }
-                }
-            }
             }
         }
     }
@@ -265,83 +306,207 @@ private enum class HomeTab {
     Archived,
 }
 
+/**
+ * 首页切换标签栏（精密连续滑动指示条 + 随滑动手势平滑插值变色）
+ */
 @Composable
 private fun HomeTabs(
-    selectedTab: HomeTab,
-    onSelected: (HomeTab) -> Unit,
+    pagerState: androidx.compose.foundation.pager.PagerState,
+    onTabSelected: (HomeTab) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XLarge),
-        ) {
-            HomeTabButton(
-                label = "进行中",
-                selected = selectedTab == HomeTab.InProgress,
-                onClick = { onSelected(HomeTab.InProgress) },
-            )
-            HomeTabButton(
-                label = "已归档",
-                selected = selectedTab == HomeTab.Archived,
-                onClick = { onSelected(HomeTab.Archived) },
-            )
+    val haptics = rememberSharedLedgerHaptics()
+    val density = LocalDensity.current
+
+    var tabsRootLeftPx by remember { mutableFloatStateOf(0f) }
+    var tab0TextLeftPx by remember { mutableFloatStateOf(0f) }
+    var tab0TextWidthPx by remember { mutableFloatStateOf(0f) }
+    var tab1TextLeftPx by remember { mutableFloatStateOf(0f) }
+    var tab1TextWidthPx by remember { mutableFloatStateOf(0f) }
+
+    // 连续位置插值 (0f..1f)，手势滑动与动画滚动均平滑过渡
+    val position = (pagerState.currentPage + pagerState.currentPageOffsetFraction)
+        .coerceIn(0f, (HomeTab.entries.size - 1).toFloat())
+
+    // 亚像素级连续滑动的指示条坐标与宽度（精准吸附在文本下方）
+    val indicatorLeftPx = if (tab0TextWidthPx > 0f && tab1TextWidthPx > 0f) {
+        val rel0 = tab0TextLeftPx - tabsRootLeftPx
+        val rel1 = tab1TextLeftPx - tabsRootLeftPx
+        rel0 + (rel1 - rel0) * position
+    } else {
+        0f
+    }
+    val indicatorWidthPx = if (tab0TextWidthPx > 0f && tab1TextWidthPx > 0f) {
+        tab0TextWidthPx + (tab1TextWidthPx - tab0TextWidthPx) * position
+    } else {
+        0f
+    }
+
+    val selectedColor = MaterialTheme.colorScheme.primary
+    val unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
+
+    // 标签文字颜色跟随滑动进度连续平滑插值
+    val inProgressColor = lerp(
+        start = unselectedColor,
+        stop = selectedColor,
+        fraction = (1f - position).coerceIn(0f, 1f),
+    )
+    val archivedColor = lerp(
+        start = unselectedColor,
+        stop = selectedColor,
+        fraction = position.coerceIn(0f, 1f),
+    )
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .onGloballyPositioned { coordinates ->
+                tabsRootLeftPx = coordinates.positionInRoot().x
+            },
+    ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Large),
+            ) {
+                // Tab 0: 进行中（全圆角药丸水波纹与交互轮廓，杜绝直角阴影）
+                val tab0InteractionSource = remember { MutableInteractionSource() }
+                Box(
+                    modifier = Modifier
+                        .clip(SharedLedgerRadius.Full)
+                        .clickable(
+                            interactionSource = tab0InteractionSource,
+                            indication = ripple(
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                            ),
+                            role = androidx.compose.ui.semantics.Role.Tab,
+                            onClick = {
+                                if (pagerState.currentPage != HomeTab.InProgress.ordinal) {
+                                    haptics.tick()
+                                }
+                                onTabSelected(HomeTab.InProgress)
+                            },
+                        )
+                        .padding(horizontal = SharedLedgerSpacing.Small, vertical = SharedLedgerSpacing.MediumSmall),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "进行中",
+                        modifier = Modifier.onGloballyPositioned { coordinates ->
+                            tab0TextLeftPx = coordinates.positionInRoot().x
+                            tab0TextWidthPx = coordinates.size.width.toFloat()
+                        },
+                        style = SharedLedgerTextStyles.CardTitle,
+                        color = inProgressColor,
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                }
+
+                // Tab 1: 已归档（全圆角药丸水波纹与交互轮廓，杜绝直角阴影）
+                val tab1InteractionSource = remember { MutableInteractionSource() }
+                Box(
+                    modifier = Modifier
+                        .clip(SharedLedgerRadius.Full)
+                        .clickable(
+                            interactionSource = tab1InteractionSource,
+                            indication = ripple(
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                            ),
+                            role = androidx.compose.ui.semantics.Role.Tab,
+                            onClick = {
+                                if (pagerState.currentPage != HomeTab.Archived.ordinal) {
+                                    haptics.tick()
+                                }
+                                onTabSelected(HomeTab.Archived)
+                            },
+                        )
+                        .padding(horizontal = SharedLedgerSpacing.Small, vertical = SharedLedgerSpacing.MediumSmall),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "已归档",
+                        modifier = Modifier.onGloballyPositioned { coordinates ->
+                            tab1TextLeftPx = coordinates.positionInRoot().x
+                            tab1TextWidthPx = coordinates.size.width.toFloat()
+                        },
+                        style = SharedLedgerTextStyles.CardTitle,
+                        color = archivedColor,
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                }
+            }
+
+            // 精密滑动指示条（绝对定位在底部分割线上方，圆角冷光质感）
+            if (indicatorWidthPx > 0f) {
+                val indicatorLeftDp = with(density) { indicatorLeftPx.toDp() }
+                val indicatorWidthDp = with(density) { indicatorWidthPx.toDp() }
+
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .offset(x = indicatorLeftDp)
+                        .width(indicatorWidthDp)
+                        .height(3.dp)
+                        .clip(SharedLedgerRadius.Full)
+                        .background(selectedColor),
+                )
+            }
         }
-        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
     }
 }
 
+/**
+ * 独立的活动列表容器，各自维护滚动状态并支持毛玻璃虚化
+ */
 @Composable
-private fun HomeTabButton(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
+private fun HomeActivityList(
+    activities: List<ActivityCardUiModel>,
+    isLoading: Boolean,
+    errorMessage: String?,
+    onRetry: () -> Unit,
+    onActivityClick: (ActivityCardUiModel) -> Unit,
+    showAmount: Boolean,
+    emptyTitle: String,
+    emptyDescription: String? = null,
+    contentPadding: PaddingValues,
+    hazeState: dev.chrisbanes.haze.HazeState,
+    modifier: Modifier = Modifier,
 ) {
-    val indicatorColor = MaterialTheme.colorScheme.primary
-    val indicatorAlpha by animateFloatAsState(
-        targetValue = if (selected) 1f else 0f,
-        animationSpec = tween(
-            durationMillis = SharedLedgerMotion.Durations.TabIndicator,
-            easing = SharedLedgerMotion.Easing.Position,
-        ),
-        label = "tabIndicator",
-    )
-    val textColor by animateColorAsState(
-        targetValue = if (selected) {
-            MaterialTheme.colorScheme.primary
-        } else {
-            MaterialTheme.colorScheme.onSurfaceVariant
-        },
-        animationSpec = tween(
-            durationMillis = SharedLedgerMotion.Durations.TabIndicator,
-            easing = SharedLedgerMotion.Easing.Position,
-        ),
-        label = "tabText",
-    )
-    Column(
-        modifier = Modifier
-            .clickable(onClick = onClick)
-            .padding(top = SharedLedgerSpacing.MediumSmall)
-            .drawBehind {
-                if (indicatorAlpha > 0f) {
-                    val indicatorHeight = (SharedLedgerSpacing.XSmall / 2).toPx()
-                    drawRect(
-                        color = indicatorColor.copy(alpha = indicatorAlpha),
-                        topLeft = Offset(0f, size.height - indicatorHeight),
-                        size = Size(size.width, indicatorHeight),
-                    )
-                }
-            },
-        horizontalAlignment = Alignment.CenterHorizontally,
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .sharedLedgerHazeSource(hazeState),
+        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+        contentPadding = contentPadding,
     ) {
-        Text(
-            text = label,
-            style = SharedLedgerTextStyles.CardTitle,
-            color = textColor,
-            maxLines = 1,
-            softWrap = false,
-        )
-        Spacer(Modifier.height(SharedLedgerSpacing.MediumSmall))
+        if (isLoading) {
+            items(3, key = { "home-skeleton-$it" }) {
+                HomeActivityCardSkeleton(modifier = Modifier.animateItem())
+            }
+        } else if (errorMessage != null) {
+            item { ErrorState(message = errorMessage, onRetry = onRetry) }
+        } else if (activities.isEmpty()) {
+            item {
+                EmptyState(
+                    title = emptyTitle,
+                    description = emptyDescription,
+                )
+            }
+        } else {
+            items(activities, key = { it.activityId }) { activity ->
+                HomeActivityCard(
+                    activity = activity,
+                    onClick = { onActivityClick(activity) },
+                    modifier = Modifier
+                        .animateItem()
+                        .padding(horizontal = SharedLedgerDimens.PageHorizontalPadding),
+                    showAmount = showAmount,
+                )
+            }
+        }
     }
 }
 
@@ -357,7 +522,8 @@ private fun HomeActivityCard(
     Card(
         onClick = onClick,
         modifier = pressScale.modifier.then(modifier).fillMaxWidth()
-            .pressInnerShadow(SharedLedgerRadius.ExtraLarge, pressScale.shadowAlpha),
+            .pressInnerShadow(SharedLedgerRadius.ExtraLarge, pressScale.shadowAlpha)
+            .specularMachinedBorder(SharedLedgerRadius.ExtraLarge, highlightAlpha = 0.32f),
         interactionSource = pressScale.interactionSource,
         shape = SharedLedgerRadius.ExtraLarge,
         colors = CardDefaults.cardColors(containerColor = SurfaceWarmLowest),
@@ -478,15 +644,18 @@ private fun AddActivitySheetOption(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
     ) {
-        Surface(
-            modifier = Modifier.size(SharedLedgerDimens.IconContainerLarge),
-            shape = CircleShape,
-            color = WarmOrangeContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        Box(
+            modifier = Modifier
+                .size(SharedLedgerDimens.IconContainerLarge)
+                .clip(CircleShape)
+                .background(WarmOrangeContainer),
+            contentAlignment = Alignment.Center,
         ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(imageVector = icon, contentDescription = null)
-            }
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+            )
         }
         Column {
             Text(text = title, style = SharedLedgerTextStyles.CardTitle, color = DeepCharcoal)

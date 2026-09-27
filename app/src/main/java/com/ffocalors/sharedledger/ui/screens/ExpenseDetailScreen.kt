@@ -276,27 +276,18 @@ fun ExpenseDetailScreen(
                 titleStyle = SharedLedgerTextStyles.PageTitle,
                 titleColor = MaterialTheme.colorScheme.primary,
                 showMoreButton = false,
-                 actionIcon = Icons.Rounded.Edit.takeIf { uiState.status == ExpenseDetailStatus.Active && onEdit != null },
-                 actionContentDescription = "编辑账单".takeIf { uiState.status == ExpenseDetailStatus.Active && onEdit != null },
-                 onActionClick = onEdit?.let { callback -> { callback(uiState.expenseId) } }
-                     .takeIf { uiState.status == ExpenseDetailStatus.Active },
                 hazeState = hazeState,
             )
         },
         bottomBar = {
-            val primaryAction = onVoid
-                ?.takeIf { uiState.status == ExpenseDetailStatus.Active && !uiState.financialLocked }
-                ?.let { callback -> { callback(uiState.expenseId) } }
-            val hasMoreActions = if (uiState.status == ExpenseDetailStatus.Active) {
-                onEdit != null || onVoid != null || onAddRefund != null
-            } else {
-                onAddRefund != null
-            }
-            if (primaryAction != null || hasMoreActions) {
+            val canVoid = uiState.status == ExpenseDetailStatus.Active && !uiState.financialLocked && onVoid != null
+            val hasMoreActions = (uiState.status == ExpenseDetailStatus.Active && onEdit != null) || onAddRefund != null || canVoid
+            if (canVoid || hasMoreActions) {
                 ExpenseDetailBottomBar(
                     status = uiState.status,
                     financialLocked = uiState.financialLocked,
-                    onPrimaryAction = primaryAction,
+                    onVoid = onVoid?.let { callback -> { callback(uiState.expenseId) } }
+                        .takeIf { canVoid },
                     onMore = { sheetVisible = true }.takeIf { hasMoreActions },
                     hazeState = hazeState,
                 )
@@ -817,41 +808,47 @@ private fun DetailCard(content: @Composable () -> Unit) {
 private fun ExpenseDetailBottomBar(
     status: ExpenseDetailStatus,
     financialLocked: Boolean,
-    onPrimaryAction: (() -> Unit)?,
+    onVoid: (() -> Unit)?,
     onMore: (() -> Unit)?,
     hazeState: dev.chrisbanes.haze.HazeState,
 ) {
     SharedLedgerCtaBottomBar(backgroundColor = AppBackground, hazeState = hazeState) {
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
         ) {
-            onPrimaryAction?.let { callback ->
-                SharedLedgerButton(
-                    text = "作废账单",
-                    onClick = callback,
-                    modifier = Modifier.weight(1f),
-                    tone = SharedLedgerButtonTone.Danger,
-                    icon = Icons.Rounded.Delete,
-                )
-            }
             if (status == ExpenseDetailStatus.Active && financialLocked) {
                 Text(
                     text = "已发生真实转账，仅可修改标题、备注等信息",
                     style = SharedLedgerTextStyles.Label,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.padding(horizontal = SharedLedgerSpacing.Small),
                 )
             }
-            onMore?.let { callback ->
-                IconButton(
-                    onClick = callback,
-                    modifier = Modifier
-                        .size(SharedLedgerDimens.TopBarActionSize)
-                        .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
-                ) {
-                    Icon(Icons.Rounded.MoreVert, contentDescription = "更多账单操作", tint = MaterialTheme.colorScheme.primary)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                onVoid?.let { voidCallback ->
+                    SharedLedgerButton(
+                        text = "作废账单",
+                        onClick = voidCallback,
+                        modifier = Modifier.weight(1f),
+                        tone = SharedLedgerButtonTone.Danger,
+                        outlined = true,
+                        icon = Icons.Rounded.Delete,
+                    )
+                }
+                onMore?.let { moreCallback ->
+                    IconButton(
+                        onClick = moreCallback,
+                        modifier = Modifier
+                            .size(SharedLedgerDimens.TopBarActionSize)
+                            .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
+                    ) {
+                        Icon(Icons.Rounded.MoreVert, contentDescription = "更多账单操作", tint = MaterialTheme.colorScheme.primary)
+                    }
                 }
             }
         }
@@ -870,7 +867,7 @@ private fun ExpenseActionSheet(
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = SharedLedgerSpacing.Large, end = SharedLedgerSpacing.Large, bottom = SharedLedgerSpacing.Large),
-        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+        verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
     ) {
         Box(
             modifier = Modifier
@@ -878,40 +875,60 @@ private fun ExpenseActionSheet(
                 .size(width = 48.dp, height = 6.dp)
                 .background(MaterialTheme.colorScheme.outlineVariant, CircleShape),
         )
-        Spacer(Modifier.height(SharedLedgerSpacing.Small))
-        if (status == ExpenseDetailStatus.Active) {
-            if (financialLocked) {
-                Text(
-                    text = "已发生真实转账，仅可修改标题、备注等信息",
-                    style = SharedLedgerTextStyles.Label,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+        Spacer(Modifier.height(SharedLedgerSpacing.XSmall))
+        if (status == ExpenseDetailStatus.Active && financialLocked) {
+            Text(
+                text = "已发生真实转账，仅可修改标题、备注等信息",
+                style = SharedLedgerTextStyles.Label,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
+        // 上边一排：添加退款 和 编辑账单
+        val showRefund = onAddRefund != null
+        val showEdit = status == ExpenseDetailStatus.Active && onEdit != null
+        if (showRefund || showEdit) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Medium),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (showRefund && onAddRefund != null) {
+                    SharedLedgerButton(
+                        text = "添加退款",
+                        onClick = onAddRefund,
+                        modifier = Modifier.weight(1f),
+                        tone = SharedLedgerButtonTone.WarmSecondary,
+                        icon = Icons.Rounded.CurrencyExchange,
+                    )
+                }
+                if (showEdit && onEdit != null) {
+                    SharedLedgerButton(
+                        text = "编辑账单",
+                        onClick = onEdit,
+                        modifier = Modifier.weight(1f),
+                        tone = SharedLedgerButtonTone.SoftPrimary,
+                        icon = Icons.Rounded.Edit,
+                    )
+                }
             }
-            onEdit?.let { callback -> ActionSheetButton(Icons.Rounded.Edit, "编辑账单", SharedLedgerButtonTone.Neutral, outlined = true, onClick = callback) }
-            onAddRefund?.let { callback -> ActionSheetButton(Icons.Rounded.CurrencyExchange, "添加退款", SharedLedgerButtonTone.WarmSecondary, onClick = callback) }
-            onVoid?.let { callback -> ActionSheetButton(Icons.Rounded.Delete, "作废账单", SharedLedgerButtonTone.Danger, onClick = callback) }
-        } else {
-            onAddRefund?.let { callback -> ActionSheetButton(Icons.Rounded.CurrencyExchange, "添加退款", SharedLedgerButtonTone.WarmSecondary, onClick = callback) }
+        }
+
+        // 下边一行：作废账单
+        if (status == ExpenseDetailStatus.Active && !financialLocked && onVoid != null) {
+            SharedLedgerButton(
+                text = "作废账单",
+                onClick = onVoid,
+                modifier = Modifier.fillMaxWidth(),
+                tone = SharedLedgerButtonTone.Danger,
+                outlined = true,
+                icon = Icons.Rounded.Delete,
+            )
         }
     }
 }
 
-@Composable
-private fun ActionSheetButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    label: String,
-    tone: SharedLedgerButtonTone,
-    outlined: Boolean = false,
-    onClick: () -> Unit,
-) {
-    SharedLedgerButton(
-        text = label,
-        onClick = onClick,
-        tone = tone,
-        icon = icon,
-        outlined = outlined,
-    )
-}
+
 
 @Preview(showBackground = true, widthDp = 480, heightDp = 900)
 @Composable

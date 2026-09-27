@@ -39,6 +39,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavBackStackEntry
+import com.ffocalors.sharedledger.ui.theme.rememberSharedLedgerHaptics
 import com.ffocalors.sharedledger.data.auth.AuthRepositoryFactory
 import com.ffocalors.sharedledger.data.auth.AuthState
 import com.ffocalors.sharedledger.ui.activity.ActivityViewModel
@@ -276,6 +277,7 @@ private fun AuthenticatedNavHost(
     onClearPasswordChangeState: () -> Unit,
 ) {
     val navController = rememberNavController()
+    val haptics = rememberSharedLedgerHaptics()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val sessionQueryCache = remember(currentUserId) { SessionQueryCache() }
@@ -1211,11 +1213,13 @@ private fun AuthenticatedNavHost(
                         val savedExpenseId = persistedExpenseId
                         if (savedExpenseId != null) {
                             expenseViewModel.submit(ExpenseFormMode.Edit, savedExpenseId, activityId, draft, onSuccess = { updatedExpenseId ->
+                                haptics.success()
                                 persistedExpenseId = updatedExpenseId
                                 attachmentScope.launch { uploadExpenseAttachments(updatedExpenseId) }
                             }, presentationOnly = presentationOnly)
                         } else {
                             expenseViewModel.submit(formMode, expenseId, activityId, draft, onSuccess = { createdExpenseId ->
+                                haptics.success()
                                 persistedExpenseId = createdExpenseId
                                 attachmentScope.launch { uploadExpenseAttachments(createdExpenseId) }
                             }, presentationOnly = presentationOnly)
@@ -1353,6 +1357,7 @@ private fun AuthenticatedNavHost(
                 } else null,
                 onConfirm = if (transferWritesEnabled) { { draft ->
                     transferViewModel.submit(draft) { transferResult ->
+                        haptics.success()
                         financialReadViewModel.invalidateAfterWrite(draft.activityId, transferResult.transferId)
                         financialReadViewModel.loadRecords(draft.activityId, force = true)
                         invalidateActivityData(draft.activityId)

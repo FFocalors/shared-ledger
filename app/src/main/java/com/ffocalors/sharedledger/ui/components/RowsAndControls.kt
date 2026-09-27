@@ -3,6 +3,10 @@ package com.ffocalors.sharedledger.ui.components
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -55,13 +58,12 @@ fun AmountDisplay(
         AmountEmphasis.Muted -> MaterialTheme.colorScheme.onSurfaceVariant
         AmountEmphasis.Warning -> semantic.warning
     }
-    Text(
-        text = MoneyFormatter.format(amount, currencyCode, fractionDigitsOverride),
-        modifier = modifier,
+    RollingCurrencyText(
+        amount = amount,
+        currencyCode = currencyCode,
         style = style,
         color = color,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
+        modifier = modifier,
     )
 }
 
@@ -77,14 +79,16 @@ fun ParticipantAmountRow(
     status: ParticipantAmountStatus = ParticipantAmountStatus.None,
     keypad: NumericKeypadState? = null,
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = SharedLedgerRadius.Large,
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(
-            width = SharedLedgerDimens.OutlineWidth,
-            color = MaterialTheme.colorScheme.outlineVariant,
-        ),
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(SharedLedgerRadius.Large)
+            .background(MaterialTheme.colorScheme.surface)
+            .border(
+                width = SharedLedgerDimens.OutlineWidth,
+                color = MaterialTheme.colorScheme.outlineVariant,
+                shape = SharedLedgerRadius.Large,
+            ),
     ) {
         Row(
             modifier = Modifier.padding(SharedLedgerSpacing.Medium),
@@ -159,10 +163,14 @@ fun SegmentedControl(
     enabled: Boolean = true,
 ) {
     require(options.isNotEmpty()) { "SegmentedControl 至少需要一个选项" }
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = SharedLedgerRadius.Full,
-        color = MaterialTheme.colorScheme.surfaceVariant,
+    val haptics = com.ffocalors.sharedledger.ui.theme.rememberSharedLedgerHaptics()
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(SharedLedgerRadius.Full)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .specularMachinedBorder(SharedLedgerRadius.Full, highlightAlpha = 0.22f),
     ) {
         Row(
             modifier = Modifier
@@ -177,7 +185,12 @@ fun SegmentedControl(
                     label = label,
                     selected = index == selectedIndex,
                     enabled = enabled,
-                    onClick = { onSelected(index) },
+                    onClick = {
+                        if (index != selectedIndex) {
+                            haptics.tick()
+                        }
+                        onSelected(index)
+                    },
                 )
             }
         }
@@ -203,17 +216,17 @@ private fun RowScope.Segment(
         ),
         label = "segmentColor",
     )
-    Surface(
-        onClick = onClick,
-        modifier = Modifier.weight(1f),
-        enabled = enabled,
-        shape = SharedLedgerRadius.Full,
-        color = containerColor,
-        contentColor = if (selected) {
-            MaterialTheme.colorScheme.onPrimaryContainer
-        } else {
-            MaterialTheme.colorScheme.onSurfaceVariant
-        },
+    Box(
+        modifier = Modifier
+            .weight(1f)
+            .clip(SharedLedgerRadius.Full)
+            .background(containerColor)
+            .then(
+                if (enabled) {
+                    Modifier.clickable(onClick = onClick)
+                } else Modifier
+            ),
+        contentAlignment = Alignment.Center,
     ) {
         Box(
             modifier = Modifier
@@ -225,6 +238,11 @@ private fun RowScope.Segment(
             Text(
                 text = label,
                 style = SharedLedgerTextStyles.BodySecondary,
+                color = if (selected) {
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
                 maxLines = 1,
                 softWrap = false,
             )

@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.indication
@@ -24,11 +25,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Backspace
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -40,10 +42,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.onClick
@@ -57,6 +58,7 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
+import com.ffocalors.sharedledger.ui.theme.rememberSharedLedgerHaptics
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -203,7 +205,7 @@ fun SharedLedgerNumericKeypad(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val haptics = LocalHapticFeedback.current
+    val haptics = rememberSharedLedgerHaptics()
     AnimatedVisibility(
         visible = state.active,
         modifier = modifier,
@@ -220,17 +222,17 @@ fun SharedLedgerNumericKeypad(
                         onClick = onDismiss,
                     ),
             )
-            Surface(
+            val keypadContainerShape = RoundedCornerShape(
+                topStart = SharedLedgerRadius.LargeCorner,
+                topEnd = SharedLedgerRadius.LargeCorner,
+            )
+            Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(
-                    topStart = SharedLedgerRadius.LargeCorner,
-                    topEnd = SharedLedgerRadius.LargeCorner,
-                ),
-                color = MaterialTheme.colorScheme.background,
-                tonalElevation = SharedLedgerElevation.Flat,
-                shadowElevation = SharedLedgerElevation.Floating,
+                    .fillMaxWidth()
+                    .shadow(SharedLedgerElevation.Floating, keypadContainerShape)
+                    .clip(keypadContainerShape)
+                    .background(MaterialTheme.colorScheme.background),
             ) {
                 Column(
                     modifier = Modifier
@@ -245,10 +247,11 @@ fun SharedLedgerNumericKeypad(
                         ),
                     verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
                 ) {
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = SharedLedgerRadius.Medium,
-                        color = MaterialTheme.colorScheme.surfaceVariant,
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(SharedLedgerRadius.Medium)
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
                     ) {
                         val displayValue = state.displayValue
                         Text(
@@ -279,10 +282,20 @@ fun SharedLedgerNumericKeypad(
                                 KeypadKey(
                                     label = key,
                                     onClick = {
-                                        haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                        if (isBackspace) state.delete() else state.input(key)
+                                        if (isBackspace) {
+                                            haptics.tick()
+                                            state.delete()
+                                        } else {
+                                            haptics.keypad()
+                                            state.input(key)
+                                        }
                                     },
-                                    onLongPressRepeat = if (isBackspace) state::delete else null,
+                                    onLongPressRepeat = if (isBackspace) {
+                                        {
+                                            haptics.tick()
+                                            state.delete()
+                                        }
+                                    } else null,
                                     modifier = Modifier.weight(1f),
                                 )
                             }
@@ -301,17 +314,19 @@ private fun KeypadKey(
     onLongPressRepeat: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
+    val shape = SharedLedgerRadius.Medium
+    val interactionSource = remember { MutableInteractionSource() }
+
     if (onLongPressRepeat != null) {
-        val interactionSource = remember { MutableInteractionSource() }
         val longPressTimeoutMillis = LocalViewConfiguration.current.longPressTimeoutMillis
         val currentOnClick by rememberUpdatedState(onClick)
         val currentRepeatAction by rememberUpdatedState(onLongPressRepeat)
-        val shape = SharedLedgerRadius.Medium
 
-        Surface(
+        Box(
             modifier = modifier
                 .height(52.dp)
                 .clip(shape)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .indication(interactionSource, ripple())
                 .semantics {
                     role = Role.Button
@@ -356,27 +371,31 @@ private fun KeypadKey(
                         },
                     )
                 },
-            shape = shape,
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-            tonalElevation = SharedLedgerElevation.Flat,
-            shadowElevation = SharedLedgerElevation.Flat,
+            contentAlignment = Alignment.Center,
         ) {
-            KeypadKeyContent(label)
+            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
+                KeypadKeyContent(label)
+            }
         }
         return
     }
 
-    Surface(
-        onClick = onClick,
-        modifier = modifier.height(52.dp),
-        shape = SharedLedgerRadius.Medium,
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        contentColor = MaterialTheme.colorScheme.onSurface,
-        tonalElevation = SharedLedgerElevation.Flat,
-        shadowElevation = SharedLedgerElevation.Flat,
+    Box(
+        modifier = modifier
+            .height(52.dp)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = ripple(),
+                role = Role.Button,
+                onClick = onClick,
+            ),
+        contentAlignment = Alignment.Center,
     ) {
-        KeypadKeyContent(label)
+        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
+            KeypadKeyContent(label)
+        }
     }
 }
 

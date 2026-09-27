@@ -33,6 +33,8 @@ val Neutral = Cream
 val NeutralContent = Color(0xFF4A4A4A)
 val Inverted = Color(0xFF4A4A4A)
 val InvertedContent = Color(0xFFEBE4D6)
+val SoftDanger = Color(0xFFFBEAE8)
+val SoftDangerContent = Color(0xFFBA1A1A)
 
 @Immutable
 data class SharedLedgerButtonColorPair(
@@ -58,6 +60,10 @@ data class SharedLedgerButtonPalette(
     val inverted: SharedLedgerButtonColorPair = SharedLedgerButtonColorPair(
         containerColor = Inverted,
         contentColor = InvertedContent,
+    ),
+    val danger: SharedLedgerButtonColorPair = SharedLedgerButtonColorPair(
+        containerColor = SoftDanger,
+        contentColor = SoftDangerContent,
     ),
 )
 

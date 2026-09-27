@@ -8,6 +8,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,7 +32,6 @@ import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -59,6 +61,7 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
+import com.ffocalors.sharedledger.ui.theme.rememberSharedLedgerHaptics
 
 /**
  * 币种胶囊 → 面板的就地流体形态变换（替代 SharedLedgerCurrencyDropdownMenu popup）。
@@ -87,6 +90,7 @@ fun SharedLedgerFluidCurrencyPicker(
         DefaultCurrencyCapsule(selectedCode, enabled)
     },
 ) {
+    val haptics = rememberSharedLedgerHaptics()
     val density = LocalDensity.current
     var collapsedSize by remember { mutableStateOf<DpSize?>(null) }
     var lastCollapsedSize by remember { mutableStateOf<DpSize?>(null) }
@@ -150,28 +154,28 @@ fun SharedLedgerFluidCurrencyPicker(
             label = "listCrossfade",
         ) { if (it) 1f else 0f }
 
-        Surface(
+        val panelShape = RoundedCornerShape(safeCorner)
+        val panelBg = if (expanded) {
+            MaterialTheme.colorScheme.surface
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)
+        }
+        val panelBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(
+            alpha = if (expanded) 1f else 0.52f,
+        )
+
+        Box(
             modifier = Modifier
-                // Keep the expanded panel visually detached from the enclosing
-                // text-field/card border. The inset participates in the same
-                // transition, so the collapsed capsule keeps its original size.
                 .padding(vertical = safeVerticalInset)
                 .widthIn(min = safeWidth, max = safeWidth)
-                .heightIn(min = safeHeight, max = safeHeight),
-            shape = RoundedCornerShape(safeCorner),
-            color = if (expanded) {
-                MaterialTheme.colorScheme.surface
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)
-            },
-            tonalElevation = 0.dp,
-            shadowElevation = if (expanded) SharedLedgerElevation.Floating else 0.dp,
-            border = BorderStroke(
-                SharedLedgerDimens.OutlineWidth,
-                MaterialTheme.colorScheme.outlineVariant.copy(
-                    alpha = if (expanded) 1f else 0.52f,
-                ),
-            ),
+                .heightIn(min = safeHeight, max = safeHeight)
+                .then(
+                    if (expanded) Modifier.shadow(SharedLedgerElevation.Floating, panelShape)
+                    else Modifier
+                )
+                .clip(panelShape)
+                .background(panelBg)
+                .border(SharedLedgerDimens.OutlineWidth, panelBorderColor, panelShape),
         ) {
             Crossfade(
                 targetState = expanded,
@@ -192,7 +196,10 @@ fun SharedLedgerFluidCurrencyPicker(
                             }
                             .then(
                                 if (enabled) {
-                                    Modifier.clickable { onExpandedChange(true) }
+                                    Modifier.clickable {
+                                        haptics.tick()
+                                        onExpandedChange(true)
+                                    }
                                 } else {
                                     Modifier
                                 },
@@ -211,7 +218,10 @@ fun SharedLedgerFluidCurrencyPicker(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .defaultMinSize(minHeight = ComponentSizes.DropdownItemMinHeight)
-                                .clickable { onExpandedChange(false) }
+                                .clickable {
+                                    haptics.tick()
+                                    onExpandedChange(false)
+                                }
                                 .padding(horizontal = SharedLedgerSpacing.Medium),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
@@ -255,6 +265,7 @@ fun SharedLedgerFluidCurrencyPicker(
                                         .fillMaxWidth()
                                         .defaultMinSize(minHeight = ComponentSizes.DropdownItemMinHeight)
                                         .clickable {
+                                            haptics.snap()
                                             onSelected(code)
                                             onExpandedChange(false)
                                         }

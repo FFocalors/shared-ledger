@@ -3,30 +3,38 @@ package com.ffocalors.sharedledger.ui.components
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.ui.theme.AppSurface
@@ -67,7 +75,7 @@ fun sharedLedgerButtonPaletteFor(tone: SharedLedgerButtonTone): SharedLedgerButt
     SharedLedgerButtonTone.Neutral -> DefaultSharedLedgerButtonPalette.neutral
     SharedLedgerButtonTone.Inverted -> DefaultSharedLedgerButtonPalette.inverted
     SharedLedgerButtonTone.Success -> SharedLedgerButtonColorPair(SageGreen, Color.White)
-    SharedLedgerButtonTone.Danger -> SharedLedgerButtonColorPair(ErrorRed, Color.White)
+    SharedLedgerButtonTone.Danger -> DefaultSharedLedgerButtonPalette.danger
 }
 
 /**
@@ -114,43 +122,53 @@ fun SharedLedgerButton(
     val outlineColor = sharedLedgerButtonOutlineColor(resolvedTone, MaterialTheme.colorScheme.surface)
     val isEnabled = enabled && !loading
     val resolvedText = if (loading) loadingText else text
-    val buttonModifier = modifier
-        .fillMaxWidth()
-        .height(SharedLedgerDimens.ButtonHeight)
-        .defaultMinSize(minHeight = SharedLedgerDimens.ButtonHeight)
-        .semantics { contentDescription = resolvedText }
-
-    if (outlined) {
-        OutlinedButton(
-            onClick = onClick,
-            modifier = buttonModifier,
-            enabled = isEnabled,
-            shape = SharedLedgerRadius.Full,
-            border = BorderStroke(1.dp, outlineColor.copy(alpha = if (isEnabled) 1f else 0.4f)),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = outlineColor,
-                disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-            ),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = SharedLedgerSpacing.Large),
-        ) {
-            SharedLedgerButtonContent(resolvedText, loading, icon, outlineColor)
-        }
+    val containerColor = if (outlined) {
+        Color.Transparent
+    } else if (isEnabled) {
+        palette.containerColor
     } else {
-        Button(
-            onClick = onClick,
-            modifier = buttonModifier,
-            enabled = isEnabled,
-            shape = SharedLedgerRadius.Full,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = palette.containerColor,
-                contentColor = palette.contentColor,
-                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-            ),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = SharedLedgerSpacing.Large),
-        ) {
-            SharedLedgerButtonContent(resolvedText, loading, icon, palette.contentColor)
-        }
+        MaterialTheme.colorScheme.surfaceVariant
+    }
+    val contentColor = if (outlined) {
+        if (isEnabled) outlineColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+    } else {
+        if (isEnabled) palette.contentColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(SharedLedgerDimens.ButtonHeight)
+            .defaultMinSize(minHeight = SharedLedgerDimens.ButtonHeight)
+            .clip(SharedLedgerRadius.Full)
+            .background(containerColor)
+            .then(
+                if (outlined) {
+                    Modifier.border(
+                        1.dp,
+                        outlineColor.copy(alpha = if (isEnabled) 1f else 0.4f),
+                        SharedLedgerRadius.Full,
+                    )
+                } else Modifier
+            )
+            .semantics {
+                role = Role.Button
+                contentDescription = resolvedText
+            }
+            .then(
+                if (isEnabled) {
+                    Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = ripple(),
+                        role = Role.Button,
+                        onClick = onClick,
+                    )
+                } else Modifier
+            )
+            .padding(horizontal = SharedLedgerSpacing.Large),
+        contentAlignment = Alignment.Center,
+    ) {
+        SharedLedgerButtonContent(resolvedText, loading, icon, contentColor)
     }
 }
 
@@ -159,7 +177,7 @@ private fun SharedLedgerButtonContent(
     text: String,
     loading: Boolean,
     icon: ImageVector?,
-    indicatorColor: androidx.compose.ui.graphics.Color,
+    contentColor: androidx.compose.ui.graphics.Color,
 ) {
     Crossfade(
         targetState = loading,
@@ -174,15 +192,25 @@ private fun SharedLedgerButtonContent(
             if (isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
-                    color = indicatorColor,
+                    color = contentColor,
                     strokeWidth = 2.dp,
                 )
                 Spacer(Modifier.width(SharedLedgerSpacing.Small))
             } else if (icon != null) {
-                Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(SharedLedgerDimens.IconSmall))
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(SharedLedgerDimens.IconSmall),
+                    tint = contentColor,
+                )
                 Spacer(Modifier.width(SharedLedgerSpacing.Small))
             }
-            Text(text = text, style = SharedLedgerTextStyles.Button)
+            Text(
+                text = text,
+                style = SharedLedgerTextStyles.Button,
+                color = contentColor,
+                maxLines = 1,
+            )
         }
     }
 }

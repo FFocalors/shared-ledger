@@ -11,7 +11,10 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,10 +47,8 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -90,6 +91,8 @@ import com.ffocalors.sharedledger.ui.components.NumericKeypadState
 import com.ffocalors.sharedledger.ui.components.numericKeypadTarget
 import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
 import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
+import com.ffocalors.sharedledger.ui.components.specularMachinedBorder
+import com.ffocalors.sharedledger.ui.theme.rememberSharedLedgerHaptics
 import com.ffocalors.sharedledger.ui.components.expenseIconLabel
 import com.ffocalors.sharedledger.ui.components.expenseIconVector
 import com.ffocalors.sharedledger.ui.expense.ExpenseFormDraft
@@ -342,6 +345,16 @@ fun NewExpenseScreen(
     val keypad = remember { NumericKeypadState() }
     val focusManager = LocalFocusManager.current
     val listState = rememberLazyListState()
+    val haptics = rememberSharedLedgerHaptics()
+
+    val isSplitBalanced = splitTotal.compareTo(amount) == 0 && amount > BigDecimal.ZERO
+    var wasBalanced by remember { mutableStateOf(isSplitBalanced) }
+    LaunchedEffect(isSplitBalanced) {
+        if (isSplitBalanced && !wasBalanced) {
+            haptics.snap()
+        }
+        wasBalanced = isSplitBalanced
+    }
 
     // A failed submit is rendered as the final list item. Clear the amount
     // field focus first so the custom keypad cannot cover the message, then
@@ -349,6 +362,7 @@ fun NewExpenseScreen(
     // message avoids re-scrolling on ordinary recompositions.
     LaunchedEffect(errorMessage) {
         if (!errorMessage.isNullOrBlank()) {
+            haptics.reject()
             focusManager.clearFocus(force = true)
             // The error item is added by the same recomposition that starts
             // this effect; wait for the next layout pass before reading the
@@ -374,7 +388,19 @@ fun NewExpenseScreen(
                         onRefreshConfirmation != null -> "请先刷新确认"
                         else -> "保存"
                     },
-                    onClick = { if (!isSubmitting && onRefreshConfirmation == null && hasRateForSave) onSave(draft) },
+                    onClick = {
+                        if (!isSubmitting && onRefreshConfirmation == null && hasRateForSave) {
+                            val isInvalid = amount <= BigDecimal.ZERO || (draft.splitMethod == ExpenseSplitMethod.Manual && !isSplitBalanced)
+                            if (isInvalid) {
+                                haptics.reject()
+                            } else {
+                                haptics.click()
+                            }
+                            onSave(draft)
+                        } else {
+                            haptics.reject()
+                        }
+                    },
                     enabled = !isSubmitting && onRefreshConfirmation == null && !isOffline && hasRateForSave,
                     icon = Icons.Rounded.Save,
                 )
@@ -407,27 +433,32 @@ fun NewExpenseScreen(
                             Modifier.fillMaxWidth(),
                             placeholder = "消费名称",
                             leadingIcon = {
-                                IconButton(
-                                    onClick = { showIconPicker = true },
+                                Box(
                                     modifier = Modifier
                                         .size(SharedLedgerDimens.TopBarActionSize)
+                                        .clip(CircleShape)
+                                        .clickable(
+                                            role = androidx.compose.ui.semantics.Role.Button,
+                                            onClick = { showIconPicker = true },
+                                        )
                                         .semantics {
                                             contentDescription = "选择消费图标，当前为${expenseIconLabel(draft.iconKey)}"
                                         },
+                                    contentAlignment = Alignment.Center,
                                 ) {
-                                    Surface(
-                                        modifier = Modifier.size(SharedLedgerDimens.ActionIconContainer),
-                                        shape = SharedLedgerRadius.Full,
-                                        color = WarmOrangeContainer.copy(alpha = 0.85f),
-                                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    Box(
+                                        modifier = Modifier
+                                            .size(SharedLedgerDimens.ActionIconContainer)
+                                            .clip(SharedLedgerRadius.Full)
+                                            .background(WarmOrangeContainer.copy(alpha = 0.85f)),
+                                        contentAlignment = Alignment.Center,
                                     ) {
-                                        Box(contentAlignment = Alignment.Center) {
-                                            Icon(
-                                                imageVector = expenseIconVector(draft.iconKey),
-                                                contentDescription = null,
-                                                modifier = Modifier.size(SharedLedgerDimens.ActionIcon),
-                                            )
-                                        }
+                                        Icon(
+                                            imageVector = expenseIconVector(draft.iconKey),
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                            modifier = Modifier.size(SharedLedgerDimens.ActionIcon),
+                                        )
                                     }
                                 }
                             },
@@ -555,7 +586,16 @@ fun NewExpenseScreen(
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Text("分摊方式", style = SharedLedgerTextStyles.BodySecondary, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
-                            SegmentedControl(options = listOf("手动分摊", "AA均摊"), selectedIndex = if (draft.splitMethod == ExpenseSplitMethod.Manual) 0 else 1, onSelected = { draft = draft.copy(splitMethod = if (it == 0) ExpenseSplitMethod.Manual else ExpenseSplitMethod.Aa) }, modifier = Modifier.widthIn(max = ComponentSizes.SegmentedControlMaxWidth), enabled = !presentationOnly)
+                            SegmentedControl(
+                                options = listOf("手动分摊", "AA均摊"),
+                                selectedIndex = if (draft.splitMethod == ExpenseSplitMethod.Manual) 0 else 1,
+                                onSelected = {
+                                    haptics.tick()
+                                    draft = draft.copy(splitMethod = if (it == 0) ExpenseSplitMethod.Manual else ExpenseSplitMethod.Aa)
+                                },
+                                modifier = Modifier.widthIn(max = ComponentSizes.SegmentedControlMaxWidth),
+                                enabled = !presentationOnly,
+                            )
                         }
                     }
                     val isSplitBalanced = splitTotal.compareTo(amount) == 0
@@ -569,10 +609,10 @@ fun NewExpenseScreen(
                         animationSpec = tween(com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Durations.Content),
                         label = "splitIndicatorContentColor",
                     )
-                    Surface(
-                        shape = CircleShape,
-                        color = splitIndicatorBg,
-                        contentColor = splitIndicatorContentColor,
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(splitIndicatorBg),
                     ) {
                         Row(
                             Modifier.padding(horizontal = SharedLedgerSpacing.MediumSmall, vertical = SharedLedgerSpacing.XSmall),
@@ -581,6 +621,7 @@ fun NewExpenseScreen(
                             Icon(
                                 if (isSplitBalanced) Icons.Rounded.CheckCircle else Icons.Rounded.WarningAmber,
                                 contentDescription = null,
+                                tint = splitIndicatorContentColor,
                                 modifier = Modifier.size(SharedLedgerDimens.IconSmall),
                             )
                             Spacer(Modifier.width(SharedLedgerSpacing.XSmall))
@@ -588,6 +629,7 @@ fun NewExpenseScreen(
                                 if (isSplitBalanced) "分摊已平账 ${currencySymbol(draft.currency)} ${splitTotal.toPlainString()}"
                                 else "已分配 ${currencySymbol(draft.currency)} ${splitTotal.toPlainString()} / ${currencySymbol(draft.currency)} ${amount.toPlainString()}",
                                 style = SharedLedgerTextStyles.Label,
+                                color = splitIndicatorContentColor,
                             )
                         }
                     }
@@ -620,17 +662,23 @@ fun NewExpenseScreen(
                                 animationSpec = tween(com.ffocalors.sharedledger.ui.theme.SharedLedgerMotion.Durations.Content),
                                 label = "aaBorderColor",
                             )
-                            Surface(
-                                onClick = {
-                                    draft = draft.copy(
-                                        aaParticipantIds = if (selected) draft.aaParticipantIds - participant.id else draft.aaParticipantIds + participant.id,
-                                    )
-                                },
-                                enabled = !presentationOnly,
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = SharedLedgerRadius.Large,
-                                color = containerColor,
-                                border = BorderStroke(SharedLedgerDimens.OutlineWidth, borderColor),
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(SharedLedgerRadius.Large)
+                                    .background(containerColor)
+                                    .border(SharedLedgerDimens.OutlineWidth, borderColor, SharedLedgerRadius.Large)
+                                    .specularMachinedBorder(shape = SharedLedgerRadius.Large)
+                                    .then(
+                                        if (!presentationOnly) {
+                                            Modifier.clickable {
+                                                haptics.snap()
+                                                draft = draft.copy(
+                                                    aaParticipantIds = if (selected) draft.aaParticipantIds - participant.id else draft.aaParticipantIds + participant.id,
+                                                )
+                                            }
+                                        } else Modifier
+                                    ),
                             ) {
                                 Row(
                                     Modifier.padding(
@@ -696,13 +744,19 @@ fun NewExpenseScreen(
                     FormSection {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Rounded.Schedule, null)
-                        Surface(
-                            onClick = { showDatePicker = true },
-                            enabled = !presentationOnly,
+                        Box(
                             modifier = Modifier
-                                .weight(1f),
-                            shape = SharedLedgerRadius.Medium,
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                                .weight(1f)
+                                .clip(SharedLedgerRadius.Medium)
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f))
+                                .then(
+                                    if (!presentationOnly) {
+                                        Modifier.clickable {
+                                            haptics.tick()
+                                            showDatePicker = true
+                                        }
+                                    } else Modifier
+                                ),
                         ) {
                             Column(Modifier.padding(SharedLedgerSpacing.MediumSmall)) {
                                 Text("发生时间", style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -726,13 +780,33 @@ fun NewExpenseScreen(
                         Icon(Icons.Rounded.Image, "附件", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text("附件 (${attachments.size}/10)", modifier = Modifier.weight(1f), style = SharedLedgerTextStyles.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         onAddAttachment?.let { callback ->
-                            TextButton(
-                                onClick = callback,
-                                enabled = canAddExpenseAttachment(attachments.size) && !isSubmitting,
-                                contentPadding = PaddingValues(horizontal = SharedLedgerSpacing.Small),
+                            val canAdd = canAddExpenseAttachment(attachments.size) && !isSubmitting
+                            Row(
+                                modifier = Modifier
+                                    .clip(SharedLedgerRadius.Small)
+                                    .then(
+                                        if (canAdd) {
+                                            Modifier.clickable(
+                                                role = androidx.compose.ui.semantics.Role.Button,
+                                                onClick = callback,
+                                            )
+                                        } else Modifier
+                                    )
+                                    .padding(horizontal = SharedLedgerSpacing.Small, vertical = SharedLedgerSpacing.XSmall),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
                             ) {
-                                Icon(Icons.Rounded.Add, contentDescription = null, modifier = Modifier.size(SharedLedgerDimens.IconSmall))
-                                Text("添加")
+                                Icon(
+                                    Icons.Rounded.Add,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(SharedLedgerDimens.IconSmall),
+                                    tint = if (canAdd) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                )
+                                Text(
+                                    "添加",
+                                    style = SharedLedgerTextStyles.Label,
+                                    color = if (canAdd) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                )
                             }
                         }
                     }
@@ -755,9 +829,27 @@ fun NewExpenseScreen(
                     Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
                         ErrorBanner(errorMessage)
                         onRefreshConfirmation?.let { callback ->
-                            TextButton(onClick = callback) {
-                                Icon(Icons.Rounded.Refresh, contentDescription = null)
-                                Text("刷新账单后解除提交保护")
+                            Row(
+                                modifier = Modifier
+                                    .clip(SharedLedgerRadius.Small)
+                                    .clickable(
+                                        role = androidx.compose.ui.semantics.Role.Button,
+                                        onClick = callback,
+                                    )
+                                    .padding(horizontal = SharedLedgerSpacing.Small, vertical = SharedLedgerSpacing.XSmall),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
+                            ) {
+                                Icon(
+                                    Icons.Rounded.Refresh,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                )
+                                Text(
+                                    "刷新账单后解除提交保护",
+                                    style = SharedLedgerTextStyles.Label,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
                             }
                         }
                     }
@@ -839,10 +931,11 @@ private fun ExpenseAttachmentDraftRow(
     onRemove: (() -> Unit)?,
     onRetry: (() -> Unit)?,
 ) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = SharedLedgerRadius.Medium,
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(SharedLedgerRadius.Medium)
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)),
     ) {
         Row(
             modifier = Modifier.padding(horizontal = SharedLedgerSpacing.MediumSmall, vertical = SharedLedgerSpacing.Small),
@@ -866,14 +959,34 @@ private fun ExpenseAttachmentDraftRow(
             }
             if (attachment.status == ExpenseAttachmentUploadStatus.Failed) {
                 onRetry?.let { callback ->
-                    IconButton(onClick = callback, modifier = Modifier.semantics { contentDescription = "重试上传${attachment.fileName}" }) {
-                        Icon(Icons.Rounded.Refresh, contentDescription = null)
+                    Box(
+                        modifier = Modifier
+                            .size(SharedLedgerDimens.ActionIconContainer)
+                            .clip(CircleShape)
+                            .clickable(
+                                role = androidx.compose.ui.semantics.Role.Button,
+                                onClick = callback,
+                            )
+                            .semantics { contentDescription = "重试上传${attachment.fileName}" },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(Icons.Rounded.Refresh, contentDescription = null, modifier = Modifier.size(SharedLedgerDimens.IconSmall))
                     }
                 }
             }
             onRemove?.let { callback ->
-                IconButton(onClick = callback, modifier = Modifier.semantics { contentDescription = "移除附件${attachment.fileName}" }) {
-                    Icon(Icons.Rounded.Delete, contentDescription = null)
+                Box(
+                    modifier = Modifier
+                        .size(SharedLedgerDimens.ActionIconContainer)
+                        .clip(CircleShape)
+                        .clickable(
+                            role = androidx.compose.ui.semantics.Role.Button,
+                            onClick = callback,
+                        )
+                        .semantics { contentDescription = "移除附件${attachment.fileName}" },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(Icons.Rounded.Delete, contentDescription = null, modifier = Modifier.size(SharedLedgerDimens.IconSmall))
                 }
             }
         }
@@ -882,7 +995,24 @@ private fun ExpenseAttachmentDraftRow(
 
 @Composable
 private fun PayerRow(participant: ExpenseFormParticipant, index: Int, selected: Boolean, amount: String, currency: String, keypad: NumericKeypadState, onToggle: () -> Unit, onAmountChange: (String) -> Unit, enabled: Boolean = true) {
-    Surface(onClick = onToggle, enabled = enabled, modifier = Modifier.fillMaxWidth(), shape = SharedLedgerRadius.Medium, color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .52f), border = BorderStroke(SharedLedgerDimens.OutlineWidth, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = .5f))) {
+    val haptics = rememberSharedLedgerHaptics()
+    val payerBorderColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = .5f)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(SharedLedgerRadius.Medium)
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = .52f))
+            .border(SharedLedgerDimens.OutlineWidth, payerBorderColor, SharedLedgerRadius.Medium)
+            .specularMachinedBorder(shape = SharedLedgerRadius.Medium)
+            .then(
+                if (enabled) {
+                    Modifier.clickable {
+                        haptics.snap()
+                        onToggle()
+                    }
+                } else Modifier
+            ),
+    ) {
         Row(Modifier.padding(SharedLedgerSpacing.MediumSmall), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall)) {
             ParticipantAvatar(
                 name = participant.name,
@@ -898,7 +1028,19 @@ private fun PayerRow(participant: ExpenseFormParticipant, index: Int, selected: 
 
 @Composable
 private fun FormSection(content: @Composable ColumnScope.() -> Unit) {
-    Surface(Modifier.fillMaxWidth(), shape = SharedLedgerRadius.ExtraLarge, color = MaterialTheme.colorScheme.surface, border = BorderStroke(SharedLedgerDimens.OutlineWidth, MaterialTheme.colorScheme.outlineVariant.copy(alpha = .3f)), shadowElevation = SharedLedgerElevation.Card) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(SharedLedgerElevation.Card, SharedLedgerRadius.ExtraLarge)
+            .clip(SharedLedgerRadius.ExtraLarge)
+            .background(MaterialTheme.colorScheme.surface)
+            .border(
+                SharedLedgerDimens.OutlineWidth,
+                MaterialTheme.colorScheme.outlineVariant.copy(alpha = .3f),
+                SharedLedgerRadius.ExtraLarge,
+            )
+            .specularMachinedBorder(shape = SharedLedgerRadius.ExtraLarge),
+    ) {
         Column(Modifier.padding(SharedLedgerSpacing.Large), verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall), content = content)
     }
 }

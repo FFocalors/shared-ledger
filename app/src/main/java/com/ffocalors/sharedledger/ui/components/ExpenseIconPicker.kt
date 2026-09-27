@@ -26,13 +26,18 @@ import androidx.compose.material.icons.rounded.MedicalServices
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Restaurant
 import androidx.compose.material.icons.rounded.ShoppingBag
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.draw.clip
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -52,6 +57,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.data.expense.ExpenseIconKey
+import com.ffocalors.sharedledger.ui.theme.rememberSharedLedgerHaptics
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerDimens
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerElevation
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
@@ -119,6 +125,7 @@ fun ExpenseIconPickerSheet(
         runCatching { sheetState.hide() }
         onDismissRequest()
     }
+    val haptics = rememberSharedLedgerHaptics()
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
@@ -158,74 +165,91 @@ fun ExpenseIconPickerSheet(
                     } else {
                         option.key == normalizedSelected
                     }
-                    Surface(
-                        onClick = {
-                            if (pendingSelection == null) pendingSelection = option.key
-                        },
-                        enabled = pendingSelection == null,
+                    val cardBg = if (isSelected) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surface
+                    }
+                    val cardContentColor = if (isSelected) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+                    val cardBorderColor = if (isSelected) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = .55f)
+                    }
+
+                    Box(
                         modifier = Modifier
                             .heightIn(min = 76.dp)
+                            .clip(SharedLedgerRadius.Medium)
+                            .background(cardBg)
+                            .border(
+                                SharedLedgerDimens.OutlineWidth,
+                                cardBorderColor,
+                                SharedLedgerRadius.Medium,
+                            )
+                            .clickable(
+                                enabled = pendingSelection == null,
+                                onClick = {
+                                    if (pendingSelection == null) {
+                                        haptics.tick()
+                                        pendingSelection = option.key
+                                    }
+                                },
+                            )
                             .semantics {
                                 selected = isSelected
                                 role = Role.RadioButton
                                 contentDescription = "${option.label}图标"
                             },
-                        shape = SharedLedgerRadius.Medium,
-                        color = if (isSelected) {
-                            MaterialTheme.colorScheme.primaryContainer
-                        } else {
-                            MaterialTheme.colorScheme.surface
-                        },
-                        contentColor = if (isSelected) {
-                            MaterialTheme.colorScheme.onPrimaryContainer
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        },
-                        border = BorderStroke(
-                            SharedLedgerDimens.OutlineWidth,
-                            if (isSelected) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.outlineVariant.copy(alpha = .55f),
-                        ),
                     ) {
-                        Column(
-                            modifier = Modifier.padding(
-                                horizontal = SharedLedgerSpacing.XSmall,
-                                vertical = SharedLedgerSpacing.Small,
-                            ),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
-                        ) {
-                            Surface(
-                                shape = SharedLedgerRadius.Full,
-                                color = if (isSelected) {
+                        CompositionLocalProvider(LocalContentColor provides cardContentColor) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(
+                                        horizontal = SharedLedgerSpacing.XSmall,
+                                        vertical = SharedLedgerSpacing.Small,
+                                    ),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
+                            ) {
+                                val iconBg = if (isSelected) {
                                     MaterialTheme.colorScheme.primary.copy(alpha = .13f)
                                 } else {
                                     MaterialTheme.colorScheme.surfaceVariant
-                                },
-                                contentColor = if (isSelected) {
+                                }
+                                val iconColor = if (isSelected) {
                                     MaterialTheme.colorScheme.primary
                                 } else {
                                     MaterialTheme.colorScheme.onSurfaceVariant
-                                },
-                            ) {
+                                }
                                 Box(
-                                    modifier = Modifier.padding(SharedLedgerSpacing.XSmall),
+                                    modifier = Modifier
+                                        .clip(SharedLedgerRadius.Full)
+                                        .background(iconBg)
+                                        .padding(SharedLedgerSpacing.XSmall),
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     Icon(
                                         imageVector = option.icon,
                                         contentDescription = null,
+                                        tint = iconColor,
                                         modifier = Modifier.size(SharedLedgerDimens.ActionIcon),
                                     )
                                 }
+                                Text(
+                                    text = option.label,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    textAlign = TextAlign.Center,
+                                    style = SharedLedgerTextStyles.Label,
+                                    color = cardContentColor,
+                                )
                             }
-                            Text(
-                                text = option.label,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = TextAlign.Center,
-                                style = SharedLedgerTextStyles.Label,
-                            )
                         }
                     }
                 }
