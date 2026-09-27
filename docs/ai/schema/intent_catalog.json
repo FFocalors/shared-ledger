@@ -1,0 +1,3259 @@
+{
+  "contract_version": "0.1",
+  "status": "draft_pending_product_decisions",
+  "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+  "intents": [
+    {
+      "intent_id": "find_activities",
+      "meaning_zh": "查询本人可访问活动",
+      "category": "activity",
+      "scenario": "查询本人可访问活动，目标是当前选中记录",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": false,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [],
+      "optional_parameters": [
+        "query",
+        "include_archived",
+        "cursor",
+        "limit"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/find_activities_input",
+      "possible_tools": [
+        "find_activities"
+      ],
+      "permission_preconditions": "已登录；仅列当前成员可见活动",
+      "typical_expressions": [
+        "查询本人可访问活动，目标是当前选中记录"
+      ],
+      "typical_ambiguities": [
+        "同名 Activity、当前活动与聊天旧活动冲突；归档不等于结清"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "create_activity",
+      "meaning_zh": "创建普通/大型 Activity",
+      "category": "activity",
+      "scenario": "创建一个叫周末露营的大型活动，本位币 CNY，开启多币种",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": false,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "name",
+        "type",
+        "base_currency",
+        "multi_currency_enabled"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/create_activity_input",
+      "possible_tools": [
+        "create_activity"
+      ],
+      "permission_preconditions": "已登录",
+      "typical_expressions": [
+        "创建一个叫周末露营的大型活动，本位币 CNY，开启多币种"
+      ],
+      "typical_ambiguities": [
+        "同名 Activity、当前活动与聊天旧活动冲突；归档不等于结清"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "join_activity",
+      "meaning_zh": "通过邀请码加入活动",
+      "category": "activity",
+      "scenario": "加入邀请码 12345678 的活动",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": false,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "join_code"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/join_activity_input",
+      "possible_tools": [
+        "join_activity"
+      ],
+      "permission_preconditions": "已登录；邀请码有效且 Activity 可加入",
+      "typical_expressions": [
+        "加入邀请码 12345678 的活动"
+      ],
+      "typical_ambiguities": [
+        "同名 Activity、当前活动与聊天旧活动冲突；归档不等于结清"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "加入不等于认领；邀请码只发给 Gateway，不写入长期会话摘要。",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "update_activity",
+      "meaning_zh": "更新活动设置",
+      "category": "activity",
+      "scenario": "更新活动设置，目标是当前选中记录",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": true,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "name",
+        "base_currency",
+        "multi_currency_enabled"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/update_activity_input",
+      "possible_tools": [
+        "update_activity"
+      ],
+      "permission_preconditions": "Activity Creator",
+      "typical_expressions": [
+        "更新活动设置，目标是当前选中记录"
+      ],
+      "typical_ambiguities": [
+        "同名 Activity、当前活动与聊天旧活动冲突；归档不等于结清"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "archive_activity",
+      "meaning_zh": "归档活动",
+      "category": "activity",
+      "scenario": "把这个活动归档",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": true,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/archive_activity_input",
+      "possible_tools": [
+        "archive_activity"
+      ],
+      "permission_preconditions": "Activity Creator",
+      "typical_expressions": [
+        "把这个活动归档"
+      ],
+      "typical_ambiguities": [
+        "同名 Activity、当前活动与聊天旧活动冲突；归档不等于结清"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "archive/unarchive 的 activity_id 映射 p_activity_id；delete 使用 activity_id。",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "unarchive_activity",
+      "meaning_zh": "解除归档",
+      "category": "activity",
+      "scenario": "解除归档，目标是当前选中记录",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": true,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/unarchive_activity_input",
+      "possible_tools": [
+        "unarchive_activity"
+      ],
+      "permission_preconditions": "Activity Creator",
+      "typical_expressions": [
+        "解除归档，目标是当前选中记录"
+      ],
+      "typical_ambiguities": [
+        "同名 Activity、当前活动与聊天旧活动冲突；归档不等于结清"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "archive/unarchive 的 activity_id 映射 p_activity_id；delete 使用 activity_id。",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "delete_activity",
+      "meaning_zh": "软删除活动",
+      "category": "activity",
+      "scenario": "软删除活动，目标是当前选中记录",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": true,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/delete_activity_input",
+      "possible_tools": [
+        "delete_activity"
+      ],
+      "permission_preconditions": "Activity Creator",
+      "typical_expressions": [
+        "软删除活动，目标是当前选中记录"
+      ],
+      "typical_ambiguities": [
+        "同名 Activity、当前活动与聊天旧活动冲突；归档不等于结清"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "archive/unarchive 的 activity_id 映射 p_activity_id；delete 使用 activity_id。",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "remove_member",
+      "meaning_zh": "移除访问成员",
+      "category": "member",
+      "scenario": "移除访问成员，目标是当前选中记录",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": false,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "user_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/remove_member_input",
+      "possible_tools": [
+        "remove_member"
+      ],
+      "permission_preconditions": "Activity Creator；不能移除自己",
+      "typical_expressions": [
+        "移除访问成员，目标是当前选中记录"
+      ],
+      "typical_ambiguities": [
+        "User 成员和 Participant 混淆；被移除者或新 Creator 身份不唯一"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "移除 User 成员不同于删除 Participant；不能暗示历史账务被删除。",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "transfer_creator",
+      "meaning_zh": "转移创建者身份",
+      "category": "member",
+      "scenario": "转移创建者身份，目标是当前选中记录",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": false,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "new_creator_user_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/transfer_creator_input",
+      "possible_tools": [
+        "transfer_creator"
+      ],
+      "permission_preconditions": "Activity Creator；目标为另一有效 Member",
+      "typical_expressions": [
+        "转移创建者身份，目标是当前选中记录"
+      ],
+      "typical_ambiguities": [
+        "User 成员和 Participant 混淆；被移除者或新 Creator 身份不唯一"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "add_participant",
+      "meaning_zh": "新增参与人",
+      "category": "participant",
+      "scenario": "把张三加进这个活动",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": false,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "name"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/add_participant_input",
+      "possible_tools": [
+        "add_participant"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "把张三加进这个活动"
+      ],
+      "typical_ambiguities": [
+        "同名 Participant；“我”未认领；“移除他”是删名单还是移除访问成员"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "remove_participant",
+      "meaning_zh": "删除参与人",
+      "category": "participant",
+      "scenario": "删除参与人，目标是当前选中记录",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": false,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "participant_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/remove_participant_input",
+      "possible_tools": [
+        "remove_participant"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "删除参与人，目标是当前选中记录"
+      ],
+      "typical_ambiguities": [
+        "同名 Participant；“我”未认领；“移除他”是删名单还是移除访问成员"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "claim_participant",
+      "meaning_zh": "认领为当前用户",
+      "category": "participant",
+      "scenario": "名单里的张三就是我",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": false,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "participant_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/claim_participant_input",
+      "possible_tools": [
+        "claim_participant"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "名单里的张三就是我"
+      ],
+      "typical_ambiguities": [
+        "同名 Participant；“我”未认领；“移除他”是删名单还是移除访问成员"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "unclaim_participant",
+      "meaning_zh": "解除当前用户认领",
+      "category": "participant",
+      "scenario": "解除我在这个活动的认领",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": false,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/unclaim_participant_input",
+      "possible_tools": [
+        "unclaim_participant"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "解除我在这个活动的认领"
+      ],
+      "typical_ambiguities": [
+        "同名 Participant；“我”未认领；“移除他”是删名单还是移除访问成员"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "create_sub_activity",
+      "meaning_zh": "创建子活动",
+      "category": "ledger_unit",
+      "scenario": "创建子活动，目标是当前选中记录",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": false,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "name"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/create_sub_activity_input",
+      "possible_tools": [
+        "create_sub_activity"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "创建子活动，目标是当前选中记录"
+      ],
+      "typical_ambiguities": [
+        "root/default 与 sub_activity 混淆；删除子活动不等于恢复账单"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "delete_sub_activity",
+      "meaning_zh": "软删除子活动",
+      "category": "ledger_unit",
+      "scenario": "删除这个子活动",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": true,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "ledger_unit_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/delete_sub_activity_input",
+      "possible_tools": [
+        "delete_sub_activity"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "删除这个子活动"
+      ],
+      "typical_ambiguities": [
+        "root/default 与 sub_activity 混淆；删除子活动不等于恢复账单"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "ledger_unit_id 映射 sub_activity_id；不恢复 Expense 或 Transfer。",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "restore_sub_activity",
+      "meaning_zh": "恢复子活动",
+      "category": "ledger_unit",
+      "scenario": "恢复刚才删掉的子活动",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": true,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "ledger_unit_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/restore_sub_activity_input",
+      "possible_tools": [
+        "restore_sub_activity"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "恢复刚才删掉的子活动"
+      ],
+      "typical_ambiguities": [
+        "root/default 与 sub_activity 混淆；删除子活动不等于恢复账单"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "ledger_unit_id 映射 sub_activity_id；不恢复 Expense 或 Transfer。",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "find_expenses",
+      "meaning_zh": "筛选消费、退款、负向调整",
+      "category": "expense",
+      "scenario": "昨天那笔晚饭在哪儿？",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id"
+      ],
+      "optional_parameters": [
+        "ledger_unit_id",
+        "query",
+        "participant_id",
+        "from_time",
+        "to_time",
+        "kind",
+        "original_expense_id",
+        "include_deleted",
+        "cursor",
+        "limit"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/find_expenses_input",
+      "possible_tools": [
+        "find_expenses"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "昨天那笔晚饭在哪儿？"
+      ],
+      "typical_ambiguities": [
+        "付款人、本人是否参与、AA/手动、币种未明确；“上一笔”作用域/排序不明"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "create_expense",
+      "meaning_zh": "创建消费、负调整或 linked Refund",
+      "category": "expense",
+      "scenario": "午饭300元，我付，张三李四和我AA",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": true,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "ledger_unit_id",
+        "title",
+        "original_amount",
+        "original_currency",
+        "split_method",
+        "payments",
+        "manual_splits",
+        "aa_participant_ids",
+        "occurred_at"
+      ],
+      "optional_parameters": [
+        "note",
+        "original_expense_id",
+        "icon_key"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/create_expense_input",
+      "possible_tools": [
+        "create_expense"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "午饭300元，我付，张三李四和我AA"
+      ],
+      "typical_ambiguities": [
+        "付款人、本人是否参与、AA/手动、币种未明确；“上一笔”作用域/排序不明"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "activity_id 仅 Gateway 范围核对，不发给该 RPC；没有 request_id，也没有财务编辑 expected_version 参数。不承诺原子乐观版本保护；并发编辑风险见 Q4。",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "update_expense",
+      "meaning_zh": "更新未锁定消费/退款财务字段",
+      "category": "expense",
+      "scenario": "把这笔晚饭改成300元，付款和分摊名单保持原样",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": true,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "expense_id",
+        "ledger_unit_id",
+        "title",
+        "original_amount",
+        "original_currency",
+        "split_method",
+        "payments",
+        "manual_splits",
+        "aa_participant_ids",
+        "occurred_at"
+      ],
+      "optional_parameters": [
+        "note",
+        "original_expense_id",
+        "icon_key"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/update_expense_input",
+      "possible_tools": [
+        "update_expense"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "把这笔晚饭改成300元，付款和分摊名单保持原样"
+      ],
+      "typical_ambiguities": [
+        "付款人、本人是否参与、AA/手动、币种未明确；“上一笔”作用域/排序不明"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "activity_id 仅 Gateway 范围核对，不发给该 RPC；没有 request_id，也没有财务编辑 expected_version 参数。不承诺原子乐观版本保护；并发编辑风险见 Q4。",
+      "ai_enablement": "pending_open_question"
+    },
+    {
+      "intent_id": "update_expense_presentation",
+      "meaning_zh": "仅编辑标题、备注、图标",
+      "category": "expense",
+      "scenario": "只把这笔的备注改成聚餐",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": false,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "expense_id",
+        "title",
+        "note",
+        "icon_key",
+        "expected_version"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/update_expense_presentation_input",
+      "possible_tools": [
+        "update_expense_presentation"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "只把这笔的备注改成聚餐"
+      ],
+      "typical_ambiguities": [
+        "付款人、本人是否参与、AA/手动、币种未明确；“上一笔”作用域/排序不明"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "expected_version 是 Expense version，不能用 Activity financial_version 代替。",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "delete_expense",
+      "meaning_zh": "逻辑删除消费或退款",
+      "category": "expense",
+      "scenario": "逻辑删除消费或退款，目标是当前选中记录",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": true,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "expense_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/delete_expense_input",
+      "possible_tools": [
+        "delete_expense"
+      ],
+      "permission_preconditions": "Expense 创建者或 Activity Creator，并且是有效 Member",
+      "typical_expressions": [
+        "逻辑删除消费或退款，目标是当前选中记录"
+      ],
+      "typical_ambiguities": [
+        "付款人、本人是否参与、AA/手动、币种未明确；“上一笔”作用域/排序不明"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "find_fund_records",
+      "meaning_zh": "查询真实 Transfer、退款和自动预存 Usage",
+      "category": "transfer",
+      "scenario": "显示这个活动的退款和资金记录",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id"
+      ],
+      "optional_parameters": [
+        "kind",
+        "ledger_unit_id",
+        "from_time",
+        "to_time",
+        "include_voided",
+        "cursor",
+        "limit"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/find_fund_records_input",
+      "possible_tools": [
+        "find_fund_records"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "显示这个活动的退款和资金记录"
+      ],
+      "typical_ambiguities": [
+        "“转给他”未说明真实已发生；付款方向/币种/FIFO或TARGETED/目标账单不明"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "get_settlement_options",
+      "meaning_zh": "当前方向可付币种、额度及目标账单候选",
+      "category": "transfer",
+      "scenario": "当前方向可付币种、额度及目标账单候选，目标是当前选中记录",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "from_participant_id",
+        "to_participant_id",
+        "currency"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_settlement_options_input",
+      "possible_tools": [
+        "get_settlement_options"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "当前方向可付币种、额度及目标账单候选，目标是当前选中记录"
+      ],
+      "typical_ambiguities": [
+        "“转给他”未说明真实已发生；付款方向/币种/FIFO或TARGETED/目标账单不明"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "list_settlement_options(p_activity_id) 后按双方过滤；payment 为服务端最大额度。",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "preview_settlement_transfer",
+      "meaning_zh": "预览 FIFO/TARGETED 真实还款分配",
+      "category": "transfer",
+      "scenario": "预览 FIFO/TARGETED 真实还款分配，目标是当前选中记录",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "from_participant_id",
+        "to_participant_id",
+        "currency",
+        "amount",
+        "mode",
+        "target_expense_ids",
+        "expected_financial_version"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/preview_settlement_transfer_input",
+      "possible_tools": [
+        "preview_settlement_transfer"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "预览 FIFO/TARGETED 真实还款分配，目标是当前选中记录"
+      ],
+      "typical_ambiguities": [
+        "“转给他”未说明真实已发生；付款方向/币种/FIFO或TARGETED/目标账单不明"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "create_settlement_transfer",
+      "meaning_zh": "登记已经真实发生的还款",
+      "category": "transfer",
+      "scenario": "我已经还了张三100元，用于昨天那笔晚饭",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": true,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "from_participant_id",
+        "to_participant_id",
+        "currency",
+        "amount",
+        "mode",
+        "target_expense_ids",
+        "expected_financial_version",
+        "occurred_at",
+        "on_behalf_of_participant_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/create_settlement_transfer_input",
+      "possible_tools": [
+        "create_settlement_transfer"
+      ],
+      "permission_preconditions": "Member 使用本人认领且为 Transfer 一方的 Participant；Creator 可代表未认领一方；服务端 authorize_phase5_actor 最终检查",
+      "typical_expressions": [
+        "我已经还了张三100元，用于昨天那笔晚饭"
+      ],
+      "typical_ambiguities": [
+        "“转给他”未说明真实已发生；付款方向/币种/FIFO或TARGETED/目标账单不明"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "Gateway 创建并持久化 request_id，模型不能传入或更换。",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "void_transfer",
+      "meaning_zh": "按真实 Transfer 类型作废",
+      "category": "transfer",
+      "scenario": "刚才的转账记错了，作废，原因是重复登记",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": true,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "transfer_id",
+        "void_reason"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/void_transfer_input",
+      "possible_tools": [
+        "void_transfer"
+      ],
+      "permission_preconditions": "记录该 Transfer 的 Member 或 Activity Creator",
+      "typical_expressions": [
+        "刚才的转账记错了，作废，原因是重复登记"
+      ],
+      "typical_ambiguities": [
+        "“转给他”未说明真实已发生；付款方向/币种/FIFO或TARGETED/目标账单不明"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "preview_prepayment",
+      "meaning_zh": "预览先还债后预存的服务端分配",
+      "category": "prepayment",
+      "scenario": "预览先还债后预存的服务端分配，目标是当前选中记录",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "owner_participant_id",
+        "custodian_participant_id",
+        "amount",
+        "currency"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/preview_prepayment_input",
+      "possible_tools": [
+        "preview_prepayment"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "预览先还债后预存的服务端分配，目标是当前选中记录"
+      ],
+      "typical_ambiguities": [
+        "Owner/Custodian 颠倒；返还币种或账户不唯一；普通还款和预存混淆"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "全部参数添加 p_ 前缀；所有 decimal 均为 requested.currency。",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "create_prepayment",
+      "meaning_zh": "登记 Owner→Custodian 已发生预存",
+      "category": "prepayment",
+      "scenario": "李四已经交给张三500元做活动预存",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": true,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "owner_participant_id",
+        "custodian_participant_id",
+        "amount",
+        "currency",
+        "occurred_at",
+        "expected_financial_version"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/create_prepayment_input",
+      "possible_tools": [
+        "create_prepayment"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "李四已经交给张三500元做活动预存"
+      ],
+      "typical_ambiguities": [
+        "Owner/Custodian 颠倒；返还币种或账户不唯一；普通还款和预存混淆"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "Gateway 注入 on_behalf_of_participant_id=null 和 request_id；不能按 ledger_unit_id 预存。",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "execute_final_settlement",
+      "meaning_zh": "登记一条完整建议对应的真实付款",
+      "category": "final_settlement",
+      "scenario": "方案里这一条已经转了，登记一下",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": true,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "suggestion_id",
+        "mode",
+        "expected_financial_version",
+        "occurred_at"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/execute_final_settlement_input",
+      "possible_tools": [
+        "execute_final_settlement"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "方案里这一条已经转了，登记一下"
+      ],
+      "typical_ambiguities": [
+        "整个 Activity 或子活动范围混淆；base_unified/original_currency 未选；“这一条”不唯一"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "add_transfer_dispute",
+      "meaning_zh": "提出真实 Transfer 的争议",
+      "category": "dispute",
+      "scenario": "提出真实 Transfer 的争议，目标是当前选中记录",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": false,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "transfer_id",
+        "participant_id",
+        "note"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/add_transfer_dispute_input",
+      "possible_tools": [
+        "add_transfer_dispute"
+      ],
+      "permission_preconditions": "待确认差异 Q2：RPC 要求 Member 且认领 Transfer 一方，或为记录者；不能仅凭 Member 放行",
+      "typical_expressions": [
+        "提出真实 Transfer 的争议，目标是当前选中记录"
+      ],
+      "typical_ambiguities": [
+        "争议参与方不明；争议被误当资金作废"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "",
+      "ai_enablement": "pending_open_question"
+    },
+    {
+      "intent_id": "resolve_transfer_dispute",
+      "meaning_zh": "解除争议标记",
+      "category": "dispute",
+      "scenario": "解除争议标记，目标是当前选中记录",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": false,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "dispute_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/resolve_transfer_dispute_input",
+      "possible_tools": [
+        "resolve_transfer_dispute"
+      ],
+      "permission_preconditions": "有效 Member，且争议提出者或 Activity Creator；Q2 待确认",
+      "typical_expressions": [
+        "解除争议标记，目标是当前选中记录"
+      ],
+      "typical_ambiguities": [
+        "争议参与方不明；争议被误当资金作废"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "",
+      "ai_enablement": "pending_open_question"
+    },
+    {
+      "intent_id": "list_attachments",
+      "meaning_zh": "读取现有图片附件元数据",
+      "category": "attachment",
+      "scenario": "读取现有图片附件元数据，目标是当前选中记录",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": false,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id"
+      ],
+      "optional_parameters": [
+        "ledger_unit_id",
+        "expense_id"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/list_attachments_input",
+      "possible_tools": [
+        "list_attachments"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "读取现有图片附件元数据，目标是当前选中记录"
+      ],
+      "typical_ambiguities": [
+        "消费附件与子活动附件目标不明；图片上传不等于解析账务"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "get_currency_context",
+      "meaning_zh": "查询服务端汇率与支持币种",
+      "category": "currency",
+      "scenario": "查询服务端汇率与支持币种，目标是当前选中记录",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": false,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "base_currency",
+        "quote_currency"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_currency_context_input",
+      "possible_tools": [
+        "get_currency_context"
+      ],
+      "permission_preconditions": "已登录",
+      "typical_expressions": [
+        "查询服务端汇率与支持币种，目标是当前选中记录"
+      ],
+      "typical_ambiguities": [
+        "当前报价与历史 Expense FX snapshot 混淆"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "映射 p_base_currency/p_quote_currency；查询结果不是 Expense 写入快照授权；不向模型开放 FX 同步。",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "query_activity",
+      "meaning_zh": "查询活动详情",
+      "category": "activity",
+      "scenario": "看看当前活动详情",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_activity_context_input",
+      "possible_tools": [
+        "get_activity_context"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "看看当前活动详情"
+      ],
+      "typical_ambiguities": [
+        "同名 Activity、当前活动与聊天旧活动冲突；归档不等于结清"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "query_activity_status",
+      "meaning_zh": "查询服务端完成状态",
+      "category": "activity",
+      "scenario": "为什么还有余额却显示未完成",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_activity_context_input",
+      "possible_tools": [
+        "get_activity_context"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "为什么还有余额却显示未完成"
+      ],
+      "typical_ambiguities": [
+        "同名 Activity、当前活动与聊天旧活动冲突；归档不等于结清"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "query_sub_activity",
+      "meaning_zh": "查询子活动",
+      "category": "ledger_unit",
+      "scenario": "看看这个子活动",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": false,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "ledger_unit_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_ledger_unit_input",
+      "possible_tools": [
+        "get_ledger_unit"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "看看这个子活动"
+      ],
+      "typical_ambiguities": [
+        "root/default 与 sub_activity 混淆；删除子活动不等于恢复账单"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "query_participant",
+      "meaning_zh": "查询参与人和认领",
+      "category": "participant",
+      "scenario": "张三被谁认领了",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": false,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id"
+      ],
+      "optional_parameters": [
+        "query",
+        "participant_id",
+        "include_deleted"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/find_participants_input",
+      "possible_tools": [
+        "find_participants"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "张三被谁认领了"
+      ],
+      "typical_ambiguities": [
+        "同名 Participant；“我”未认领；“移除他”是删名单还是移除访问成员"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "query_expense",
+      "meaning_zh": "查询消费详情",
+      "category": "expense",
+      "scenario": "这笔饭钱谁付的",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "expense_id"
+      ],
+      "optional_parameters": [
+        "activity_id"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_expense_input",
+      "possible_tools": [
+        "get_expense"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "这笔饭钱谁付的"
+      ],
+      "typical_ambiguities": [
+        "付款人、本人是否参与、AA/手动、币种未明确；“上一笔”作用域/排序不明"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "explain_expense",
+      "meaning_zh": "解释消费与已还进度",
+      "category": "expense",
+      "scenario": "为什么这笔还没结清",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "expense_id"
+      ],
+      "optional_parameters": [
+        "activity_id"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_expense_input",
+      "possible_tools": [
+        "get_expense"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "为什么这笔还没结清"
+      ],
+      "typical_ambiguities": [
+        "付款人、本人是否参与、AA/手动、币种未明确；“上一笔”作用域/排序不明"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "create_refund",
+      "meaning_zh": "创建关联退款",
+      "category": "refund",
+      "scenario": "晚饭退了100，李四收款，张三受益",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": true,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "ledger_unit_id",
+        "title",
+        "original_amount",
+        "original_currency",
+        "split_method",
+        "payments",
+        "manual_splits",
+        "aa_participant_ids",
+        "occurred_at",
+        "original_expense_id"
+      ],
+      "optional_parameters": [
+        "note",
+        "icon_key"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/create_expense_input",
+      "possible_tools": [
+        "get_expense",
+        "create_expense"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "晚饭退了100，李四收款，张三受益"
+      ],
+      "typical_ambiguities": [
+        "linked Refund 或负调整未明确；实际退款收款人与受益人不明，不能复制原单名单"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "复用负 Expense；original_expense_id 必填且明确，original_amount/payment/manual_split 使用负数；不复制原付款人/受益人，FX 由后端继承。",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "update_refund",
+      "meaning_zh": "编辑未锁定退款",
+      "category": "refund",
+      "scenario": "刚才那笔退款金额应为50",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": true,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "expense_id",
+        "ledger_unit_id",
+        "title",
+        "original_amount",
+        "original_currency",
+        "split_method",
+        "payments",
+        "manual_splits",
+        "aa_participant_ids",
+        "occurred_at",
+        "original_expense_id"
+      ],
+      "optional_parameters": [
+        "note",
+        "icon_key"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/update_expense_input",
+      "possible_tools": [
+        "get_expense",
+        "update_expense"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "刚才那笔退款金额应为50"
+      ],
+      "typical_ambiguities": [
+        "linked Refund 或负调整未明确；实际退款收款人与受益人不明，不能复制原单名单"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "复用负 Expense；original_expense_id 必填且明确，original_amount/payment/manual_split 使用负数；不复制原付款人/受益人，FX 由后端继承。",
+      "ai_enablement": "pending_open_question"
+    },
+    {
+      "intent_id": "delete_refund",
+      "meaning_zh": "删除未锁定退款",
+      "category": "refund",
+      "scenario": "删掉重复记的退款",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": true,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "expense_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/delete_expense_input",
+      "possible_tools": [
+        "get_expense",
+        "delete_expense"
+      ],
+      "permission_preconditions": "Expense 创建者或 Activity Creator，并且是有效 Member",
+      "typical_expressions": [
+        "删掉重复记的退款"
+      ],
+      "typical_ambiguities": [
+        "linked Refund 或负调整未明确；实际退款收款人与受益人不明，不能复制原单名单"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "query_refund",
+      "meaning_zh": "查询 linked Refund",
+      "category": "refund",
+      "scenario": "晚饭关联了哪些退款",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id"
+      ],
+      "optional_parameters": [
+        "ledger_unit_id",
+        "query",
+        "participant_id",
+        "from_time",
+        "to_time",
+        "kind",
+        "original_expense_id",
+        "include_deleted",
+        "cursor",
+        "limit"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/find_expenses_input",
+      "possible_tools": [
+        "find_expenses"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "晚饭关联了哪些退款"
+      ],
+      "typical_ambiguities": [
+        "linked Refund 或负调整未明确；实际退款收款人与受益人不明，不能复制原单名单"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "find_expenses.kind=linked_refund；需要已解析 Activity，按来源查询时提供 original_expense_id。",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "explain_refund",
+      "meaning_zh": "解释负 Payment/Split 与退款债务",
+      "category": "refund",
+      "scenario": "已经还钱了为什么退款后还欠钱",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "expense_id"
+      ],
+      "optional_parameters": [
+        "activity_id"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_expense_input",
+      "possible_tools": [
+        "get_expense",
+        "get_debt"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "已经还钱了为什么退款后还欠钱"
+      ],
+      "typical_ambiguities": [
+        "linked Refund 或负调整未明确；实际退款收款人与受益人不明，不能复制原单名单"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "create_negative_adjustment",
+      "meaning_zh": "创建不关联来源的负 Expense",
+      "category": "refund",
+      "scenario": "记一笔负向调整，不关联原账单",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": true,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "ledger_unit_id",
+        "title",
+        "original_amount",
+        "original_currency",
+        "split_method",
+        "payments",
+        "manual_splits",
+        "aa_participant_ids",
+        "occurred_at"
+      ],
+      "optional_parameters": [
+        "note",
+        "original_expense_id",
+        "icon_key"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/create_expense_input",
+      "possible_tools": [
+        "create_expense"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "记一笔负向调整，不关联原账单"
+      ],
+      "typical_ambiguities": [
+        "linked Refund 或负调整未明确；实际退款收款人与受益人不明，不能复制原单名单"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "original_expense_id=null；必须明确为负向调整，不能把未知来源的退款擅自降级成调整。",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "query_transfer",
+      "meaning_zh": "查询转账",
+      "category": "transfer",
+      "scenario": "刚才还款记录在哪里",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "transfer_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_transfer_input",
+      "possible_tools": [
+        "get_transfer"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "刚才还款记录在哪里"
+      ],
+      "typical_ambiguities": [
+        "“转给他”未说明真实已发生；付款方向/币种/FIFO或TARGETED/目标账单不明"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "explain_transfer",
+      "meaning_zh": "解释真实资金记录",
+      "category": "transfer",
+      "scenario": "这笔还款为什么不能撤回成未发生",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "transfer_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_transfer_input",
+      "possible_tools": [
+        "get_transfer",
+        "get_expense"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "这笔还款为什么不能撤回成未发生"
+      ],
+      "typical_ambiguities": [
+        "“转给他”未说明真实已发生；付款方向/币种/FIFO或TARGETED/目标账单不明"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "query_prepayment",
+      "meaning_zh": "查询预存",
+      "category": "prepayment",
+      "scenario": "我在张三那里还存了多少钱",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id"
+      ],
+      "optional_parameters": [
+        "owner_participant_id",
+        "custodian_participant_id",
+        "currency"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_prepayment_accounts_input",
+      "possible_tools": [
+        "get_prepayment_accounts"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "我在张三那里还存了多少钱"
+      ],
+      "typical_ambiguities": [
+        "Owner/Custodian 颠倒；返还币种或账户不唯一；普通还款和预存混淆"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "return_prepayment",
+      "meaning_zh": "返还预存",
+      "category": "prepayment",
+      "scenario": "把张三退给我的预存记下来",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": true,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "owner_participant_id",
+        "custodian_participant_id",
+        "amount",
+        "currency",
+        "occurred_at",
+        "expected_financial_version",
+        "on_behalf_of_participant_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/create_prepayment_return_input",
+      "possible_tools": [
+        "get_prepayment_accounts",
+        "create_prepayment_return"
+      ],
+      "permission_preconditions": "Member 使用本人认领且为 Transfer 一方的 Participant；Creator 可代表未认领一方；服务端 authorize_phase5_actor 最终检查",
+      "typical_expressions": [
+        "把张三退给我的预存记下来"
+      ],
+      "typical_ambiguities": [
+        "Owner/Custodian 颠倒；返还币种或账户不唯一；普通还款和预存混淆"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "void_prepayment",
+      "meaning_zh": "作废预存或返还 Transfer",
+      "category": "prepayment",
+      "scenario": "作废刚才重复登记的预存",
+      "read_only": false,
+      "may_modify_data": true,
+      "financial_sensitive": true,
+      "confirmation_required": true,
+      "confirmation_policy": "proposed_all_writes",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "transfer_id",
+        "void_reason"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/void_transfer_input",
+      "possible_tools": [
+        "get_transfer",
+        "void_transfer"
+      ],
+      "permission_preconditions": "记录该 Transfer 的 Member 或 Activity Creator",
+      "typical_expressions": [
+        "作废刚才重复登记的预存"
+      ],
+      "typical_ambiguities": [
+        "Owner/Custodian 颠倒；返还币种或账户不唯一；普通还款和预存混淆"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "explain_prepayment",
+      "meaning_zh": "解释预存抵扣",
+      "category": "prepayment",
+      "scenario": "这笔预存为什么没抵扣他的账",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id"
+      ],
+      "optional_parameters": [
+        "owner_participant_id",
+        "custodian_participant_id",
+        "currency"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_prepayment_accounts_input",
+      "possible_tools": [
+        "get_prepayment_accounts",
+        "get_debt"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "这笔预存为什么没抵扣他的账"
+      ],
+      "typical_ambiguities": [
+        "Owner/Custodian 颠倒；返还币种或账户不唯一；普通还款和预存混淆"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "query_debt",
+      "meaning_zh": "查询债务",
+      "category": "debt",
+      "scenario": "我还欠谁钱",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id"
+      ],
+      "optional_parameters": [
+        "participant_id",
+        "counterparty_id",
+        "expense_id",
+        "currency"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_debt_input",
+      "possible_tools": [
+        "get_debt"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "我还欠谁钱"
+      ],
+      "typical_ambiguities": [
+        "当前双边净债务与原账单债务混淆；多币金额不能相加"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "query_bilateral_debt",
+      "meaning_zh": "查询两人逐币种债务",
+      "category": "debt",
+      "scenario": "我和张三现在谁欠谁",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id"
+      ],
+      "optional_parameters": [
+        "participant_id",
+        "counterparty_id",
+        "expense_id",
+        "currency"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_debt_input",
+      "possible_tools": [
+        "get_debt"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "我和张三现在谁欠谁"
+      ],
+      "typical_ambiguities": [
+        "当前双边净债务与原账单债务混淆；多币金额不能相加"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "query_participant_balance",
+      "meaning_zh": "查询个人逐币种余额",
+      "category": "debt",
+      "scenario": "我还有多少应收应付",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "participant_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_participant_balance_input",
+      "possible_tools": [
+        "get_participant_balance"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "我还有多少应收应付"
+      ],
+      "typical_ambiguities": [
+        "当前双边净债务与原账单债务混淆；多币金额不能相加"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "explain_debt",
+      "meaning_zh": "解释当前债务来源",
+      "category": "debt",
+      "scenario": "这100元是怎么来的",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id"
+      ],
+      "optional_parameters": [
+        "participant_id",
+        "counterparty_id",
+        "expense_id",
+        "currency"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_debt_input",
+      "possible_tools": [
+        "get_debt",
+        "get_expense"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "这100元是怎么来的"
+      ],
+      "typical_ambiguities": [
+        "当前双边净债务与原账单债务混淆；多币金额不能相加"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "explain_balance",
+      "meaning_zh": "解释逐币种余额",
+      "category": "debt",
+      "scenario": "我的余额为什么不是零",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "participant_id"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_participant_balance_input",
+      "possible_tools": [
+        "get_participant_balance",
+        "get_prepayment_accounts"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "我的余额为什么不是零"
+      ],
+      "typical_ambiguities": [
+        "当前双边净债务与原账单债务混淆；多币金额不能相加"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "query_final_settlement",
+      "meaning_zh": "查询最终结算",
+      "category": "final_settlement",
+      "scenario": "给我看看最终结算方案",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "mode"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_final_settlement_input",
+      "possible_tools": [
+        "get_final_settlement"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "给我看看最终结算方案"
+      ],
+      "typical_ambiguities": [
+        "整个 Activity 或子活动范围混淆；base_unified/original_currency 未选；“这一条”不唯一"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "explain_final_settlement",
+      "meaning_zh": "解释服务端最终建议",
+      "category": "final_settlement",
+      "scenario": "为什么建议我向他付款",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id",
+        "mode"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_final_settlement_input",
+      "possible_tools": [
+        "get_final_settlement",
+        "lookup_business_rule"
+      ],
+      "permission_preconditions": "公开规则，无用户账务",
+      "typical_expressions": [
+        "为什么建议我向他付款"
+      ],
+      "typical_ambiguities": [
+        "整个 Activity 或子活动范围混淆；base_unified/original_currency 未选；“这一条”不唯一"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "explain_rule",
+      "meaning_zh": "冻结业务规则问答",
+      "category": "assistant",
+      "scenario": "作废后账单会解锁吗",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": false,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "query"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/lookup_business_rule_input",
+      "possible_tools": [
+        "lookup_business_rule"
+      ],
+      "permission_preconditions": "公开规则，无用户账务",
+      "typical_expressions": [
+        "作废后账单会解锁吗"
+      ],
+      "typical_ambiguities": [
+        "缺少上下文或已有 Tool 结果；不能以自由文字宣告写入成功"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "explain_error",
+      "meaning_zh": "解释已归一业务错误",
+      "category": "assistant",
+      "scenario": "为什么提示退款超过上限",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": false,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "query"
+      ],
+      "optional_parameters": [],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/lookup_business_rule_input",
+      "possible_tools": [
+        "lookup_business_rule"
+      ],
+      "permission_preconditions": "公开规则，无用户账务",
+      "typical_expressions": [
+        "为什么提示退款超过上限"
+      ],
+      "typical_ambiguities": [
+        "缺少上下文或已有 Tool 结果；不能以自由文字宣告写入成功"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "summarize_activity",
+      "meaning_zh": "基于服务端结果总结活动",
+      "category": "assistant",
+      "scenario": "总结一下这个活动还有什么没结清",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": true,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "supported_backend_proposed_ai",
+      "required_context": [
+        "user_message",
+        "ui_context",
+        "user_context",
+        "conversation_context",
+        "recent_actions"
+      ],
+      "required_parameters": [
+        "activity_id"
+      ],
+      "optional_parameters": [
+        "participant_id",
+        "counterparty_id",
+        "expense_id",
+        "currency"
+      ],
+      "parameter_schema_ref": "tool_catalog.json#/$defs/get_debt_input",
+      "possible_tools": [
+        "get_activity_context",
+        "find_expenses",
+        "get_prepayment_accounts",
+        "get_debt"
+      ],
+      "permission_preconditions": "Activity Member；服务端重新鉴权",
+      "typical_expressions": [
+        "总结一下这个活动还有什么没结清"
+      ],
+      "typical_ambiguities": [
+        "缺少上下文或已有 Tool 结果；不能以自由文字宣告写入成功"
+      ],
+      "clarification_conditions": [
+        "必填业务字段没有明确来源",
+        "同名或多条匹配不能唯一定位",
+        "用户文本与已确认草稿/会话冲突"
+      ],
+      "failure_conditions": [
+        "RPC 拒绝时解释实际错误，不改变输入绕过校验",
+        "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
+      ],
+      "notes": "",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "restore_expense",
+      "meaning_zh": "请求恢复 Expense",
+      "category": "assistant",
+      "scenario": "恢复刚才删除的账单",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": false,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "unsupported_in_v0_1",
+      "required_context": [
+        "user_message"
+      ],
+      "required_parameters": [],
+      "optional_parameters": [],
+      "parameter_schema_ref": null,
+      "possible_tools": [],
+      "permission_preconditions": "不产生业务写入；用户私有信息仍需鉴权",
+      "typical_expressions": [
+        "恢复刚才删除的账单"
+      ],
+      "typical_ambiguities": [
+        "缺少上下文或已有 Tool 结果；不能以自由文字宣告写入成功"
+      ],
+      "clarification_conditions": [
+        "意图不明时询问目标操作"
+      ],
+      "failure_conditions": [
+        "不支持的操作不调用 Tool"
+      ],
+      "notes": "冻结规则明确不支持 Expense 恢复",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "restore_transfer",
+      "meaning_zh": "请求恢复 Transfer",
+      "category": "assistant",
+      "scenario": "恢复刚才作废的转账",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": false,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "unsupported_in_v0_1",
+      "required_context": [
+        "user_message"
+      ],
+      "required_parameters": [],
+      "optional_parameters": [],
+      "parameter_schema_ref": null,
+      "possible_tools": [],
+      "permission_preconditions": "不产生业务写入；用户私有信息仍需鉴权",
+      "typical_expressions": [
+        "恢复刚才作废的转账"
+      ],
+      "typical_ambiguities": [
+        "缺少上下文或已有 Tool 结果；不能以自由文字宣告写入成功"
+      ],
+      "clarification_conditions": [
+        "意图不明时询问目标操作"
+      ],
+      "failure_conditions": [
+        "不支持的操作不调用 Tool"
+      ],
+      "notes": "voided 不可恢复；新真实付款须新请求",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "update_sub_activity",
+      "meaning_zh": "请求编辑子活动名称/备注",
+      "category": "assistant",
+      "scenario": "把这个子活动改名",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": false,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "unsupported_in_v0_1",
+      "required_context": [
+        "user_message"
+      ],
+      "required_parameters": [],
+      "optional_parameters": [],
+      "parameter_schema_ref": null,
+      "possible_tools": [],
+      "permission_preconditions": "不产生业务写入；用户私有信息仍需鉴权",
+      "typical_expressions": [
+        "把这个子活动改名"
+      ],
+      "typical_ambiguities": [
+        "缺少上下文或已有 Tool 结果；不能以自由文字宣告写入成功"
+      ],
+      "clarification_conditions": [
+        "意图不明时询问目标操作"
+      ],
+      "failure_conditions": [
+        "不支持的操作不调用 Tool"
+      ],
+      "notes": "当前无正式 update_sub_activity RPC；不能走表 DML；LedgerUnit 备注未实现",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "update_transfer",
+      "meaning_zh": "请求改写资金事实",
+      "category": "assistant",
+      "scenario": "把刚才的转账金额改掉",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": false,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "unsupported_in_v0_1",
+      "required_context": [
+        "user_message"
+      ],
+      "required_parameters": [],
+      "optional_parameters": [],
+      "parameter_schema_ref": null,
+      "possible_tools": [],
+      "permission_preconditions": "不产生业务写入；用户私有信息仍需鉴权",
+      "typical_expressions": [
+        "把刚才的转账金额改掉"
+      ],
+      "typical_ambiguities": [
+        "缺少上下文或已有 Tool 结果；不能以自由文字宣告写入成功"
+      ],
+      "clarification_conditions": [
+        "意图不明时询问目标操作"
+      ],
+      "failure_conditions": [
+        "不支持的操作不调用 Tool"
+      ],
+      "notes": "真实 Transfer 不可变",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "manage_attachment",
+      "meaning_zh": "请求上传或删除图片附件",
+      "category": "assistant",
+      "scenario": "给这笔账添加发票照片",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": false,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "unsupported_in_v0_1",
+      "required_context": [
+        "user_message"
+      ],
+      "required_parameters": [],
+      "optional_parameters": [],
+      "parameter_schema_ref": null,
+      "possible_tools": [],
+      "permission_preconditions": "不产生业务写入；用户私有信息仍需鉴权",
+      "typical_expressions": [
+        "给这笔账添加发票照片"
+      ],
+      "typical_ambiguities": [
+        "缺少上下文或已有 Tool 结果；不能以自由文字宣告写入成功"
+      ],
+      "clarification_conditions": [
+        "意图不明时询问目标操作"
+      ],
+      "failure_conditions": [
+        "不支持的操作不调用 Tool"
+      ],
+      "notes": "业务已有图片附件；v0.1 模型不操作文件，引导现有客户端附件流程",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "manage_account",
+      "meaning_zh": "账户登录与个人资料",
+      "category": "assistant",
+      "scenario": "修改我的密码",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": false,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "unsupported_in_v0_1",
+      "required_context": [
+        "user_message"
+      ],
+      "required_parameters": [],
+      "optional_parameters": [],
+      "parameter_schema_ref": null,
+      "possible_tools": [],
+      "permission_preconditions": "不产生业务写入；用户私有信息仍需鉴权",
+      "typical_expressions": [
+        "修改我的密码"
+      ],
+      "typical_ambiguities": [
+        "缺少上下文或已有 Tool 结果；不能以自由文字宣告写入成功"
+      ],
+      "clarification_conditions": [
+        "意图不明时询问目标操作"
+      ],
+      "failure_conditions": [
+        "不支持的操作不调用 Tool"
+      ],
+      "notes": "现有 Auth/Profile 客户端处理；不把凭据送入模型",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "clarify_reference",
+      "meaning_zh": "澄清指代",
+      "category": "assistant",
+      "scenario": "把那个处理一下",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": false,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "assistant_control",
+      "required_context": [
+        "user_message"
+      ],
+      "required_parameters": [],
+      "optional_parameters": [],
+      "parameter_schema_ref": null,
+      "possible_tools": [],
+      "permission_preconditions": "不产生业务写入；用户私有信息仍需鉴权",
+      "typical_expressions": [
+        "把那个处理一下"
+      ],
+      "typical_ambiguities": [
+        "缺少上下文或已有 Tool 结果；不能以自由文字宣告写入成功"
+      ],
+      "clarification_conditions": [
+        "意图不明时询问目标操作"
+      ],
+      "failure_conditions": [
+        "不支持的操作不调用 Tool"
+      ],
+      "notes": "返回 clarification；不能假定处理等于删除",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "unknown",
+      "meaning_zh": "未识别意图",
+      "category": "assistant",
+      "scenario": "嗯那个",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": false,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "assistant_control",
+      "required_context": [
+        "user_message"
+      ],
+      "required_parameters": [],
+      "optional_parameters": [],
+      "parameter_schema_ref": null,
+      "possible_tools": [],
+      "permission_preconditions": "不产生业务写入；用户私有信息仍需鉴权",
+      "typical_expressions": [
+        "嗯那个"
+      ],
+      "typical_ambiguities": [
+        "缺少上下文或已有 Tool 结果；不能以自由文字宣告写入成功"
+      ],
+      "clarification_conditions": [
+        "意图不明时询问目标操作"
+      ],
+      "failure_conditions": [
+        "不支持的操作不调用 Tool"
+      ],
+      "notes": "返回 clarification",
+      "ai_enablement": "proposed_only"
+    },
+    {
+      "intent_id": "unsupported_request",
+      "meaning_zh": "超出能力范围",
+      "category": "assistant",
+      "scenario": "自动银行转账并完成所有账本",
+      "read_only": true,
+      "may_modify_data": false,
+      "financial_sensitive": false,
+      "confirmation_required": false,
+      "confirmation_policy": "not_required",
+      "status": "unsupported_in_v0_1",
+      "required_context": [
+        "user_message"
+      ],
+      "required_parameters": [],
+      "optional_parameters": [],
+      "parameter_schema_ref": null,
+      "possible_tools": [],
+      "permission_preconditions": "不产生业务写入；用户私有信息仍需鉴权",
+      "typical_expressions": [
+        "自动银行转账并完成所有账本"
+      ],
+      "typical_ambiguities": [
+        "缺少上下文或已有 Tool 结果；不能以自由文字宣告写入成功"
+      ],
+      "clarification_conditions": [
+        "意图不明时询问目标操作"
+      ],
+      "failure_conditions": [
+        "不支持的操作不调用 Tool"
+      ],
+      "notes": "返回 unsupported；不伪造成功",
+      "ai_enablement": "proposed_only"
+    }
+  ]
+}

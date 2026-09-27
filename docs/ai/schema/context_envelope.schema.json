@@ -1,0 +1,2170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shared-ledger.invalid/ai/v0.1/context_envelope.schema.json",
+  "title": "ContextEnvelope v0.1（Gateway 归一后模型输入）",
+  "type": "object",
+  "properties": {
+    "contract_version": {
+      "const": "0.1"
+    },
+    "request_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "user_message": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8000
+    },
+    "client_context": {
+      "type": "object",
+      "properties": {
+        "platform": {
+          "type": "string",
+          "enum": [
+            "android",
+            "wechat_mini_program"
+          ]
+        },
+        "app_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "locale": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "timezone": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "sent_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "platform",
+        "app_version",
+        "locale",
+        "timezone",
+        "sent_at"
+      ],
+      "additionalProperties": false
+    },
+    "ui_context": {
+      "type": "object",
+      "properties": {
+        "route": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "page_type": {
+          "type": "string",
+          "enum": [
+            "auth",
+            "home",
+            "personal_info",
+            "join_activity",
+            "create_activity",
+            "normal_activity",
+            "large_activity",
+            "create_sub_activity",
+            "ledger_unit",
+            "expense_form",
+            "expense_detail",
+            "transfer",
+            "transfer_detail",
+            "fund_records",
+            "prepayment",
+            "final_settlement",
+            "activity_management",
+            "unknown"
+          ]
+        },
+        "screen_instance_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "activity_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ledger_unit_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selected_entity": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "activity",
+                    "ledger_unit",
+                    "participant",
+                    "expense",
+                    "transfer",
+                    "prepayment_account",
+                    "prepayment_usage",
+                    "dispute",
+                    "attachment",
+                    "user"
+                  ]
+                },
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "activity_id": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "type",
+                "id",
+                "activity_id"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "form_mode": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "create",
+                "edit",
+                "refund",
+                "transfer",
+                "receive",
+                "fund",
+                "return"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "focused_field": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "route",
+        "page_type",
+        "screen_instance_id",
+        "activity_id",
+        "ledger_unit_id",
+        "selected_entity",
+        "form_mode",
+        "focused_field"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "page_type": {
+                "enum": [
+                  "normal_activity",
+                  "large_activity",
+                  "create_sub_activity",
+                  "ledger_unit",
+                  "expense_form",
+                  "transfer",
+                  "transfer_detail",
+                  "fund_records",
+                  "prepayment",
+                  "final_settlement",
+                  "activity_management"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "activity_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "page_type": {
+                "const": "ledger_unit"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "ledger_unit_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "page_type": {
+                "const": "expense_form"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "form_mode": {
+                "type": "string",
+                "enum": [
+                  "create",
+                  "edit",
+                  "refund"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "page_type": {
+                "const": "transfer"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "form_mode": {
+                "type": "string",
+                "enum": [
+                  "transfer",
+                  "receive"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "page_type": {
+                "const": "prepayment"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "form_mode": {
+                "type": "string",
+                "enum": [
+                  "fund",
+                  "return"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "page_type": {
+                "const": "expense_detail"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "selected_entity": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "expense"
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "activity_id": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "id",
+                  "activity_id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "page_type": {
+                "const": "transfer_detail"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "selected_entity": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "transfer"
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "activity_id": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "id",
+                  "activity_id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "page_type": {
+                "const": "final_settlement"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "ledger_unit_id": {
+                "const": null
+              }
+            }
+          }
+        }
+      ]
+    },
+    "user_context": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "claimed_participant_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "role_hint": {
+          "type": "string",
+          "enum": [
+            "creator",
+            "member",
+            "unknown",
+            "unauthenticated"
+          ]
+        }
+      },
+      "required": [
+        "user_id",
+        "claimed_participant_id",
+        "role_hint"
+      ],
+      "additionalProperties": false
+    },
+    "page_state": {
+      "type": "object",
+      "properties": {
+        "load_state": {
+          "type": "string",
+          "enum": [
+            "loading",
+            "ready",
+            "error",
+            "stale"
+          ]
+        },
+        "fetched_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "financial_version_hint": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "entity_version_hint": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "filters": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "maxLength": 4000
+            },
+            "from_time": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "to_time": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "kind": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "currency": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$"
+            },
+            "include_deleted": {
+              "type": "boolean"
+            },
+            "sort": {
+              "type": "string",
+              "enum": [
+                "occurred_at_desc",
+                "occurred_at_asc"
+              ]
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "visible_entities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "activity",
+                  "ledger_unit",
+                  "participant",
+                  "expense",
+                  "transfer",
+                  "prepayment_account",
+                  "prepayment_usage",
+                  "dispute",
+                  "attachment",
+                  "user"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "activity_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "activity_id"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 100
+        },
+        "draft": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "draft_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "fields": {
+                  "type": "object",
+                  "properties": {
+                    "ledger_unit_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "title": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1000
+                    },
+                    "original_amount": {
+                      "type": "string",
+                      "pattern": "^-?(0|[1-9][0-9]{0,15})(\\.[0-9]{1,4})?$",
+                      "not": {
+                        "pattern": "^-?0(\\.0+)?$"
+                      }
+                    },
+                    "original_currency": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{3}$"
+                    },
+                    "split_method": {
+                      "type": "string",
+                      "enum": [
+                        "aa",
+                        "manual"
+                      ]
+                    },
+                    "payments": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "participant_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "amount": {
+                            "type": "string",
+                            "pattern": "^-?(0|[1-9][0-9]{0,15})(\\.[0-9]{1,4})?$"
+                          }
+                        },
+                        "required": [
+                          "participant_id",
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1,
+                      "maxItems": 100
+                    },
+                    "manual_splits": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "participant_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "amount": {
+                            "type": "string",
+                            "pattern": "^-?(0|[1-9][0-9]{0,15})(\\.[0-9]{1,4})?$"
+                          }
+                        },
+                        "required": [
+                          "participant_id",
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 0,
+                      "maxItems": 100
+                    },
+                    "aa_participant_ids": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "minItems": 0,
+                      "maxItems": 100,
+                      "uniqueItems": true
+                    },
+                    "occurred_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "note": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "maxLength": 4000
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "original_expense_id": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "icon_key": {
+                      "type": "string",
+                      "enum": [
+                        "money",
+                        "dining",
+                        "shopping",
+                        "transport",
+                        "hotel",
+                        "ticket",
+                        "fuel",
+                        "entertainment",
+                        "medical",
+                        "gift",
+                        "grocery",
+                        "flight"
+                      ]
+                    },
+                    "activity_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "expense_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1000
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "normal",
+                        "large"
+                      ]
+                    },
+                    "base_currency": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{3}$"
+                    },
+                    "multi_currency_enabled": {
+                      "type": "boolean"
+                    },
+                    "join_code": {
+                      "type": "string",
+                      "maxLength": 20
+                    },
+                    "participant_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "user_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "from_participant_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "to_participant_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "owner_participant_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "custodian_participant_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^-?(0|[1-9][0-9]{0,15})(\\.[0-9]{1,4})?$"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{3}$"
+                    },
+                    "repayment_mode": {
+                      "type": "string",
+                      "enum": [
+                        "FIFO",
+                        "TARGETED"
+                      ]
+                    },
+                    "target_expense_ids": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "minItems": 0,
+                      "maxItems": 100
+                    },
+                    "settlement_mode": {
+                      "type": "string",
+                      "enum": [
+                        "base_unified",
+                        "original_currency"
+                      ]
+                    },
+                    "suggestion_id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1000
+                    },
+                    "on_behalf_of_participant_id": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "void_reason": {
+                      "type": "string",
+                      "maxLength": 4000
+                    }
+                  },
+                  "required": [],
+                  "additionalProperties": false
+                },
+                "field_sources": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "field": {
+                        "type": "string",
+                        "enum": [
+                          "ledger_unit_id",
+                          "title",
+                          "original_amount",
+                          "original_currency",
+                          "split_method",
+                          "payments",
+                          "manual_splits",
+                          "aa_participant_ids",
+                          "occurred_at",
+                          "note",
+                          "original_expense_id",
+                          "icon_key",
+                          "activity_id",
+                          "expense_id",
+                          "name",
+                          "type",
+                          "base_currency",
+                          "multi_currency_enabled",
+                          "join_code",
+                          "participant_id",
+                          "user_id",
+                          "from_participant_id",
+                          "to_participant_id",
+                          "owner_participant_id",
+                          "custodian_participant_id",
+                          "amount",
+                          "currency",
+                          "repayment_mode",
+                          "target_expense_ids",
+                          "settlement_mode",
+                          "suggestion_id",
+                          "on_behalf_of_participant_id",
+                          "void_reason"
+                        ]
+                      },
+                      "source": {
+                        "type": "string",
+                        "enum": [
+                          "user_input",
+                          "user_selected",
+                          "ui_default",
+                          "conversation_confirmed",
+                          "persisted_entity"
+                        ]
+                      },
+                      "turn_id": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1000
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "field",
+                      "source",
+                      "turn_id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "minItems": 0,
+                  "maxItems": 100
+                }
+              },
+              "required": [
+                "draft_id",
+                "revision",
+                "fields",
+                "field_sources"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "write_state": {
+          "type": "string",
+          "enum": [
+            "idle",
+            "pending",
+            "succeeded",
+            "failed",
+            "unknown",
+            "committed_refresh_failed"
+          ]
+        }
+      },
+      "required": [
+        "load_state",
+        "fetched_at",
+        "financial_version_hint",
+        "entity_version_hint",
+        "filters",
+        "visible_entities",
+        "draft",
+        "write_state"
+      ],
+      "additionalProperties": false
+    },
+    "recent_actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "action_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "intent_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "entity": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "activity",
+                      "ledger_unit",
+                      "participant",
+                      "expense",
+                      "transfer",
+                      "prepayment_account",
+                      "prepayment_usage",
+                      "dispute",
+                      "attachment",
+                      "user"
+                    ]
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "activity_id": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "id",
+                  "activity_id"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "activity_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "succeeded",
+              "failed",
+              "unknown",
+              "committed_refresh_failed"
+            ]
+          },
+          "result_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "financial_version_hint": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]*)$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "action_id",
+          "intent_id",
+          "entity",
+          "activity_id",
+          "occurred_at",
+          "status",
+          "result_id",
+          "financial_version_hint"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 20
+    },
+    "conversation_context": {
+      "type": "object",
+      "properties": {
+        "conversation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "turn_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "active_activity_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "turn_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "user",
+                  "assistant"
+                ]
+              },
+              "content": {
+                "type": "string",
+                "maxLength": 4000
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "turn_id",
+              "role",
+              "content",
+              "created_at"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 20
+        },
+        "confirmed_bindings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "mention": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "entity": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "activity",
+                      "ledger_unit",
+                      "participant",
+                      "expense",
+                      "transfer",
+                      "prepayment_account",
+                      "prepayment_usage",
+                      "dispute",
+                      "attachment",
+                      "user"
+                    ]
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "activity_id": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "id",
+                  "activity_id"
+                ],
+                "additionalProperties": false
+              },
+              "confirmed_in_turn": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              }
+            },
+            "required": [
+              "mention",
+              "entity",
+              "confirmed_in_turn"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 100
+        },
+        "pending_clarification": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "intent_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "missing_fields": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  },
+                  "minItems": 0,
+                  "maxItems": 100
+                },
+                "source_turn_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                }
+              },
+              "required": [
+                "intent_id",
+                "missing_fields",
+                "source_turn_id"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "conversation_id",
+        "turn_id",
+        "active_activity_id",
+        "messages",
+        "confirmed_bindings",
+        "pending_clarification"
+      ],
+      "additionalProperties": false
+    },
+    "server_context": {
+      "type": "object",
+      "properties": {
+        "authenticated_user_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "baseline_commit": {
+          "const": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+        },
+        "enabled_tools": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "find_activities",
+              "get_activity_context",
+              "create_activity",
+              "join_activity",
+              "update_activity",
+              "archive_activity",
+              "unarchive_activity",
+              "delete_activity",
+              "remove_member",
+              "transfer_creator",
+              "find_participants",
+              "add_participant",
+              "remove_participant",
+              "claim_participant",
+              "unclaim_participant",
+              "get_ledger_unit",
+              "create_sub_activity",
+              "delete_sub_activity",
+              "restore_sub_activity",
+              "get_expense",
+              "find_expenses",
+              "create_expense",
+              "update_expense",
+              "update_expense_presentation",
+              "delete_expense",
+              "get_transfer",
+              "find_fund_records",
+              "get_settlement_options",
+              "preview_settlement_transfer",
+              "create_settlement_transfer",
+              "void_transfer",
+              "get_prepayment_accounts",
+              "preview_prepayment",
+              "create_prepayment",
+              "create_prepayment_return",
+              "get_debt",
+              "get_participant_balance",
+              "get_final_settlement",
+              "execute_final_settlement",
+              "add_transfer_dispute",
+              "resolve_transfer_dispute",
+              "list_attachments",
+              "get_currency_context",
+              "lookup_business_rule"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 100
+        },
+        "verified_result_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "minItems": 0,
+          "maxItems": 100
+        },
+        "confirmation_policy": {
+          "const": "proposed_all_writes"
+        },
+        "tool_results": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "find_activities"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/find_activities_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "get_activity_context"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/get_activity_context_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "create_activity"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/create_activity_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "join_activity"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/join_activity_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "update_activity"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/update_activity_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "archive_activity"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/archive_activity_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "unarchive_activity"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/unarchive_activity_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "delete_activity"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/delete_activity_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "remove_member"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/remove_member_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "transfer_creator"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/transfer_creator_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "find_participants"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/find_participants_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "add_participant"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/add_participant_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "remove_participant"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/remove_participant_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "claim_participant"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/claim_participant_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "unclaim_participant"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/unclaim_participant_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "get_ledger_unit"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/get_ledger_unit_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "create_sub_activity"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/create_sub_activity_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "delete_sub_activity"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/delete_sub_activity_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "restore_sub_activity"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/restore_sub_activity_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "get_expense"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/get_expense_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "find_expenses"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/find_expenses_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "create_expense"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/create_expense_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "update_expense"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/update_expense_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "update_expense_presentation"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/update_expense_presentation_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "delete_expense"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/delete_expense_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "get_transfer"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/get_transfer_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "find_fund_records"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/find_fund_records_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "get_settlement_options"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/get_settlement_options_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "preview_settlement_transfer"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/preview_settlement_transfer_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "create_settlement_transfer"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/create_settlement_transfer_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "void_transfer"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/void_transfer_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "get_prepayment_accounts"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/get_prepayment_accounts_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "preview_prepayment"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/preview_prepayment_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "create_prepayment"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/create_prepayment_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "create_prepayment_return"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/create_prepayment_return_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "get_debt"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/get_debt_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "get_participant_balance"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/get_participant_balance_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "get_final_settlement"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/get_final_settlement_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "execute_final_settlement"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/execute_final_settlement_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "add_transfer_dispute"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/add_transfer_dispute_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "resolve_transfer_dispute"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/resolve_transfer_dispute_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "list_attachments"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/list_attachments_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "get_currency_context"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/get_currency_context_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "const": "lookup_business_rule"
+                  },
+                  "result": {
+                    "$ref": "tool_catalog.json#/$defs/lookup_business_rule_output"
+                  }
+                },
+                "required": [
+                  "tool",
+                  "result"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 20
+        }
+      },
+      "required": [
+        "authenticated_user_id",
+        "generated_at",
+        "baseline_commit",
+        "enabled_tools",
+        "verified_result_ids",
+        "confirmation_policy",
+        "tool_results"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "contract_version",
+    "request_id",
+    "user_message",
+    "client_context",
+    "ui_context",
+    "user_context",
+    "page_state",
+    "recent_actions",
+    "conversation_context",
+    "server_context"
+  ],
+  "additionalProperties": false,
+  "$comment": "server_context 仅 Gateway 写入；客户端传入必须剥离重建。所有 client 字段是不可信线索；Schema 不能代替身份/范围/时效/金额校验。",
+  "examples": [
+    {
+      "contract_version": "0.1",
+      "request_id": "00000000-0000-4000-8000-000000000001",
+      "user_message": "晚饭300，张三李四一起。",
+      "client_context": {
+        "platform": "android",
+        "app_version": "draft",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-27T10:00:00+08:00"
+      },
+      "ui_context": {
+        "route": "new-expense/00000000-0000-4000-8000-000000000002?ledgerUnitId=00000000-0000-4000-8000-000000000003&mode=create",
+        "page_type": "expense_form",
+        "screen_instance_id": "screen-1",
+        "activity_id": "00000000-0000-4000-8000-000000000002",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000003",
+        "selected_entity": null,
+        "form_mode": "create",
+        "focused_field": "title"
+      },
+      "user_context": {
+        "user_id": "00000000-0000-4000-8000-000000000004",
+        "claimed_participant_id": null,
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": "2026-09-27T09:59:00+08:00",
+        "financial_version_hint": "12",
+        "entity_version_hint": null,
+        "filters": {},
+        "visible_entities": [],
+        "draft": {
+          "draft_id": "draft-1",
+          "revision": 1,
+          "fields": {
+            "split_method": "aa",
+            "aa_participant_ids": [
+              "00000000-0000-4000-8000-000000000005",
+              "00000000-0000-4000-8000-000000000006"
+            ]
+          },
+          "field_sources": [
+            {
+              "field": "split_method",
+              "source": "ui_default",
+              "turn_id": null
+            },
+            {
+              "field": "aa_participant_ids",
+              "source": "ui_default",
+              "turn_id": null
+            }
+          ]
+        },
+        "write_state": "idle"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "conversation-1",
+        "turn_id": "turn-1",
+        "active_activity_id": "00000000-0000-4000-8000-000000000002",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": "00000000-0000-4000-8000-000000000004",
+        "generated_at": "2026-09-27T10:00:01+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "find_participants",
+          "get_activity_context",
+          "create_expense"
+        ],
+        "verified_result_ids": [],
+        "tool_results": [],
+        "confirmation_policy": "proposed_all_writes"
+      }
+    }
+  ]
+}
