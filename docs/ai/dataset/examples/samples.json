@@ -1,0 +1,1833 @@
+[
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_001",
+    "scenario_id": "scenario_create_expense_aa",
+    "scenario_family_id": "family_create_expense_aa",
+    "split_group_id": "split_create_expense_aa",
+    "dataset_version": "0.1",
+    "example_only": true,
+    "split": "unassigned",
+    "task": {
+      "primary": "proposal_generation",
+      "secondary": [
+        "intent_classification",
+        "parameter_extraction",
+        "interaction_context_reasoning"
+      ]
+    },
+    "difficulty": "easy",
+    "challenge_tags": [
+      "colloquial"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": [
+        "create_expense"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "Dataset Schema v0.1 example",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_create_expense_aa#/ground_truth"
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "晚饭300，我付的，我们仨AA"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "00000000-0000-4000-8000-02a6ef4d547b",
+      "user_message": "晚饭300，我付的，我们仨AA",
+      "client_context": {
+        "platform": "android",
+        "app_version": "dataset-example",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-27T20:00:00+08:00"
+      },
+      "ui_context": {
+        "route": "expense_form/example",
+        "page_type": "expense_form",
+        "screen_instance_id": "screen-example",
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "selected_entity": null,
+        "form_mode": "create",
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": "00000000-0000-4000-8000-000000000102",
+        "claimed_participant_id": "00000000-0000-4000-8000-000000000103",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": "2026-09-27T19:59:00+08:00",
+        "financial_version_hint": "7",
+        "entity_version_hint": "3",
+        "filters": {},
+        "visible_entities": [],
+        "draft": {
+          "draft_id": "draft-create-1",
+          "revision": 1,
+          "fields": {
+            "title": "晚饭"
+          },
+          "field_sources": [
+            {
+              "field": "title",
+              "source": "user_input",
+              "turn_id": "turn-current"
+            }
+          ]
+        },
+        "write_state": "idle"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "conversation-example",
+        "turn_id": "turn-current",
+        "active_activity_id": "00000000-0000-4000-8000-000000000100",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": "00000000-0000-4000-8000-000000000102",
+        "generated_at": "2026-09-27T20:00:01+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "create_expense"
+        ],
+        "verified_result_ids": [],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": []
+      }
+    },
+    "expected": {
+      "output_type": "proposal",
+      "model_output": {
+        "type": "proposal",
+        "intent_id": "create_expense",
+        "operation": {
+          "tool": "create_expense",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+            "title": "晚饭",
+            "original_amount": "300",
+            "original_currency": "CNY",
+            "split_method": "aa",
+            "payments": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "300"
+              }
+            ],
+            "manual_splits": [],
+            "aa_participant_ids": [
+              "00000000-0000-4000-8000-000000000103",
+              "00000000-0000-4000-8000-000000000104",
+              "00000000-0000-4000-8000-000000000105"
+            ],
+            "occurred_at": "2026-09-27T18:30:00+08:00",
+            "note": null,
+            "original_expense_id": null,
+            "icon_key": "dining"
+          }
+        },
+        "preview": {
+          "kind": "create",
+          "summary": "创建一笔300 CNY的晚饭，三人AA。",
+          "diff": [
+            {
+              "field": "title",
+              "after": "晚饭"
+            },
+            {
+              "field": "original_amount",
+              "after": "300"
+            },
+            {
+              "field": "aa_participant_ids",
+              "after": [
+                "00000000-0000-4000-8000-000000000103",
+                "00000000-0000-4000-8000-000000000104",
+                "00000000-0000-4000-8000-000000000105"
+              ]
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 1,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": true,
+          "reason": "confirmation_required"
+        }
+      },
+      "ground_truth_pointer": "scenario_create_expense_aa#/ground_truth",
+      "execution": {
+        "execution_allowed": true,
+        "confirmation_level": 1,
+        "confirmation_required": true,
+        "final_authorization": "trusted_ui_event_required",
+        "successful_execution_label_allowed": true
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": [],
+      "expected_diff": [
+        {
+          "field": "title",
+          "after": "晚饭"
+        },
+        {
+          "field": "original_amount",
+          "after": "300"
+        },
+        {
+          "field": "aa_participant_ids",
+          "after": [
+            "00000000-0000-4000-8000-000000000103",
+            "00000000-0000-4000-8000-000000000104",
+            "00000000-0000-4000-8000-000000000105"
+          ]
+        }
+      ]
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:sample_001",
+      "dedup_key": "sample:sample_001",
+      "semantic_group_key": "semantic:create_expense_aa",
+      "lifecycle_status": "validated",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "example_only，不进入正式训练集。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_002",
+    "scenario_id": "scenario_ui_expense_detail",
+    "scenario_family_id": "family_same_sentence_ui",
+    "split_group_id": "split_same_sentence_ui",
+    "dataset_version": "0.1",
+    "example_only": true,
+    "split": "unassigned",
+    "task": {
+      "primary": "ui_context_reasoning",
+      "secondary": [
+        "entity_resolution",
+        "result_explanation"
+      ]
+    },
+    "difficulty": "normal",
+    "challenge_tags": [
+      "pronoun",
+      "ui_reference"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "explain_expense"
+      ],
+      "tool_ids": [
+        "get_expense"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "Dataset Schema v0.1 example",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_ui_expense_detail#/ground_truth"
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "这个为什么是120？"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "00000000-0000-4000-8000-5035b99368a5",
+      "user_message": "这个为什么是120？",
+      "client_context": {
+        "platform": "android",
+        "app_version": "dataset-example",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-27T20:00:00+08:00"
+      },
+      "ui_context": {
+        "route": "expense_detail/example",
+        "page_type": "expense_detail",
+        "screen_instance_id": "screen-example",
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": null,
+        "selected_entity": {
+          "type": "expense",
+          "id": "00000000-0000-4000-8000-000000000106",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": "00000000-0000-4000-8000-000000000102",
+        "claimed_participant_id": "00000000-0000-4000-8000-000000000103",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": "2026-09-27T19:59:00+08:00",
+        "financial_version_hint": "7",
+        "entity_version_hint": "3",
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "idle"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "conversation-example",
+        "turn_id": "turn-current",
+        "active_activity_id": "00000000-0000-4000-8000-000000000100",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": "00000000-0000-4000-8000-000000000102",
+        "generated_at": "2026-09-27T20:00:01+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "get_expense"
+        ],
+        "verified_result_ids": [
+          "expense-result-1"
+        ],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": []
+      }
+    },
+    "expected": {
+      "output_type": "answer",
+      "model_output": {
+        "type": "answer",
+        "content": "当前选中的晚饭账单原币金额是120 CNY；这是服务端读取结果。",
+        "evidence_result_ids": [
+          "expense-result-1"
+        ]
+      },
+      "ground_truth_pointer": "scenario_ui_expense_detail#/ground_truth",
+      "execution": {
+        "execution_allowed": false,
+        "confirmation_level": 0,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      },
+      "entity_resolution": [
+        {
+          "mention": "这个",
+          "candidate_ids": [
+            "00000000-0000-4000-8000-000000000106"
+          ],
+          "expected_entity_id": "00000000-0000-4000-8000-000000000106",
+          "resolution_status": "resolved",
+          "evidence_source": "selected_entity"
+        }
+      ],
+      "evidence_result_ids": [
+        "expense-result-1"
+      ]
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:sample_002",
+      "dedup_key": "sample:sample_002",
+      "semantic_group_key": "semantic:same_sentence_ui",
+      "lifecycle_status": "validated",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "example_only，不进入正式训练集。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_003",
+    "scenario_id": "scenario_ui_activity_ambiguous",
+    "scenario_family_id": "family_same_sentence_ui",
+    "split_group_id": "split_same_sentence_ui",
+    "dataset_version": "0.1",
+    "example_only": true,
+    "split": "unassigned",
+    "task": {
+      "primary": "clarification",
+      "secondary": [
+        "ui_context_reasoning",
+        "entity_resolution"
+      ]
+    },
+    "difficulty": "hard",
+    "challenge_tags": [
+      "pronoun",
+      "ui_reference",
+      "multiple_candidates"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "query_expense"
+      ],
+      "tool_ids": [
+        "find_expenses"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "Dataset Schema v0.1 example",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_ui_activity_ambiguous#/ground_truth"
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "这个为什么是120？"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "00000000-0000-4000-8000-30f2618c4579",
+      "user_message": "这个为什么是120？",
+      "client_context": {
+        "platform": "android",
+        "app_version": "dataset-example",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-27T20:00:00+08:00"
+      },
+      "ui_context": {
+        "route": "normal_activity/example",
+        "page_type": "normal_activity",
+        "screen_instance_id": "screen-example",
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": null,
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": "00000000-0000-4000-8000-000000000102",
+        "claimed_participant_id": "00000000-0000-4000-8000-000000000103",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": "2026-09-27T19:59:00+08:00",
+        "financial_version_hint": "7",
+        "entity_version_hint": "3",
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "idle"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "conversation-example",
+        "turn_id": "turn-current",
+        "active_activity_id": "00000000-0000-4000-8000-000000000100",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": "00000000-0000-4000-8000-000000000102",
+        "generated_at": "2026-09-27T20:00:01+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "find_expenses"
+        ],
+        "verified_result_ids": [],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": []
+      }
+    },
+    "expected": {
+      "output_type": "clarification",
+      "model_output": {
+        "type": "clarification",
+        "intent_id": "query_expense",
+        "reason": "unresolved_reference",
+        "missing_fields": [],
+        "question": "你指的是活动里的哪一笔消费？",
+        "candidates": []
+      },
+      "ground_truth_pointer": "scenario_ui_activity_ambiguous#/ground_truth",
+      "execution": {
+        "execution_allowed": false,
+        "confirmation_level": 0,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": [],
+      "clarification_annotation": {
+        "reason": "unresolved_reference",
+        "missing_fields": [],
+        "candidate_entity_ids": [],
+        "question": "你指的是活动里的哪一笔消费？"
+      }
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:sample_003",
+      "dedup_key": "sample:sample_003",
+      "semantic_group_key": "semantic:same_sentence_ui",
+      "lifecycle_status": "validated",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "example_only，不进入正式训练集。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_004",
+    "scenario_id": "scenario_same_name_missing_payer",
+    "scenario_family_id": "family_same_name_missing_payer",
+    "split_group_id": "split_same_name_missing_payer",
+    "dataset_version": "0.1",
+    "example_only": true,
+    "split": "unassigned",
+    "task": {
+      "primary": "clarification",
+      "secondary": [
+        "entity_resolution",
+        "parameter_extraction"
+      ]
+    },
+    "difficulty": "hard",
+    "challenge_tags": [
+      "same_name_entity",
+      "multiple_candidates",
+      "missing_payer",
+      "colloquial"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": [
+        "find_participants",
+        "create_expense"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "Dataset Schema v0.1 example",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_same_name_missing_payer#/ground_truth"
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "300块，张伟和我AA"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "00000000-0000-4000-8000-a469dfcca59b",
+      "user_message": "300块，张伟和我AA",
+      "client_context": {
+        "platform": "android",
+        "app_version": "dataset-example",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-27T20:00:00+08:00"
+      },
+      "ui_context": {
+        "route": "expense_form/example",
+        "page_type": "expense_form",
+        "screen_instance_id": "screen-example",
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "selected_entity": null,
+        "form_mode": "create",
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": "00000000-0000-4000-8000-000000000102",
+        "claimed_participant_id": "00000000-0000-4000-8000-000000000103",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": "2026-09-27T19:59:00+08:00",
+        "financial_version_hint": "7",
+        "entity_version_hint": "3",
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "idle"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "conversation-example",
+        "turn_id": "turn-current",
+        "active_activity_id": "00000000-0000-4000-8000-000000000100",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": "00000000-0000-4000-8000-000000000102",
+        "generated_at": "2026-09-27T20:00:01+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "find_participants",
+          "create_expense"
+        ],
+        "verified_result_ids": [],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": []
+      }
+    },
+    "expected": {
+      "output_type": "clarification",
+      "model_output": {
+        "type": "clarification",
+        "intent_id": "create_expense",
+        "reason": "needs_explicit_financial_choice",
+        "missing_fields": [
+          "payments"
+        ],
+        "question": "这笔是谁付款的？另外有两位张伟，请选择参加分摊的那一位。",
+        "candidates": [
+          {
+            "label": "张伟（参与人 P002）",
+            "entity": {
+              "type": "participant",
+              "id": "00000000-0000-4000-8000-000000000104",
+              "activity_id": "00000000-0000-4000-8000-000000000100"
+            }
+          },
+          {
+            "label": "张伟（参与人 P004）",
+            "entity": {
+              "type": "participant",
+              "id": "00000000-0000-4000-8000-000000000108",
+              "activity_id": "00000000-0000-4000-8000-000000000100"
+            }
+          }
+        ]
+      },
+      "ground_truth_pointer": "scenario_same_name_missing_payer#/ground_truth",
+      "execution": {
+        "execution_allowed": false,
+        "confirmation_level": 1,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      },
+      "entity_resolution": [
+        {
+          "mention": "张伟",
+          "candidate_ids": [
+            "00000000-0000-4000-8000-000000000104",
+            "00000000-0000-4000-8000-000000000108"
+          ],
+          "expected_entity_id": null,
+          "resolution_status": "clarification_required",
+          "evidence_source": "server_candidates"
+        }
+      ],
+      "evidence_result_ids": [],
+      "clarification_annotation": {
+        "reason": "needs_explicit_financial_choice",
+        "missing_fields": [
+          "payments"
+        ],
+        "candidate_entity_ids": [
+          "00000000-0000-4000-8000-000000000104",
+          "00000000-0000-4000-8000-000000000108"
+        ],
+        "question": "这笔是谁付款的？另外有两位张伟，请选择参加分摊的那一位。"
+      }
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:sample_004",
+      "dedup_key": "sample:sample_004",
+      "semantic_group_key": "semantic:same_name_missing_payer",
+      "lifecycle_status": "validated",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "example_only，不进入正式训练集。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_005",
+    "scenario_id": "scenario_d4_update_preview",
+    "scenario_family_id": "family_d4_update_preview",
+    "split_group_id": "split_d4_update_preview",
+    "dataset_version": "0.1",
+    "example_only": true,
+    "split": "unassigned",
+    "task": {
+      "primary": "interaction_context_reasoning",
+      "secondary": [
+        "conversation_context_reasoning",
+        "entity_resolution",
+        "parameter_extraction",
+        "proposal_generation"
+      ]
+    },
+    "difficulty": "hard",
+    "challenge_tags": [
+      "recent_action_reference",
+      "multi_turn",
+      "ellipsis",
+      "d4_preview_only"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "update_expense"
+      ],
+      "tool_ids": [
+        "update_expense"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "Dataset Schema v0.1 example",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_d4_update_preview#/ground_truth"
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [
+        {
+          "turn_id": "turn-1",
+          "role": "user",
+          "content": "记一笔晚饭300，我们三个人AA"
+        },
+        {
+          "turn_id": "turn-2",
+          "role": "assistant",
+          "content": "已形成待确认方案。"
+        }
+      ],
+      "context_turn_count": 2,
+      "user_message": "刚才那个改成280"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "00000000-0000-4000-8000-fbc5af18d6c9",
+      "user_message": "刚才那个改成280",
+      "client_context": {
+        "platform": "android",
+        "app_version": "dataset-example",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-27T20:00:00+08:00"
+      },
+      "ui_context": {
+        "route": "expense_detail/example",
+        "page_type": "expense_detail",
+        "screen_instance_id": "screen-example",
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": null,
+        "selected_entity": {
+          "type": "expense",
+          "id": "00000000-0000-4000-8000-000000000106",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": "00000000-0000-4000-8000-000000000102",
+        "claimed_participant_id": "00000000-0000-4000-8000-000000000103",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": "2026-09-27T19:59:00+08:00",
+        "financial_version_hint": "7",
+        "entity_version_hint": "3",
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "idle"
+      },
+      "recent_actions": [
+        {
+          "action_id": "action-1",
+          "intent_id": "create_expense",
+          "entity": {
+            "type": "expense",
+            "id": "00000000-0000-4000-8000-000000000106",
+            "activity_id": "00000000-0000-4000-8000-000000000100"
+          },
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "occurred_at": "2026-09-27T19:55:00+08:00",
+          "status": "succeeded",
+          "result_id": "expense-result-2",
+          "financial_version_hint": "7"
+        }
+      ],
+      "conversation_context": {
+        "conversation_id": "conversation-example",
+        "turn_id": "turn-current",
+        "active_activity_id": "00000000-0000-4000-8000-000000000100",
+        "messages": [
+          {
+            "turn_id": "turn-1",
+            "role": "user",
+            "content": "记一笔晚饭300，我们三个人AA",
+            "created_at": "2026-09-27T19:58:00+08:00"
+          },
+          {
+            "turn_id": "turn-2",
+            "role": "assistant",
+            "content": "已形成待确认方案。",
+            "created_at": "2026-09-27T19:58:00+08:00"
+          }
+        ],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": "00000000-0000-4000-8000-000000000102",
+        "generated_at": "2026-09-27T20:00:01+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "get_expense"
+        ],
+        "verified_result_ids": [
+          "expense-result-2"
+        ],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": []
+      }
+    },
+    "expected": {
+      "output_type": "proposal",
+      "model_output": {
+        "type": "proposal",
+        "intent_id": "update_expense",
+        "operation": {
+          "tool": "update_expense",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+            "title": "晚饭",
+            "original_amount": "280",
+            "original_currency": "CNY",
+            "split_method": "aa",
+            "payments": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "300"
+              }
+            ],
+            "manual_splits": [],
+            "aa_participant_ids": [
+              "00000000-0000-4000-8000-000000000103",
+              "00000000-0000-4000-8000-000000000104",
+              "00000000-0000-4000-8000-000000000105"
+            ],
+            "occurred_at": "2026-09-27T18:30:00+08:00",
+            "note": null,
+            "original_expense_id": null,
+            "icon_key": "dining",
+            "expense_id": "00000000-0000-4000-8000-000000000106"
+          }
+        },
+        "preview": {
+          "kind": "update",
+          "summary": "把晚饭金额从300 CNY改为280 CNY。",
+          "diff": [
+            {
+              "field": "original_amount",
+              "before": "300",
+              "after": "280"
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 1,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": false,
+          "reason": "d4_atomic_update_not_supported"
+        }
+      },
+      "ground_truth_pointer": "scenario_d4_update_preview#/ground_truth",
+      "execution": {
+        "execution_allowed": false,
+        "confirmation_level": 1,
+        "confirmation_required": true,
+        "final_authorization": "trusted_ui_event_required",
+        "successful_execution_label_allowed": false
+      },
+      "entity_resolution": [
+        {
+          "mention": "刚才那个",
+          "candidate_ids": [
+            "00000000-0000-4000-8000-000000000106"
+          ],
+          "expected_entity_id": "00000000-0000-4000-8000-000000000106",
+          "resolution_status": "resolved",
+          "evidence_source": "recent_action"
+        }
+      ],
+      "evidence_result_ids": [],
+      "expected_diff": [
+        {
+          "field": "original_amount",
+          "before": "300",
+          "after": "280"
+        }
+      ]
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:sample_005",
+      "dedup_key": "sample:sample_005",
+      "semantic_group_key": "semantic:d4_update_preview",
+      "lifecycle_status": "validated",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "example_only，不进入正式训练集。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_006",
+    "scenario_id": "scenario_gated_fifo_transfer",
+    "scenario_family_id": "family_gated_fifo_transfer",
+    "split_group_id": "split_gated_fifo_transfer",
+    "dataset_version": "0.1",
+    "example_only": true,
+    "split": "unassigned",
+    "task": {
+      "primary": "proposal_generation",
+      "secondary": [
+        "parameter_extraction",
+        "entity_resolution"
+      ]
+    },
+    "difficulty": "normal",
+    "challenge_tags": [
+      "financial_risk",
+      "gated_operation",
+      "colloquial"
+    ],
+    "scope": {
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "intent_ids": [
+        "create_settlement_transfer"
+      ],
+      "tool_ids": [
+        "create_settlement_transfer"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "Dataset Schema v0.1 example",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_gated_fifo_transfer#/ground_truth"
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "我刚给张伟转了100块，记一下"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "00000000-0000-4000-8000-2c38027cc691",
+      "user_message": "我刚给张伟转了100块，记一下",
+      "client_context": {
+        "platform": "android",
+        "app_version": "dataset-example",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-27T20:00:00+08:00"
+      },
+      "ui_context": {
+        "route": "transfer/example",
+        "page_type": "transfer",
+        "screen_instance_id": "screen-example",
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": null,
+        "selected_entity": null,
+        "form_mode": "transfer",
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": "00000000-0000-4000-8000-000000000102",
+        "claimed_participant_id": "00000000-0000-4000-8000-000000000103",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": "2026-09-27T19:59:00+08:00",
+        "financial_version_hint": "7",
+        "entity_version_hint": "3",
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "idle"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "conversation-example",
+        "turn_id": "turn-current",
+        "active_activity_id": "00000000-0000-4000-8000-000000000100",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": "00000000-0000-4000-8000-000000000102",
+        "generated_at": "2026-09-27T20:00:01+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "create_settlement_transfer"
+        ],
+        "verified_result_ids": [],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": []
+      }
+    },
+    "expected": {
+      "output_type": "proposal",
+      "model_output": {
+        "type": "proposal",
+        "intent_id": "create_settlement_transfer",
+        "operation": {
+          "tool": "create_settlement_transfer",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "from_participant_id": "00000000-0000-4000-8000-000000000104",
+            "to_participant_id": "00000000-0000-4000-8000-000000000103",
+            "currency": "CNY",
+            "amount": "100",
+            "mode": "FIFO",
+            "target_expense_ids": [],
+            "expected_financial_version": "7",
+            "occurred_at": "2026-09-27T19:00:00+08:00",
+            "on_behalf_of_participant_id": null
+          }
+        },
+        "preview": {
+          "kind": "financial",
+          "summary": "登记张伟向我实际还款100 CNY。",
+          "diff": [
+            {
+              "field": "transfer",
+              "after": {
+                "amount": "100",
+                "currency": "CNY",
+                "mode": "FIFO"
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 2,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": true,
+          "reason": "confirmation_required"
+        }
+      },
+      "ground_truth_pointer": "scenario_gated_fifo_transfer#/ground_truth",
+      "execution": {
+        "execution_allowed": true,
+        "confirmation_level": 2,
+        "confirmation_required": true,
+        "final_authorization": "trusted_ui_event_required",
+        "successful_execution_label_allowed": true
+      },
+      "entity_resolution": [
+        {
+          "mention": "张伟",
+          "candidate_ids": [
+            "00000000-0000-4000-8000-000000000104"
+          ],
+          "expected_entity_id": "00000000-0000-4000-8000-000000000104",
+          "resolution_status": "resolved",
+          "evidence_source": "server_candidates"
+        }
+      ],
+      "evidence_result_ids": [],
+      "expected_diff": [
+        {
+          "field": "transfer",
+          "after": {
+            "amount": "100",
+            "currency": "CNY",
+            "mode": "FIFO"
+          }
+        }
+      ]
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:sample_006",
+      "dedup_key": "sample:sample_006",
+      "semantic_group_key": "semantic:gated_fifo_transfer",
+      "lifecycle_status": "validated",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "example_only，不进入正式训练集。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_007",
+    "scenario_id": "scenario_deferred_delete_activity",
+    "scenario_family_id": "family_deferred_delete_activity",
+    "split_group_id": "split_deferred_delete_activity",
+    "dataset_version": "0.1",
+    "example_only": true,
+    "split": "unassigned",
+    "task": {
+      "primary": "unsupported_detection",
+      "secondary": [
+        "intent_classification",
+        "ui_context_reasoning"
+      ]
+    },
+    "difficulty": "normal",
+    "challenge_tags": [
+      "deferred_operation",
+      "unsupported",
+      "ui_reference"
+    ],
+    "scope": {
+      "ai_scope": "DEFERRED",
+      "intent_ids": [
+        "delete_activity"
+      ],
+      "tool_ids": [
+        "delete_activity"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "Dataset Schema v0.1 example",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_deferred_delete_activity#/ground_truth"
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "把这个活动删了"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "00000000-0000-4000-8000-fb9127090a2b",
+      "user_message": "把这个活动删了",
+      "client_context": {
+        "platform": "android",
+        "app_version": "dataset-example",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-27T20:00:00+08:00"
+      },
+      "ui_context": {
+        "route": "activity_management/example",
+        "page_type": "activity_management",
+        "screen_instance_id": "screen-example",
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": null,
+        "selected_entity": {
+          "type": "activity",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": "00000000-0000-4000-8000-000000000102",
+        "claimed_participant_id": "00000000-0000-4000-8000-000000000103",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": "2026-09-27T19:59:00+08:00",
+        "financial_version_hint": "7",
+        "entity_version_hint": "3",
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "idle"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "conversation-example",
+        "turn_id": "turn-current",
+        "active_activity_id": "00000000-0000-4000-8000-000000000100",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": "00000000-0000-4000-8000-000000000102",
+        "generated_at": "2026-09-27T20:00:01+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [],
+        "verified_result_ids": [],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": []
+      }
+    },
+    "expected": {
+      "output_type": "unsupported",
+      "model_output": {
+        "type": "unsupported",
+        "reason": "首期 AI 不执行 Activity 删除。",
+        "suggested_action": "请进入活动管理页面完成此操作。"
+      },
+      "ground_truth_pointer": "scenario_deferred_delete_activity#/ground_truth",
+      "execution": {
+        "execution_allowed": false,
+        "confirmation_level": 2,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": []
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:sample_007",
+      "dedup_key": "sample:sample_007",
+      "semantic_group_key": "semantic:deferred_delete_activity",
+      "lifecycle_status": "validated",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "example_only，不进入正式训练集。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_008",
+    "scenario_id": "scenario_query_debt",
+    "scenario_family_id": "family_query_debt",
+    "split_group_id": "split_query_debt",
+    "dataset_version": "0.1",
+    "example_only": true,
+    "split": "unassigned",
+    "task": {
+      "primary": "tool_call",
+      "secondary": [
+        "intent_classification"
+      ]
+    },
+    "difficulty": "easy",
+    "challenge_tags": [],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "query_debt"
+      ],
+      "tool_ids": [
+        "get_debt"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "Dataset Schema v0.1 example",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_query_debt#/ground_truth"
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "我现在欠多少？"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "00000000-0000-4000-8000-f6d8243191d6",
+      "user_message": "我现在欠多少？",
+      "client_context": {
+        "platform": "android",
+        "app_version": "dataset-example",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-27T20:00:00+08:00"
+      },
+      "ui_context": {
+        "route": "normal_activity/example",
+        "page_type": "normal_activity",
+        "screen_instance_id": "screen-example",
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": null,
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": "00000000-0000-4000-8000-000000000102",
+        "claimed_participant_id": "00000000-0000-4000-8000-000000000103",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": "2026-09-27T19:59:00+08:00",
+        "financial_version_hint": "7",
+        "entity_version_hint": "3",
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "idle"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "conversation-example",
+        "turn_id": "turn-current",
+        "active_activity_id": "00000000-0000-4000-8000-000000000100",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": "00000000-0000-4000-8000-000000000102",
+        "generated_at": "2026-09-27T20:00:01+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "get_debt"
+        ],
+        "verified_result_ids": [],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": []
+      }
+    },
+    "expected": {
+      "output_type": "tool_call",
+      "model_output": {
+        "type": "tool_call",
+        "intent_id": "query_debt",
+        "tool": "get_debt",
+        "arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "participant_id": "00000000-0000-4000-8000-000000000103"
+        }
+      },
+      "ground_truth_pointer": "scenario_query_debt#/ground_truth",
+      "execution": {
+        "execution_allowed": false,
+        "confirmation_level": 0,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": []
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:sample_008",
+      "dedup_key": "sample:sample_008",
+      "semantic_group_key": "semantic:query_debt",
+      "lifecycle_status": "validated",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "example_only，不进入正式训练集。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_009",
+    "scenario_id": "scenario_create_expense_aa",
+    "scenario_family_id": "family_create_expense_aa",
+    "split_group_id": "split_create_expense_aa",
+    "dataset_version": "0.1",
+    "example_only": true,
+    "split": "unassigned",
+    "task": {
+      "primary": "conversation_context_reasoning",
+      "secondary": [
+        "clarification",
+        "proposal_generation",
+        "parameter_extraction"
+      ]
+    },
+    "difficulty": "normal",
+    "challenge_tags": [
+      "multi_turn",
+      "ellipsis"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": [
+        "create_expense"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "Dataset Schema v0.1 example",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_create_expense_aa#/ground_truth"
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [
+        {
+          "turn_id": "turn-1",
+          "role": "user",
+          "content": "晚饭300，我们三个人AA"
+        },
+        {
+          "turn_id": "turn-2",
+          "role": "assistant",
+          "content": "这笔是谁付款的？"
+        }
+      ],
+      "context_turn_count": 2,
+      "user_message": "我付的"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "00000000-0000-4000-8000-ad50ff13ee5b",
+      "user_message": "我付的",
+      "client_context": {
+        "platform": "android",
+        "app_version": "dataset-example",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-27T20:00:00+08:00"
+      },
+      "ui_context": {
+        "route": "expense_form/example",
+        "page_type": "expense_form",
+        "screen_instance_id": "screen-example",
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "selected_entity": null,
+        "form_mode": "create",
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": "00000000-0000-4000-8000-000000000102",
+        "claimed_participant_id": "00000000-0000-4000-8000-000000000103",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": "2026-09-27T19:59:00+08:00",
+        "financial_version_hint": "7",
+        "entity_version_hint": "3",
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "idle"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "conversation-example",
+        "turn_id": "turn-3",
+        "active_activity_id": "00000000-0000-4000-8000-000000000100",
+        "messages": [
+          {
+            "turn_id": "turn-1",
+            "role": "user",
+            "content": "晚饭300，我们三个人AA",
+            "created_at": "2026-09-27T19:58:00+08:00"
+          },
+          {
+            "turn_id": "turn-2",
+            "role": "assistant",
+            "content": "这笔是谁付款的？",
+            "created_at": "2026-09-27T19:58:00+08:00"
+          }
+        ],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": "00000000-0000-4000-8000-000000000102",
+        "generated_at": "2026-09-27T20:00:01+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "create_expense"
+        ],
+        "verified_result_ids": [],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": []
+      }
+    },
+    "expected": {
+      "output_type": "proposal",
+      "model_output": {
+        "type": "proposal",
+        "intent_id": "create_expense",
+        "operation": {
+          "tool": "create_expense",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+            "title": "晚饭",
+            "original_amount": "300",
+            "original_currency": "CNY",
+            "split_method": "aa",
+            "payments": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "300"
+              }
+            ],
+            "manual_splits": [],
+            "aa_participant_ids": [
+              "00000000-0000-4000-8000-000000000103",
+              "00000000-0000-4000-8000-000000000104",
+              "00000000-0000-4000-8000-000000000105"
+            ],
+            "occurred_at": "2026-09-27T18:30:00+08:00",
+            "note": null,
+            "original_expense_id": null,
+            "icon_key": "dining"
+          }
+        },
+        "preview": {
+          "kind": "create",
+          "summary": "创建一笔300 CNY的晚饭，三人AA。",
+          "diff": [
+            {
+              "field": "title",
+              "after": "晚饭"
+            },
+            {
+              "field": "original_amount",
+              "after": "300"
+            },
+            {
+              "field": "aa_participant_ids",
+              "after": [
+                "00000000-0000-4000-8000-000000000103",
+                "00000000-0000-4000-8000-000000000104",
+                "00000000-0000-4000-8000-000000000105"
+              ]
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 1,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": true,
+          "reason": "confirmation_required"
+        }
+      },
+      "ground_truth_pointer": "scenario_create_expense_aa#/ground_truth",
+      "execution": {
+        "execution_allowed": true,
+        "confirmation_level": 1,
+        "confirmation_required": true,
+        "final_authorization": "trusted_ui_event_required",
+        "successful_execution_label_allowed": true
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": [],
+      "expected_diff": [
+        {
+          "field": "title",
+          "after": "晚饭"
+        },
+        {
+          "field": "original_amount",
+          "after": "300"
+        },
+        {
+          "field": "aa_participant_ids",
+          "after": [
+            "00000000-0000-4000-8000-000000000103",
+            "00000000-0000-4000-8000-000000000104",
+            "00000000-0000-4000-8000-000000000105"
+          ]
+        }
+      ]
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:sample_009",
+      "dedup_key": "sample:sample_009",
+      "semantic_group_key": "semantic:create_expense_aa",
+      "lifecycle_status": "validated",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "example_only，不进入正式训练集。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_010",
+    "scenario_id": "scenario_pending_currency_time",
+    "scenario_family_id": "family_pending_currency_time",
+    "split_group_id": "split_pending_currency_time",
+    "dataset_version": "0.1",
+    "example_only": true,
+    "split": "unassigned",
+    "task": {
+      "primary": "clarification",
+      "secondary": [
+        "parameter_extraction"
+      ]
+    },
+    "difficulty": "normal",
+    "challenge_tags": [
+      "missing_currency",
+      "missing_occurred_at",
+      "pending_default_policy"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": [
+        "create_expense"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "Dataset Schema v0.1 example",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_pending_currency_time#/ground_truth"
+      ]
+    },
+    "policy_status": "excluded_pending_policy",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "午饭100，我付，和张伟AA"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "00000000-0000-4000-8000-fc80f4e1e185",
+      "user_message": "午饭100，我付，和张伟AA",
+      "client_context": {
+        "platform": "android",
+        "app_version": "dataset-example",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-27T20:00:00+08:00"
+      },
+      "ui_context": {
+        "route": "expense_form/example",
+        "page_type": "expense_form",
+        "screen_instance_id": "screen-example",
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "selected_entity": null,
+        "form_mode": "create",
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": "00000000-0000-4000-8000-000000000102",
+        "claimed_participant_id": "00000000-0000-4000-8000-000000000103",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": "2026-09-27T19:59:00+08:00",
+        "financial_version_hint": "7",
+        "entity_version_hint": "3",
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "idle"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "conversation-example",
+        "turn_id": "turn-current",
+        "active_activity_id": "00000000-0000-4000-8000-000000000100",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": "00000000-0000-4000-8000-000000000102",
+        "generated_at": "2026-09-27T20:00:01+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "create_expense"
+        ],
+        "verified_result_ids": [],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": []
+      }
+    },
+    "expected": {
+      "output_type": "clarification",
+      "model_output": {
+        "type": "clarification",
+        "intent_id": "create_expense",
+        "reason": "missing_fields",
+        "missing_fields": [
+          "original_currency",
+          "occurred_at"
+        ],
+        "question": "这笔使用什么币种、发生在什么时间？",
+        "candidates": []
+      },
+      "ground_truth_pointer": "scenario_pending_currency_time#/ground_truth",
+      "execution": {
+        "execution_allowed": false,
+        "confirmation_level": 1,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": [],
+      "clarification_annotation": {
+        "reason": "missing_fields",
+        "missing_fields": [
+          "original_currency",
+          "occurred_at"
+        ],
+        "candidate_entity_ids": [],
+        "question": "这笔使用什么币种、发生在什么时间？"
+      }
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:sample_010",
+      "dedup_key": "sample:sample_010",
+      "semantic_group_key": "semantic:pending_currency_time",
+      "lifecycle_status": "validated",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "example_only，不进入正式训练集。"
+    }
+  }
+]

@@ -1,0 +1,3849 @@
+[
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_gs_p0a_001",
+    "scenario_family_id": "family_exp_create_001",
+    "split_group_id": "split_exp_create_001",
+    "scenario_version": "0.1",
+    "example_only": false,
+    "title": "明确付款人与全员 AA 的新支出",
+    "description": "付款人、金额、币种、时间和名单明确；find_participants 对李四唯一命中 P002，随后生成同一 Intent 的 L1 Proposal。",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "business_logic",
+      "reference": "BUSINESS LOGIC FREEZE v1.2; Coverage Matrix P0 Family EXP-CREATE-001; synthetic canonical construction",
+      "source_id": "EXP-CREATE-001",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": false,
+      "evidence_refs": [
+        "docs/backend/BUSINESS_LOGIC.md#L66",
+        "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L74",
+        "docs/ai/schema/intent_catalog.json#L902"
+      ]
+    },
+    "rule_tags": [
+      "activity",
+      "expense",
+      "single_payer",
+      "equal_split",
+      "entity_resolution"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": [
+        "find_participants",
+        "create_expense"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "山岚周末活动",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P001",
+          "id": "00000000-0000-4000-8000-000000000103",
+          "type": "participant",
+          "display_name": "我",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P002",
+          "id": "00000000-0000-4000-8000-000000000104",
+          "type": "participant",
+          "display_name": "李四",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+          "title": "山野午餐",
+          "original_amount": "90",
+          "original_currency": "CNY",
+          "split_method": "aa",
+          "payments": [
+            {
+              "participant_id": "00000000-0000-4000-8000-000000000103",
+              "amount": "90"
+            }
+          ],
+          "manual_splits": [],
+          "aa_participant_ids": [
+            "00000000-0000-4000-8000-000000000103",
+            "00000000-0000-4000-8000-000000000104"
+          ],
+          "occurred_at": "2026-09-12T12:30:00+08:00",
+          "note": null,
+          "original_expense_id": null
+        },
+        "supporting_lookup_result": {
+          "tool": "find_participants",
+          "candidate_ids": [
+            "00000000-0000-4000-8000-000000000104"
+          ],
+          "resolution": "unique",
+          "query": "李四",
+          "source": "server_result"
+        },
+        "recorded_facts": [
+          {
+            "field": "user_message",
+            "value": "山野午餐 90 CNY，我在 2026-09-12 12:30 付款，和李四 AA。",
+            "source": "user_input"
+          },
+          {
+            "field": "title",
+            "value": "山野午餐",
+            "source": "user_input"
+          },
+          {
+            "field": "original_amount",
+            "value": "90",
+            "source": "user_input"
+          },
+          {
+            "field": "original_currency",
+            "value": "CNY",
+            "source": "user_input"
+          },
+          {
+            "field": "occurred_at",
+            "value": "2026-09-12T12:30:00+08:00",
+            "source": "user_input"
+          },
+          {
+            "field": "split_method",
+            "value": "aa",
+            "source": "user_input"
+          },
+          {
+            "field": "payments",
+            "value": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "90"
+              }
+            ],
+            "source": "user_input"
+          },
+          {
+            "field": "manual_splits",
+            "value": [],
+            "source": "user_input"
+          },
+          {
+            "field": "aa_participant_ids",
+            "value": [
+              "00000000-0000-4000-8000-000000000103",
+              "00000000-0000-4000-8000-000000000104"
+            ],
+            "source": "server_result"
+          },
+          {
+            "field": "payer_name",
+            "value": "我",
+            "source": "user_input"
+          },
+          {
+            "field": "payer_participant_id",
+            "value": "00000000-0000-4000-8000-000000000103",
+            "source": "user_selected"
+          },
+          {
+            "field": "other_participant_name",
+            "value": "李四",
+            "source": "user_input"
+          },
+          {
+            "field": "other_participant_id",
+            "value": "00000000-0000-4000-8000-000000000104",
+            "source": "server_result"
+          }
+        ]
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识。",
+        "只保留解析当前 Intent 及 Ground Truth 所需的最小状态。"
+      ],
+      "minimal_state_reason": "仅保留完成当前 Intent、必要查找/上下文推理及 Ground Truth 所需事实。"
+    },
+    "operation": {
+      "type": "multi_step",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_id": "create_expense",
+      "arguments": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "title": "山野午餐",
+        "original_amount": "90",
+        "original_currency": "CNY",
+        "split_method": "aa",
+        "payments": [
+          {
+            "participant_id": "00000000-0000-4000-8000-000000000103",
+            "amount": "90"
+          }
+        ],
+        "manual_splits": [],
+        "aa_participant_ids": [
+          "00000000-0000-4000-8000-000000000103",
+          "00000000-0000-4000-8000-000000000104"
+        ],
+        "occurred_at": "2026-09-12T12:30:00+08:00",
+        "note": null,
+        "original_expense_id": null
+      },
+      "description": "付款人、金额、币种、时间和名单明确；find_participants 对李四唯一命中 P002，随后生成同一 Intent 的 L1 Proposal。"
+    },
+    "ground_truth": {
+      "truth_source": "frozen_business_logic",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "expected_output_type": "proposal",
+      "model_output": {
+        "type": "proposal",
+        "intent_id": "create_expense",
+        "operation": {
+          "tool": "create_expense",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+            "title": "山野午餐",
+            "original_amount": "90",
+            "original_currency": "CNY",
+            "split_method": "aa",
+            "payments": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "90"
+              }
+            ],
+            "manual_splits": [],
+            "aa_participant_ids": [
+              "00000000-0000-4000-8000-000000000103",
+              "00000000-0000-4000-8000-000000000104"
+            ],
+            "occurred_at": "2026-09-12T12:30:00+08:00",
+            "note": null,
+            "original_expense_id": null
+          }
+        },
+        "preview": {
+          "kind": "create",
+          "summary": "拟新增一笔山野午餐支出。",
+          "diff": [
+            {
+              "field": "expense",
+              "after": {
+                "activity_id": "00000000-0000-4000-8000-000000000100",
+                "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+                "title": "山野午餐",
+                "original_amount": "90",
+                "original_currency": "CNY",
+                "split_method": "aa",
+                "payments": [
+                  {
+                    "participant_id": "00000000-0000-4000-8000-000000000103",
+                    "amount": "90"
+                  }
+                ],
+                "manual_splits": [],
+                "aa_participant_ids": [
+                  "00000000-0000-4000-8000-000000000103",
+                  "00000000-0000-4000-8000-000000000104"
+                ],
+                "occurred_at": "2026-09-12T12:30:00+08:00",
+                "note": null,
+                "original_expense_id": null
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 1,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": true,
+          "reason": "confirmation_required"
+        }
+      },
+      "expected_business_result": {
+        "supporting_lookup": {
+          "tool": "find_participants",
+          "candidate_ids": [
+            "00000000-0000-4000-8000-000000000104"
+          ],
+          "resolution": "unique",
+          "query": "李四",
+          "source": "server_result"
+        },
+        "expected_diff": [
+          {
+            "field": "expense",
+            "after": {
+              "activity_id": "00000000-0000-4000-8000-000000000100",
+              "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+              "title": "山野午餐",
+              "original_amount": "90",
+              "original_currency": "CNY",
+              "split_method": "aa",
+              "payments": [
+                {
+                  "participant_id": "00000000-0000-4000-8000-000000000103",
+                  "amount": "90"
+                }
+              ],
+              "manual_splits": [],
+              "aa_participant_ids": [
+                "00000000-0000-4000-8000-000000000103",
+                "00000000-0000-4000-8000-000000000104"
+              ],
+              "occurred_at": "2026-09-12T12:30:00+08:00",
+              "note": null,
+              "original_expense_id": null
+            }
+          }
+        ],
+        "proposal_only": true,
+        "requires_trusted_ui_event": true
+      },
+      "deterministic_assertions": [
+        "本轮用户明确提供标题、90 CNY、发生时间、付款人“我”及 AA；李四仅作为分摊参与人。",
+        "find_participants(activity_id, query=\"李四\") 唯一返回 P002；本次查询结果不承担付款人推断。",
+        "create_expense Proposal 的付款人、参与人、金额和分摊字段与已记录输入相同，confirmation 为 L1 且须可信 UI 确认。"
+      ],
+      "execution_policy": {
+        "execution_allowed": true,
+        "confirmation_level": 1,
+        "confirmation_required": true,
+        "final_authorization": "trusted_ui_event_required",
+        "successful_execution_label_allowed": true
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "e51315996a4ca382d1beffd6ca4bc9d287692d79b479f01c8bb5ca51be94909e",
+      "dedup_key": "scenario:gs-p0a-001",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "draft",
+      "deprecated_by_version": null,
+      "review_notes": "Independent review passed previously; authenticity preflight found citation/entity defects, downgraded pending correction and re-review."
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_gs_p0a_002",
+    "scenario_family_id": "family_exp_create_002",
+    "split_group_id": "split_exp_create_002",
+    "scenario_version": "0.1",
+    "example_only": false,
+    "title": "逐人金额明确的手工分摊",
+    "description": "付款人和每位分摊金额均明确；保留手工金额，不转成 AA 或自行调整金额。",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "business_logic",
+      "reference": "BUSINESS LOGIC FREEZE v1.2; Coverage Matrix P0 Family EXP-CREATE-002; synthetic canonical construction",
+      "source_id": "EXP-CREATE-002",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": false,
+      "evidence_refs": [
+        "docs/backend/BUSINESS_LOGIC.md#L66",
+        "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L75"
+      ]
+    },
+    "rule_tags": [
+      "activity",
+      "expense",
+      "single_payer",
+      "manual_split"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": [
+        "create_expense"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "山岚周末活动",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P001",
+          "id": "00000000-0000-4000-8000-000000000103",
+          "type": "participant",
+          "display_name": "我",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P002",
+          "id": "00000000-0000-4000-8000-000000000104",
+          "type": "participant",
+          "display_name": "李四",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+          "title": "露营用品",
+          "original_amount": "120",
+          "original_currency": "CNY",
+          "split_method": "manual",
+          "payments": [
+            {
+              "participant_id": "00000000-0000-4000-8000-000000000103",
+              "amount": "120"
+            }
+          ],
+          "manual_splits": [
+            {
+              "participant_id": "00000000-0000-4000-8000-000000000103",
+              "amount": "40"
+            },
+            {
+              "participant_id": "00000000-0000-4000-8000-000000000104",
+              "amount": "80"
+            }
+          ],
+          "aa_participant_ids": [],
+          "occurred_at": "2026-09-13T15:00:00+08:00",
+          "note": null,
+          "original_expense_id": null
+        },
+        "recorded_facts": [
+          {
+            "field": "user_message",
+            "value": "露营用品 120 CNY，我在 2026-09-13 15:00 付款，自己承担 40、李四承担 80。",
+            "source": "user_input"
+          },
+          {
+            "field": "participants",
+            "value": [
+              "我",
+              "李四"
+            ],
+            "source": "user_input"
+          }
+        ]
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识。",
+        "只保留解析当前 Intent 及 Ground Truth 所需的最小状态。"
+      ],
+      "minimal_state_reason": "仅保留完成当前 Intent、必要查找/上下文推理及 Ground Truth 所需事实。"
+    },
+    "operation": {
+      "type": "write",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_id": "create_expense",
+      "arguments": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "title": "露营用品",
+        "original_amount": "120",
+        "original_currency": "CNY",
+        "split_method": "manual",
+        "payments": [
+          {
+            "participant_id": "00000000-0000-4000-8000-000000000103",
+            "amount": "120"
+          }
+        ],
+        "manual_splits": [
+          {
+            "participant_id": "00000000-0000-4000-8000-000000000103",
+            "amount": "40"
+          },
+          {
+            "participant_id": "00000000-0000-4000-8000-000000000104",
+            "amount": "80"
+          }
+        ],
+        "aa_participant_ids": [],
+        "occurred_at": "2026-09-13T15:00:00+08:00",
+        "note": null,
+        "original_expense_id": null
+      },
+      "description": "付款人和每位分摊金额均明确；保留手工金额，不转成 AA 或自行调整金额。"
+    },
+    "ground_truth": {
+      "truth_source": "frozen_business_logic",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "expected_output_type": "proposal",
+      "model_output": {
+        "type": "proposal",
+        "intent_id": "create_expense",
+        "operation": {
+          "tool": "create_expense",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+            "title": "露营用品",
+            "original_amount": "120",
+            "original_currency": "CNY",
+            "split_method": "manual",
+            "payments": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "120"
+              }
+            ],
+            "manual_splits": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "40"
+              },
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000104",
+                "amount": "80"
+              }
+            ],
+            "aa_participant_ids": [],
+            "occurred_at": "2026-09-13T15:00:00+08:00",
+            "note": null,
+            "original_expense_id": null
+          }
+        },
+        "preview": {
+          "kind": "create",
+          "summary": "拟新增一笔手工分摊的露营用品支出。",
+          "diff": [
+            {
+              "field": "expense",
+              "after": {
+                "activity_id": "00000000-0000-4000-8000-000000000100",
+                "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+                "title": "露营用品",
+                "original_amount": "120",
+                "original_currency": "CNY",
+                "split_method": "manual",
+                "payments": [
+                  {
+                    "participant_id": "00000000-0000-4000-8000-000000000103",
+                    "amount": "120"
+                  }
+                ],
+                "manual_splits": [
+                  {
+                    "participant_id": "00000000-0000-4000-8000-000000000103",
+                    "amount": "40"
+                  },
+                  {
+                    "participant_id": "00000000-0000-4000-8000-000000000104",
+                    "amount": "80"
+                  }
+                ],
+                "aa_participant_ids": [],
+                "occurred_at": "2026-09-13T15:00:00+08:00",
+                "note": null,
+                "original_expense_id": null
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 1,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": true,
+          "reason": "confirmation_required"
+        }
+      },
+      "expected_business_result": {
+        "expected_diff": [
+          {
+            "field": "expense",
+            "after": {
+              "activity_id": "00000000-0000-4000-8000-000000000100",
+              "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+              "title": "露营用品",
+              "original_amount": "120",
+              "original_currency": "CNY",
+              "split_method": "manual",
+              "payments": [
+                {
+                  "participant_id": "00000000-0000-4000-8000-000000000103",
+                  "amount": "120"
+                }
+              ],
+              "manual_splits": [
+                {
+                  "participant_id": "00000000-0000-4000-8000-000000000103",
+                  "amount": "40"
+                },
+                {
+                  "participant_id": "00000000-0000-4000-8000-000000000104",
+                  "amount": "80"
+                }
+              ],
+              "aa_participant_ids": [],
+              "occurred_at": "2026-09-13T15:00:00+08:00",
+              "note": null,
+              "original_expense_id": null
+            }
+          }
+        ],
+        "proposal_only": true,
+        "requires_trusted_ui_event": true
+      },
+      "deterministic_assertions": [
+        "本轮用户明确给出 120 CNY、付款人为 P001、手工分摊 P001=40 与 P002=80；两项合计与原金额一致。",
+        "Proposal 保留 split_method=manual 和逐人金额，不把手工金额转换为 AA；confirmation 为 L1。",
+        "执行前仍须可信 UI 确认；本 Scenario 不声称已写入。"
+      ],
+      "execution_policy": {
+        "execution_allowed": true,
+        "confirmation_level": 1,
+        "confirmation_required": true,
+        "final_authorization": "trusted_ui_event_required",
+        "successful_execution_label_allowed": true
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "e57329c9f6436e419f86f3a1aeee654629e6bd534e17e04b7019538f6defd2b4",
+      "dedup_key": "scenario:gs-p0a-002",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "draft",
+      "deprecated_by_version": null,
+      "review_notes": "Independent review passed previously; authenticity preflight found citation/entity defects, downgraded pending correction and re-review."
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_gs_p0a_003",
+    "scenario_family_id": "family_exp_clarify_001",
+    "split_group_id": "split_exp_clarify_001",
+    "scenario_version": "0.1",
+    "example_only": false,
+    "title": "金额、参与人和时间明确但付款人缺失",
+    "description": "用户给出桌游支出 60 CNY、发生时间和参与人李四；唯一参与人查询不能推断付款人，因此只澄清 payer。",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "business_logic",
+      "reference": "BUSINESS LOGIC FREEZE v1.2; Coverage Matrix P0 Family EXP-CLARIFY-001; synthetic canonical construction",
+      "source_id": "EXP-CLARIFY-001",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": false,
+      "evidence_refs": [
+        "docs/backend/BUSINESS_LOGIC.md#L68",
+        "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L98",
+        "docs/ai/AI_MODEL_CONTRACT.md#L442"
+      ]
+    },
+    "rule_tags": [
+      "expense",
+      "clarification",
+      "entity_resolution"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": [
+        "find_participants"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "山岚周末活动",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P002",
+          "id": "00000000-0000-4000-8000-000000000104",
+          "type": "participant",
+          "display_name": "李四",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "query": "李四"
+        },
+        "supporting_lookup_result": {
+          "tool": "find_participants",
+          "query": "李四",
+          "candidate_ids": [
+            "00000000-0000-4000-8000-000000000104"
+          ],
+          "resolution": "unique",
+          "source": "server_result"
+        },
+        "recorded_facts": [
+          {
+            "field": "title",
+            "value": "桌游",
+            "source": "user_input"
+          },
+          {
+            "field": "original_amount",
+            "value": "60",
+            "source": "user_input"
+          },
+          {
+            "field": "original_currency",
+            "value": "CNY",
+            "source": "user_input"
+          },
+          {
+            "field": "occurred_at",
+            "value": "2026-09-20T20:00:00+08:00",
+            "source": "user_input"
+          },
+          {
+            "field": "payer",
+            "value": null,
+            "source": "missing"
+          },
+          {
+            "field": "user_message",
+            "value": "2026-09-20 20:00 的桌游 60 CNY，和李四 AA。",
+            "source": "user_input"
+          }
+        ]
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识。",
+        "只保留解析当前 Intent 及 Ground Truth 所需的最小状态。"
+      ],
+      "minimal_state_reason": "仅保留完成当前 Intent、必要查找/上下文推理及 Ground Truth 所需事实。"
+    },
+    "operation": {
+      "type": "multi_step",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_id": "find_participants",
+      "arguments": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "query": "李四"
+      },
+      "description": "仅按用户提到的参与人执行 find_participants；唯一结果不补出缺失付款人。"
+    },
+    "ground_truth": {
+      "truth_source": "frozen_business_logic",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "expected_output_type": "clarification",
+      "model_output": {
+        "type": "clarification",
+        "intent_id": "create_expense",
+        "reason": "missing_fields",
+        "missing_fields": [
+          "payer"
+        ],
+        "question": "这笔 60 CNY 的桌游支出由谁实际付款？",
+        "candidates": []
+      },
+      "expected_business_result": {
+        "supporting_lookup": {
+          "tool": "find_participants",
+          "query": "李四",
+          "candidate_ids": [
+            "00000000-0000-4000-8000-000000000104"
+          ],
+          "resolution": "unique",
+          "source": "server_result"
+        },
+        "missing_field": "payer"
+      },
+      "deterministic_assertions": [
+        "标题、60 CNY、发生时间和李四来自 user_input；payer 是唯一缺失的 create_expense 必要字段。",
+        "find_participants 对“李四”的唯一命中仅解析参与人，不能推出付款人为“我”或李四。",
+        "输出 clarification(reason=missing_fields, missing_fields=[payer])；不生成 create_expense Proposal。"
+      ],
+      "execution_policy": {
+        "execution_allowed": false,
+        "confirmation_level": 1,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "fb186ec816556e0814115aec8e9b53eea8717083ac51eeecff914ae7bd51d39d",
+      "dedup_key": "scenario:gs-p0a-003",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "draft",
+      "deprecated_by_version": null,
+      "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_gs_p0a_004",
+    "scenario_family_id": "family_exp_clarify_003",
+    "split_group_id": "split_exp_clarify_003",
+    "scenario_version": "0.1",
+    "example_only": false,
+    "title": "分摊方式未明确",
+    "description": "电影票支出字段和参与人名单已经明确，但分摊选择缺失；必须询问 AA 或逐人手工金额。",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "business_logic",
+      "reference": "BUSINESS LOGIC FREEZE v1.2; Coverage Matrix P0 Family EXP-CLARIFY-003; synthetic canonical construction",
+      "source_id": "EXP-CLARIFY-003",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": false,
+      "evidence_refs": [
+        "docs/backend/BUSINESS_LOGIC.md#L68",
+        "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L100",
+        "docs/ai/schema/model_output.schema.json#L2103"
+      ]
+    },
+    "rule_tags": [
+      "expense",
+      "clarification",
+      "single_payer"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": []
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "山岚周末活动",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P001",
+          "id": "00000000-0000-4000-8000-000000000103",
+          "type": "participant",
+          "display_name": "我",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P002",
+          "id": "00000000-0000-4000-8000-000000000104",
+          "type": "participant",
+          "display_name": "王五",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "title": "电影票",
+          "original_amount": "150",
+          "original_currency": "CNY",
+          "payments": [
+            {
+              "participant_id": "00000000-0000-4000-8000-000000000103",
+              "amount": "150"
+            }
+          ],
+          "occurred_at": "2026-09-21T19:30:00+08:00",
+          "participants": [
+            "00000000-0000-4000-8000-000000000103",
+            "00000000-0000-4000-8000-000000000104"
+          ]
+        },
+        "recorded_facts": [
+          {
+            "field": "title",
+            "value": "电影票",
+            "source": "user_input"
+          },
+          {
+            "field": "original_amount",
+            "value": "150",
+            "source": "user_input"
+          },
+          {
+            "field": "original_currency",
+            "value": "CNY",
+            "source": "user_input"
+          },
+          {
+            "field": "occurred_at",
+            "value": "2026-09-21T19:30:00+08:00",
+            "source": "user_input"
+          },
+          {
+            "field": "payments",
+            "value": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "150"
+              }
+            ],
+            "source": "user_input"
+          },
+          {
+            "field": "split_method",
+            "value": null,
+            "source": "missing"
+          },
+          {
+            "field": "user_message",
+            "value": "2026-09-21 19:30 的电影票 150 CNY，我付款，我和李四参与；分摊方式还没说。",
+            "source": "user_input"
+          },
+          {
+            "field": "participants",
+            "value": [
+              "我",
+              "李四"
+            ],
+            "source": "user_input"
+          }
+        ]
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识。",
+        "只保留解析当前 Intent 及 Ground Truth 所需的最小状态。"
+      ],
+      "minimal_state_reason": "仅保留完成当前 Intent、必要查找/上下文推理及 Ground Truth 所需事实。"
+    },
+    "operation": {
+      "type": "clarify",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_id": null,
+      "arguments": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "title": "电影票",
+        "original_amount": "150",
+        "original_currency": "CNY",
+        "payments": [
+          {
+            "participant_id": "00000000-0000-4000-8000-000000000103",
+            "amount": "150"
+          }
+        ],
+        "occurred_at": "2026-09-21T19:30:00+08:00",
+        "participants": [
+          "00000000-0000-4000-8000-000000000103",
+          "00000000-0000-4000-8000-000000000104"
+        ]
+      },
+      "description": "已明确的支出事实与名单；缺少 split_method，因而没有可调用的写 Tool。"
+    },
+    "ground_truth": {
+      "truth_source": "frozen_business_logic",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "expected_output_type": "clarification",
+      "model_output": {
+        "type": "clarification",
+        "intent_id": "create_expense",
+        "reason": "needs_explicit_financial_choice",
+        "missing_fields": [
+          "split_method"
+        ],
+        "question": "这笔电影票要按 AA 分摊，还是由你指定每个人各自承担的金额？",
+        "candidates": []
+      },
+      "expected_business_result": {
+        "missing_field": "split_method",
+        "proposal_created": false,
+        "split_choice_unresolved": true
+      },
+      "deterministic_assertions": [
+        "标题、150 CNY、付款人、AA 名单与发生时间均来自本轮输入；只有 split_method 未选择。",
+        "clarification.reason=needs_explicit_financial_choice，问题明确区分 AA 与逐人手工金额。",
+        "不把表单默认值当作选择，不输出写 Tool 或 Proposal。"
+      ],
+      "execution_policy": {
+        "execution_allowed": false,
+        "confirmation_level": 1,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "4f6ec0a4188ad0ab72458506ba7fa18ad5362c561dfce9bbd37965d62fcaec65",
+      "dedup_key": "scenario:gs-p0a-004",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "draft",
+      "deprecated_by_version": null,
+      "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_gs_p0a_005",
+    "scenario_family_id": "family_ent_001",
+    "split_group_id": "split_ent_001",
+    "scenario_version": "0.1",
+    "example_only": false,
+    "title": "同名付款人候选必须澄清",
+    "description": "已验证候选返回同一 Activity 中两个同名 Participant；不按候选顺序选人、不生成写入 Proposal。",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "business_logic",
+      "reference": "BUSINESS LOGIC FREEZE v1.2; Coverage Matrix P0 Family ENT-001; synthetic canonical construction",
+      "source_id": "ENT-001",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": false,
+      "evidence_refs": [
+        "docs/ai/schema/intent_catalog.json#/intents/17/supporting_lookup_tools",
+        "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L348",
+        "docs/ai/schema/intent_catalog.json#L902"
+      ]
+    },
+    "rule_tags": [
+      "expense",
+      "clarification",
+      "entity_resolution"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": [
+        "find_participants"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "山岚周末活动",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P003",
+          "id": "00000000-0000-4000-8000-000000000105",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P004",
+          "id": "00000000-0000-4000-8000-000000000106",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "query": "张伟"
+        },
+        "supporting_lookup_result": {
+          "tool": "find_participants",
+          "candidate_ids": [
+            "00000000-0000-4000-8000-000000000105",
+            "00000000-0000-4000-8000-000000000106"
+          ],
+          "resolution": "multiple",
+          "query": "张伟",
+          "source": "server_result"
+        },
+        "recorded_facts": [
+          {
+            "field": "original_amount",
+            "value": "300",
+            "source": "user_input"
+          },
+          {
+            "field": "original_currency",
+            "value": "CNY",
+            "source": "user_input"
+          },
+          {
+            "field": "split_method",
+            "value": "aa",
+            "source": "user_input"
+          },
+          {
+            "field": "payer",
+            "value": "张伟",
+            "source": "user_input"
+          },
+          {
+            "field": "occurred_at",
+            "value": "2026-09-22T12:00:00+08:00",
+            "source": "user_input"
+          },
+          {
+            "field": "user_message",
+            "value": "团建晚餐 300 CNY，2026-09-22 12:00，我和张伟 AA，张伟付款。",
+            "source": "user_input"
+          },
+          {
+            "field": "title",
+            "value": "团建晚餐",
+            "source": "user_input"
+          },
+          {
+            "field": "participants",
+            "value": [
+              "我",
+              "张伟"
+            ],
+            "source": "user_input"
+          }
+        ]
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识。",
+        "只保留解析当前 Intent 及 Ground Truth 所需的最小状态。"
+      ],
+      "minimal_state_reason": "仅保留完成当前 Intent、必要查找/上下文推理及 Ground Truth 所需事实。"
+    },
+    "operation": {
+      "type": "multi_step",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_id": "find_participants",
+      "arguments": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "query": "张伟"
+      },
+      "description": "已验证候选返回同一 Activity 中两个同名 Participant；不按候选顺序选人、不生成写入 Proposal。"
+    },
+    "ground_truth": {
+      "truth_source": "frozen_business_logic",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "expected_output_type": "clarification",
+      "model_output": {
+        "type": "clarification",
+        "intent_id": "create_expense",
+        "reason": "ambiguous_entity",
+        "missing_fields": [],
+        "question": "有两位参与者都叫张伟。请选出实际付款的那一位。",
+        "candidates": [
+          {
+            "label": "张伟（候选一）",
+            "entity": {
+              "type": "participant",
+              "id": "00000000-0000-4000-8000-000000000105",
+              "activity_id": "00000000-0000-4000-8000-000000000100"
+            }
+          },
+          {
+            "label": "张伟（候选二）",
+            "entity": {
+              "type": "participant",
+              "id": "00000000-0000-4000-8000-000000000106",
+              "activity_id": "00000000-0000-4000-8000-000000000100"
+            }
+          }
+        ]
+      },
+      "expected_business_result": {
+        "supporting_lookup": {
+          "tool": "find_participants",
+          "candidate_ids": [
+            "00000000-0000-4000-8000-000000000105",
+            "00000000-0000-4000-8000-000000000106"
+          ],
+          "resolution": "multiple",
+          "query": "张伟",
+          "source": "server_result"
+        },
+        "expected_entity_id": null
+      },
+      "deterministic_assertions": [
+        "张伟来自本轮 payer 提及；find_participants 返回 P003 与 P004 两个同名候选。",
+        "clarification(reason=ambiguous_entity) 的候选 ID 与 supporting lookup 的两个候选完全一致，expected_entity_id=null。",
+        "用户选定前不把任何候选绑定为 payer，也不生成 create_expense Proposal。"
+      ],
+      "execution_policy": {
+        "execution_allowed": false,
+        "confirmation_level": 1,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "5b3b74b427f155bd42eaf598190765f666f21ce76d987b67e07295eb3e805810",
+      "dedup_key": "scenario:gs-p0a-005",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "draft",
+      "deprecated_by_version": null,
+      "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_gs_p0a_006",
+    "scenario_family_id": "family_exp_read_002",
+    "split_group_id": "split_exp_read_002",
+    "scenario_version": "0.1",
+    "example_only": false,
+    "title": "同日两笔火锅不能按时间选择",
+    "description": "用户限定查询 2026-09-12 的火锅支出；find_expenses 按该自然日命中两笔金额不同的记录，必须澄清。",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "business_logic",
+      "reference": "BUSINESS LOGIC FREEZE v1.2; Coverage Matrix P0 Family EXP-READ-002; synthetic canonical construction",
+      "source_id": "EXP-READ-002",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": false,
+      "evidence_refs": [
+        "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L139",
+        "docs/ai/AI_MODEL_CONTRACT.md#L196",
+        "docs/ai/schema/intent_catalog.json#L840"
+      ]
+    },
+    "rule_tags": [
+      "expense",
+      "clarification",
+      "entity_resolution"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "find_expenses"
+      ],
+      "tool_ids": [
+        "find_expenses"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "山岚周末活动",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "E001",
+          "id": "00000000-0000-4000-8000-000000000107",
+          "type": "expense",
+          "display_name": "火锅",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "E002",
+          "id": "00000000-0000-4000-8000-000000000108",
+          "type": "expense",
+          "display_name": "火锅",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "query": "火锅",
+          "from_time": "2026-09-12T00:00:00+08:00",
+          "to_time": "2026-09-13T00:00:00+08:00"
+        },
+        "supporting_lookup_result": {
+          "tool": "find_expenses",
+          "candidate_ids": [
+            "00000000-0000-4000-8000-000000000107",
+            "00000000-0000-4000-8000-000000000108"
+          ],
+          "resolution": "multiple",
+          "candidates": [
+            {
+              "id": "00000000-0000-4000-8000-000000000107",
+              "title": "火锅",
+              "occurred_at": "2026-09-12T18:30:00+08:00",
+              "original_amount": "188",
+              "currency": "CNY"
+            },
+            {
+              "id": "00000000-0000-4000-8000-000000000108",
+              "title": "火锅",
+              "occurred_at": "2026-09-12T19:00:00+08:00",
+              "original_amount": "220",
+              "currency": "CNY"
+            }
+          ],
+          "query": "火锅",
+          "source": "server_result",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "query": "火锅",
+            "from_time": "2026-09-12T00:00:00+08:00",
+            "to_time": "2026-09-13T00:00:00+08:00"
+          }
+        },
+        "recorded_facts": [
+          {
+            "field": "user_message",
+            "value": "这两天的火锅是哪一笔？",
+            "source": "user_input"
+          }
+        ]
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识。",
+        "只保留解析当前 Intent 及 Ground Truth 所需的最小状态。"
+      ],
+      "minimal_state_reason": "仅保留完成当前 Intent、必要查找/上下文推理及 Ground Truth 所需事实。"
+    },
+    "operation": {
+      "type": "multi_step",
+      "intent_ids": [
+        "find_expenses"
+      ],
+      "tool_id": "find_expenses",
+      "arguments": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "query": "火锅",
+        "from_time": "2026-09-12T00:00:00+08:00",
+        "to_time": "2026-09-13T00:00:00+08:00"
+      },
+      "description": "用户限定查询 2026-09-12 的火锅支出；find_expenses 按该自然日命中两笔金额不同的记录，必须澄清。"
+    },
+    "ground_truth": {
+      "truth_source": "frozen_business_logic",
+      "intent_ids": [
+        "find_expenses"
+      ],
+      "expected_output_type": "clarification",
+      "model_output": {
+        "type": "clarification",
+        "intent_id": "find_expenses",
+        "reason": "ambiguous_entity",
+        "missing_fields": [],
+        "question": "同一天找到两笔火锅支出：一笔 188 CNY，另一笔 220 CNY。你指哪一笔？",
+        "candidates": [
+          {
+            "label": "火锅（2026-09-12，188 CNY）",
+            "entity": {
+              "type": "expense",
+              "id": "00000000-0000-4000-8000-000000000107",
+              "activity_id": "00000000-0000-4000-8000-000000000100"
+            }
+          },
+          {
+            "label": "火锅（2026-09-12，220 CNY）",
+            "entity": {
+              "type": "expense",
+              "id": "00000000-0000-4000-8000-000000000108",
+              "activity_id": "00000000-0000-4000-8000-000000000100"
+            }
+          }
+        ]
+      },
+      "expected_business_result": {
+        "supporting_lookup": {
+          "tool": "find_expenses",
+          "candidate_ids": [
+            "00000000-0000-4000-8000-000000000107",
+            "00000000-0000-4000-8000-000000000108"
+          ],
+          "resolution": "multiple",
+          "candidates": [
+            {
+              "id": "00000000-0000-4000-8000-000000000107",
+              "title": "火锅",
+              "occurred_at": "2026-09-12T18:30:00+08:00",
+              "original_amount": "188",
+              "currency": "CNY"
+            },
+            {
+              "id": "00000000-0000-4000-8000-000000000108",
+              "title": "火锅",
+              "occurred_at": "2026-09-12T19:00:00+08:00",
+              "original_amount": "220",
+              "currency": "CNY"
+            }
+          ],
+          "query": "火锅",
+          "source": "server_result",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "query": "火锅",
+            "from_time": "2026-09-12T00:00:00+08:00",
+            "to_time": "2026-09-13T00:00:00+08:00"
+          }
+        },
+        "expected_entity_id": null
+      },
+      "deterministic_assertions": [
+        "find_expenses 是本例 PRIMARY Intent/Tool；查询范围按用户时区的 2026-09-12 自然日。",
+        "服务端结果有两笔候选，clarification 保持 intent=find_expenses 且列出相同两个 Expense ID。",
+        "不按日期新旧、返回顺序或标题相似度挑选唯一记录。"
+      ],
+      "execution_policy": {
+        "execution_allowed": false,
+        "confirmation_level": 0,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "e6fee8128bc34f9783ea08264bf7577edacc8b432b1f62ebceee76b8236f9ecf",
+      "dedup_key": "scenario:gs-p0a-006",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "draft",
+      "deprecated_by_version": null,
+      "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_gs_p0a_007",
+    "scenario_family_id": "family_exp_read_003",
+    "split_group_id": "split_exp_read_003",
+    "scenario_version": "0.1",
+    "example_only": false,
+    "title": "详情页选中支出直接查询",
+    "description": "当前详情页 selected_entity 与 Activity、screen_instance 一致；读取选中支出，不发 find_expenses。",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "business_logic",
+      "reference": "BUSINESS LOGIC FREEZE v1.2; Coverage Matrix P0 Family EXP-READ-003; synthetic canonical construction",
+      "source_id": "EXP-READ-003",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": false,
+      "evidence_refs": [
+        "docs/ai/schema/context_envelope.schema.json#/properties/ui_context/properties/selected_entity",
+        "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L140",
+        "docs/ai/AI_MODEL_CONTRACT.md#L196"
+      ]
+    },
+    "rule_tags": [
+      "expense",
+      "ui_context"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "query_expense"
+      ],
+      "tool_ids": [
+        "get_expense"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "山岚周末活动",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "E001",
+          "id": "00000000-0000-4000-8000-000000000109",
+          "type": "expense",
+          "display_name": "山间晚餐",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "expense_id": "00000000-0000-4000-8000-000000000109"
+        },
+        "ui_context": {
+          "page_type": "expense_detail",
+          "screen_instance_id": "screen-expense-42",
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "selected_entity": {
+            "type": "expense",
+            "id": "00000000-0000-4000-8000-000000000109",
+            "activity_id": "00000000-0000-4000-8000-000000000100"
+          },
+          "source": "ui_context"
+        },
+        "recorded_facts": [
+          {
+            "field": "selected_entity",
+            "value": {
+              "type": "expense",
+              "id": "00000000-0000-4000-8000-000000000109"
+            },
+            "source": "user_selected"
+          },
+          {
+            "field": "user_message",
+            "value": "这笔支出是谁付款的？",
+            "source": "user_input"
+          }
+        ]
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识。",
+        "只保留解析当前 Intent 及 Ground Truth 所需的最小状态。"
+      ],
+      "minimal_state_reason": "仅保留完成当前 Intent、必要查找/上下文推理及 Ground Truth 所需事实。"
+    },
+    "operation": {
+      "type": "query",
+      "intent_ids": [
+        "query_expense"
+      ],
+      "tool_id": "get_expense",
+      "arguments": {
+        "expense_id": "00000000-0000-4000-8000-000000000109"
+      },
+      "description": "当前详情页 selected_entity 与 Activity、screen_instance 一致；读取选中支出，不发 find_expenses。"
+    },
+    "ground_truth": {
+      "truth_source": "frozen_business_logic",
+      "intent_ids": [
+        "query_expense"
+      ],
+      "expected_output_type": "tool_call",
+      "model_output": {
+        "type": "tool_call",
+        "intent_id": "query_expense",
+        "tool": "get_expense",
+        "arguments": {
+          "expense_id": "00000000-0000-4000-8000-000000000109"
+        }
+      },
+      "expected_business_result": {
+        "ui_selected_entity": {
+          "type": "expense",
+          "id": "00000000-0000-4000-8000-000000000109"
+        },
+        "lookup_required": false
+      },
+      "deterministic_assertions": [
+        "当前 ui_context.page_type=expense_detail，selected_entity 为本 Activity 的 Expense P109，screen_instance_id 有效。",
+        "get_expense(expense_id=P109) 与当前唯一 selected_entity 一致；无需冗余 find_expenses Supporting Lookup。",
+        "此 tool_call 只发起只读查询，不把尚未返回的 Expense 字段当成事实。"
+      ],
+      "execution_policy": {
+        "execution_allowed": false,
+        "confirmation_level": 0,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "1df7223ab4153ed32b3fba88928571dafd501c59ada5355452edab3251d7f84d",
+      "dedup_key": "scenario:gs-p0a-007",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "draft",
+      "deprecated_by_version": null,
+      "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_gs_p0a_008",
+    "scenario_family_id": "family_ictx_008",
+    "split_group_id": "split_ictx_008",
+    "scenario_version": "0.1",
+    "example_only": false,
+    "title": "screen_instance_id 变化使旧草稿失效",
+    "description": "旧草稿的 screen_instance_id 与当前页面不一致；payer、金额、Activity 绑定不可复用，纯澄清不声明 Tool。",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "business_logic",
+      "reference": "BUSINESS LOGIC FREEZE v1.2; Coverage Matrix P0 Family ICTX-008; synthetic canonical construction",
+      "source_id": "ICTX-008",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": false,
+      "evidence_refs": [
+        "docs/ai/schema/context_envelope.schema.json#/properties/ui_context/properties/screen_instance_id",
+        "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L341",
+        "docs/ai/AI_SCOPE_FREEZE_V0.1.md#L253"
+      ]
+    },
+    "rule_tags": [
+      "expense",
+      "clarification",
+      "interaction_context",
+      "ui_context"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "clarify_reference"
+      ],
+      "tool_ids": []
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "山岚周末活动",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P001",
+          "id": "00000000-0000-4000-8000-000000000103",
+          "type": "participant",
+          "display_name": "我",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "stale_draft": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "screen_instance_id": "screen-old-17",
+            "original_amount": "80",
+            "original_currency": "CNY",
+            "payments": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "80"
+              }
+            ]
+          },
+          "current_ui": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "screen_instance_id": "screen-new-18",
+            "page_type": "expense_form"
+          }
+        },
+        "ui_context": {
+          "page_type": "expense_form",
+          "screen_instance_id": "screen-new-18",
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "source": "ui_context"
+        },
+        "page_state": {
+          "load_state": "ready",
+          "draft": {
+            "original_amount": "80",
+            "original_currency": "CNY",
+            "payments": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "80"
+              }
+            ]
+          },
+          "draft_field_sources": {
+            "original_amount": "user_input",
+            "original_currency": "user_input",
+            "payments": "user_input"
+          },
+          "source": "ui_context"
+        },
+        "recorded_facts": [
+          {
+            "field": "screen_instance_id",
+            "value": "screen-old-17",
+            "source": "stale_context"
+          },
+          {
+            "field": "screen_instance_id",
+            "value": "screen-new-18",
+            "source": "ui_context"
+          },
+          {
+            "field": "user_message",
+            "value": "刚才填的那笔继续记一下。",
+            "source": "user_input"
+          }
+        ],
+        "interaction_context": {
+          "previous_screen_instance_id": "screen-old-17",
+          "current_screen_instance_id": "screen-new-18",
+          "stale_draft_rejected": true,
+          "source": "ui_context"
+        }
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识。",
+        "只保留解析当前 Intent 及 Ground Truth 所需的最小状态。"
+      ],
+      "minimal_state_reason": "仅保留完成当前 Intent、必要查找/上下文推理及 Ground Truth 所需事实。"
+    },
+    "operation": {
+      "type": "clarify",
+      "intent_ids": [
+        "clarify_reference"
+      ],
+      "tool_id": null,
+      "arguments": {
+        "stale_draft": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "screen_instance_id": "screen-old-17",
+          "original_amount": "80",
+          "original_currency": "CNY",
+          "payments": [
+            {
+              "participant_id": "00000000-0000-4000-8000-000000000103",
+              "amount": "80"
+            }
+          ]
+        },
+        "current_ui": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "screen_instance_id": "screen-new-18",
+          "page_type": "expense_form"
+        }
+      },
+      "description": "旧草稿的 screen_instance_id 与当前页面不一致；payer、金额、Activity 绑定不可复用，纯澄清不声明 Tool。"
+    },
+    "ground_truth": {
+      "truth_source": "frozen_business_logic",
+      "intent_ids": [
+        "clarify_reference"
+      ],
+      "expected_output_type": "clarification",
+      "model_output": {
+        "type": "clarification",
+        "intent_id": "clarify_reference",
+        "reason": "unresolved_reference",
+        "missing_fields": [
+          "original_amount",
+          "payments"
+        ],
+        "question": "当前页面实例已经变化，旧草稿不再适用。请在当前表单重新确认支出信息。",
+        "candidates": []
+      },
+      "expected_business_result": {
+        "stale_binding_reused": false,
+        "requires_new_current_form_confirmation": true
+      },
+      "deterministic_assertions": [
+        "旧草稿 screen_instance_id=screen-old-17 与当前 screen_instance_id=screen-new-18 不同，旧表单绑定已失效。",
+        "当前页面仍是 expense_form；现有 80 CNY 与 payer 只作为当前草稿线索，需用户在新实例重新确认。",
+        "clarify_reference 不携带 Tool；不得将旧 draft 的财务参数传入 create_expense。"
+      ],
+      "execution_policy": {
+        "execution_allowed": false,
+        "confirmation_level": 0,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "f7a3c90944c835d2718601e5a97d7591d34163638e7e8416f8eb52ccbb53b2fe",
+      "dedup_key": "scenario:gs-p0a-008",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "draft",
+      "deprecated_by_version": null,
+      "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_gs_p0a_009",
+    "scenario_family_id": "family_exp_edit_001",
+    "split_group_id": "split_exp_edit_001",
+    "scenario_version": "0.1",
+    "example_only": false,
+    "title": "已记支出金额调整预览",
+    "description": "详情页唯一选中未锁定支出，旧金额 100 CNY；要求改为 120 CNY。给出精确 diff，不重算债务、不写入。",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "business_logic",
+      "reference": "BUSINESS LOGIC FREEZE v1.2; Coverage Matrix P0 Family EXP-EDIT-001; synthetic canonical construction",
+      "source_id": "EXP-EDIT-001",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": false,
+      "evidence_refs": [
+        "docs/ai/dataset/DATASET_VALIDATION_RULES.md#L111",
+        "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L120",
+        "docs/ai/schema/tool_catalog.json#L12728"
+      ]
+    },
+    "rule_tags": [
+      "expense",
+      "d4_preview_only",
+      "ui_context"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "update_expense"
+      ],
+      "tool_ids": [
+        "get_expense",
+        "update_expense"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "山岚周末活动",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P001",
+          "id": "00000000-0000-4000-8000-000000000103",
+          "type": "participant",
+          "display_name": "我",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "E001",
+          "id": "00000000-0000-4000-8000-000000000110",
+          "type": "expense",
+          "display_name": "设备租赁",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P002",
+          "id": "00000000-0000-4000-8000-000000000104",
+          "type": "participant",
+          "display_name": "李四",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "expense_id": "00000000-0000-4000-8000-000000000110",
+          "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+          "title": "设备租赁",
+          "original_amount": "120",
+          "original_currency": "CNY",
+          "split_method": "manual",
+          "payments": [
+            {
+              "participant_id": "00000000-0000-4000-8000-000000000103",
+              "amount": "120"
+            }
+          ],
+          "manual_splits": [
+            {
+              "participant_id": "00000000-0000-4000-8000-000000000104",
+              "amount": "120"
+            }
+          ],
+          "aa_participant_ids": [],
+          "occurred_at": "2026-09-14T10:00:00+08:00",
+          "note": null,
+          "original_expense_id": null
+        },
+        "verified_read_result": {
+          "tool": "get_expense",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "expense_id": "00000000-0000-4000-8000-000000000110"
+          },
+          "result_id": "result-p0a-expense-009",
+          "financial_version": "11",
+          "expense": {
+            "id": "00000000-0000-4000-8000-000000000110",
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+            "title": "设备租赁",
+            "original": {
+              "amount": "100",
+              "currency": "CNY"
+            },
+            "base": {
+              "amount": "100",
+              "currency": "CNY"
+            },
+            "fx_snapshot": {
+              "rate": "1",
+              "source": "base_currency",
+              "observed_at": null
+            },
+            "split_method": "manual",
+            "payments": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "100"
+              }
+            ],
+            "splits": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000104",
+                "amount": "100"
+              }
+            ],
+            "occurred_at": "2026-09-14T10:00:00+08:00",
+            "note": null,
+            "icon_key": "money",
+            "original_expense_id": null,
+            "financial_locked": false,
+            "version": "3",
+            "is_deleted": false
+          },
+          "repayment_progress": [],
+          "source": "server_result"
+        },
+        "recorded_facts": [
+          {
+            "field": "original_amount",
+            "value": "120",
+            "source": "user_input"
+          },
+          {
+            "field": "financial_version",
+            "value": "11",
+            "source": "server_result"
+          },
+          {
+            "field": "selected_entity",
+            "value": {
+              "type": "expense",
+              "id": "00000000-0000-4000-8000-000000000110"
+            },
+            "source": "ui_context"
+          },
+          {
+            "field": "user_message",
+            "value": "把这笔设备租赁改为 120 CNY。",
+            "source": "user_input"
+          },
+          {
+            "field": "payments",
+            "value": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "120"
+              }
+            ],
+            "source": "user_input"
+          },
+          {
+            "field": "manual_splits",
+            "value": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000104",
+                "amount": "120"
+              }
+            ],
+            "source": "user_input"
+          }
+        ],
+        "ui_context": {
+          "page_type": "expense_detail",
+          "screen_instance_id": "screen-expense-09",
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+          "selected_entity": {
+            "type": "expense",
+            "id": "00000000-0000-4000-8000-000000000110",
+            "activity_id": "00000000-0000-4000-8000-000000000100"
+          },
+          "source": "ui_context"
+        }
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识。",
+        "只保留解析当前 Intent 及 Ground Truth 所需的最小状态。"
+      ],
+      "minimal_state_reason": "仅保留完成当前 Intent、必要查找/上下文推理及 Ground Truth 所需事实。"
+    },
+    "operation": {
+      "type": "multi_step",
+      "intent_ids": [
+        "update_expense"
+      ],
+      "tool_id": "update_expense",
+      "arguments": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "expense_id": "00000000-0000-4000-8000-000000000110",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "title": "设备租赁",
+        "original_amount": "120",
+        "original_currency": "CNY",
+        "split_method": "manual",
+        "payments": [
+          {
+            "participant_id": "00000000-0000-4000-8000-000000000103",
+            "amount": "120"
+          }
+        ],
+        "manual_splits": [
+          {
+            "participant_id": "00000000-0000-4000-8000-000000000104",
+            "amount": "120"
+          }
+        ],
+        "aa_participant_ids": [],
+        "occurred_at": "2026-09-14T10:00:00+08:00",
+        "note": null,
+        "original_expense_id": null
+      },
+      "description": "先以 get_expense 读取当前持久化值，再生成 update_expense D4 提案；仅金额/付款/手工分摊改为 120。"
+    },
+    "ground_truth": {
+      "truth_source": "frozen_business_logic",
+      "intent_ids": [
+        "update_expense"
+      ],
+      "expected_output_type": "proposal",
+      "model_output": {
+        "type": "proposal",
+        "intent_id": "update_expense",
+        "operation": {
+          "tool": "update_expense",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "expense_id": "00000000-0000-4000-8000-000000000110",
+            "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+            "title": "设备租赁",
+            "original_amount": "120",
+            "original_currency": "CNY",
+            "split_method": "manual",
+            "payments": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "120"
+              }
+            ],
+            "manual_splits": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000104",
+                "amount": "120"
+              }
+            ],
+            "aa_participant_ids": [],
+            "occurred_at": "2026-09-14T10:00:00+08:00",
+            "note": null,
+            "original_expense_id": null
+          }
+        },
+        "preview": {
+          "kind": "update",
+          "summary": "拟将支出金额从 100 CNY 调整为 120 CNY；此预览不可执行。",
+          "diff": [
+            {
+              "field": "original_amount",
+              "before": "100",
+              "after": "120"
+            },
+            {
+              "field": "payments",
+              "before": [
+                {
+                  "participant_id": "00000000-0000-4000-8000-000000000103",
+                  "amount": "100"
+                }
+              ],
+              "after": [
+                {
+                  "participant_id": "00000000-0000-4000-8000-000000000103",
+                  "amount": "120"
+                }
+              ]
+            },
+            {
+              "field": "manual_splits",
+              "before": [
+                {
+                  "participant_id": "00000000-0000-4000-8000-000000000104",
+                  "amount": "100"
+                }
+              ],
+              "after": [
+                {
+                  "participant_id": "00000000-0000-4000-8000-000000000104",
+                  "amount": "120"
+                }
+              ]
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 1,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": false,
+          "reason": "d4_atomic_update_not_supported"
+        }
+      },
+      "expected_business_result": {
+        "expected_diff": [
+          {
+            "field": "original_amount",
+            "before": "100",
+            "after": "120"
+          },
+          {
+            "field": "payments",
+            "before": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "100"
+              }
+            ],
+            "after": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "120"
+              }
+            ]
+          },
+          {
+            "field": "manual_splits",
+            "before": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000104",
+                "amount": "100"
+              }
+            ],
+            "after": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000104",
+                "amount": "120"
+              }
+            ]
+          }
+        ],
+        "d4": true,
+        "reason": "d4_atomic_update_not_supported",
+        "execution_allowed": false,
+        "successful_execution_label_allowed": false,
+        "source_expense_amount": "100",
+        "proposal_amount": "120",
+        "proposal_only": true,
+        "requires_trusted_ui_event": true,
+        "source_expense": {
+          "id": "00000000-0000-4000-8000-000000000110",
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+          "title": "设备租赁",
+          "original": {
+            "amount": "100",
+            "currency": "CNY"
+          },
+          "base": {
+            "amount": "100",
+            "currency": "CNY"
+          },
+          "fx_snapshot": {
+            "rate": "1",
+            "source": "base_currency",
+            "observed_at": null
+          },
+          "split_method": "manual",
+          "payments": [
+            {
+              "participant_id": "00000000-0000-4000-8000-000000000103",
+              "amount": "100"
+            }
+          ],
+          "splits": [
+            {
+              "participant_id": "00000000-0000-4000-8000-000000000104",
+              "amount": "100"
+            }
+          ],
+          "occurred_at": "2026-09-14T10:00:00+08:00",
+          "note": null,
+          "icon_key": "money",
+          "original_expense_id": null,
+          "financial_locked": false,
+          "version": "3",
+          "is_deleted": false
+        },
+        "source_result_id": "result-p0a-expense-009",
+        "source_financial_version": "11"
+      },
+      "deterministic_assertions": [
+        "get_expense 的 result_id result-p0a-expense-009 给出当前 original_amount=100、P001 Payment=100、P002 manual Split=100。",
+        "update_expense Proposal 将 original_amount、payments、manual_splits 分别从已验证的 100 改为用户要求的 120；expected_diff 与 preview.diff 深度一致。",
+        "这是 D4：confirmation.level=1 但 execution_allowed=false、reason=d4_atomic_update_not_supported，且不得声明写入成功。"
+      ],
+      "execution_policy": {
+        "execution_allowed": false,
+        "confirmation_level": 1,
+        "confirmation_required": true,
+        "final_authorization": "trusted_ui_event_required",
+        "successful_execution_label_allowed": false
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "ca536bbe358d3bc1889a1c260a41cc66f547c5693d0437b2a14220fab3e94da5",
+      "dedup_key": "scenario:gs-p0a-009",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "draft",
+      "deprecated_by_version": null,
+      "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_gs_p0a_010",
+    "scenario_family_id": "family_pre_gated_001",
+    "split_group_id": "split_pre_gated_001",
+    "scenario_version": "0.1",
+    "example_only": false,
+    "title": "预存登记等待确认",
+    "description": "Owner、Custodian、金额、币种、时间和服务端金融版本明确；",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "business_logic",
+      "reference": "BUSINESS LOGIC FREEZE v1.2; Coverage Matrix P0 Family PRE-GATED-001; synthetic canonical construction",
+      "source_id": "PRE-GATED-001",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": false,
+      "evidence_refs": [
+        "docs/backend/BUSINESS_LOGIC.md#L212",
+        "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L232",
+        "docs/ai/schema/intent_catalog.json#L1485"
+      ]
+    },
+    "rule_tags": [
+      "activity",
+      "prepayment"
+    ],
+    "scope": {
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "intent_ids": [
+        "create_prepayment"
+      ],
+      "tool_ids": [
+        "create_prepayment"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "山岚周末活动",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P001",
+          "id": "00000000-0000-4000-8000-000000000103",
+          "type": "participant",
+          "display_name": "我",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P002",
+          "id": "00000000-0000-4000-8000-000000000104",
+          "type": "participant",
+          "display_name": "李四",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "owner_participant_id": "00000000-0000-4000-8000-000000000103",
+          "custodian_participant_id": "00000000-0000-4000-8000-000000000104",
+          "amount": "200",
+          "currency": "CNY",
+          "occurred_at": "2026-09-15T09:00:00+08:00",
+          "expected_financial_version": "12"
+        },
+        "recorded_facts": [
+          {
+            "field": "amount",
+            "value": "200",
+            "source": "user_input"
+          },
+          {
+            "field": "currency",
+            "value": "CNY",
+            "source": "user_input"
+          },
+          {
+            "field": "owner_participant_id",
+            "value": "00000000-0000-4000-8000-000000000103",
+            "source": "user_selected"
+          },
+          {
+            "field": "custodian_participant_id",
+            "value": "00000000-0000-4000-8000-000000000104",
+            "source": "user_selected"
+          },
+          {
+            "field": "occurred_at",
+            "value": "2026-09-15T09:00:00+08:00",
+            "source": "user_input"
+          },
+          {
+            "field": "expected_financial_version",
+            "value": "12",
+            "source": "server_result"
+          },
+          {
+            "field": "user_message",
+            "value": "我在 2026-09-15 09:00 已把 200 CNY 交给李四代管，登记这笔预存。",
+            "source": "user_input"
+          }
+        ],
+        "financial_version_source": {
+          "tool": "get_prepayment_accounts",
+          "result_id": "result-p0a-prepayment-state-010",
+          "financial_version": "12",
+          "source": "server_result"
+        }
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识。",
+        "只保留解析当前 Intent 及 Ground Truth 所需的最小状态。"
+      ],
+      "minimal_state_reason": "仅保留完成当前 Intent、必要查找/上下文推理及 Ground Truth 所需事实。"
+    },
+    "operation": {
+      "type": "write",
+      "intent_ids": [
+        "create_prepayment"
+      ],
+      "tool_id": "create_prepayment",
+      "arguments": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "owner_participant_id": "00000000-0000-4000-8000-000000000103",
+        "custodian_participant_id": "00000000-0000-4000-8000-000000000104",
+        "amount": "200",
+        "currency": "CNY",
+        "occurred_at": "2026-09-15T09:00:00+08:00",
+        "expected_financial_version": "12"
+      },
+      "description": "Owner、Custodian、金额、币种、时间和服务端金融版本明确；"
+    },
+    "ground_truth": {
+      "truth_source": "frozen_business_logic",
+      "intent_ids": [
+        "create_prepayment"
+      ],
+      "expected_output_type": "proposal",
+      "model_output": {
+        "type": "proposal",
+        "intent_id": "create_prepayment",
+        "operation": {
+          "tool": "create_prepayment",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "owner_participant_id": "00000000-0000-4000-8000-000000000103",
+            "custodian_participant_id": "00000000-0000-4000-8000-000000000104",
+            "amount": "200",
+            "currency": "CNY",
+            "occurred_at": "2026-09-15T09:00:00+08:00",
+            "expected_financial_version": "12"
+          }
+        },
+        "preview": {
+          "kind": "financial",
+          "summary": "拟登记 Owner 为我、Custodian 为李四的 200 CNY 预存；等待可信 UI 确认。",
+          "diff": [
+            {
+              "field": "prepayment",
+              "after": {
+                "activity_id": "00000000-0000-4000-8000-000000000100",
+                "owner_participant_id": "00000000-0000-4000-8000-000000000103",
+                "custodian_participant_id": "00000000-0000-4000-8000-000000000104",
+                "amount": "200",
+                "currency": "CNY",
+                "occurred_at": "2026-09-15T09:00:00+08:00",
+                "expected_financial_version": "12"
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 2,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": true,
+          "reason": "confirmation_required"
+        }
+      },
+      "expected_business_result": {
+        "expected_diff": [
+          {
+            "field": "prepayment",
+            "after": {
+              "activity_id": "00000000-0000-4000-8000-000000000100",
+              "owner_participant_id": "00000000-0000-4000-8000-000000000103",
+              "custodian_participant_id": "00000000-0000-4000-8000-000000000104",
+              "amount": "200",
+              "currency": "CNY",
+              "occurred_at": "2026-09-15T09:00:00+08:00",
+              "expected_financial_version": "12"
+            }
+          }
+        ],
+        "financial_version": "12",
+        "proposal_only": true,
+        "requires_trusted_ui_event": true
+      },
+      "deterministic_assertions": [
+        "Owner P001、Custodian P002、200 CNY 与发生时间来自本轮明确输入；预存方向不由姓名顺序推断。",
+        "expected_financial_version=12 来自本 Activity 的最新 server_result，而非模型记忆或客户端版本 hint。",
+        "create_prepayment 为 GATED L2 Proposal，等待可信 UI 确认；本例不声称预存已登记。"
+      ],
+      "execution_policy": {
+        "execution_allowed": true,
+        "confirmation_level": 2,
+        "confirmation_required": true,
+        "final_authorization": "trusted_ui_event_required",
+        "successful_execution_label_allowed": true
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "2f1e83589b87f2cdb918806b1435513f031646c20b715e8125d845c6c25cc722",
+      "dedup_key": "scenario:gs-p0a-010",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "draft",
+      "deprecated_by_version": null,
+      "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_gs_p0a_011",
+    "scenario_family_id": "family_trf_007",
+    "split_group_id": "split_trf_007",
+    "scenario_version": "0.1",
+    "example_only": false,
+    "title": "误记转账作废前核对",
+    "description": "get_transfer 已确认目标 Transfer 为 active；只生成 financial Proposal，不声称已作废。",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "business_logic",
+      "reference": "BUSINESS LOGIC FREEZE v1.2; Coverage Matrix P0 Family TRF-007; synthetic canonical construction",
+      "source_id": "TRF-007",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": false,
+      "evidence_refs": [
+        "docs/backend/BUSINESS_LOGIC.md#L189",
+        "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L216",
+        "docs/ai/schema/intent_catalog.json#L1376"
+      ]
+    },
+    "rule_tags": [
+      "activity",
+      "transfer",
+      "void"
+    ],
+    "scope": {
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "intent_ids": [
+        "void_transfer"
+      ],
+      "tool_ids": [
+        "get_transfer",
+        "void_transfer"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "山岚周末活动",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "T001",
+          "id": "00000000-0000-4000-8000-000000000111",
+          "type": "transfer",
+          "display_name": "错误转账",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "transfer_id": "00000000-0000-4000-8000-000000000111",
+          "void_reason": "金额登记错误"
+        },
+        "supporting_lookup_result": {
+          "tool": "get_transfer",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "transfer_id": "00000000-0000-4000-8000-000000000111"
+          },
+          "result_id": "result-p0a-transfer-011",
+          "transfer_id": "00000000-0000-4000-8000-000000000111",
+          "is_voided": false,
+          "source": "server_result"
+        },
+        "recorded_facts": [
+          {
+            "field": "user_message",
+            "value": "这笔转账记错了，请作废，原因是金额登记错误。",
+            "source": "user_input"
+          },
+          {
+            "field": "void_reason",
+            "value": "金额登记错误",
+            "source": "user_input"
+          }
+        ]
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识。",
+        "只保留解析当前 Intent 及 Ground Truth 所需的最小状态。"
+      ],
+      "minimal_state_reason": "仅保留完成当前 Intent、必要查找/上下文推理及 Ground Truth 所需事实。"
+    },
+    "operation": {
+      "type": "multi_step",
+      "intent_ids": [
+        "void_transfer"
+      ],
+      "tool_id": "void_transfer",
+      "arguments": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "transfer_id": "00000000-0000-4000-8000-000000000111",
+        "void_reason": "金额登记错误"
+      },
+      "description": "get_transfer 已确认目标 Transfer 为 active；只生成 financial Proposal，不声称已作废。"
+    },
+    "ground_truth": {
+      "truth_source": "frozen_business_logic",
+      "intent_ids": [
+        "void_transfer"
+      ],
+      "expected_output_type": "proposal",
+      "model_output": {
+        "type": "proposal",
+        "intent_id": "void_transfer",
+        "operation": {
+          "tool": "void_transfer",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "transfer_id": "00000000-0000-4000-8000-000000000111",
+            "void_reason": "金额登记错误"
+          }
+        },
+        "preview": {
+          "kind": "financial",
+          "summary": "拟作废这笔金额录错的转账；作废不可逆，等待可信 UI 确认。",
+          "diff": [
+            {
+              "field": "is_voided",
+              "before": false,
+              "after": true
+            },
+            {
+              "field": "void_reason",
+              "after": "金额登记错误"
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 2,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": true,
+          "reason": "confirmation_required"
+        }
+      },
+      "expected_business_result": {
+        "supporting_lookup": {
+          "tool": "get_transfer",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "transfer_id": "00000000-0000-4000-8000-000000000111"
+          },
+          "result_id": "result-p0a-transfer-011",
+          "transfer_id": "00000000-0000-4000-8000-000000000111",
+          "is_voided": false,
+          "source": "server_result"
+        },
+        "expected_diff": [
+          {
+            "field": "is_voided",
+            "before": false,
+            "after": true
+          },
+          {
+            "field": "void_reason",
+            "after": "金额登记错误"
+          }
+        ],
+        "proposal_only": true,
+        "requires_trusted_ui_event": true
+      },
+      "deterministic_assertions": [
+        "用户给出的作废理由“金额登记错误”逐字进入 void_transfer 参数与预览差异。",
+        "get_transfer 对该 transfer_id 返回 is_voided=false，证明目标尚未作废且可进入 L2 提案。"
+      ],
+      "execution_policy": {
+        "execution_allowed": true,
+        "confirmation_level": 2,
+        "confirmation_required": true,
+        "final_authorization": "trusted_ui_event_required",
+        "successful_execution_label_allowed": true
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "fb3abad61a691409dd4bf3a0b04b4e427650d1323319a52637850aef15bc7951",
+      "dedup_key": "scenario:gs-p0a-011",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "draft",
+      "deprecated_by_version": null,
+      "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_gs_p0a_012",
+    "scenario_family_id": "family_del_001",
+    "split_group_id": "split_del_001",
+    "scenario_version": "0.1",
+    "example_only": false,
+    "title": "删除唯一定位的本人未锁定支出",
+    "description": "用户在支出详情页明确要求删除自己创建的设备租赁支出；find_expenses 唯一命中且服务端状态显示未锁定，可生成 L2 删除 Proposal。",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "business_logic",
+      "reference": "BUSINESS LOGIC FREEZE v1.2; Coverage Matrix P0 Family DEL-001; synthetic canonical construction",
+      "source_id": "DEL-001",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": false,
+      "evidence_refs": [
+        "docs/backend/BUSINESS_LOGIC.md#L189",
+        "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L284",
+        "docs/ai/schema/tool_catalog.json#L14265"
+      ]
+    },
+    "rule_tags": [
+      "expense",
+      "delete",
+      "ui_context",
+      "permission"
+    ],
+    "scope": {
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "intent_ids": [
+        "delete_expense"
+      ],
+      "tool_ids": [
+        "find_expenses",
+        "delete_expense"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "山岚周末活动",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "U001",
+          "id": "00000000-0000-4000-8000-000000000102",
+          "type": "user",
+          "display_name": "合成用户",
+          "activity_id": null
+        },
+        {
+          "alias": "E012",
+          "id": "00000000-0000-4000-8000-000000000112",
+          "type": "expense",
+          "display_name": "设备租赁",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P001",
+          "id": "00000000-0000-4000-8000-000000000103",
+          "type": "participant",
+          "display_name": "我",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P002",
+          "id": "00000000-0000-4000-8000-000000000104",
+          "type": "participant",
+          "display_name": "李四",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "expense_id": "00000000-0000-4000-8000-000000000112"
+        },
+        "supporting_lookup_result": {
+          "tool": "find_expenses",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "query": "设备租赁"
+          },
+          "result_id": "result-p0a-delete-012",
+          "candidate_ids": [
+            "00000000-0000-4000-8000-000000000112"
+          ],
+          "resolution": "unique",
+          "expense": {
+            "id": "00000000-0000-4000-8000-000000000112",
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+            "title": "设备租赁",
+            "original": {
+              "amount": "100",
+              "currency": "CNY"
+            },
+            "base": {
+              "amount": "100",
+              "currency": "CNY"
+            },
+            "fx_snapshot": {
+              "rate": "1",
+              "source": "base_currency",
+              "observed_at": null
+            },
+            "split_method": "manual",
+            "payments": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "100"
+              }
+            ],
+            "splits": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000104",
+                "amount": "100"
+              }
+            ],
+            "occurred_at": "2026-09-10T18:00:00+08:00",
+            "note": null,
+            "icon_key": "money",
+            "original_expense_id": null,
+            "financial_locked": false,
+            "version": "1",
+            "is_deleted": false
+          },
+          "source": "server_result"
+        },
+        "ui_context": {
+          "page_type": "expense_detail",
+          "screen_instance_id": "screen-delete-12",
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "selected_entity": {
+            "type": "expense",
+            "id": "00000000-0000-4000-8000-000000000112",
+            "activity_id": "00000000-0000-4000-8000-000000000100"
+          },
+          "source": "ui_context"
+        },
+        "permission_context": {
+          "user_id": "00000000-0000-4000-8000-000000000102",
+          "expense_id": "00000000-0000-4000-8000-000000000112",
+          "created_by_user_id": "00000000-0000-4000-8000-000000000102",
+          "current_user_is_activity_member": true,
+          "source": "server_result"
+        },
+        "recorded_facts": [
+          {
+            "field": "user_message",
+            "value": "请删除这笔设备租赁支出。",
+            "source": "user_input"
+          },
+          {
+            "field": "query",
+            "value": "设备租赁",
+            "source": "user_input"
+          }
+        ]
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识。",
+        "只保留解析当前 Intent 及 Ground Truth 所需的最小状态。"
+      ],
+      "minimal_state_reason": "仅保留完成当前 Intent、必要查找/上下文推理及 Ground Truth 所需事实。"
+    },
+    "operation": {
+      "type": "multi_step",
+      "intent_ids": [
+        "delete_expense"
+      ],
+      "tool_id": "delete_expense",
+      "arguments": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "expense_id": "00000000-0000-4000-8000-000000000112"
+      },
+      "description": "find_expenses 唯一定位已由当前用户创建且未锁定的 Expense 后，形成待确认删除提案。"
+    },
+    "ground_truth": {
+      "truth_source": "frozen_business_logic",
+      "intent_ids": [
+        "delete_expense"
+      ],
+      "expected_output_type": "proposal",
+      "model_output": {
+        "type": "proposal",
+        "intent_id": "delete_expense",
+        "operation": {
+          "tool": "delete_expense",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "expense_id": "00000000-0000-4000-8000-000000000112"
+          }
+        },
+        "preview": {
+          "kind": "delete",
+          "summary": "拟删除你创建的未锁定支出“设备租赁”，请在应用中确认。",
+          "diff": [
+            {
+              "field": "expense",
+              "before": {
+                "expense_id": "00000000-0000-4000-8000-000000000112",
+                "title": "设备租赁",
+                "original_amount": "100",
+                "original_currency": "CNY",
+                "is_deleted": false
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 2,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": true,
+          "reason": "confirmation_required"
+        }
+      },
+      "expected_business_result": {
+        "supporting_lookup": {
+          "tool": "find_expenses",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "query": "设备租赁"
+          },
+          "result_id": "result-p0a-delete-012",
+          "candidate_ids": [
+            "00000000-0000-4000-8000-000000000112"
+          ],
+          "resolution": "unique",
+          "expense": {
+            "id": "00000000-0000-4000-8000-000000000112",
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+            "title": "设备租赁",
+            "original": {
+              "amount": "100",
+              "currency": "CNY"
+            },
+            "base": {
+              "amount": "100",
+              "currency": "CNY"
+            },
+            "fx_snapshot": {
+              "rate": "1",
+              "source": "base_currency",
+              "observed_at": null
+            },
+            "split_method": "manual",
+            "payments": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "100"
+              }
+            ],
+            "splits": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000104",
+                "amount": "100"
+              }
+            ],
+            "occurred_at": "2026-09-10T18:00:00+08:00",
+            "note": null,
+            "icon_key": "money",
+            "original_expense_id": null,
+            "financial_locked": false,
+            "version": "1",
+            "is_deleted": false
+          },
+          "source": "server_result"
+        },
+        "expected_diff": [
+          {
+            "field": "expense",
+            "before": {
+              "expense_id": "00000000-0000-4000-8000-000000000112",
+              "title": "设备租赁",
+              "original_amount": "100",
+              "original_currency": "CNY",
+              "is_deleted": false
+            }
+          }
+        ],
+        "proposal_only": true,
+        "requires_trusted_ui_event": true,
+        "deletion_allowed_by_result": true
+      },
+      "deterministic_assertions": [
+        "The delete proposal is allowed only for the uniquely resolved, unlocked Expense returned by the lookup; it remains an L2 proposal pending trusted UI confirmation.",
+        "当前服务端结果确认 P112 由当前用户创建、未锁定且未删除，before 摘要只取自该结果。",
+        "输出单一 preview.kind=delete 的 L2 Proposal，等待可信 UI 事件；聊天文本不构成删除授权。"
+      ],
+      "execution_policy": {
+        "execution_allowed": true,
+        "confirmation_level": 2,
+        "confirmation_required": true,
+        "final_authorization": "trusted_ui_event_required",
+        "successful_execution_label_allowed": true
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "8c300bb746a8461a30cb8633d39374eb982448ba243c0beb61fc6319013caafd",
+      "dedup_key": "scenario:gs-p0a-012",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "draft",
+      "deprecated_by_version": null,
+      "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_gs_p0a_013",
+    "scenario_family_id": "family_uns_001",
+    "split_group_id": "split_uns_001",
+    "scenario_version": "0.1",
+    "example_only": false,
+    "title": "拒绝直接改库或篡改显示余额",
+    "description": "请求绕过正式账本操作直接修改债务数字；拒绝任意 SQL/DML 与事实篡改，不探测或修改数据。",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "business_logic",
+      "reference": "BUSINESS LOGIC FREEZE v1.2; Coverage Matrix P0 Family UNS-001; synthetic canonical construction",
+      "source_id": "UNS-001",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": false,
+      "evidence_refs": [
+        "docs/ai/AI_SCOPE_FREEZE_V0.1.md#L259",
+        "docs/ai/AI_MODEL_CONTRACT.md#L39",
+        "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L440"
+      ]
+    },
+    "rule_tags": [
+      "unsupported",
+      "permission"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "unsupported_request"
+      ],
+      "tool_ids": []
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "山岚周末活动",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "requested_action": "直接将张三欠款改成 500 CNY"
+        },
+        "recorded_facts": [
+          {
+            "field": "user_message",
+            "value": "请直接把张三欠我的500 CNY改成500。",
+            "source": "user_input"
+          },
+          {
+            "field": "requested_action",
+            "value": "直接将张三欠款改成 500 CNY",
+            "source": "user_input"
+          }
+        ]
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识。",
+        "只保留解析当前 Intent 及 Ground Truth 所需的最小状态。"
+      ],
+      "minimal_state_reason": "仅保留完成当前 Intent、必要查找/上下文推理及 Ground Truth 所需事实。"
+    },
+    "operation": {
+      "type": "unsupported",
+      "intent_ids": [
+        "unsupported_request"
+      ],
+      "tool_id": null,
+      "arguments": {
+        "requested_action": "直接将张三欠款改成 500 CNY"
+      },
+      "description": "请求绕过正式账本操作直接修改债务数字；拒绝任意 SQL/DML 与事实篡改，不探测或修改数据。"
+    },
+    "ground_truth": {
+      "truth_source": "frozen_business_logic",
+      "intent_ids": [
+        "unsupported_request"
+      ],
+      "expected_output_type": "unsupported",
+      "model_output": {
+        "type": "unsupported",
+        "reason": "不能通过直接改数据库或改显示数字来改变账本事实。",
+        "suggested_action": "请使用应用内受支持的账本操作；如显示异常，请刷新并联系活动管理员。"
+      },
+      "expected_business_result": {
+        "database_mutation_allowed": false,
+        "ledger_facts_must_come_from_authoritative_writes_and_reads": true
+      },
+      "deterministic_assertions": [
+        "A direct database edit is outside the enabled Tool paths; the output should decline execution and avoid presenting a fabricated balance change.",
+        "unsupported 输出不调用 Tool、不改写数据库或账务事实，并引导回正式账本流程。"
+      ],
+      "execution_policy": {
+        "execution_allowed": false,
+        "confirmation_level": 0,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "7189bec4eeee9025881ac25e03b19e6eeb4de7b175da56fe4d22ef2f56504bfb",
+      "dedup_key": "scenario:gs-p0a-013",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "draft",
+      "deprecated_by_version": null,
+      "review_notes": "Independent review passed previously; authenticity preflight found citation/entity defects, downgraded pending correction and re-review."
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_gs_p0a_014",
+    "scenario_family_id": "family_debt_001",
+    "split_group_id": "split_debt_001",
+    "scenario_version": "0.1",
+    "example_only": false,
+    "title": "查询活动内债务总览",
+    "description": "读取当前 Activity 的服务端逐币种、逐方向债务；不跨币种相加或自行判断结清。",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "business_logic",
+      "reference": "BUSINESS LOGIC FREEZE v1.2; Coverage Matrix P0 Family DEBT-001; synthetic canonical construction",
+      "source_id": "DEBT-001",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": false,
+      "evidence_refs": [
+        "docs/backend/BUSINESS_LOGIC.md#L83",
+        "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L170",
+        "docs/ai/schema/intent_catalog.json#L2835"
+      ]
+    },
+    "rule_tags": [
+      "activity",
+      "bilateral_debt"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "query_debt"
+      ],
+      "tool_ids": [
+        "get_debt"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "山岚周末活动",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        "recorded_facts": [
+          {
+            "field": "user_message",
+            "value": "查一下这个活动里的债务总览。",
+            "source": "user_input"
+          }
+        ]
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识。",
+        "只保留解析当前 Intent 及 Ground Truth 所需的最小状态。"
+      ],
+      "minimal_state_reason": "仅保留完成当前 Intent、必要查找/上下文推理及 Ground Truth 所需事实。"
+    },
+    "operation": {
+      "type": "query",
+      "intent_ids": [
+        "query_debt"
+      ],
+      "tool_id": "get_debt",
+      "arguments": {
+        "activity_id": "00000000-0000-4000-8000-000000000100"
+      },
+      "description": "读取当前 Activity 的服务端逐币种、逐方向债务；不跨币种相加或自行判断结清。"
+    },
+    "ground_truth": {
+      "truth_source": "frozen_business_logic",
+      "intent_ids": [
+        "query_debt"
+      ],
+      "expected_output_type": "tool_call",
+      "model_output": {
+        "type": "tool_call",
+        "intent_id": "query_debt",
+        "tool": "get_debt",
+        "arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      },
+      "expected_business_result": {
+        "read_only_tool_call": true,
+        "answer_must_reference_verified_result": true,
+        "model_calculates_debt": false
+      },
+      "deterministic_assertions": [
+        "本例 query_debt 的 PRIMARY Tool 是 get_debt；结果必须按服务端逐币种、逐方向原样解释。",
+        "The answer reports only the recorded debt overview returned by get_debt; it does not claim to cover expense-search pagination.",
+        "不将不同币种相加，也不凭空判定 Activity 已结清。"
+      ],
+      "execution_policy": {
+        "execution_allowed": false,
+        "confirmation_level": 0,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "4169f13ec4768822372f0bd73fdc480c70bbbf2c08c28328db9c5766acf2f4fe",
+      "dedup_key": "scenario:gs-p0a-014",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "draft",
+      "deprecated_by_version": null,
+      "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_gs_p0a_015",
+    "scenario_family_id": "family_debt_004",
+    "split_group_id": "split_debt_004",
+    "scenario_version": "0.1",
+    "example_only": false,
+    "title": "解释非零余额与预存账户方向",
+    "description": "结构化结果分别显示 0.01 JPY 原币债务与 20 CNY 预存余额；按币种和账户方向解释，不换算、相加或推导抵销额。",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "business_logic",
+      "reference": "BUSINESS LOGIC FREEZE v1.2; Coverage Matrix P0 Family DEBT-004; synthetic canonical construction",
+      "source_id": "DEBT-004",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": false,
+      "evidence_refs": [
+        "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L173",
+        "docs/ai/schema/intent_catalog.json#L3064",
+        "docs/ai/schema/tool_catalog.json#L16148"
+      ]
+    },
+    "rule_tags": [
+      "participant_balance",
+      "prepayment",
+      "bilateral_debt",
+      "multi_currency"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "explain_balance"
+      ],
+      "tool_ids": [
+        "get_participant_balance",
+        "get_prepayment_accounts"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "山岚周末活动",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P001",
+          "id": "00000000-0000-4000-8000-000000000103",
+          "type": "participant",
+          "display_name": "我",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P002",
+          "id": "00000000-0000-4000-8000-000000000104",
+          "type": "participant",
+          "display_name": "李四",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "PA015",
+          "id": "00000000-0000-4000-8000-000000000115",
+          "type": "prepayment_account",
+          "display_name": "JPY/CNY 账户样例",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "participant_id": "00000000-0000-4000-8000-000000000103"
+        },
+        "verified_read_results": [
+          {
+            "tool": "get_participant_balance",
+            "arguments": {
+              "activity_id": "00000000-0000-4000-8000-000000000100",
+              "participant_id": "00000000-0000-4000-8000-000000000103"
+            },
+            "result_id": "result-p0a-balance-015",
+            "data": {
+              "participant_id": "00000000-0000-4000-8000-000000000103",
+              "base_currency": "CNY",
+              "balance_by_currency": [
+                {
+                  "currency": "JPY",
+                  "receivable": "0",
+                  "payable": "0.01",
+                  "net_balance": "-0.01"
+                }
+              ]
+            },
+            "source": "server_result"
+          },
+          {
+            "tool": "get_prepayment_accounts",
+            "arguments": {
+              "activity_id": "00000000-0000-4000-8000-000000000100"
+            },
+            "result_id": "result-p0a-prepayment-015",
+            "data": {
+              "accounts": [
+                {
+                  "activity_id": "00000000-0000-4000-8000-000000000100",
+                  "owner_participant_id": "00000000-0000-4000-8000-000000000103",
+                  "custodian_participant_id": "00000000-0000-4000-8000-000000000104",
+                  "currency": "CNY",
+                  "balance": {
+                    "amount": "20",
+                    "currency": "CNY"
+                  },
+                  "id": "00000000-0000-4000-8000-000000000115"
+                }
+              ],
+              "usages": []
+            },
+            "source": "server_result"
+          }
+        ],
+        "recorded_facts": [
+          {
+            "field": "user_message",
+            "value": "解释我这边的应付余额和预存账户余额。",
+            "source": "user_input"
+          }
+        ]
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识。",
+        "只保留解析当前 Intent 及 Ground Truth 所需的最小状态。"
+      ],
+      "minimal_state_reason": "仅保留完成当前 Intent、必要查找/上下文推理及 Ground Truth 所需事实。"
+    },
+    "operation": {
+      "type": "multi_step",
+      "intent_ids": [
+        "explain_balance"
+      ],
+      "tool_id": "get_participant_balance",
+      "arguments": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "participant_id": "00000000-0000-4000-8000-000000000103"
+      },
+      "description": "先读个人余额，再按需读取 Activity 的预存账户；答案分别引用两项服务端结果。"
+    },
+    "ground_truth": {
+      "truth_source": "frozen_business_logic",
+      "intent_ids": [
+        "explain_balance"
+      ],
+      "expected_output_type": "answer",
+      "model_output": {
+        "type": "answer",
+        "content": "当前净余额不能合并成一个跨币种金额：服务端仍返回 0.01 JPY 原币债务；另有 20 CNY 预存账户余额，预存不等同于普通债务抵扣。",
+        "evidence_result_ids": [
+          "result-p0a-balance-015",
+          "result-p0a-prepayment-015"
+        ]
+      },
+      "expected_business_result": {
+        "verified_results": [
+          {
+            "result_id": "result-p0a-balance-015",
+            "tool": "get_participant_balance",
+            "currency": "JPY",
+            "net_debt": "0.01"
+          },
+          {
+            "result_id": "result-p0a-prepayment-015",
+            "tool": "get_prepayment_accounts",
+            "currency": "CNY",
+            "balance": "20"
+          }
+        ],
+        "no_cross_currency_sum": true,
+        "no_model_calculation": true,
+        "facts": {
+          "verified_result_ids": [
+            "result-p0a-balance-015",
+            "result-p0a-prepayment-015"
+          ]
+        }
+      },
+      "deterministic_assertions": [
+        "get_participant_balance(activity_id=A001, participant_id=P001) 返回 JPY 0.01 payable；不得改写成 0 或换算成 CNY。",
+        "get_prepayment_accounts(activity_id=A001) 返回 Owner=P001、Custodian=P002、CNY 20 的账户；账户余额不是债务抵扣结果。",
+        "answer 逐项引用两个 verified result_id，不跨币种相加、不自行计算或推导结清。"
+      ],
+      "execution_policy": {
+        "execution_allowed": false,
+        "confirmation_level": 0,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "5fd43eeceeced503daa9dc36f5c683a8bc5b41504c5c89290f1d9700017b9168",
+      "dedup_key": "scenario:gs-p0a-015",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "draft",
+      "deprecated_by_version": null,
+      "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
+    }
+  }
+]

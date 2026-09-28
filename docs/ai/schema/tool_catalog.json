@@ -1,5 +1,5 @@
 {
-  "contract_version": "0.1",
+  "contract_version": "0.1.2",
   "status": "draft_pending_product_decisions",
   "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
   "schema_dialect": "https://json-schema.org/draft/2020-12/schema",
@@ -8665,7 +8665,14 @@
         "28000",
         "42501",
         "P0002"
-      ]
+      ],
+      "ai_scope_v0_1": "CORE",
+      "training_priority": "HIGH",
+      "confirmation_level_by_intent": {
+        "find_activities": 0
+      },
+      "confirmation_level": 0,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "get_activity_context",
@@ -8885,7 +8892,16 @@
         "28000",
         "42501",
         "P0002"
-      ]
+      ],
+      "ai_scope_v0_1": "CORE",
+      "training_priority": "HIGH",
+      "confirmation_level_by_intent": {
+        "query_activity": 0,
+        "query_activity_status": 0,
+        "summarize_activity": 0
+      },
+      "confirmation_level": 0,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "create_activity",
@@ -9126,7 +9142,13 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "DEFERRED",
+      "training_priority": "NONE",
+      "confirmation_level_by_intent": {},
+      "confirmation_level": 1,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "首期不暴露给模型 enabled_tools；不执行本 Tool。"
     },
     {
       "tool_name": "join_activity",
@@ -9345,7 +9367,13 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "DEFERRED",
+      "training_priority": "NONE",
+      "confirmation_level_by_intent": {},
+      "confirmation_level": 1,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "首期不暴露给模型 enabled_tools；不执行本 Tool。"
     },
     {
       "tool_name": "update_activity",
@@ -9585,7 +9613,13 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "DEFERRED",
+      "training_priority": "NONE",
+      "confirmation_level_by_intent": {},
+      "confirmation_level": 2,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "首期不暴露给模型 enabled_tools；不执行本 Tool。"
     },
     {
       "tool_name": "archive_activity",
@@ -9807,7 +9841,13 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "DEFERRED",
+      "training_priority": "NONE",
+      "confirmation_level_by_intent": {},
+      "confirmation_level": 2,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "首期不暴露给模型 enabled_tools；不执行本 Tool。"
     },
     {
       "tool_name": "unarchive_activity",
@@ -10029,7 +10069,13 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "DEFERRED",
+      "training_priority": "NONE",
+      "confirmation_level_by_intent": {},
+      "confirmation_level": 2,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "首期不暴露给模型 enabled_tools；不执行本 Tool。"
     },
     {
       "tool_name": "delete_activity",
@@ -10251,7 +10297,13 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "DEFERRED",
+      "training_priority": "NONE",
+      "confirmation_level_by_intent": {},
+      "confirmation_level": 2,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "首期不暴露给模型 enabled_tools；不执行本 Tool。"
     },
     {
       "tool_name": "remove_member",
@@ -10476,7 +10528,13 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "DEFERRED",
+      "training_priority": "NONE",
+      "confirmation_level_by_intent": {},
+      "confirmation_level": 2,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "首期不暴露给模型 enabled_tools；不执行本 Tool。"
     },
     {
       "tool_name": "transfer_creator",
@@ -10701,7 +10759,13 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "DEFERRED",
+      "training_priority": "NONE",
+      "confirmation_level_by_intent": {},
+      "confirmation_level": 2,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "首期不暴露给模型 enabled_tools；不执行本 Tool。"
     },
     {
       "tool_name": "find_participants",
@@ -10878,7 +10942,14 @@
         "28000",
         "42501",
         "P0002"
-      ]
+      ],
+      "ai_scope_v0_1": "CORE",
+      "training_priority": "HIGH",
+      "confirmation_level_by_intent": {
+        "query_participant": 0
+      },
+      "confirmation_level": 0,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "add_participant",
@@ -11106,7 +11177,13 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "DEFERRED",
+      "training_priority": "NONE",
+      "confirmation_level_by_intent": {},
+      "confirmation_level": 2,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "首期不暴露给模型 enabled_tools；不执行本 Tool。"
     },
     {
       "tool_name": "remove_participant",
@@ -11333,7 +11410,13 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "DEFERRED",
+      "training_priority": "NONE",
+      "confirmation_level_by_intent": {},
+      "confirmation_level": 2,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "首期不暴露给模型 enabled_tools；不执行本 Tool。"
     },
     {
       "tool_name": "claim_participant",
@@ -11559,7 +11642,13 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "DEFERRED",
+      "training_priority": "NONE",
+      "confirmation_level_by_intent": {},
+      "confirmation_level": 2,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "首期不暴露给模型 enabled_tools；不执行本 Tool。"
     },
     {
       "tool_name": "unclaim_participant",
@@ -11779,7 +11868,13 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "DEFERRED",
+      "training_priority": "NONE",
+      "confirmation_level_by_intent": {},
+      "confirmation_level": 2,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "首期不暴露给模型 enabled_tools；不执行本 Tool。"
     },
     {
       "tool_name": "get_ledger_unit",
@@ -11917,7 +12012,14 @@
         "28000",
         "42501",
         "P0002"
-      ]
+      ],
+      "ai_scope_v0_1": "CORE",
+      "training_priority": "HIGH",
+      "confirmation_level_by_intent": {
+        "query_sub_activity": 0
+      },
+      "confirmation_level": 0,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "create_sub_activity",
@@ -12144,7 +12246,13 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "DEFERRED",
+      "training_priority": "NONE",
+      "confirmation_level_by_intent": {},
+      "confirmation_level": 2,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "首期不暴露给模型 enabled_tools；不执行本 Tool。"
     },
     {
       "tool_name": "delete_sub_activity",
@@ -12373,7 +12481,13 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "DEFERRED",
+      "training_priority": "NONE",
+      "confirmation_level_by_intent": {},
+      "confirmation_level": 2,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "首期不暴露给模型 enabled_tools；不执行本 Tool。"
     },
     {
       "tool_name": "restore_sub_activity",
@@ -12602,7 +12716,13 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "DEFERRED",
+      "training_priority": "NONE",
+      "confirmation_level_by_intent": {},
+      "confirmation_level": 2,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "首期不暴露给模型 enabled_tools；不执行本 Tool。"
     },
     {
       "tool_name": "get_expense",
@@ -12776,7 +12896,21 @@
         "28000",
         "42501",
         "P0002"
-      ]
+      ],
+      "ai_scope_v0_1": "CORE",
+      "training_priority": "HIGH",
+      "confirmation_level_by_intent": {
+        "query_expense": 0,
+        "explain_expense": 0,
+        "create_refund": 0,
+        "update_refund": 0,
+        "delete_refund": 0,
+        "explain_refund": 0,
+        "explain_transfer": 0,
+        "explain_debt": 0
+      },
+      "confirmation_level": 0,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "find_expenses",
@@ -13004,7 +13138,16 @@
         "28000",
         "42501",
         "P0002"
-      ]
+      ],
+      "ai_scope_v0_1": "CORE",
+      "training_priority": "HIGH",
+      "confirmation_level_by_intent": {
+        "find_expenses": 0,
+        "query_refund": 0,
+        "summarize_activity": 0
+      },
+      "confirmation_level": 0,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "create_expense",
@@ -13408,7 +13551,17 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "CORE",
+      "training_priority": "HIGH",
+      "confirmation_level_by_intent": {
+        "create_expense": 1,
+        "create_refund": 2,
+        "create_negative_adjustment": 2
+      },
+      "confirmation_level": 2,
+      "first_release_execution_allowed": true,
+      "scope_constraint": "正 Expense 且 original_expense_id=null 的 create_expense 意图可用 Level 1；负 Expense 或 linked Refund 必须走 GATED 意图和 Level 2。Gateway 核对金额符号/来源/Intent，禁止通过重标 Intent 降级。"
     },
     {
       "tool_name": "update_expense",
@@ -13818,7 +13971,16 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "training_priority": "MEDIUM",
+      "confirmation_level_by_intent": {
+        "update_expense": 1,
+        "update_refund": 2
+      },
+      "confirmation_level": 2,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "CORE 编辑意图只训练识别、diff 和预览；正式 update_expense_auto_rate 写入待 D4 并发门槛解决。"
     },
     {
       "tool_name": "update_expense_presentation",
@@ -14090,7 +14252,14 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "CORE",
+      "training_priority": "HIGH",
+      "confirmation_level_by_intent": {
+        "update_expense_presentation": 1
+      },
+      "confirmation_level": 1,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "delete_expense",
@@ -14319,7 +14488,15 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "training_priority": "MEDIUM",
+      "confirmation_level_by_intent": {
+        "delete_expense": 2,
+        "delete_refund": 2
+      },
+      "confirmation_level": 2,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "get_transfer",
@@ -14463,7 +14640,16 @@
         "28000",
         "42501",
         "P0002"
-      ]
+      ],
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "training_priority": "MEDIUM",
+      "confirmation_level_by_intent": {
+        "query_transfer": 0,
+        "explain_transfer": 0,
+        "void_prepayment": 0
+      },
+      "confirmation_level": 0,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "find_fund_records",
@@ -14737,7 +14923,14 @@
         "28000",
         "42501",
         "P0002"
-      ]
+      ],
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "training_priority": "MEDIUM",
+      "confirmation_level_by_intent": {
+        "find_fund_records": 0
+      },
+      "confirmation_level": 0,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "get_settlement_options",
@@ -15038,7 +15231,14 @@
         "28000",
         "42501",
         "P0002"
-      ]
+      ],
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "training_priority": "MEDIUM",
+      "confirmation_level_by_intent": {
+        "get_settlement_options": 0
+      },
+      "confirmation_level": 0,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "preview_settlement_transfer",
@@ -15349,7 +15549,14 @@
         "28000",
         "42501",
         "P0002"
-      ]
+      ],
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "training_priority": "MEDIUM",
+      "confirmation_level_by_intent": {
+        "preview_settlement_transfer": 0
+      },
+      "confirmation_level": 0,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "create_settlement_transfer",
@@ -15672,7 +15879,14 @@
         "55000",
         "40001",
         "23505"
-      ]
+      ],
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "training_priority": "MEDIUM",
+      "confirmation_level_by_intent": {
+        "create_settlement_transfer": 2
+      },
+      "confirmation_level": 2,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "void_transfer",
@@ -15920,7 +16134,15 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "training_priority": "MEDIUM",
+      "confirmation_level_by_intent": {
+        "void_transfer": 2,
+        "void_prepayment": 2
+      },
+      "confirmation_level": 2,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "get_prepayment_accounts",
@@ -16095,7 +16317,18 @@
         "28000",
         "42501",
         "P0002"
-      ]
+      ],
+      "ai_scope_v0_1": "CORE",
+      "training_priority": "HIGH",
+      "confirmation_level_by_intent": {
+        "query_prepayment": 0,
+        "return_prepayment": 0,
+        "explain_prepayment": 0,
+        "explain_balance": 0,
+        "summarize_activity": 0
+      },
+      "confirmation_level": 0,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "preview_prepayment",
@@ -16307,7 +16540,14 @@
         "28000",
         "42501",
         "P0002"
-      ]
+      ],
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "training_priority": "MEDIUM",
+      "confirmation_level_by_intent": {
+        "preview_prepayment": 0
+      },
+      "confirmation_level": 0,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "create_prepayment",
@@ -16572,7 +16812,14 @@
         "55000",
         "40001",
         "23505"
-      ]
+      ],
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "training_priority": "MEDIUM",
+      "confirmation_level_by_intent": {
+        "create_prepayment": 2
+      },
+      "confirmation_level": 2,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "create_prepayment_return",
@@ -16849,7 +17096,14 @@
         "55000",
         "40001",
         "23505"
-      ]
+      ],
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "training_priority": "MEDIUM",
+      "confirmation_level_by_intent": {
+        "return_prepayment": 2
+      },
+      "confirmation_level": 2,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "get_debt",
@@ -17039,7 +17293,19 @@
         "28000",
         "42501",
         "P0002"
-      ]
+      ],
+      "ai_scope_v0_1": "CORE",
+      "training_priority": "HIGH",
+      "confirmation_level_by_intent": {
+        "explain_refund": 0,
+        "explain_prepayment": 0,
+        "query_debt": 0,
+        "query_bilateral_debt": 0,
+        "explain_debt": 0,
+        "summarize_activity": 0
+      },
+      "confirmation_level": 0,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "get_participant_balance",
@@ -17253,7 +17519,15 @@
         "28000",
         "42501",
         "P0002"
-      ]
+      ],
+      "ai_scope_v0_1": "CORE",
+      "training_priority": "HIGH",
+      "confirmation_level_by_intent": {
+        "query_participant_balance": 0,
+        "explain_balance": 0
+      },
+      "confirmation_level": 0,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "get_final_settlement",
@@ -17432,7 +17706,15 @@
         "28000",
         "42501",
         "P0002"
-      ]
+      ],
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "training_priority": "MEDIUM",
+      "confirmation_level_by_intent": {
+        "query_final_settlement": 0,
+        "explain_final_settlement": 0
+      },
+      "confirmation_level": 0,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "execute_final_settlement",
@@ -17694,7 +17976,14 @@
         "55000",
         "40001",
         "23505"
-      ]
+      ],
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "training_priority": "MEDIUM",
+      "confirmation_level_by_intent": {
+        "execute_final_settlement": 2
+      },
+      "confirmation_level": 2,
+      "first_release_execution_allowed": true
     },
     {
       "tool_name": "add_transfer_dispute",
@@ -17940,7 +18229,13 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "DEFERRED",
+      "training_priority": "NONE",
+      "confirmation_level_by_intent": {},
+      "confirmation_level": 2,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "争议写入首期 DEFERRED，且现有权限差异 D2 尚未裁定。"
     },
     {
       "tool_name": "resolve_transfer_dispute",
@@ -18166,7 +18461,13 @@
         "22023",
         "23514",
         "55000"
-      ]
+      ],
+      "ai_scope_v0_1": "DEFERRED",
+      "training_priority": "NONE",
+      "confirmation_level_by_intent": {},
+      "confirmation_level": 2,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "争议写入首期 DEFERRED，且现有权限差异 D2 尚未裁定。"
     },
     {
       "tool_name": "list_attachments",
@@ -18339,7 +18640,13 @@
         "28000",
         "42501",
         "P0002"
-      ]
+      ],
+      "ai_scope_v0_1": "DEFERRED",
+      "training_priority": "NONE",
+      "confirmation_level_by_intent": {},
+      "confirmation_level": 0,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "首期不暴露给模型 enabled_tools；不执行本 Tool。"
     },
     {
       "tool_name": "get_currency_context",
@@ -18565,7 +18872,13 @@
         "28000",
         "42501",
         "P0002"
-      ]
+      ],
+      "ai_scope_v0_1": "DEFERRED",
+      "training_priority": "NONE",
+      "confirmation_level_by_intent": {},
+      "confirmation_level": 0,
+      "first_release_execution_allowed": false,
+      "scope_constraint": "首期不暴露给模型 enabled_tools；不执行本 Tool。"
     },
     {
       "tool_name": "lookup_business_rule",
@@ -18736,7 +19049,16 @@
         "28000",
         "42501",
         "P0002"
-      ]
+      ],
+      "ai_scope_v0_1": "CORE",
+      "training_priority": "HIGH",
+      "confirmation_level_by_intent": {
+        "explain_final_settlement": 0,
+        "explain_rule": 0,
+        "explain_error": 0
+      },
+      "confirmation_level": 0,
+      "first_release_execution_allowed": true
     }
   ]
 }

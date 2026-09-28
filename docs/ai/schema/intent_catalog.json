@@ -1,5 +1,5 @@
 {
-  "contract_version": "0.1",
+  "contract_version": "0.1.2",
   "status": "draft_pending_product_decisions",
   "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
   "intents": [
@@ -49,7 +49,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "create_activity",
@@ -96,7 +102,14 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 1,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "join_activity",
@@ -140,7 +153,14 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "加入不等于认领；邀请码只发给 Gateway，不写入长期会话摘要。",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 1,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "update_activity",
@@ -187,7 +207,14 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 2,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "archive_activity",
@@ -231,7 +258,14 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "archive/unarchive 的 activity_id 映射 p_activity_id；delete 使用 activity_id。",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 2,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "unarchive_activity",
@@ -275,7 +309,14 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "archive/unarchive 的 activity_id 映射 p_activity_id；delete 使用 activity_id。",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 2,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "delete_activity",
@@ -319,7 +360,14 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "archive/unarchive 的 activity_id 映射 p_activity_id；delete 使用 activity_id。",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 2,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "remove_member",
@@ -364,7 +412,14 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "移除 User 成员不同于删除 Participant；不能暗示历史账务被删除。",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 2,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "transfer_creator",
@@ -409,7 +464,14 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 2,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "add_participant",
@@ -454,7 +516,14 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 2,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "remove_participant",
@@ -499,7 +568,14 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 2,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "claim_participant",
@@ -544,7 +620,14 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 2,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "unclaim_participant",
@@ -588,7 +671,14 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 2,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "create_sub_activity",
@@ -633,7 +723,14 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 2,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "delete_sub_activity",
@@ -678,7 +775,14 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "ledger_unit_id 映射 sub_activity_id；不恢复 Expense 或 Transfer。",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 2,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "restore_sub_activity",
@@ -723,7 +827,14 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "ledger_unit_id 映射 sub_activity_id；不恢复 Expense 或 Transfer。",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 2,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "find_expenses",
@@ -779,7 +890,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "create_expense",
@@ -836,7 +953,15 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "activity_id 仅 Gateway 范围核对，不发给该 RPC；没有 request_id，也没有财务编辑 expected_version 参数。不承诺原子乐观版本保护；并发编辑风险见 Q4。",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 1,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": true,
+      "supporting_lookup_tools": [
+        "find_participants"
+      ]
     },
     {
       "intent_id": "update_expense",
@@ -894,7 +1019,17 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "activity_id 仅 Gateway 范围核对，不发给该 RPC；没有 request_id，也没有财务编辑 expected_version 参数。不承诺原子乐观版本保护；并发编辑风险见 Q4。",
-      "ai_enablement": "pending_open_question"
+      "ai_enablement": "pending_open_question",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 1,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "仅识别、读取当前实体、生成变更 diff 与确认预览；缺少原子版本校验，待 D4 决策前不调用写 RPC。",
+      "supporting_lookup_tools": [
+        "get_expense",
+        "find_participants"
+      ]
     },
     {
       "intent_id": "update_expense_presentation",
@@ -943,7 +1078,13 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "expected_version 是 Expense version，不能用 Activity financial_version 代替。",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 1,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": true,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "delete_expense",
@@ -988,7 +1129,15 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 2,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": true,
+      "supporting_lookup_tools": [
+        "find_expenses"
+      ]
     },
     {
       "intent_id": "find_fund_records",
@@ -1041,7 +1190,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 0,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "get_settlement_options",
@@ -1089,7 +1244,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "list_settlement_options(p_activity_id) 后按双方过滤；payment 为服务端最大额度。",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 0,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "preview_settlement_transfer",
@@ -1141,7 +1302,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 0,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "create_settlement_transfer",
@@ -1194,7 +1361,16 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "Gateway 创建并持久化 request_id，模型不能传入或更换。",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 2,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": true,
+      "supporting_lookup_tools": [
+        "get_settlement_options",
+        "get_debt"
+      ]
     },
     {
       "intent_id": "void_transfer",
@@ -1240,7 +1416,15 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 2,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": true,
+      "supporting_lookup_tools": [
+        "get_transfer"
+      ]
     },
     {
       "intent_id": "preview_prepayment",
@@ -1289,7 +1473,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "全部参数添加 p_ 前缀；所有 decimal 均为 requested.currency。",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 0,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "create_prepayment",
@@ -1339,7 +1529,16 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "Gateway 注入 on_behalf_of_participant_id=null 和 request_id；不能按 ledger_unit_id 预存。",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 2,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": true,
+      "supporting_lookup_tools": [
+        "get_prepayment_accounts",
+        "get_debt"
+      ]
     },
     {
       "intent_id": "execute_final_settlement",
@@ -1387,7 +1586,13 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 2,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": true,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "add_transfer_dispute",
@@ -1434,7 +1639,14 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "",
-      "ai_enablement": "pending_open_question"
+      "ai_enablement": "pending_open_question",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 2,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "resolve_transfer_dispute",
@@ -1479,7 +1691,14 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "",
-      "ai_enablement": "pending_open_question"
+      "ai_enablement": "pending_open_question",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 2,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "list_attachments",
@@ -1527,7 +1746,14 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 0,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "get_currency_context",
@@ -1573,7 +1799,14 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "映射 p_base_currency/p_quote_currency；查询结果不是 Expense 写入快照授权；不向模型开放 FX 同步。",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 0,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "query_activity",
@@ -1618,7 +1851,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "query_activity_status",
@@ -1663,7 +1902,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "query_sub_activity",
@@ -1709,7 +1954,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "query_participant",
@@ -1758,7 +2009,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "query_expense",
@@ -1805,7 +2062,15 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": [
+        "find_expenses"
+      ]
     },
     {
       "intent_id": "explain_expense",
@@ -1852,7 +2117,15 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": [
+        "find_expenses"
+      ]
     },
     {
       "intent_id": "create_refund",
@@ -1910,7 +2183,17 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "复用负 Expense；original_expense_id 必填且明确，original_amount/payment/manual_split 使用负数；不复制原付款人/受益人，FX 由后端继承。",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 2,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": true,
+      "scope_constraint": "共用 create_expense Tool，但负金额/来源要求与 Level 2 确认必须按 Intent 和 payload 判定。",
+      "supporting_lookup_tools": [
+        "find_expenses",
+        "find_participants"
+      ]
     },
     {
       "intent_id": "update_refund",
@@ -1969,7 +2252,17 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "复用负 Expense；original_expense_id 必填且明确，original_amount/payment/manual_split 使用负数；不复制原付款人/受益人，FX 由后端继承。",
-      "ai_enablement": "pending_open_question"
+      "ai_enablement": "pending_open_question",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 2,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "仅识别、读取当前实体、生成变更 diff 与确认预览；缺少原子版本校验，待 D4 决策前不调用写 RPC。",
+      "supporting_lookup_tools": [
+        "find_expenses",
+        "find_participants"
+      ]
     },
     {
       "intent_id": "delete_refund",
@@ -2015,7 +2308,15 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 2,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": true,
+      "supporting_lookup_tools": [
+        "find_expenses"
+      ]
     },
     {
       "intent_id": "query_refund",
@@ -2071,7 +2372,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "find_expenses.kind=linked_refund；需要已解析 Activity，按来源查询时提供 original_expense_id。",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 0,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "explain_refund",
@@ -2119,7 +2426,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 0,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "create_negative_adjustment",
@@ -2176,7 +2489,16 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "original_expense_id=null；必须明确为负向调整，不能把未知来源的退款擅自降级成调整。",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 2,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": true,
+      "scope_constraint": "共用 create_expense Tool，但负金额/来源要求与 Level 2 确认必须按 Intent 和 payload 判定。",
+      "supporting_lookup_tools": [
+        "find_participants"
+      ]
     },
     {
       "intent_id": "query_transfer",
@@ -2222,7 +2544,15 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 0,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": [
+        "find_fund_records"
+      ]
     },
     {
       "intent_id": "explain_transfer",
@@ -2269,7 +2599,15 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 0,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": [
+        "find_fund_records"
+      ]
     },
     {
       "intent_id": "query_prepayment",
@@ -2318,7 +2656,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "return_prepayment",
@@ -2370,7 +2714,13 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 2,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": true,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "void_prepayment",
@@ -2417,7 +2767,13 @@
         "RPC 拒绝时解释实际错误，不改变输入绕过校验"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 2,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": true,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "explain_prepayment",
@@ -2467,7 +2823,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "query_debt",
@@ -2517,7 +2879,15 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": [
+        "find_participants"
+      ]
     },
     {
       "intent_id": "query_bilateral_debt",
@@ -2567,7 +2937,15 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": [
+        "find_participants"
+      ]
     },
     {
       "intent_id": "query_participant_balance",
@@ -2613,7 +2991,15 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": [
+        "find_participants"
+      ]
     },
     {
       "intent_id": "explain_debt",
@@ -2664,7 +3050,15 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": [
+        "find_participants"
+      ]
     },
     {
       "intent_id": "explain_balance",
@@ -2711,7 +3105,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "query_final_settlement",
@@ -2757,7 +3157,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 0,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "explain_final_settlement",
@@ -2804,7 +3210,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "SUPPORTED_BUT_GATED",
+      "confirmation_level": 0,
+      "training_priority": "MEDIUM",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "explain_rule",
@@ -2849,7 +3261,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "explain_error",
@@ -2894,7 +3312,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "summarize_activity",
@@ -2947,7 +3371,13 @@
         "结果不完整/分页截断不能宣称全量；会话的金额与权限不能覆盖服务端"
       ],
       "notes": "",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": true,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "restore_expense",
@@ -2981,7 +3411,14 @@
         "不支持的操作不调用 Tool"
       ],
       "notes": "冻结规则明确不支持 Expense 恢复",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 0,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "restore_transfer",
@@ -3015,7 +3452,14 @@
         "不支持的操作不调用 Tool"
       ],
       "notes": "voided 不可恢复；新真实付款须新请求",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 0,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "update_sub_activity",
@@ -3049,7 +3493,14 @@
         "不支持的操作不调用 Tool"
       ],
       "notes": "当前无正式 update_sub_activity RPC；不能走表 DML；LedgerUnit 备注未实现",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 0,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "update_transfer",
@@ -3083,7 +3534,14 @@
         "不支持的操作不调用 Tool"
       ],
       "notes": "真实 Transfer 不可变",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 0,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "manage_attachment",
@@ -3117,7 +3575,14 @@
         "不支持的操作不调用 Tool"
       ],
       "notes": "业务已有图片附件；v0.1 模型不操作文件，引导现有客户端附件流程",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 0,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "manage_account",
@@ -3151,7 +3616,14 @@
         "不支持的操作不调用 Tool"
       ],
       "notes": "现有 Auth/Profile 客户端处理；不把凭据送入模型",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "DEFERRED",
+      "confirmation_level": 0,
+      "training_priority": "NONE",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "scope_constraint": "首期识别后答复或引导原生页面；禁止执行 Tool Call。",
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "clarify_reference",
@@ -3185,7 +3657,13 @@
         "不支持的操作不调用 Tool"
       ],
       "notes": "返回 clarification；不能假定处理等于删除",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "unknown",
@@ -3219,7 +3697,13 @@
         "不支持的操作不调用 Tool"
       ],
       "notes": "返回 clarification",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     },
     {
       "intent_id": "unsupported_request",
@@ -3253,7 +3737,13 @@
         "不支持的操作不调用 Tool"
       ],
       "notes": "返回 unsupported；不伪造成功",
-      "ai_enablement": "proposed_only"
+      "ai_enablement": "proposed_only",
+      "ai_scope_v0_1": "CORE",
+      "confirmation_level": 0,
+      "training_priority": "HIGH",
+      "first_release_tool_call_allowed": false,
+      "first_release_write_execution_allowed": false,
+      "supporting_lookup_tools": []
     }
   ]
 }

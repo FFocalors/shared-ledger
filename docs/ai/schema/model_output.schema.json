@@ -1,7 +1,91 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://shared-ledger.invalid/ai/v0.1/model_output.schema.json",
-  "title": "模型单轮输出 v0.1",
+  "title": "Shared Ledger Model Output Protocol v0.1.2",
+  "x-ai-contract-version": "0.1.2",
+  "$defs": {
+    "proposal_diff_entry": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "before": {},
+        "after": {},
+        "added": {
+          "type": "array",
+          "items": {},
+          "maxItems": 100
+        },
+        "removed": {
+          "type": "array",
+          "items": {},
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "field"
+      ],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "before"
+          ]
+        },
+        {
+          "required": [
+            "after"
+          ]
+        },
+        {
+          "required": [
+            "added"
+          ]
+        },
+        {
+          "required": [
+            "removed"
+          ]
+        }
+      ]
+    },
+    "proposal_preview": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "create",
+            "update",
+            "delete",
+            "financial"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "diff": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/proposal_diff_entry"
+          },
+          "minItems": 1,
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "kind",
+        "summary",
+        "diff"
+      ],
+      "additionalProperties": false
+    }
+  },
   "oneOf": [
     {
       "type": "object",
@@ -39,10 +123,7 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "find_activities"
-          ]
+          "const": "find_activities"
         },
         "tool": {
           "const": "find_activities"
@@ -66,18 +147,13 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "query_activity",
-            "query_activity_status",
-            "summarize_activity"
-          ]
+          "const": "find_expenses"
         },
         "tool": {
-          "const": "get_activity_context"
+          "const": "find_expenses"
         },
         "arguments": {
-          "$ref": "tool_catalog.json#/$defs/get_activity_context_input"
+          "$ref": "tool_catalog.json#/$defs/find_expenses_input"
         }
       },
       "required": [
@@ -95,16 +171,13 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "create_activity"
-          ]
+          "const": "create_expense"
         },
         "tool": {
-          "const": "create_activity"
+          "const": "create_expense"
         },
         "arguments": {
-          "$ref": "tool_catalog.json#/$defs/create_activity_input"
+          "$ref": "tool_catalog.json#/$defs/create_expense_input"
         }
       },
       "required": [
@@ -122,199 +195,7 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "join_activity"
-          ]
-        },
-        "tool": {
-          "const": "join_activity"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/join_activity_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "update_activity"
-          ]
-        },
-        "tool": {
-          "const": "update_activity"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/update_activity_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "archive_activity"
-          ]
-        },
-        "tool": {
-          "const": "archive_activity"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/archive_activity_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "unarchive_activity"
-          ]
-        },
-        "tool": {
-          "const": "unarchive_activity"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/unarchive_activity_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "delete_activity"
-          ]
-        },
-        "tool": {
-          "const": "delete_activity"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/delete_activity_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "remove_member"
-          ]
-        },
-        "tool": {
-          "const": "remove_member"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/remove_member_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "transfer_creator"
-          ]
-        },
-        "tool": {
-          "const": "transfer_creator"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/transfer_creator_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "query_participant"
-          ]
+          "const": "create_expense"
         },
         "tool": {
           "const": "find_participants"
@@ -338,16 +219,13 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "add_participant"
-          ]
+          "const": "update_expense"
         },
         "tool": {
-          "const": "add_participant"
+          "const": "update_expense"
         },
         "arguments": {
-          "$ref": "tool_catalog.json#/$defs/add_participant_input"
+          "$ref": "tool_catalog.json#/$defs/update_expense_input"
         }
       },
       "required": [
@@ -365,206 +243,7 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "remove_participant"
-          ]
-        },
-        "tool": {
-          "const": "remove_participant"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/remove_participant_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "claim_participant"
-          ]
-        },
-        "tool": {
-          "const": "claim_participant"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/claim_participant_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "unclaim_participant"
-          ]
-        },
-        "tool": {
-          "const": "unclaim_participant"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/unclaim_participant_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "query_sub_activity"
-          ]
-        },
-        "tool": {
-          "const": "get_ledger_unit"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/get_ledger_unit_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "create_sub_activity"
-          ]
-        },
-        "tool": {
-          "const": "create_sub_activity"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/create_sub_activity_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "delete_sub_activity"
-          ]
-        },
-        "tool": {
-          "const": "delete_sub_activity"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/delete_sub_activity_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "restore_sub_activity"
-          ]
-        },
-        "tool": {
-          "const": "restore_sub_activity"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/restore_sub_activity_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "query_expense",
-            "explain_expense",
-            "create_refund",
-            "update_refund",
-            "delete_refund",
-            "explain_refund",
-            "explain_transfer",
-            "explain_debt"
-          ]
+          "const": "update_expense"
         },
         "tool": {
           "const": "get_expense"
@@ -588,200 +267,13 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "find_expenses",
-            "query_refund",
-            "summarize_activity"
-          ]
-        },
-        "tool": {
-          "const": "find_expenses"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/find_expenses_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false,
-      "allOf": [
-        {
-          "if": {
-            "properties": {
-              "intent_id": {
-                "const": "query_refund"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "arguments": {
-                "required": [
-                  "kind"
-                ],
-                "properties": {
-                  "kind": {
-                    "const": "linked_refund"
-                  }
-                }
-              }
-            }
-          }
-        }
-      ]
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "create_expense",
-            "create_refund",
-            "create_negative_adjustment"
-          ]
-        },
-        "tool": {
-          "const": "create_expense"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/create_expense_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false,
-      "allOf": [
-        {
-          "if": {
-            "properties": {
-              "intent_id": {
-                "enum": [
-                  "create_refund",
-                  "update_refund"
-                ]
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "arguments": {
-                "required": [
-                  "original_expense_id"
-                ],
-                "properties": {
-                  "original_amount": {
-                    "type": "string",
-                    "pattern": "^-(?=.*[1-9])(0|[1-9][0-9]{0,15})(\\.[0-9]{1,4})?$"
-                  },
-                  "payments": {
-                    "items": {
-                      "properties": {
-                        "amount": {
-                          "type": "string",
-                          "pattern": "^-(?=.*[1-9])(0|[1-9][0-9]{0,15})(\\.[0-9]{1,4})?$"
-                        }
-                      }
-                    }
-                  },
-                  "manual_splits": {
-                    "items": {
-                      "properties": {
-                        "amount": {
-                          "type": "string",
-                          "pattern": "^-(?=.*[1-9])(0|[1-9][0-9]{0,15})(\\.[0-9]{1,4})?$"
-                        }
-                      }
-                    }
-                  },
-                  "original_expense_id": {
-                    "type": "string",
-                    "format": "uuid"
-                  }
-                }
-              }
-            }
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "intent_id": {
-                "const": "create_negative_adjustment"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "arguments": {
-                "required": [
-                  "original_expense_id"
-                ],
-                "properties": {
-                  "original_amount": {
-                    "type": "string",
-                    "pattern": "^-(?=.*[1-9])(0|[1-9][0-9]{0,15})(\\.[0-9]{1,4})?$"
-                  },
-                  "payments": {
-                    "items": {
-                      "properties": {
-                        "amount": {
-                          "type": "string",
-                          "pattern": "^-(?=.*[1-9])(0|[1-9][0-9]{0,15})(\\.[0-9]{1,4})?$"
-                        }
-                      }
-                    }
-                  },
-                  "manual_splits": {
-                    "items": {
-                      "properties": {
-                        "amount": {
-                          "type": "string",
-                          "pattern": "^-(?=.*[1-9])(0|[1-9][0-9]{0,15})(\\.[0-9]{1,4})?$"
-                        }
-                      }
-                    }
-                  },
-                  "original_expense_id": {
-                    "const": null
-                  }
-                }
-              }
-            }
-          }
-        }
-      ]
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "update_expense",
-            "update_refund"
-          ]
-        },
-        "tool": {
           "const": "update_expense"
         },
+        "tool": {
+          "const": "find_participants"
+        },
         "arguments": {
-          "$ref": "tool_catalog.json#/$defs/update_expense_input"
+          "$ref": "tool_catalog.json#/$defs/find_participants_input"
         }
       },
       "required": [
@@ -790,107 +282,7 @@
         "tool",
         "arguments"
       ],
-      "additionalProperties": false,
-      "allOf": [
-        {
-          "if": {
-            "properties": {
-              "intent_id": {
-                "enum": [
-                  "create_refund",
-                  "update_refund"
-                ]
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "arguments": {
-                "required": [
-                  "original_expense_id"
-                ],
-                "properties": {
-                  "original_amount": {
-                    "type": "string",
-                    "pattern": "^-(?=.*[1-9])(0|[1-9][0-9]{0,15})(\\.[0-9]{1,4})?$"
-                  },
-                  "payments": {
-                    "items": {
-                      "properties": {
-                        "amount": {
-                          "type": "string",
-                          "pattern": "^-(?=.*[1-9])(0|[1-9][0-9]{0,15})(\\.[0-9]{1,4})?$"
-                        }
-                      }
-                    }
-                  },
-                  "manual_splits": {
-                    "items": {
-                      "properties": {
-                        "amount": {
-                          "type": "string",
-                          "pattern": "^-(?=.*[1-9])(0|[1-9][0-9]{0,15})(\\.[0-9]{1,4})?$"
-                        }
-                      }
-                    }
-                  },
-                  "original_expense_id": {
-                    "type": "string",
-                    "format": "uuid"
-                  }
-                }
-              }
-            }
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "intent_id": {
-                "const": "create_negative_adjustment"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "arguments": {
-                "required": [
-                  "original_expense_id"
-                ],
-                "properties": {
-                  "original_amount": {
-                    "type": "string",
-                    "pattern": "^-(?=.*[1-9])(0|[1-9][0-9]{0,15})(\\.[0-9]{1,4})?$"
-                  },
-                  "payments": {
-                    "items": {
-                      "properties": {
-                        "amount": {
-                          "type": "string",
-                          "pattern": "^-(?=.*[1-9])(0|[1-9][0-9]{0,15})(\\.[0-9]{1,4})?$"
-                        }
-                      }
-                    }
-                  },
-                  "manual_splits": {
-                    "items": {
-                      "properties": {
-                        "amount": {
-                          "type": "string",
-                          "pattern": "^-(?=.*[1-9])(0|[1-9][0-9]{0,15})(\\.[0-9]{1,4})?$"
-                        }
-                      }
-                    }
-                  },
-                  "original_expense_id": {
-                    "const": null
-                  }
-                }
-              }
-            }
-          }
-        }
-      ]
+      "additionalProperties": false
     },
     {
       "type": "object",
@@ -899,10 +291,7 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "update_expense_presentation"
-          ]
+          "const": "update_expense_presentation"
         },
         "tool": {
           "const": "update_expense_presentation"
@@ -926,11 +315,7 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "delete_expense",
-            "delete_refund"
-          ]
+          "const": "delete_expense"
         },
         "tool": {
           "const": "delete_expense"
@@ -954,18 +339,13 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "query_transfer",
-            "explain_transfer",
-            "void_prepayment"
-          ]
+          "const": "delete_expense"
         },
         "tool": {
-          "const": "get_transfer"
+          "const": "find_expenses"
         },
         "arguments": {
-          "$ref": "tool_catalog.json#/$defs/get_transfer_input"
+          "$ref": "tool_catalog.json#/$defs/find_expenses_input"
         }
       },
       "required": [
@@ -983,10 +363,7 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "find_fund_records"
-          ]
+          "const": "find_fund_records"
         },
         "tool": {
           "const": "find_fund_records"
@@ -1010,10 +387,7 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "get_settlement_options"
-          ]
+          "const": "get_settlement_options"
         },
         "tool": {
           "const": "get_settlement_options"
@@ -1037,10 +411,7 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "preview_settlement_transfer"
-          ]
+          "const": "preview_settlement_transfer"
         },
         "tool": {
           "const": "preview_settlement_transfer"
@@ -1064,10 +435,7 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "create_settlement_transfer"
-          ]
+          "const": "create_settlement_transfer"
         },
         "tool": {
           "const": "create_settlement_transfer"
@@ -1091,17 +459,13 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "void_transfer",
-            "void_prepayment"
-          ]
+          "const": "create_settlement_transfer"
         },
         "tool": {
-          "const": "void_transfer"
+          "const": "get_settlement_options"
         },
         "arguments": {
-          "$ref": "tool_catalog.json#/$defs/void_transfer_input"
+          "$ref": "tool_catalog.json#/$defs/get_settlement_options_input"
         }
       },
       "required": [
@@ -1119,127 +483,7 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "query_prepayment",
-            "return_prepayment",
-            "explain_prepayment",
-            "explain_balance",
-            "summarize_activity"
-          ]
-        },
-        "tool": {
-          "const": "get_prepayment_accounts"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/get_prepayment_accounts_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "preview_prepayment"
-          ]
-        },
-        "tool": {
-          "const": "preview_prepayment"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/preview_prepayment_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "create_prepayment"
-          ]
-        },
-        "tool": {
-          "const": "create_prepayment"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/create_prepayment_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "return_prepayment"
-          ]
-        },
-        "tool": {
-          "const": "create_prepayment_return"
-        },
-        "arguments": {
-          "$ref": "tool_catalog.json#/$defs/create_prepayment_return_input"
-        }
-      },
-      "required": [
-        "type",
-        "intent_id",
-        "tool",
-        "arguments"
-      ],
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "tool_call"
-        },
-        "intent_id": {
-          "type": "string",
-          "enum": [
-            "explain_refund",
-            "explain_prepayment",
-            "query_debt",
-            "query_bilateral_debt",
-            "explain_debt",
-            "summarize_activity"
-          ]
+          "const": "create_settlement_transfer"
         },
         "tool": {
           "const": "get_debt"
@@ -1263,17 +507,13 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "query_participant_balance",
-            "explain_balance"
-          ]
+          "const": "void_transfer"
         },
         "tool": {
-          "const": "get_participant_balance"
+          "const": "void_transfer"
         },
         "arguments": {
-          "$ref": "tool_catalog.json#/$defs/get_participant_balance_input"
+          "$ref": "tool_catalog.json#/$defs/void_transfer_input"
         }
       },
       "required": [
@@ -1291,17 +531,13 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "query_final_settlement",
-            "explain_final_settlement"
-          ]
+          "const": "void_transfer"
         },
         "tool": {
-          "const": "get_final_settlement"
+          "const": "get_transfer"
         },
         "arguments": {
-          "$ref": "tool_catalog.json#/$defs/get_final_settlement_input"
+          "$ref": "tool_catalog.json#/$defs/get_transfer_input"
         }
       },
       "required": [
@@ -1319,10 +555,103 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "execute_final_settlement"
-          ]
+          "const": "preview_prepayment"
+        },
+        "tool": {
+          "const": "preview_prepayment"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/preview_prepayment_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "create_prepayment"
+        },
+        "tool": {
+          "const": "create_prepayment"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/create_prepayment_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "create_prepayment"
+        },
+        "tool": {
+          "const": "get_prepayment_accounts"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_prepayment_accounts_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "create_prepayment"
+        },
+        "tool": {
+          "const": "get_debt"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_debt_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "execute_final_settlement"
         },
         "tool": {
           "const": "execute_final_settlement"
@@ -1346,16 +675,13 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "add_transfer_dispute"
-          ]
+          "const": "query_activity"
         },
         "tool": {
-          "const": "add_transfer_dispute"
+          "const": "get_activity_context"
         },
         "arguments": {
-          "$ref": "tool_catalog.json#/$defs/add_transfer_dispute_input"
+          "$ref": "tool_catalog.json#/$defs/get_activity_context_input"
         }
       },
       "required": [
@@ -1373,16 +699,13 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "resolve_transfer_dispute"
-          ]
+          "const": "query_activity_status"
         },
         "tool": {
-          "const": "resolve_transfer_dispute"
+          "const": "get_activity_context"
         },
         "arguments": {
-          "$ref": "tool_catalog.json#/$defs/resolve_transfer_dispute_input"
+          "$ref": "tool_catalog.json#/$defs/get_activity_context_input"
         }
       },
       "required": [
@@ -1400,16 +723,13 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "list_attachments"
-          ]
+          "const": "query_sub_activity"
         },
         "tool": {
-          "const": "list_attachments"
+          "const": "get_ledger_unit"
         },
         "arguments": {
-          "$ref": "tool_catalog.json#/$defs/list_attachments_input"
+          "$ref": "tool_catalog.json#/$defs/get_ledger_unit_input"
         }
       },
       "required": [
@@ -1427,16 +747,13 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "get_currency_context"
-          ]
+          "const": "query_participant"
         },
         "tool": {
-          "const": "get_currency_context"
+          "const": "find_participants"
         },
         "arguments": {
-          "$ref": "tool_catalog.json#/$defs/get_currency_context_input"
+          "$ref": "tool_catalog.json#/$defs/find_participants_input"
         }
       },
       "required": [
@@ -1454,18 +771,1237 @@
           "const": "tool_call"
         },
         "intent_id": {
-          "type": "string",
-          "enum": [
-            "explain_final_settlement",
-            "explain_rule",
-            "explain_error"
-          ]
+          "const": "query_expense"
+        },
+        "tool": {
+          "const": "get_expense"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_expense_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "query_expense"
+        },
+        "tool": {
+          "const": "find_expenses"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/find_expenses_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "explain_expense"
+        },
+        "tool": {
+          "const": "get_expense"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_expense_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "explain_expense"
+        },
+        "tool": {
+          "const": "find_expenses"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/find_expenses_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "create_refund"
+        },
+        "tool": {
+          "const": "get_expense"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_expense_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "create_refund"
+        },
+        "tool": {
+          "const": "create_expense"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/create_expense_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "create_refund"
+        },
+        "tool": {
+          "const": "find_expenses"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/find_expenses_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "create_refund"
+        },
+        "tool": {
+          "const": "find_participants"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/find_participants_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "update_refund"
+        },
+        "tool": {
+          "const": "get_expense"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_expense_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "update_refund"
+        },
+        "tool": {
+          "const": "update_expense"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/update_expense_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "update_refund"
+        },
+        "tool": {
+          "const": "find_expenses"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/find_expenses_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "update_refund"
+        },
+        "tool": {
+          "const": "find_participants"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/find_participants_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "delete_refund"
+        },
+        "tool": {
+          "const": "get_expense"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_expense_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "delete_refund"
+        },
+        "tool": {
+          "const": "delete_expense"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/delete_expense_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "delete_refund"
+        },
+        "tool": {
+          "const": "find_expenses"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/find_expenses_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "query_refund"
+        },
+        "tool": {
+          "const": "find_expenses"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/find_expenses_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "explain_refund"
+        },
+        "tool": {
+          "const": "get_expense"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_expense_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "explain_refund"
+        },
+        "tool": {
+          "const": "get_debt"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_debt_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "create_negative_adjustment"
+        },
+        "tool": {
+          "const": "create_expense"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/create_expense_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "create_negative_adjustment"
+        },
+        "tool": {
+          "const": "find_participants"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/find_participants_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "query_transfer"
+        },
+        "tool": {
+          "const": "get_transfer"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_transfer_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "query_transfer"
+        },
+        "tool": {
+          "const": "find_fund_records"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/find_fund_records_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "explain_transfer"
+        },
+        "tool": {
+          "const": "get_transfer"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_transfer_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "explain_transfer"
+        },
+        "tool": {
+          "const": "get_expense"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_expense_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "explain_transfer"
+        },
+        "tool": {
+          "const": "find_fund_records"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/find_fund_records_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "query_prepayment"
+        },
+        "tool": {
+          "const": "get_prepayment_accounts"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_prepayment_accounts_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "return_prepayment"
+        },
+        "tool": {
+          "const": "get_prepayment_accounts"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_prepayment_accounts_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "return_prepayment"
+        },
+        "tool": {
+          "const": "create_prepayment_return"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/create_prepayment_return_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "void_prepayment"
+        },
+        "tool": {
+          "const": "get_transfer"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_transfer_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "void_prepayment"
+        },
+        "tool": {
+          "const": "void_transfer"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/void_transfer_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "explain_prepayment"
+        },
+        "tool": {
+          "const": "get_prepayment_accounts"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_prepayment_accounts_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "explain_prepayment"
+        },
+        "tool": {
+          "const": "get_debt"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_debt_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "query_debt"
+        },
+        "tool": {
+          "const": "get_debt"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_debt_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "query_debt"
+        },
+        "tool": {
+          "const": "find_participants"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/find_participants_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "query_bilateral_debt"
+        },
+        "tool": {
+          "const": "get_debt"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_debt_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "query_bilateral_debt"
+        },
+        "tool": {
+          "const": "find_participants"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/find_participants_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "query_participant_balance"
+        },
+        "tool": {
+          "const": "get_participant_balance"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_participant_balance_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "query_participant_balance"
+        },
+        "tool": {
+          "const": "find_participants"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/find_participants_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "explain_debt"
+        },
+        "tool": {
+          "const": "get_debt"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_debt_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "explain_debt"
+        },
+        "tool": {
+          "const": "get_expense"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_expense_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "explain_debt"
+        },
+        "tool": {
+          "const": "find_participants"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/find_participants_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "explain_balance"
+        },
+        "tool": {
+          "const": "get_participant_balance"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_participant_balance_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "explain_balance"
+        },
+        "tool": {
+          "const": "get_prepayment_accounts"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_prepayment_accounts_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "query_final_settlement"
+        },
+        "tool": {
+          "const": "get_final_settlement"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_final_settlement_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "explain_final_settlement"
+        },
+        "tool": {
+          "const": "get_final_settlement"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_final_settlement_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "explain_final_settlement"
         },
         "tool": {
           "const": "lookup_business_rule"
         },
         "arguments": {
           "$ref": "tool_catalog.json#/$defs/lookup_business_rule_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "explain_rule"
+        },
+        "tool": {
+          "const": "lookup_business_rule"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/lookup_business_rule_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "explain_error"
+        },
+        "tool": {
+          "const": "lookup_business_rule"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/lookup_business_rule_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "summarize_activity"
+        },
+        "tool": {
+          "const": "get_activity_context"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_activity_context_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "summarize_activity"
+        },
+        "tool": {
+          "const": "find_expenses"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/find_expenses_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "summarize_activity"
+        },
+        "tool": {
+          "const": "get_prepayment_accounts"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_prepayment_accounts_input"
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "tool",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tool_call"
+        },
+        "intent_id": {
+          "const": "summarize_activity"
+        },
+        "tool": {
+          "const": "get_debt"
+        },
+        "arguments": {
+          "$ref": "tool_catalog.json#/$defs/get_debt_input"
         }
       },
       "required": [
@@ -1722,6 +2258,944 @@
         "evidence_result_ids"
       ],
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "proposal"
+        },
+        "intent_id": {
+          "type": "string",
+          "enum": [
+            "create_expense"
+          ]
+        },
+        "operation": {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "create_expense"
+            },
+            "arguments": {
+              "$ref": "tool_catalog.json#/$defs/create_expense_input"
+            }
+          },
+          "required": [
+            "tool",
+            "arguments"
+          ],
+          "additionalProperties": false
+        },
+        "preview": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/proposal_preview"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "create"
+                }
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "const": 1
+            },
+            "required": {
+              "const": true
+            }
+          },
+          "required": [
+            "level",
+            "required"
+          ],
+          "additionalProperties": false
+        },
+        "execution_policy": {
+          "type": "object",
+          "properties": {
+            "execution_allowed": {
+              "const": true
+            },
+            "reason": {
+              "const": "confirmation_required"
+            }
+          },
+          "required": [
+            "execution_allowed",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "operation",
+        "preview",
+        "confirmation",
+        "execution_policy"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "proposal"
+        },
+        "intent_id": {
+          "type": "string",
+          "enum": [
+            "create_refund",
+            "create_negative_adjustment"
+          ]
+        },
+        "operation": {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "create_expense"
+            },
+            "arguments": {
+              "$ref": "tool_catalog.json#/$defs/create_expense_input"
+            }
+          },
+          "required": [
+            "tool",
+            "arguments"
+          ],
+          "additionalProperties": false
+        },
+        "preview": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/proposal_preview"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "financial"
+                }
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "const": 2
+            },
+            "required": {
+              "const": true
+            }
+          },
+          "required": [
+            "level",
+            "required"
+          ],
+          "additionalProperties": false
+        },
+        "execution_policy": {
+          "type": "object",
+          "properties": {
+            "execution_allowed": {
+              "const": true
+            },
+            "reason": {
+              "const": "confirmation_required"
+            }
+          },
+          "required": [
+            "execution_allowed",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "operation",
+        "preview",
+        "confirmation",
+        "execution_policy"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "proposal"
+        },
+        "intent_id": {
+          "type": "string",
+          "enum": [
+            "update_expense"
+          ]
+        },
+        "operation": {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "update_expense"
+            },
+            "arguments": {
+              "$ref": "tool_catalog.json#/$defs/update_expense_input"
+            }
+          },
+          "required": [
+            "tool",
+            "arguments"
+          ],
+          "additionalProperties": false
+        },
+        "preview": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/proposal_preview"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "update"
+                }
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "const": 1
+            },
+            "required": {
+              "const": true
+            }
+          },
+          "required": [
+            "level",
+            "required"
+          ],
+          "additionalProperties": false
+        },
+        "execution_policy": {
+          "type": "object",
+          "properties": {
+            "execution_allowed": {
+              "const": false
+            },
+            "reason": {
+              "const": "d4_atomic_update_not_supported"
+            }
+          },
+          "required": [
+            "execution_allowed",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "operation",
+        "preview",
+        "confirmation",
+        "execution_policy"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "proposal"
+        },
+        "intent_id": {
+          "type": "string",
+          "enum": [
+            "update_refund"
+          ]
+        },
+        "operation": {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "update_expense"
+            },
+            "arguments": {
+              "$ref": "tool_catalog.json#/$defs/update_expense_input"
+            }
+          },
+          "required": [
+            "tool",
+            "arguments"
+          ],
+          "additionalProperties": false
+        },
+        "preview": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/proposal_preview"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "update"
+                }
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "const": 2
+            },
+            "required": {
+              "const": true
+            }
+          },
+          "required": [
+            "level",
+            "required"
+          ],
+          "additionalProperties": false
+        },
+        "execution_policy": {
+          "type": "object",
+          "properties": {
+            "execution_allowed": {
+              "const": false
+            },
+            "reason": {
+              "const": "d4_atomic_update_not_supported"
+            }
+          },
+          "required": [
+            "execution_allowed",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "operation",
+        "preview",
+        "confirmation",
+        "execution_policy"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "proposal"
+        },
+        "intent_id": {
+          "type": "string",
+          "enum": [
+            "update_expense_presentation"
+          ]
+        },
+        "operation": {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "update_expense_presentation"
+            },
+            "arguments": {
+              "$ref": "tool_catalog.json#/$defs/update_expense_presentation_input"
+            }
+          },
+          "required": [
+            "tool",
+            "arguments"
+          ],
+          "additionalProperties": false
+        },
+        "preview": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/proposal_preview"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "update"
+                }
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "const": 1
+            },
+            "required": {
+              "const": true
+            }
+          },
+          "required": [
+            "level",
+            "required"
+          ],
+          "additionalProperties": false
+        },
+        "execution_policy": {
+          "type": "object",
+          "properties": {
+            "execution_allowed": {
+              "const": true
+            },
+            "reason": {
+              "const": "confirmation_required"
+            }
+          },
+          "required": [
+            "execution_allowed",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "operation",
+        "preview",
+        "confirmation",
+        "execution_policy"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "proposal"
+        },
+        "intent_id": {
+          "type": "string",
+          "enum": [
+            "delete_expense",
+            "delete_refund"
+          ]
+        },
+        "operation": {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "delete_expense"
+            },
+            "arguments": {
+              "$ref": "tool_catalog.json#/$defs/delete_expense_input"
+            }
+          },
+          "required": [
+            "tool",
+            "arguments"
+          ],
+          "additionalProperties": false
+        },
+        "preview": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/proposal_preview"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "delete"
+                }
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "const": 2
+            },
+            "required": {
+              "const": true
+            }
+          },
+          "required": [
+            "level",
+            "required"
+          ],
+          "additionalProperties": false
+        },
+        "execution_policy": {
+          "type": "object",
+          "properties": {
+            "execution_allowed": {
+              "const": true
+            },
+            "reason": {
+              "const": "confirmation_required"
+            }
+          },
+          "required": [
+            "execution_allowed",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "operation",
+        "preview",
+        "confirmation",
+        "execution_policy"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "proposal"
+        },
+        "intent_id": {
+          "type": "string",
+          "enum": [
+            "create_settlement_transfer"
+          ]
+        },
+        "operation": {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "create_settlement_transfer"
+            },
+            "arguments": {
+              "$ref": "tool_catalog.json#/$defs/create_settlement_transfer_input"
+            }
+          },
+          "required": [
+            "tool",
+            "arguments"
+          ],
+          "additionalProperties": false
+        },
+        "preview": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/proposal_preview"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "financial"
+                }
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "const": 2
+            },
+            "required": {
+              "const": true
+            }
+          },
+          "required": [
+            "level",
+            "required"
+          ],
+          "additionalProperties": false
+        },
+        "execution_policy": {
+          "type": "object",
+          "properties": {
+            "execution_allowed": {
+              "const": true
+            },
+            "reason": {
+              "const": "confirmation_required"
+            }
+          },
+          "required": [
+            "execution_allowed",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "operation",
+        "preview",
+        "confirmation",
+        "execution_policy"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "proposal"
+        },
+        "intent_id": {
+          "type": "string",
+          "enum": [
+            "void_transfer",
+            "void_prepayment"
+          ]
+        },
+        "operation": {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "void_transfer"
+            },
+            "arguments": {
+              "$ref": "tool_catalog.json#/$defs/void_transfer_input"
+            }
+          },
+          "required": [
+            "tool",
+            "arguments"
+          ],
+          "additionalProperties": false
+        },
+        "preview": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/proposal_preview"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "financial"
+                }
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "const": 2
+            },
+            "required": {
+              "const": true
+            }
+          },
+          "required": [
+            "level",
+            "required"
+          ],
+          "additionalProperties": false
+        },
+        "execution_policy": {
+          "type": "object",
+          "properties": {
+            "execution_allowed": {
+              "const": true
+            },
+            "reason": {
+              "const": "confirmation_required"
+            }
+          },
+          "required": [
+            "execution_allowed",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "operation",
+        "preview",
+        "confirmation",
+        "execution_policy"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "proposal"
+        },
+        "intent_id": {
+          "type": "string",
+          "enum": [
+            "create_prepayment"
+          ]
+        },
+        "operation": {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "create_prepayment"
+            },
+            "arguments": {
+              "$ref": "tool_catalog.json#/$defs/create_prepayment_input"
+            }
+          },
+          "required": [
+            "tool",
+            "arguments"
+          ],
+          "additionalProperties": false
+        },
+        "preview": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/proposal_preview"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "financial"
+                }
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "const": 2
+            },
+            "required": {
+              "const": true
+            }
+          },
+          "required": [
+            "level",
+            "required"
+          ],
+          "additionalProperties": false
+        },
+        "execution_policy": {
+          "type": "object",
+          "properties": {
+            "execution_allowed": {
+              "const": true
+            },
+            "reason": {
+              "const": "confirmation_required"
+            }
+          },
+          "required": [
+            "execution_allowed",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "operation",
+        "preview",
+        "confirmation",
+        "execution_policy"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "proposal"
+        },
+        "intent_id": {
+          "type": "string",
+          "enum": [
+            "return_prepayment"
+          ]
+        },
+        "operation": {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "create_prepayment_return"
+            },
+            "arguments": {
+              "$ref": "tool_catalog.json#/$defs/create_prepayment_return_input"
+            }
+          },
+          "required": [
+            "tool",
+            "arguments"
+          ],
+          "additionalProperties": false
+        },
+        "preview": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/proposal_preview"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "financial"
+                }
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "const": 2
+            },
+            "required": {
+              "const": true
+            }
+          },
+          "required": [
+            "level",
+            "required"
+          ],
+          "additionalProperties": false
+        },
+        "execution_policy": {
+          "type": "object",
+          "properties": {
+            "execution_allowed": {
+              "const": true
+            },
+            "reason": {
+              "const": "confirmation_required"
+            }
+          },
+          "required": [
+            "execution_allowed",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "operation",
+        "preview",
+        "confirmation",
+        "execution_policy"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "proposal"
+        },
+        "intent_id": {
+          "type": "string",
+          "enum": [
+            "execute_final_settlement"
+          ]
+        },
+        "operation": {
+          "type": "object",
+          "properties": {
+            "tool": {
+              "const": "execute_final_settlement"
+            },
+            "arguments": {
+              "$ref": "tool_catalog.json#/$defs/execute_final_settlement_input"
+            }
+          },
+          "required": [
+            "tool",
+            "arguments"
+          ],
+          "additionalProperties": false
+        },
+        "preview": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/proposal_preview"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "financial"
+                }
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "const": 2
+            },
+            "required": {
+              "const": true
+            }
+          },
+          "required": [
+            "level",
+            "required"
+          ],
+          "additionalProperties": false
+        },
+        "execution_policy": {
+          "type": "object",
+          "properties": {
+            "execution_allowed": {
+              "const": true
+            },
+            "reason": {
+              "const": "confirmation_required"
+            }
+          },
+          "required": [
+            "execution_allowed",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type",
+        "intent_id",
+        "operation",
+        "preview",
+        "confirmation",
+        "execution_policy"
+      ],
+      "additionalProperties": false
     }
   ],
   "examples": [
@@ -1745,6 +3219,24 @@
       "arguments": {
         "activity_id": "00000000-0000-4000-8000-000000000002",
         "expense_id": "00000000-0000-4000-8000-000000000007"
+      }
+    },
+    {
+      "type": "tool_call",
+      "intent_id": "query_expense",
+      "tool": "find_expenses",
+      "arguments": {
+        "activity_id": "00000000-0000-4000-8000-000000000002",
+        "query": "昨天那顿饭"
+      }
+    },
+    {
+      "type": "tool_call",
+      "intent_id": "create_expense",
+      "tool": "find_participants",
+      "arguments": {
+        "activity_id": "00000000-0000-4000-8000-000000000002",
+        "query": "老张和小李"
       }
     },
     {
@@ -1776,6 +3268,108 @@
       "evidence_result_ids": [
         "version-conflict-1"
       ]
+    },
+    {
+      "type": "proposal",
+      "intent_id": "create_expense",
+      "operation": {
+        "tool": "create_expense",
+        "arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+          "title": "晚饭",
+          "original_amount": "300",
+          "original_currency": "CNY",
+          "split_method": "aa",
+          "payments": [
+            {
+              "participant_id": "00000000-0000-4000-8000-000000000103",
+              "amount": "300"
+            }
+          ],
+          "manual_splits": [],
+          "aa_participant_ids": [
+            "00000000-0000-4000-8000-000000000103",
+            "00000000-0000-4000-8000-000000000104",
+            "00000000-0000-4000-8000-000000000105"
+          ],
+          "occurred_at": "2026-09-27T18:30:00+08:00",
+          "note": null,
+          "original_expense_id": null,
+          "icon_key": "dining"
+        }
+      },
+      "preview": {
+        "kind": "create",
+        "summary": "创建一笔300 CNY的晚饭，三人AA。",
+        "diff": [
+          {
+            "field": "title",
+            "after": "晚饭"
+          },
+          {
+            "field": "original_amount",
+            "after": "300"
+          },
+          {
+            "field": "aa_participant_ids",
+            "after": [
+              "00000000-0000-4000-8000-000000000103",
+              "00000000-0000-4000-8000-000000000104",
+              "00000000-0000-4000-8000-000000000105"
+            ]
+          }
+        ]
+      },
+      "confirmation": {
+        "level": 1,
+        "required": true
+      },
+      "execution_policy": {
+        "execution_allowed": true,
+        "reason": "confirmation_required"
+      }
+    },
+    {
+      "type": "proposal",
+      "intent_id": "create_settlement_transfer",
+      "operation": {
+        "tool": "create_settlement_transfer",
+        "arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "from_participant_id": "00000000-0000-4000-8000-000000000104",
+          "to_participant_id": "00000000-0000-4000-8000-000000000103",
+          "currency": "CNY",
+          "amount": "100",
+          "mode": "FIFO",
+          "target_expense_ids": [],
+          "expected_financial_version": "7",
+          "occurred_at": "2026-09-27T19:00:00+08:00",
+          "on_behalf_of_participant_id": null
+        }
+      },
+      "preview": {
+        "kind": "financial",
+        "summary": "登记张伟向我实际还款100 CNY。",
+        "diff": [
+          {
+            "field": "transfer",
+            "after": {
+              "amount": "100",
+              "currency": "CNY",
+              "mode": "FIFO"
+            }
+          }
+        ]
+      },
+      "confirmation": {
+        "level": 2,
+        "required": true
+      },
+      "execution_policy": {
+        "execution_allowed": true,
+        "reason": "confirmation_required"
+      }
     }
   ]
 }

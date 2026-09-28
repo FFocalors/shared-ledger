@@ -1,0 +1,442 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shared-ledger.invalid/ai/dataset/v0.1/dataset_manifest.schema.json",
+  "title": "Shared Ledger Dataset Manifest v0.1",
+  "type": "object",
+  "properties": {
+    "manifest_schema_version": {
+      "const": "0.1"
+    },
+    "dataset_version": {
+      "const": "0.1"
+    },
+    "business_logic_version": {
+      "const": "1.2"
+    },
+    "ai_contract_version": {
+      "const": "0.1.2"
+    },
+    "ai_scope_version": {
+      "const": "0.1"
+    },
+    "frozen_reference_sha": {
+      "const": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "validated",
+        "frozen",
+        "deprecated"
+      ]
+    },
+    "example_only": {
+      "type": "boolean"
+    },
+    "scenario_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "scenario_family_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sample_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "split_policy": {
+      "type": "object",
+      "properties": {
+        "assignment_unit": {
+          "const": "scenario_family"
+        },
+        "target_percentages": {
+          "type": "object",
+          "properties": {
+            "train": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "validation": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "test": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "hard_test": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          "required": [
+            "train",
+            "validation",
+            "test",
+            "hard_test"
+          ],
+          "additionalProperties": false
+        },
+        "final_split_assigned": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "assignment_unit",
+        "target_percentages",
+        "final_split_assigned"
+      ],
+      "additionalProperties": false
+    },
+    "split_statistics": {
+      "$ref": "#/$defs/split_statistics"
+    },
+    "task_statistics": {
+      "$ref": "#/$defs/task_statistics"
+    },
+    "scope_statistics": {
+      "$ref": "#/$defs/scope_statistics"
+    },
+    "source_statistics": {
+      "$ref": "#/$defs/source_statistics"
+    },
+    "trust_statistics": {
+      "$ref": "#/$defs/trust_statistics"
+    },
+    "difficulty_statistics": {
+      "$ref": "#/$defs/difficulty_statistics"
+    },
+    "lifecycle_statistics": {
+      "$ref": "#/$defs/lifecycle_statistics"
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "scenario",
+              "sample",
+              "schema",
+              "validation_report"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "record_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sha256": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "kind",
+          "path",
+          "record_count",
+          "sha256"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "validation_summary": {
+      "type": "object",
+      "properties": {
+        "schema_valid": {
+          "type": "boolean"
+        },
+        "contract_valid": {
+          "type": "boolean"
+        },
+        "scope_valid": {
+          "type": "boolean"
+        },
+        "leakage_valid": {
+          "type": "boolean"
+        },
+        "policy_valid": {
+          "type": "boolean"
+        },
+        "privacy_valid": {
+          "type": "boolean"
+        },
+        "error_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warning_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "report_reference": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "schema_valid",
+        "contract_valid",
+        "scope_valid",
+        "leakage_valid",
+        "policy_valid",
+        "privacy_valid",
+        "error_count",
+        "warning_count",
+        "report_reference"
+      ],
+      "additionalProperties": false
+    },
+    "privacy": {
+      "type": "object",
+      "properties": {
+        "synthetic_identifiers_required": {
+          "const": true
+        },
+        "production_data_allowed": {
+          "const": false
+        },
+        "real_personal_data_allowed": {
+          "const": false
+        }
+      },
+      "required": [
+        "synthetic_identifiers_required",
+        "production_data_allowed",
+        "real_personal_data_allowed"
+      ],
+      "additionalProperties": false
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 4000
+    }
+  },
+  "required": [
+    "manifest_schema_version",
+    "dataset_version",
+    "business_logic_version",
+    "ai_contract_version",
+    "ai_scope_version",
+    "frozen_reference_sha",
+    "created_at",
+    "status",
+    "example_only",
+    "scenario_count",
+    "scenario_family_count",
+    "sample_count",
+    "split_policy",
+    "split_statistics",
+    "task_statistics",
+    "scope_statistics",
+    "source_statistics",
+    "trust_statistics",
+    "difficulty_statistics",
+    "lifecycle_statistics",
+    "artifacts",
+    "validation_summary",
+    "privacy",
+    "notes"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "split_statistics": {
+      "type": "object",
+      "properties": {
+        "train": {
+          "$ref": "#/$defs/count"
+        },
+        "validation": {
+          "$ref": "#/$defs/count"
+        },
+        "test": {
+          "$ref": "#/$defs/count"
+        },
+        "hard_test": {
+          "$ref": "#/$defs/count"
+        },
+        "unassigned": {
+          "$ref": "#/$defs/count"
+        }
+      },
+      "required": [
+        "train",
+        "validation",
+        "test",
+        "hard_test",
+        "unassigned"
+      ],
+      "additionalProperties": false
+    },
+    "task_statistics": {
+      "type": "object",
+      "propertyNames": {
+        "enum": [
+          "intent_classification",
+          "parameter_extraction",
+          "entity_resolution",
+          "clarification",
+          "proposal_generation",
+          "tool_call",
+          "ui_context_reasoning",
+          "interaction_context_reasoning",
+          "conversation_context_reasoning",
+          "result_explanation",
+          "rule_qa",
+          "unsupported_detection",
+          "error_handling"
+        ]
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/count"
+      }
+    },
+    "scope_statistics": {
+      "type": "object",
+      "properties": {
+        "CORE": {
+          "$ref": "#/$defs/count"
+        },
+        "SUPPORTED_BUT_GATED": {
+          "$ref": "#/$defs/count"
+        },
+        "DEFERRED": {
+          "$ref": "#/$defs/count"
+        }
+      },
+      "required": [
+        "CORE",
+        "SUPPORTED_BUT_GATED",
+        "DEFERRED"
+      ],
+      "additionalProperties": false
+    },
+    "source_statistics": {
+      "type": "object",
+      "propertyNames": {
+        "enum": [
+          "business_logic",
+          "pgtap",
+          "mass500",
+          "mass2000",
+          "android_test",
+          "manual",
+          "synthetic",
+          "teacher_generated"
+        ]
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/count"
+      }
+    },
+    "trust_statistics": {
+      "type": "object",
+      "properties": {
+        "GOLD": {
+          "$ref": "#/$defs/count"
+        },
+        "SILVER": {
+          "$ref": "#/$defs/count"
+        },
+        "SYNTHETIC_UNVERIFIED": {
+          "$ref": "#/$defs/count"
+        }
+      },
+      "required": [
+        "GOLD",
+        "SILVER",
+        "SYNTHETIC_UNVERIFIED"
+      ],
+      "additionalProperties": false
+    },
+    "difficulty_statistics": {
+      "type": "object",
+      "properties": {
+        "easy": {
+          "$ref": "#/$defs/count"
+        },
+        "normal": {
+          "$ref": "#/$defs/count"
+        },
+        "hard": {
+          "$ref": "#/$defs/count"
+        },
+        "ood": {
+          "$ref": "#/$defs/count"
+        }
+      },
+      "required": [
+        "easy",
+        "normal",
+        "hard",
+        "ood"
+      ],
+      "additionalProperties": false
+    },
+    "lifecycle_statistics": {
+      "type": "object",
+      "properties": {
+        "draft": {
+          "$ref": "#/$defs/count"
+        },
+        "generated": {
+          "$ref": "#/$defs/count"
+        },
+        "validated": {
+          "$ref": "#/$defs/count"
+        },
+        "reviewed": {
+          "$ref": "#/$defs/count"
+        },
+        "approved": {
+          "$ref": "#/$defs/count"
+        },
+        "rejected": {
+          "$ref": "#/$defs/count"
+        },
+        "deprecated": {
+          "$ref": "#/$defs/count"
+        }
+      },
+      "required": [
+        "draft",
+        "generated",
+        "validated",
+        "reviewed",
+        "approved",
+        "rejected",
+        "deprecated"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

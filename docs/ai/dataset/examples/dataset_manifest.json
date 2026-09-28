@@ -1,0 +1,99 @@
+{
+  "manifest_schema_version": "0.1",
+  "dataset_version": "0.1",
+  "business_logic_version": "1.2",
+  "ai_contract_version": "0.1.2",
+  "ai_scope_version": "0.1",
+  "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+  "created_at": "2026-09-27T20:30:00+08:00",
+  "status": "validated",
+  "example_only": true,
+  "scenario_count": 9,
+  "scenario_family_count": 8,
+  "sample_count": 10,
+  "split_policy": {
+    "assignment_unit": "scenario_family",
+    "target_percentages": {
+      "train": 70,
+      "validation": 10,
+      "test": 15,
+      "hard_test": 5
+    },
+    "final_split_assigned": false
+  },
+  "split_statistics": {
+    "train": 0,
+    "validation": 0,
+    "test": 0,
+    "hard_test": 0,
+    "unassigned": 10
+  },
+  "task_statistics": {
+    "proposal_generation": 2,
+    "ui_context_reasoning": 1,
+    "clarification": 3,
+    "interaction_context_reasoning": 1,
+    "unsupported_detection": 1,
+    "tool_call": 1,
+    "conversation_context_reasoning": 1
+  },
+  "scope_statistics": {
+    "CORE": 8,
+    "SUPPORTED_BUT_GATED": 1,
+    "DEFERRED": 1
+  },
+  "source_statistics": {
+    "manual": 10
+  },
+  "trust_statistics": {
+    "GOLD": 0,
+    "SILVER": 10,
+    "SYNTHETIC_UNVERIFIED": 0
+  },
+  "difficulty_statistics": {
+    "easy": 2,
+    "normal": 5,
+    "hard": 3,
+    "ood": 0
+  },
+  "lifecycle_statistics": {
+    "draft": 0,
+    "generated": 0,
+    "validated": 10,
+    "reviewed": 0,
+    "approved": 0,
+    "rejected": 0,
+    "deprecated": 0
+  },
+  "artifacts": [
+    {
+      "kind": "scenario",
+      "path": "examples/scenarios.json",
+      "record_count": 9,
+      "sha256": "2a014a8b3ae9e1b8887f0e0c195615c33319c34241b08210cbc1d49a996bd3b3"
+    },
+    {
+      "kind": "sample",
+      "path": "examples/samples.json",
+      "record_count": 10,
+      "sha256": "72479be6ec1b9460a230b8577d15dde31a2ecd56e9faf8d16b76a9b9cb71d7ff"
+    }
+  ],
+  "validation_summary": {
+    "schema_valid": true,
+    "contract_valid": true,
+    "scope_valid": true,
+    "leakage_valid": true,
+    "policy_valid": true,
+    "privacy_valid": true,
+    "error_count": 0,
+    "warning_count": 3,
+    "report_reference": "DATASET_VALIDATION_RULES.md"
+  },
+  "privacy": {
+    "synthetic_identifiers_required": true,
+    "production_data_allowed": false,
+    "real_personal_data_allowed": false
+  },
+  "notes": "20 个 example_only 记录中的 manifest；9 个 Scenario + 10 个 Sample + 1 个 Manifest。AI Contract v0.1.2 支持按 Intent Catalog 授权的只读 Supporting Lookup；D4 proposal 仍不可执行。"
+}

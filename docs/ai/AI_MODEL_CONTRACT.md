@@ -1,6 +1,6 @@
-# Shared Ledger AI Model Contract v0.1
+# Shared Ledger AI Model Contract v0.1.2
 
-> 状态：**Contract draft，待产品决策，未实现 AI Gateway**。日期：2026-09-27。中文语义规范与 JSON Schema 联合构成契约。
+> 状态：**v0.1.2 发布；Proposal Protocol 已冻结，AI Gateway 尚未实现**。日期：2026-09-27。中文语义规范与 JSON Schema 联合构成契约。
 > 冻结基线：`55fb28a7c0660462e5842e2eb5c71cfa763e5801`，BUSINESS LOGIC FREEZE v1.2。当前 HEAD 与基线一致；工作区存在用户的 Android/UI 未提交修改，页面检查包含这些修改，本文不修改它们。
 
 ## 1. 目标、依据与交付边界
@@ -18,7 +18,7 @@
 - [context_envelope.schema.json](schema/context_envelope.schema.json)：Gateway 归一后的模型上下文。
 - [model_output.schema.json](schema/model_output.schema.json)：封闭输出联合类型，Tool 名与参数按分支绑定。
 
-JSON Schema 使用 Draft 2020-12，`https://shared-ledger.invalid/ai/v0.1/` 是离线 Schema 命名空间，不是已部署地址。校验器必须启用 `format` 检查，并本地注册相邻 catalog 的 `$id`；禁止运行时访问该域名。
+JSON Schema 使用 Draft 2020-12，`https://shared-ledger.invalid/ai/v0.1/` 是离线 Schema 命名空间，不是已部署地址。v0.1.2 在 v0.1.1 基础上增加 Catalog 派生的 Tool Role 与只读辅助查询；保留组件 URI，并由 `x-ai-contract-version=0.1.2` 标识协议版本。校验器必须启用 `format` 检查并本地注册相邻 catalog 的 `$id`；禁止运行时访问该域名。
 
 ## 2. 产品定位与模型任务
 
@@ -296,17 +296,26 @@ catalog 保存所有映射 RPC 的源文件、行号、参数及 returns，以�
 
 ## 14. Model Output Protocol
 
-单轮只输出一个 JSON 对象，禁止 Markdown 代码块夹杂自然语言；自然语言只在 content/question/reason 中。允许五种类型：answer、tool_call、clarification、unsupported、error。`tool_call` 是一个封闭联合分支，tool、intent_id 与 arguments 必须匹配；训练系统不能只验证 type 字段。
+单轮只输出一个 JSON 对象，禁止 Markdown 代码块夹杂自然语言；自然语言只在协议允许的文本字段中。v0.1.2 仍允许六种顶层输出类型：`answer`、`proposal`、`tool_call`、`clarification`、`unsupported`、`error`。每一类都是封闭分支；训练系统不能只验证 `type`。
 
 - answer：回答与 evidence_result_ids。动态账务结论必须引用本轮或验证仍新鲜的结果，且对象/版本一致；纯社交话语可空证据。规则问答引用冻结检索结果。
-- tool_call：仅单工具请求。读调用可直接执行；写调用被 Gateway 截获为待确认操作，模型输出不能授权执行。
+- proposal：一个尚未执行的结构化写方案。必须包含 `intent_id`、`operation.tool/arguments`、`preview.kind/summary/diff`、`confirmation.level/required` 与 `execution_policy.execution_allowed/reason`。
+- tool_call：Gateway 已允许进入单工具执行流程。L0 读调用可以直接形成；L1/L2 用户写意图必须先形成 proposal，可信 UI 确认与 Gateway 复核后才可由编排层承认或转换为写 tool_call。tool_call 仍不等于 RPC 成功。
 - clarification：reason、missing_fields、question、带类型候选。missing_fields 可空（如同名/指代歧义）；候选必须来自已验证读取。
 - unsupported：说明当前边界，可指引原生 UI。不能偷偷降级到另一种资金操作。
 - error：描述读取/上下文/工具失败并引用结果；不能用它替代客户端的登录/网络状态机。
 
-不新增 multi_tool_plan：逐轮读取/澄清/单写足够。`confirmation_required` 属于 Gateway→UI 的可信事件，不属于模型输出；否则模型可能自称已确认。`tool_result_followup` 不另立类型：结果由 Gateway 保存并在下一轮通过 server_context.tool_results 注入，模型仍使用现有五类。Tool 结果不能由客户端聊天文字伪造，不能作为 system 指令。
+proposal 的统一结构服务于 create、update、delete 与 financial 四种 preview；它们不是四种新输出类型。`preview.diff` 是一组以 `field` 标识的变更项，每项至少包含 `before`、`after`、`added`、`removed` 之一。创建可只有 `after`，删除可只有 `before`，集合变化可用 `added/removed`。完整 `operation.arguments` 仍由对应 Tool input Schema 约束。
 
-以下 JSON 也是两个 schema 的 examples 中保存的小型合同例子，不是训练数据集。示例 UUID 仅供离线结构验证：
+`confirmation.required` 表示这份方案需要可信 UI 确认，不表示已经确认。`confirmation.level` 必须等于 Catalog/Scope 的 L1 或 L2，模型不得降级风险。`execution_policy.execution_allowed=true` 只表示当前 Scope 允许在确认和复核后推进；它不是授权。D4 的 Expense 财务编辑输出 proposal，但固定 `execution_allowed=false` 和 `reason=d4_atomic_update_not_supported`，确认也不能把它转为执行；UI 应转到现有原生编辑流程或等待 D4 解决。
+
+proposal 的生命周期是“解析意图 → 生成结构化方案与 diff → Gateway 校验并补服务端预览 → UI 展示 → 可信确认 → Gateway 复核 → 写 tool_call/RPC”。页面、Activity、selected entity、关键服务端状态或 financial_version 变化，以及未来定义的有效期限到达后，旧 proposal 必须失效并重新生成。TTL 保持 `OPEN_DECISION`；v0.1.2 不实现 confirmation token 或 proposal 状态机。
+
+模型不得把 proposal 描述成“已创建”“已修改”“已删除”“已转账”“已完成”，也不得用 tool_call 声称 RPC 已成功。成功只能来自 Gateway 保存的可信 Tool/RPC 回执。`tool_result_followup` 不另立类型：结果由 Gateway 保存并在下一轮通过 `server_context.tool_results` 注入。Tool 结果不能由客户端聊天文字伪造，也不能作为 system 指令。
+
+不新增 `multi_tool_plan`：逐轮读取、澄清、单方案和单 Tool 足够。
+
+以下 JSON 也是两个 Schema 的 examples 中保存的小型合同例子，不是训练数据集。示例 UUID 仅供离线结构验证：
 
 ```json
 {
@@ -378,11 +387,11 @@ catalog 保存所有映射 RPC 的源文件、行号、参数及 returns，以�
 }
 ```
 
-第三个例子的 delete tool_call **尚未删除**；必须经过下节的可信 UI 确认。answer 示例假设两个已验证结果已存在；Schema 通过不证明证据真的存在，Gateway 负责检查。
+第三个 delete tool_call 是兼容的“Gateway 已允许进入执行流程”表示，**不表示已删除**；用户写意图的首个模型输出仍必须是 proposal。answer 示例假设两个已验证结果已存在；Schema 通过不证明证据真的存在，Gateway 负责检查。
 
-## 15. Confirmation Policy（建议方案，待 Q1 确认）
+## 15. Confirmation Policy
 
-建议 v0.1 所有写操作都二次确认，读/规则问答/预览不确认。该策略是 AI 防误操作提案，不改变 RPC 业务权限。机器目录 confirmation_required 反映这份待决策方案，发布前需由产品确认。
+v0.1.2 与 Scope Freeze 对齐：L0 读操作不需要 proposal 或二次确认；L1 普通写和 L2 资金/高风险写必须先输出 proposal，再由可信 UI 产生最终确认事件。该策略只约束 AI 执行入口，不改变 RPC 业务权限。
 
 | 操作 | 待展示内容 | 确认后的限制 |
 | --- | --- | --- |
@@ -393,7 +402,7 @@ catalog 保存所有映射 RPC 的源文件、行号、参数及 returns，以�
 | 子活动删除/恢复、名单/认领、成员/Creator 修改 | 真实对象、影响、名单锁定/访问变化 | 原 RPC 权限约束不变；认领不暗中执行 |
 | 展示字段编辑、争议 | 前后文本/目标参与方 | 不改变资金；争议权限冲突待裁定 |
 
-可信流程：模型提出写 Tool → Gateway Schema/身份/对象校验并读取预览 → Gateway 固化规范 payload 及摘要 → UI 显示确认卡 → 用户点击确认 → Gateway 复核会话绑定与对象/版本 → 正式 RPC → 回执/异常状态。
+可信流程：模型输出 proposal → Gateway 校验 Schema/身份/对象并读取服务端预览 → Gateway 固化规范 payload 及摘要 → UI 显示 L1/L2 确认卡 → 用户点击确认 → Gateway 复核会话绑定与对象/版本 → 承认或转换为写 tool_call → 正式 RPC → 回执/异常状态。D4 在 Gateway 复核时必须停在 proposal，不得转换。
 
 Gateway→UI 的建议事件包含 proposal_id、actor、activity、tool、canonical_arguments、payload_digest、服务端预览引用、expires_at、display_summary；客户端确认只提交 proposal_id 与用户动作，不回传可修改金额。proposal_id 绑定 actor/conversation/activity/tool/payload/版本/有效期，单次消费；取消、退出、切换身份或编辑 payload 失效。自然语言“确认”仅在唯一待办且确定性确认流程支持时才可转成 UI 确认动作，模型不能自写 confirmed=true。
 
@@ -428,6 +437,19 @@ Gateway 使用用户认证上下文调用正式 RPC/RLS 查询，绝不让模型
 
 用户数据最小化、会话隔离、日志脱敏、保留周期、同意策略及未来训练使用另需产品决策。图片附件仅现有 jpeg/png/webp 原生流程，v0.1 没有 OCR 或从附件自动生成账单的承诺。
 
+### 17.1 Tool Role 与 Supporting Lookup
+
+Tool Role 按当前业务 Intent 派生，模型输出协议仍只有 `answer`、`proposal`、`tool_call`、`clarification`、`unsupported`、`error` 六种类型：
+
+- `PRIMARY` 是直接完成当前 Intent 主要读取或操作的 Tool，由 Intent Catalog 的 `possible_tools` 表示。
+- `SUPPORTING_LOOKUP` 是同一 Intent 准备阶段所需的目标搜索、实体解析或只读上下文查询，由 Intent Catalog 的 `supporting_lookup_tools` 明确授权。Tool Catalog 提供其 `mode` 和确认级别，不重复存储 Intent allowlist。
+
+Supporting Lookup 首期只能使用 `mode=read` 且确认级别为 L0 的 Tool。它不改变账务事实、不改变用户业务 Intent、不需要用户确认，也不能产生成功写入标签。读结果可以用于继续同一 Intent 的 PRIMARY Tool、proposal、clarification 或 answer；多个候选必须澄清，唯一候选只有在证据充分时才继续。未在当前 Intent 明列的 Tool 一律拒绝，即使它是只读 Tool。
+
+典型流程：`query_expense → find_expenses → (唯一候选时 get_expense / 多候选时 clarification)`；`create_expense → find_participants → (候选歧义时 clarification / 字段齐备时 PRIMARY proposal)`。Intent 在整个流程保持 `query_expense` 或 `create_expense`。Gateway 预取仍可作为优化，模型发起授权的 Supporting Lookup 也合法；两种路径都遵循最小上下文原则。
+
+Contract 允许有限的“Supporting Lookup → Tool Result → 模型继续推理”步骤，不定义 Agent Loop、任意 Tool Chain、DAG planner 或无限重试。最大 lookup 次数和重试边界由 Gateway Policy / `OPEN_DECISION` 简单约束。本角色定义不改变 L1/L2 Proposal、可信 UI Confirmation 或 D4 `execution_allowed=false`。
+
 ## 18. Android / 小程序统一接口原则
 
 同一个 version、Intent/Tool/DTO 和确认语义；客户端只在 route、采集器、展示组件上不同。UI schema 不绑定 Compose 类名；小程序可以使用自己的 route，但 page_type/scope/mode 相同。认证凭据在 transport header，不进入模型上下文。
@@ -448,7 +470,7 @@ AI Gateway 的预期交互是提交前九项 Context → 补可信 server_contex
 
 ## 20. Dataset Schema 后续约束与验收门槛
 
-现在可以设计 Dataset Schema 草案，但不能把未决产品策略当已冻结训练标签。样本应携带 contract_version、baseline_commit、source turn、输入 Envelope、已验证 Tool 结果、目标单 JSON、字段证据来源、预期 clarification、确认/回执状态以及 unsupported 分类。财务数字标签由确定性 fixture/RPC 生成，模型标签不自行计算债务。
+Dataset Schema v0.1 可把六类输出作为训练目标，其中 `proposal` 的结构化 `preview.diff` 与 Dataset `expected_diff` 必须一致。样本应携带 contract_version、baseline_commit、source turn、输入 Envelope、已验证 Tool 结果、目标单 JSON、字段证据来源、预期 clarification、确认/回执状态以及 unsupported 分类。财务数字标签由确定性 fixture/RPC 生成，模型标签不自行计算债务。
 
 至少覆盖：同名/无claim/跨活动指代、草稿默认与用户明确选择差异、negative adjustment 对比 linked Refund、退款真实收款人与受益人、base=0 微额、AA/manual 尾差不同、关闭外币后的历史清偿、纯环债、永久锁与 Usage 非锁、返还来源作废保护、Final 整项及刷新、成功回执丢失与 exact replay、未归档/已归档、权限变化、分页截断与上下文注入。
 
@@ -474,14 +496,60 @@ MASS500/MASS2000 是历史业务验证证据，不自动等于合格对话训练
 
 ### 21.2 需要产品/维护者决定
 
-1. **Q1 写确认范围与形式**：是否采纳 v0.1 所有写操作二次确认？如只对资金/破坏性操作确认，需明确创建活动、认领、展示编辑、争议等例外；文字“确认”能否替代原生点击。默认草案保守，未擅自作为既定产品政策。
+1. **Q1 确认交互实现**：L1/L2 先 proposal、再可信 UI 确认的协议已经冻结；仍需决定不同客户端的确认卡呈现、取消/返回行为，以及自然语言“确认”是否只用于定位待办而绝不替代最终点击。
 2. **Q2 权限表述冲突**：D1 UI 是否之后对齐 Member 名单管理；D2 争议权限以现实现细化规格还是另作业务裁决。争议写工具在裁定前不启用；不会自行改变冻结权限。
 3. **Q3 财务字段默认值**：是否允许明确展示后的 base currency/发生时间/FIFO 等被当作用户默认选择；付款人、参与人/本人是否参与和分摊方式建议必须明确。当前草案只自动采用非资金展示/分页默认。
 4. **Q4 Expense 并发编辑**：在没有现有 CAS RPC 的情况下，AI 编辑是否先仅导向原生流程，或接受读取前后/确认版本复查仍无法关闭的竞态窗口？本稿不给不存在的事务保证；如要新增后端契约，属于后续单独任务，不能本阶段改 migration。正式启用 update_expense 前必须明确接受范围。
 5. **Q5 上下文与隐私**：历史保留期限、允许的摘要字段/候选人数上限、跨设备最近操作、proposal 有效期、去重持久化和恢复窗口、最终 Gateway/认证接入方式；schema 中20条历史/100条列表是可验证草案限制。
 6. **Q6 首期 AI 能力范围**：是否按本稿把账号/图片上传删除留原生流程，是否开启成员管理/Creator 转移等低频高影响能力；如何向用户显示 draft 与不可执行能力。现有能力被识别不等于全部必须首期开放。
 
-结论：具备进入 **Dataset Schema 设计稿** 的条件；Q1–Q6 收口、争议权限与 Expense 并发策略定稿、协议重新校验之后，才适合把此稿升级为训练/发布固定契约。当前不建议开始正式生成训练数据或训练。
+结论：AI Model Contract v0.1.2 已具备 Supporting Lookup 协议条件；Gold Seed 仍需通过当前 Example 基线验收。Q1–Q6、争议权限和 Expense 并发策略仍按各自范围保留，不能在正式 Gold Label 中猜测；当前不开始正式数据生成、Teacher API 调用或训练。
+
+## 22. AI 数据生产与训练工作流
+
+正式阶段顺序固定为：
+
+```text
+BUSINESS LOGIC FREEZE
+        ↓
+AI CONTRACT
+        ↓
+AI SCOPE
+        ↓
+DATASET SCHEMA
+        ↓
+GOLD SEED DATASET
+        ↓
+TEACHER GENERATOR
+        ↓
+DEEPSEEK API
+        ↓
+SURFACE FORM GENERATION
+        ↓
+OFFLINE VALIDATOR
+        ↓
+HUMAN REVIEW
+        ↓
+APPROVED DATASET
+        ↓
+EXPORTER
+        ↓
+QWEN3.5-4B
+        ↓
+SFT + QLoRA
+        ↓
+EVALUATION
+        ↓
+DEPLOYMENT
+```
+
+Codex 是工程开发 Agent，负责 Contract、Scope、Schema、Scenario、Generator、Provider 接入、Validator、Exporter、训练配置、评测、部署和客户端接入代码。Codex 不是正式 Teacher，不得用自身生成结果绕过后续 Teacher 生产、离线验证和人工审核。
+
+正式 Teacher 计划使用 DeepSeek，通过用户届时可用的 OpenCode Go 套餐 API 调用。Generator 的依赖边界必须是 provider-neutral 的 `TeacherProvider`，DeepSeek 仅作为 `DeepSeekTeacherProvider` 实现。Dataset Schema 不绑定厂商请求/响应格式；具体模型名、Base URL、认证、计费与 SDK 在 Teacher Generator 阶段按真实环境确认。v0.1.2 不调用 API、不写密钥，也不生成训练数据。
+
+Teacher 只基于已锁定 Ground Truth 生成 `surface_form`、自然语言/口语/ASR/多轮变体，以及 clarification、explanation 和 Rule QA 的措辞。Teacher 禁止改变 `scenario_id`、`scenario_family_id`、Ground Truth、Intent、Tool、Scope、confirmation level、execution allowed、金额、方向、Participant 身份、财务结果或业务规则结果。发现冲突时必须拒绝 Teacher Output，不能接受它的新答案。
+
+每个 `teacher_generated` Sample 必须记录 provider、model、generation_run_id、prompt_version、generated_at、temperature，以及 API 支持时的 seed；未运行的示例不得伪造这些值。Student 计划为 Qwen3.5-4B，以 SFT + QLoRA 学习 Intent、参数、实体解析、澄清、Tool Calling、UI/交互/会话上下文、结果解释、规则问答、Unsupported/Error 与 Proposal 生成。当前版本只记录工作流和边界，不安装或训练模型。
 
 ## 附件 A：全部 migration 检查清单
 
@@ -547,8 +615,9 @@ MASS500/MASS2000 是历史业务验证证据，不自动等于合格对话训练
 | 检查 | 结果 |
 | --- | --- |
 | Schema 元定义 | 107 项通过：88 个 Tool 输入/输出、2 个主 Schema、17 个共享类型 |
-| 结构正例 | 323 项通过：逐 Tool 输入/结果各状态、模型单 Tool 调用、可信结果注入 Envelope、文档和 Schema examples |
+| 结构正例 | 325 项通过：逐 Tool 输入/结果各状态、模型单 Tool 调用、L1/L2 proposal、可信结果注入 Envelope、文档和 Schema examples |
 | 拒绝负例 | 281 项符合预期：缺少必填、额外 SQL/确认标记、非法时间、错误页面 mode/选中实体、恢复接口、退款正负号/来源、空 TARGETED 列表等 |
+| Proposal 专项 | 6 种顶层输出、59 个封闭分支；原五类正例、L1/L2/D4 proposal 正例通过，8 个 malformed/越权 proposal 负例被拒绝 |
 | 引用闭合 | 107 项 Intent/后端源码引用检查通过；70 个 Intent 的 Tool/参数引用有效，执行型意图均有写 Tool |
 | 页面结构 | 17 类正式页面及 unknown 共18种结构通过；字段来源/真实路由/ID归属仍需运行时验证，未进行设备端测试 |
 | 文档链接与边界 | 相对文件链接有效；43 个 migration 指纹已列出；工具映射无 legacy/restore 写 RPC |

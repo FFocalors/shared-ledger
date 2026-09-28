@@ -1,0 +1,1915 @@
+[
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_create_expense_aa",
+    "scenario_family_id": "family_create_expense_aa",
+    "split_group_id": "split_create_expense_aa",
+    "scenario_version": "0.1",
+    "example_only": true,
+    "title": "三人晚饭 AA",
+    "description": "三人晚饭 AA",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "manual",
+      "reference": "Dataset Schema v0.1 example",
+      "source_id": "scenario_create_expense_aa",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": true,
+      "evidence_refs": [
+        "docs/ai/AI_SCOPE_FREEZE_V0.1.md"
+      ]
+    },
+    "rule_tags": [
+      "expense",
+      "single_payer",
+      "equal_split"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": [
+        "create_expense"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "周末聚餐",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "U001",
+          "id": "00000000-0000-4000-8000-000000000102",
+          "type": "user",
+          "display_name": "测试用户",
+          "activity_id": null
+        },
+        {
+          "alias": "P001",
+          "id": "00000000-0000-4000-8000-000000000103",
+          "type": "participant",
+          "display_name": "我",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P002",
+          "id": "00000000-0000-4000-8000-000000000104",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P003",
+          "id": "00000000-0000-4000-8000-000000000105",
+          "type": "participant",
+          "display_name": "李四",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P004",
+          "id": "00000000-0000-4000-8000-000000000108",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "E001",
+          "id": "00000000-0000-4000-8000-000000000106",
+          "type": "expense",
+          "display_name": "晚饭",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "T001",
+          "id": "00000000-0000-4000-8000-000000000107",
+          "type": "transfer",
+          "display_name": "还款",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+          "title": "晚饭",
+          "original_amount": "300",
+          "original_currency": "CNY",
+          "split_method": "aa",
+          "payments": [
+            {
+              "participant_id": "00000000-0000-4000-8000-000000000103",
+              "amount": "300"
+            }
+          ],
+          "manual_splits": [],
+          "aa_participant_ids": [
+            "00000000-0000-4000-8000-000000000103",
+            "00000000-0000-4000-8000-000000000104",
+            "00000000-0000-4000-8000-000000000105"
+          ],
+          "occurred_at": "2026-09-27T18:30:00+08:00",
+          "note": null,
+          "original_expense_id": null,
+          "icon_key": "dining"
+        }
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识",
+        "服务端仍负责最终业务校验"
+      ],
+      "minimal_state_reason": "仅保留当前意图、实体和标准答案所需事实。"
+    },
+    "operation": {
+      "type": "write",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_id": "create_expense",
+      "arguments": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "title": "晚饭",
+        "original_amount": "300",
+        "original_currency": "CNY",
+        "split_method": "aa",
+        "payments": [
+          {
+            "participant_id": "00000000-0000-4000-8000-000000000103",
+            "amount": "300"
+          }
+        ],
+        "manual_splits": [],
+        "aa_participant_ids": [
+          "00000000-0000-4000-8000-000000000103",
+          "00000000-0000-4000-8000-000000000104",
+          "00000000-0000-4000-8000-000000000105"
+        ],
+        "occurred_at": "2026-09-27T18:30:00+08:00",
+        "note": null,
+        "original_expense_id": null,
+        "icon_key": "dining"
+      },
+      "description": "三人晚饭 AA"
+    },
+    "ground_truth": {
+      "truth_source": "human_deterministic_review",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "expected_output_type": "proposal",
+      "model_output": {
+        "type": "proposal",
+        "intent_id": "create_expense",
+        "operation": {
+          "tool": "create_expense",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+            "title": "晚饭",
+            "original_amount": "300",
+            "original_currency": "CNY",
+            "split_method": "aa",
+            "payments": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "300"
+              }
+            ],
+            "manual_splits": [],
+            "aa_participant_ids": [
+              "00000000-0000-4000-8000-000000000103",
+              "00000000-0000-4000-8000-000000000104",
+              "00000000-0000-4000-8000-000000000105"
+            ],
+            "occurred_at": "2026-09-27T18:30:00+08:00",
+            "note": null,
+            "original_expense_id": null,
+            "icon_key": "dining"
+          }
+        },
+        "preview": {
+          "kind": "create",
+          "summary": "创建一笔300 CNY的晚饭，三人AA。",
+          "diff": [
+            {
+              "field": "title",
+              "after": "晚饭"
+            },
+            {
+              "field": "original_amount",
+              "after": "300"
+            },
+            {
+              "field": "aa_participant_ids",
+              "after": [
+                "00000000-0000-4000-8000-000000000103",
+                "00000000-0000-4000-8000-000000000104",
+                "00000000-0000-4000-8000-000000000105"
+              ]
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 1,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": true,
+          "reason": "confirmation_required"
+        }
+      },
+      "expected_business_result": {
+        "proposal_only": true
+      },
+      "deterministic_assertions": [
+        "模型输出必须通过当前 Model Output Schema",
+        "模型不得自行计算或改写服务端账务结果"
+      ],
+      "execution_policy": {
+        "execution_allowed": true,
+        "confirmation_level": 1,
+        "confirmation_required": true,
+        "final_authorization": "trusted_ui_event_required",
+        "successful_execution_label_allowed": true
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "c017b4f9c398363eed1b1220d63ed5a9b6f2aaddd04479bdf5ae0e26b8afe402",
+      "dedup_key": "scenario:create_expense_aa",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "validated",
+      "deprecated_by_version": null,
+      "review_notes": "仅用于 Schema 验证，不计入正式 Dataset。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_ui_expense_detail",
+    "scenario_family_id": "family_same_sentence_ui",
+    "split_group_id": "split_same_sentence_ui",
+    "scenario_version": "0.1",
+    "example_only": true,
+    "title": "Expense Detail 上解释金额",
+    "description": "Expense Detail 上解释金额",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "manual",
+      "reference": "Dataset Schema v0.1 example",
+      "source_id": "scenario_ui_expense_detail",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": true,
+      "evidence_refs": [
+        "docs/ai/AI_SCOPE_FREEZE_V0.1.md"
+      ]
+    },
+    "rule_tags": [
+      "expense",
+      "ui_context"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "explain_expense"
+      ],
+      "tool_ids": [
+        "get_expense"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "周末聚餐",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "U001",
+          "id": "00000000-0000-4000-8000-000000000102",
+          "type": "user",
+          "display_name": "测试用户",
+          "activity_id": null
+        },
+        {
+          "alias": "P001",
+          "id": "00000000-0000-4000-8000-000000000103",
+          "type": "participant",
+          "display_name": "我",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P002",
+          "id": "00000000-0000-4000-8000-000000000104",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P003",
+          "id": "00000000-0000-4000-8000-000000000105",
+          "type": "participant",
+          "display_name": "李四",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P004",
+          "id": "00000000-0000-4000-8000-000000000108",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "E001",
+          "id": "00000000-0000-4000-8000-000000000106",
+          "type": "expense",
+          "display_name": "晚饭",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "T001",
+          "id": "00000000-0000-4000-8000-000000000107",
+          "type": "transfer",
+          "display_name": "还款",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "expense_id": "00000000-0000-4000-8000-000000000106"
+        }
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识",
+        "服务端仍负责最终业务校验"
+      ],
+      "minimal_state_reason": "仅保留当前意图、实体和标准答案所需事实。"
+    },
+    "operation": {
+      "type": "explain",
+      "intent_ids": [
+        "explain_expense"
+      ],
+      "tool_id": "get_expense",
+      "arguments": {
+        "expense_id": "00000000-0000-4000-8000-000000000106"
+      },
+      "description": "Expense Detail 上解释金额"
+    },
+    "ground_truth": {
+      "truth_source": "human_deterministic_review",
+      "intent_ids": [
+        "explain_expense"
+      ],
+      "expected_output_type": "answer",
+      "model_output": {
+        "type": "answer",
+        "content": "当前选中的晚饭账单原币金额是120 CNY；这是服务端读取结果。",
+        "evidence_result_ids": [
+          "expense-result-1"
+        ]
+      },
+      "expected_business_result": {
+        "amount": "120",
+        "currency": "CNY"
+      },
+      "deterministic_assertions": [
+        "模型输出必须通过当前 Model Output Schema",
+        "模型不得自行计算或改写服务端账务结果"
+      ],
+      "execution_policy": {
+        "execution_allowed": false,
+        "confirmation_level": 0,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "d41f2217731835a351c023bd294ff3b38dbf10e698c530fa96e5829513e203a8",
+      "dedup_key": "scenario:ui_expense_detail",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "validated",
+      "deprecated_by_version": null,
+      "review_notes": "仅用于 Schema 验证，不计入正式 Dataset。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_ui_activity_ambiguous",
+    "scenario_family_id": "family_same_sentence_ui",
+    "split_group_id": "split_same_sentence_ui",
+    "scenario_version": "0.1",
+    "example_only": true,
+    "title": "Activity Detail 上指代不明",
+    "description": "Activity Detail 上指代不明",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "manual",
+      "reference": "Dataset Schema v0.1 example",
+      "source_id": "scenario_ui_activity_ambiguous",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": true,
+      "evidence_refs": [
+        "docs/ai/AI_SCOPE_FREEZE_V0.1.md"
+      ]
+    },
+    "rule_tags": [
+      "expense",
+      "ui_context",
+      "clarification"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "query_expense"
+      ],
+      "tool_ids": [
+        "find_expenses"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "周末聚餐",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "U001",
+          "id": "00000000-0000-4000-8000-000000000102",
+          "type": "user",
+          "display_name": "测试用户",
+          "activity_id": null
+        },
+        {
+          "alias": "P001",
+          "id": "00000000-0000-4000-8000-000000000103",
+          "type": "participant",
+          "display_name": "我",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P002",
+          "id": "00000000-0000-4000-8000-000000000104",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P003",
+          "id": "00000000-0000-4000-8000-000000000105",
+          "type": "participant",
+          "display_name": "李四",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P004",
+          "id": "00000000-0000-4000-8000-000000000108",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "E001",
+          "id": "00000000-0000-4000-8000-000000000106",
+          "type": "expense",
+          "display_name": "晚饭",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "T001",
+          "id": "00000000-0000-4000-8000-000000000107",
+          "type": "transfer",
+          "display_name": "还款",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {}
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识",
+        "服务端仍负责最终业务校验"
+      ],
+      "minimal_state_reason": "仅保留当前意图、实体和标准答案所需事实。"
+    },
+    "operation": {
+      "type": "clarify",
+      "intent_ids": [
+        "query_expense"
+      ],
+      "tool_id": null,
+      "arguments": {},
+      "description": "Activity Detail 上指代不明"
+    },
+    "ground_truth": {
+      "truth_source": "human_deterministic_review",
+      "intent_ids": [
+        "query_expense"
+      ],
+      "expected_output_type": "clarification",
+      "model_output": {
+        "type": "clarification",
+        "intent_id": "query_expense",
+        "reason": "unresolved_reference",
+        "missing_fields": [],
+        "question": "你指的是活动里的哪一笔消费？",
+        "candidates": []
+      },
+      "expected_business_result": {
+        "clarification_required": true
+      },
+      "deterministic_assertions": [
+        "模型输出必须通过当前 Model Output Schema",
+        "模型不得自行计算或改写服务端账务结果"
+      ],
+      "execution_policy": {
+        "execution_allowed": false,
+        "confirmation_level": 0,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "32f8596b84544470b899b4cf1c387856f87b0945f9b5783a8d53d02f8a7d9196",
+      "dedup_key": "scenario:ui_activity_ambiguous",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "validated",
+      "deprecated_by_version": null,
+      "review_notes": "仅用于 Schema 验证，不计入正式 Dataset。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_same_name_missing_payer",
+    "scenario_family_id": "family_same_name_missing_payer",
+    "split_group_id": "split_same_name_missing_payer",
+    "scenario_version": "0.1",
+    "example_only": true,
+    "title": "同名参与人且缺付款人",
+    "description": "同名参与人且缺付款人",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "manual",
+      "reference": "Dataset Schema v0.1 example",
+      "source_id": "scenario_same_name_missing_payer",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": true,
+      "evidence_refs": [
+        "docs/ai/AI_SCOPE_FREEZE_V0.1.md"
+      ]
+    },
+    "rule_tags": [
+      "expense",
+      "clarification",
+      "entity_resolution"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": [
+        "find_participants",
+        "create_expense"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "周末聚餐",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "U001",
+          "id": "00000000-0000-4000-8000-000000000102",
+          "type": "user",
+          "display_name": "测试用户",
+          "activity_id": null
+        },
+        {
+          "alias": "P001",
+          "id": "00000000-0000-4000-8000-000000000103",
+          "type": "participant",
+          "display_name": "我",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P002",
+          "id": "00000000-0000-4000-8000-000000000104",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P003",
+          "id": "00000000-0000-4000-8000-000000000105",
+          "type": "participant",
+          "display_name": "李四",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P004",
+          "id": "00000000-0000-4000-8000-000000000108",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "E001",
+          "id": "00000000-0000-4000-8000-000000000106",
+          "type": "expense",
+          "display_name": "晚饭",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "T001",
+          "id": "00000000-0000-4000-8000-000000000107",
+          "type": "transfer",
+          "display_name": "还款",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {}
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识",
+        "服务端仍负责最终业务校验"
+      ],
+      "minimal_state_reason": "仅保留当前意图、实体和标准答案所需事实。"
+    },
+    "operation": {
+      "type": "clarify",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_id": null,
+      "arguments": {},
+      "description": "同名参与人且缺付款人"
+    },
+    "ground_truth": {
+      "truth_source": "human_deterministic_review",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "expected_output_type": "clarification",
+      "model_output": {
+        "type": "clarification",
+        "intent_id": "create_expense",
+        "reason": "needs_explicit_financial_choice",
+        "missing_fields": [
+          "payments"
+        ],
+        "question": "这笔是谁付款的？另外有两位张伟，请选择参加分摊的那一位。",
+        "candidates": [
+          {
+            "label": "张伟（参与人 P002）",
+            "entity": {
+              "type": "participant",
+              "id": "00000000-0000-4000-8000-000000000104",
+              "activity_id": "00000000-0000-4000-8000-000000000100"
+            }
+          },
+          {
+            "label": "张伟（参与人 P004）",
+            "entity": {
+              "type": "participant",
+              "id": "00000000-0000-4000-8000-000000000108",
+              "activity_id": "00000000-0000-4000-8000-000000000100"
+            }
+          }
+        ]
+      },
+      "expected_business_result": {
+        "clarification_required": true
+      },
+      "deterministic_assertions": [
+        "模型输出必须通过当前 Model Output Schema",
+        "模型不得自行计算或改写服务端账务结果"
+      ],
+      "execution_policy": {
+        "execution_allowed": false,
+        "confirmation_level": 1,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "32f8596b84544470b899b4cf1c387856f87b0945f9b5783a8d53d02f8a7d9196",
+      "dedup_key": "scenario:same_name_missing_payer",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "validated",
+      "deprecated_by_version": null,
+      "review_notes": "仅用于 Schema 验证，不计入正式 Dataset。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_d4_update_preview",
+    "scenario_family_id": "family_d4_update_preview",
+    "split_group_id": "split_d4_update_preview",
+    "scenario_version": "0.1",
+    "example_only": true,
+    "title": "D4 Expense 编辑只生成预览",
+    "description": "D4 Expense 编辑只生成预览",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "manual",
+      "reference": "Dataset Schema v0.1 example",
+      "source_id": "scenario_d4_update_preview",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": true,
+      "evidence_refs": [
+        "docs/ai/AI_SCOPE_FREEZE_V0.1.md"
+      ]
+    },
+    "rule_tags": [
+      "expense",
+      "interaction_context",
+      "conversation_context",
+      "d4_preview_only"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "update_expense"
+      ],
+      "tool_ids": [
+        "update_expense"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "周末聚餐",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "U001",
+          "id": "00000000-0000-4000-8000-000000000102",
+          "type": "user",
+          "display_name": "测试用户",
+          "activity_id": null
+        },
+        {
+          "alias": "P001",
+          "id": "00000000-0000-4000-8000-000000000103",
+          "type": "participant",
+          "display_name": "我",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P002",
+          "id": "00000000-0000-4000-8000-000000000104",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P003",
+          "id": "00000000-0000-4000-8000-000000000105",
+          "type": "participant",
+          "display_name": "李四",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P004",
+          "id": "00000000-0000-4000-8000-000000000108",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "E001",
+          "id": "00000000-0000-4000-8000-000000000106",
+          "type": "expense",
+          "display_name": "晚饭",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "T001",
+          "id": "00000000-0000-4000-8000-000000000107",
+          "type": "transfer",
+          "display_name": "还款",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+          "title": "晚饭",
+          "original_amount": "280",
+          "original_currency": "CNY",
+          "split_method": "aa",
+          "payments": [
+            {
+              "participant_id": "00000000-0000-4000-8000-000000000103",
+              "amount": "300"
+            }
+          ],
+          "manual_splits": [],
+          "aa_participant_ids": [
+            "00000000-0000-4000-8000-000000000103",
+            "00000000-0000-4000-8000-000000000104",
+            "00000000-0000-4000-8000-000000000105"
+          ],
+          "occurred_at": "2026-09-27T18:30:00+08:00",
+          "note": null,
+          "original_expense_id": null,
+          "icon_key": "dining",
+          "expense_id": "00000000-0000-4000-8000-000000000106"
+        }
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识",
+        "服务端仍负责最终业务校验"
+      ],
+      "minimal_state_reason": "仅保留当前意图、实体和标准答案所需事实。"
+    },
+    "operation": {
+      "type": "explain",
+      "intent_ids": [
+        "update_expense"
+      ],
+      "tool_id": null,
+      "arguments": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "title": "晚饭",
+        "original_amount": "280",
+        "original_currency": "CNY",
+        "split_method": "aa",
+        "payments": [
+          {
+            "participant_id": "00000000-0000-4000-8000-000000000103",
+            "amount": "300"
+          }
+        ],
+        "manual_splits": [],
+        "aa_participant_ids": [
+          "00000000-0000-4000-8000-000000000103",
+          "00000000-0000-4000-8000-000000000104",
+          "00000000-0000-4000-8000-000000000105"
+        ],
+        "occurred_at": "2026-09-27T18:30:00+08:00",
+        "note": null,
+        "original_expense_id": null,
+        "icon_key": "dining",
+        "expense_id": "00000000-0000-4000-8000-000000000106"
+      },
+      "description": "D4 Expense 编辑只生成预览"
+    },
+    "ground_truth": {
+      "truth_source": "human_deterministic_review",
+      "intent_ids": [
+        "update_expense"
+      ],
+      "expected_output_type": "proposal",
+      "model_output": {
+        "type": "proposal",
+        "intent_id": "update_expense",
+        "operation": {
+          "tool": "update_expense",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+            "title": "晚饭",
+            "original_amount": "280",
+            "original_currency": "CNY",
+            "split_method": "aa",
+            "payments": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "300"
+              }
+            ],
+            "manual_splits": [],
+            "aa_participant_ids": [
+              "00000000-0000-4000-8000-000000000103",
+              "00000000-0000-4000-8000-000000000104",
+              "00000000-0000-4000-8000-000000000105"
+            ],
+            "occurred_at": "2026-09-27T18:30:00+08:00",
+            "note": null,
+            "original_expense_id": null,
+            "icon_key": "dining",
+            "expense_id": "00000000-0000-4000-8000-000000000106"
+          }
+        },
+        "preview": {
+          "kind": "update",
+          "summary": "把晚饭金额从300 CNY改为280 CNY。",
+          "diff": [
+            {
+              "field": "original_amount",
+              "before": "300",
+              "after": "280"
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 1,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": false,
+          "reason": "d4_atomic_update_not_supported"
+        }
+      },
+      "expected_business_result": {
+        "preview_only": true,
+        "diff": {
+          "original_amount": {
+            "before": "300",
+            "after": "280"
+          }
+        }
+      },
+      "deterministic_assertions": [
+        "模型输出必须通过当前 Model Output Schema",
+        "模型不得自行计算或改写服务端账务结果"
+      ],
+      "execution_policy": {
+        "execution_allowed": false,
+        "confirmation_level": 1,
+        "confirmation_required": true,
+        "final_authorization": "trusted_ui_event_required",
+        "successful_execution_label_allowed": false
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "f14f28c125e823d97c83f788c63546812fab54db758a34c88880787fcd84f416",
+      "dedup_key": "scenario:d4_update_preview",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "validated",
+      "deprecated_by_version": null,
+      "review_notes": "仅用于 Schema 验证，不计入正式 Dataset。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_gated_fifo_transfer",
+    "scenario_family_id": "family_gated_fifo_transfer",
+    "split_group_id": "split_gated_fifo_transfer",
+    "scenario_version": "0.1",
+    "example_only": true,
+    "title": "FIFO 真实还款提案",
+    "description": "FIFO 真实还款提案",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "manual",
+      "reference": "Dataset Schema v0.1 example",
+      "source_id": "scenario_gated_fifo_transfer",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": true,
+      "evidence_refs": [
+        "docs/ai/AI_SCOPE_FREEZE_V0.1.md"
+      ]
+    },
+    "rule_tags": [
+      "transfer",
+      "fifo_repayment"
+    ],
+    "scope": {
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "intent_ids": [
+        "create_settlement_transfer"
+      ],
+      "tool_ids": [
+        "create_settlement_transfer"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "周末聚餐",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "U001",
+          "id": "00000000-0000-4000-8000-000000000102",
+          "type": "user",
+          "display_name": "测试用户",
+          "activity_id": null
+        },
+        {
+          "alias": "P001",
+          "id": "00000000-0000-4000-8000-000000000103",
+          "type": "participant",
+          "display_name": "我",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P002",
+          "id": "00000000-0000-4000-8000-000000000104",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P003",
+          "id": "00000000-0000-4000-8000-000000000105",
+          "type": "participant",
+          "display_name": "李四",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P004",
+          "id": "00000000-0000-4000-8000-000000000108",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "E001",
+          "id": "00000000-0000-4000-8000-000000000106",
+          "type": "expense",
+          "display_name": "晚饭",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "T001",
+          "id": "00000000-0000-4000-8000-000000000107",
+          "type": "transfer",
+          "display_name": "还款",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "from_participant_id": "00000000-0000-4000-8000-000000000104",
+          "to_participant_id": "00000000-0000-4000-8000-000000000103",
+          "currency": "CNY",
+          "amount": "100",
+          "mode": "FIFO",
+          "target_expense_ids": [],
+          "expected_financial_version": "7",
+          "occurred_at": "2026-09-27T19:00:00+08:00",
+          "on_behalf_of_participant_id": null
+        }
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识",
+        "服务端仍负责最终业务校验"
+      ],
+      "minimal_state_reason": "仅保留当前意图、实体和标准答案所需事实。"
+    },
+    "operation": {
+      "type": "write",
+      "intent_ids": [
+        "create_settlement_transfer"
+      ],
+      "tool_id": "create_settlement_transfer",
+      "arguments": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "from_participant_id": "00000000-0000-4000-8000-000000000104",
+        "to_participant_id": "00000000-0000-4000-8000-000000000103",
+        "currency": "CNY",
+        "amount": "100",
+        "mode": "FIFO",
+        "target_expense_ids": [],
+        "expected_financial_version": "7",
+        "occurred_at": "2026-09-27T19:00:00+08:00",
+        "on_behalf_of_participant_id": null
+      },
+      "description": "FIFO 真实还款提案"
+    },
+    "ground_truth": {
+      "truth_source": "human_deterministic_review",
+      "intent_ids": [
+        "create_settlement_transfer"
+      ],
+      "expected_output_type": "proposal",
+      "model_output": {
+        "type": "proposal",
+        "intent_id": "create_settlement_transfer",
+        "operation": {
+          "tool": "create_settlement_transfer",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "from_participant_id": "00000000-0000-4000-8000-000000000104",
+            "to_participant_id": "00000000-0000-4000-8000-000000000103",
+            "currency": "CNY",
+            "amount": "100",
+            "mode": "FIFO",
+            "target_expense_ids": [],
+            "expected_financial_version": "7",
+            "occurred_at": "2026-09-27T19:00:00+08:00",
+            "on_behalf_of_participant_id": null
+          }
+        },
+        "preview": {
+          "kind": "financial",
+          "summary": "登记张伟向我实际还款100 CNY。",
+          "diff": [
+            {
+              "field": "transfer",
+              "after": {
+                "amount": "100",
+                "currency": "CNY",
+                "mode": "FIFO"
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 2,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": true,
+          "reason": "confirmation_required"
+        }
+      },
+      "expected_business_result": {
+        "proposal_only": true,
+        "requires_trusted_ui_event": true
+      },
+      "deterministic_assertions": [
+        "模型输出必须通过当前 Model Output Schema",
+        "模型不得自行计算或改写服务端账务结果"
+      ],
+      "execution_policy": {
+        "execution_allowed": true,
+        "confirmation_level": 2,
+        "confirmation_required": true,
+        "final_authorization": "trusted_ui_event_required",
+        "successful_execution_label_allowed": true
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "b390231a531ac15b62d11d320c7206d9435f636f75078be75e7fe5dd83b3fe85",
+      "dedup_key": "scenario:gated_fifo_transfer",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "validated",
+      "deprecated_by_version": null,
+      "review_notes": "仅用于 Schema 验证，不计入正式 Dataset。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_deferred_delete_activity",
+    "scenario_family_id": "family_deferred_delete_activity",
+    "split_group_id": "split_deferred_delete_activity",
+    "scenario_version": "0.1",
+    "example_only": true,
+    "title": "Activity 删除转原生流程",
+    "description": "Activity 删除转原生流程",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "manual",
+      "reference": "Dataset Schema v0.1 example",
+      "source_id": "scenario_deferred_delete_activity",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": true,
+      "evidence_refs": [
+        "docs/ai/AI_SCOPE_FREEZE_V0.1.md"
+      ]
+    },
+    "rule_tags": [
+      "activity",
+      "delete",
+      "unsupported"
+    ],
+    "scope": {
+      "ai_scope": "DEFERRED",
+      "intent_ids": [
+        "delete_activity"
+      ],
+      "tool_ids": [
+        "delete_activity"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "周末聚餐",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "U001",
+          "id": "00000000-0000-4000-8000-000000000102",
+          "type": "user",
+          "display_name": "测试用户",
+          "activity_id": null
+        },
+        {
+          "alias": "P001",
+          "id": "00000000-0000-4000-8000-000000000103",
+          "type": "participant",
+          "display_name": "我",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P002",
+          "id": "00000000-0000-4000-8000-000000000104",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P003",
+          "id": "00000000-0000-4000-8000-000000000105",
+          "type": "participant",
+          "display_name": "李四",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P004",
+          "id": "00000000-0000-4000-8000-000000000108",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "E001",
+          "id": "00000000-0000-4000-8000-000000000106",
+          "type": "expense",
+          "display_name": "晚饭",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "T001",
+          "id": "00000000-0000-4000-8000-000000000107",
+          "type": "transfer",
+          "display_name": "还款",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识",
+        "服务端仍负责最终业务校验"
+      ],
+      "minimal_state_reason": "仅保留当前意图、实体和标准答案所需事实。"
+    },
+    "operation": {
+      "type": "unsupported",
+      "intent_ids": [
+        "delete_activity"
+      ],
+      "tool_id": null,
+      "arguments": {
+        "activity_id": "00000000-0000-4000-8000-000000000100"
+      },
+      "description": "Activity 删除转原生流程"
+    },
+    "ground_truth": {
+      "truth_source": "human_deterministic_review",
+      "intent_ids": [
+        "delete_activity"
+      ],
+      "expected_output_type": "unsupported",
+      "model_output": {
+        "type": "unsupported",
+        "reason": "首期 AI 不执行 Activity 删除。",
+        "suggested_action": "请进入活动管理页面完成此操作。"
+      },
+      "expected_business_result": {
+        "native_flow_required": true
+      },
+      "deterministic_assertions": [
+        "模型输出必须通过当前 Model Output Schema",
+        "模型不得自行计算或改写服务端账务结果"
+      ],
+      "execution_policy": {
+        "execution_allowed": false,
+        "confirmation_level": 2,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "137942637cc22962aece4208fd9e81fb17066c47eab018740610ee57d2d8476f",
+      "dedup_key": "scenario:deferred_delete_activity",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "validated",
+      "deprecated_by_version": null,
+      "review_notes": "仅用于 Schema 验证，不计入正式 Dataset。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_query_debt",
+    "scenario_family_id": "family_query_debt",
+    "split_group_id": "split_query_debt",
+    "scenario_version": "0.1",
+    "example_only": true,
+    "title": "只读查询个人债务",
+    "description": "只读查询个人债务",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "manual",
+      "reference": "Dataset Schema v0.1 example",
+      "source_id": "scenario_query_debt",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": true,
+      "evidence_refs": [
+        "docs/ai/AI_SCOPE_FREEZE_V0.1.md"
+      ]
+    },
+    "rule_tags": [
+      "bilateral_debt"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "query_debt"
+      ],
+      "tool_ids": [
+        "get_debt"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "active",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "周末聚餐",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "U001",
+          "id": "00000000-0000-4000-8000-000000000102",
+          "type": "user",
+          "display_name": "测试用户",
+          "activity_id": null
+        },
+        {
+          "alias": "P001",
+          "id": "00000000-0000-4000-8000-000000000103",
+          "type": "participant",
+          "display_name": "我",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P002",
+          "id": "00000000-0000-4000-8000-000000000104",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P003",
+          "id": "00000000-0000-4000-8000-000000000105",
+          "type": "participant",
+          "display_name": "李四",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P004",
+          "id": "00000000-0000-4000-8000-000000000108",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "E001",
+          "id": "00000000-0000-4000-8000-000000000106",
+          "type": "expense",
+          "display_name": "晚饭",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "T001",
+          "id": "00000000-0000-4000-8000-000000000107",
+          "type": "transfer",
+          "display_name": "还款",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "participant_id": "00000000-0000-4000-8000-000000000103"
+        }
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识",
+        "服务端仍负责最终业务校验"
+      ],
+      "minimal_state_reason": "仅保留当前意图、实体和标准答案所需事实。"
+    },
+    "operation": {
+      "type": "query",
+      "intent_ids": [
+        "query_debt"
+      ],
+      "tool_id": "get_debt",
+      "arguments": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "participant_id": "00000000-0000-4000-8000-000000000103"
+      },
+      "description": "只读查询个人债务"
+    },
+    "ground_truth": {
+      "truth_source": "human_deterministic_review",
+      "intent_ids": [
+        "query_debt"
+      ],
+      "expected_output_type": "tool_call",
+      "model_output": {
+        "type": "tool_call",
+        "intent_id": "query_debt",
+        "tool": "get_debt",
+        "arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "participant_id": "00000000-0000-4000-8000-000000000103"
+        }
+      },
+      "expected_business_result": {
+        "read_only_tool_call": true
+      },
+      "deterministic_assertions": [
+        "模型输出必须通过当前 Model Output Schema",
+        "模型不得自行计算或改写服务端账务结果"
+      ],
+      "execution_policy": {
+        "execution_allowed": false,
+        "confirmation_level": 0,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "70bdfc68b0f2c684e83e2073a7614f1d8ff71d39612d1eb82df679f50043e64b",
+      "dedup_key": "scenario:query_debt",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "validated",
+      "deprecated_by_version": null,
+      "review_notes": "仅用于 Schema 验证，不计入正式 Dataset。"
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "scenario_id": "scenario_pending_currency_time",
+    "scenario_family_id": "family_pending_currency_time",
+    "split_group_id": "split_pending_currency_time",
+    "scenario_version": "0.1",
+    "example_only": true,
+    "title": "币种和时间默认值仍待决",
+    "description": "币种和时间默认值仍待决",
+    "versions": {
+      "business_logic": "1.2",
+      "ai_contract": "0.1.2",
+      "ai_scope": "0.1",
+      "dataset": "0.1",
+      "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801"
+    },
+    "source": {
+      "type": "manual",
+      "reference": "Dataset Schema v0.1 example",
+      "source_id": "scenario_pending_currency_time",
+      "content_sha256": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "verification_methods": [
+        "frozen_rule",
+        "programmatic_invariant"
+      ],
+      "business_validated": true,
+      "evidence_refs": [
+        "docs/ai/AI_SCOPE_FREEZE_V0.1.md"
+      ]
+    },
+    "rule_tags": [
+      "expense",
+      "clarification",
+      "pending_default_policy"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": [
+        "create_expense"
+      ]
+    },
+    "split": "unassigned",
+    "policy_status": "excluded_pending_policy",
+    "state": {
+      "entities": [
+        {
+          "alias": "A001",
+          "id": "00000000-0000-4000-8000-000000000100",
+          "type": "activity",
+          "display_name": "周末聚餐",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "L001",
+          "id": "00000000-0000-4000-8000-000000000101",
+          "type": "ledger_unit",
+          "display_name": "默认账本",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "U001",
+          "id": "00000000-0000-4000-8000-000000000102",
+          "type": "user",
+          "display_name": "测试用户",
+          "activity_id": null
+        },
+        {
+          "alias": "P001",
+          "id": "00000000-0000-4000-8000-000000000103",
+          "type": "participant",
+          "display_name": "我",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P002",
+          "id": "00000000-0000-4000-8000-000000000104",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P003",
+          "id": "00000000-0000-4000-8000-000000000105",
+          "type": "participant",
+          "display_name": "李四",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "P004",
+          "id": "00000000-0000-4000-8000-000000000108",
+          "type": "participant",
+          "display_name": "张伟",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "E001",
+          "id": "00000000-0000-4000-8000-000000000106",
+          "type": "expense",
+          "display_name": "晚饭",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        },
+        {
+          "alias": "T001",
+          "id": "00000000-0000-4000-8000-000000000107",
+          "type": "transfer",
+          "display_name": "还款",
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      ],
+      "facts": {
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "base_currency": "CNY",
+        "operation_arguments": {}
+      },
+      "preconditions": [
+        "所有 ID 均为离线合成标识",
+        "服务端仍负责最终业务校验"
+      ],
+      "minimal_state_reason": "仅保留当前意图、实体和标准答案所需事实。"
+    },
+    "operation": {
+      "type": "clarify",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_id": null,
+      "arguments": {},
+      "description": "币种和时间默认值仍待决"
+    },
+    "ground_truth": {
+      "truth_source": "human_deterministic_review",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "expected_output_type": "clarification",
+      "model_output": {
+        "type": "clarification",
+        "intent_id": "create_expense",
+        "reason": "missing_fields",
+        "missing_fields": [
+          "original_currency",
+          "occurred_at"
+        ],
+        "question": "这笔使用什么币种、发生在什么时间？",
+        "candidates": []
+      },
+      "expected_business_result": {
+        "excluded_pending_policy": true
+      },
+      "deterministic_assertions": [
+        "模型输出必须通过当前 Model Output Schema",
+        "模型不得自行计算或改写服务端账务结果"
+      ],
+      "execution_policy": {
+        "execution_allowed": false,
+        "confirmation_level": 1,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      }
+    },
+    "deduplication": {
+      "canonical_facts_sha256": "32f8596b84544470b899b4cf1c387856f87b0945f9b5783a8d53d02f8a7d9196",
+      "dedup_key": "scenario:pending_currency_time",
+      "normalization_version": "0.1"
+    },
+    "privacy": {
+      "synthetic_identifiers_only": true,
+      "contains_production_data": false,
+      "contains_real_personal_data": false
+    },
+    "lifecycle": {
+      "status": "validated",
+      "deprecated_by_version": null,
+      "review_notes": "仅用于 Schema 验证，不计入正式 Dataset。"
+    }
+  }
+]

@@ -1,0 +1,359 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shared-ledger.invalid/ai/dataset/v0.1/sample.schema.json",
+  "title": "Shared Ledger Dataset Language Sample v0.1",
+  "type": "object",
+  "properties": {
+    "schema_version": { "const": "0.1" },
+    "sample_id": { "type": "string", "pattern": "^sample_[a-z0-9][a-z0-9_-]{2,79}$" },
+    "scenario_id": { "type": "string", "pattern": "^scenario_[a-z0-9][a-z0-9_-]{2,79}$" },
+    "scenario_family_id": { "type": "string", "pattern": "^family_[a-z0-9][a-z0-9_-]{2,79}$" },
+    "split_group_id": { "type": "string", "pattern": "^split_[a-z0-9][a-z0-9_-]{2,79}$" },
+    "dataset_version": { "const": "0.1" },
+    "example_only": { "type": "boolean" },
+    "split": { "$ref": "#/$defs/split" },
+    "task": { "$ref": "#/$defs/task" },
+    "difficulty": { "type": "string", "enum": ["easy", "normal", "hard", "ood"] },
+    "challenge_tags": {
+      "type": "array", "items": { "$ref": "#/$defs/challenge_tag" }, "maxItems": 25, "uniqueItems": true
+    },
+    "scope": { "$ref": "#/$defs/scope" },
+    "source": { "$ref": "#/$defs/source" },
+    "trust": { "$ref": "#/$defs/trust" },
+    "policy_status": { "$ref": "#/$defs/policy_status" },
+    "surface_form": { "$ref": "#/$defs/surface_form" },
+    "input": { "$ref": "https://shared-ledger.invalid/ai/v0.1/context_envelope.schema.json" },
+    "expected": { "$ref": "#/$defs/expected" },
+    "dataset_metadata": { "$ref": "#/$defs/dataset_metadata" }
+  },
+  "required": [
+    "schema_version", "sample_id", "scenario_id", "scenario_family_id", "split_group_id",
+    "dataset_version", "example_only", "split", "task", "difficulty", "challenge_tags",
+    "scope", "source", "trust", "policy_status", "surface_form", "input", "expected", "dataset_metadata"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "scope": { "properties": { "ai_scope": { "const": "DEFERRED" } } } } },
+      "then": {
+        "properties": {
+          "expected": {
+            "properties": {
+              "output_type": { "enum": ["answer", "unsupported"] },
+              "model_output": {
+                "not": { "properties": { "type": { "const": "tool_call" } }, "required": ["type"] }
+              },
+              "execution": {
+                "properties": {
+                  "execution_allowed": { "const": false },
+                  "confirmation_required": { "const": false },
+                  "final_authorization": { "const": "not_applicable" },
+                  "successful_execution_label_allowed": { "const": false }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "scope": { "properties": { "intent_ids": { "contains": { "enum": ["update_expense", "update_refund"] } } } }
+        }
+      },
+      "then": {
+        "properties": {
+          "expected": {
+            "properties": {
+              "output_type": { "const": "proposal" },
+              "model_output": {
+                "properties": { "type": { "const": "proposal" } },
+                "required": ["type"]
+              },
+              "execution": {
+                "properties": {
+                  "execution_allowed": { "const": false },
+                  "confirmation_required": { "const": true },
+                  "final_authorization": { "const": "trusted_ui_event_required" },
+                  "successful_execution_label_allowed": { "const": false }
+                }
+              }
+            },
+            "required": ["expected_diff"]
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "policy_status": { "enum": ["pending", "excluded_pending_policy"] } } },
+      "then": {
+        "properties": {
+          "split": { "const": "unassigned" },
+          "expected": {
+            "properties": {
+              "execution": {
+                "properties": {
+                  "execution_allowed": { "const": false },
+                  "successful_execution_label_allowed": { "const": false }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "trust": { "properties": { "level": { "const": "SYNTHETIC_UNVERIFIED" } } } } },
+      "then": {
+        "properties": {
+          "split": { "const": "unassigned" },
+          "dataset_metadata": { "properties": { "lifecycle_status": { "enum": ["draft", "generated", "rejected"] } } }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "expected": { "properties": { "output_type": { "const": "clarification" } } } } },
+      "then": { "properties": { "expected": { "required": ["clarification_annotation"] } } }
+    },
+    {
+      "if": { "properties": { "expected": { "properties": { "output_type": { "const": "proposal" } } } } },
+      "then": {
+        "properties": {
+          "expected": {
+            "required": ["expected_diff"],
+            "properties": {
+              "execution": {
+                "properties": {
+                  "confirmation_required": { "const": true },
+                  "final_authorization": { "const": "trusted_ui_event_required" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "split": { "type": "string", "enum": ["unassigned", "train", "validation", "test", "hard_test"] },
+    "policy_status": { "type": "string", "enum": ["active", "pending", "excluded_pending_policy", "deprecated"] },
+    "task_type": {
+      "type": "string",
+      "enum": [
+        "intent_classification", "parameter_extraction", "entity_resolution", "clarification",
+        "proposal_generation", "tool_call", "ui_context_reasoning", "interaction_context_reasoning",
+        "conversation_context_reasoning", "result_explanation", "rule_qa",
+        "unsupported_detection", "error_handling"
+      ]
+    },
+    "task": {
+      "type": "object",
+      "properties": {
+        "primary": { "$ref": "#/$defs/task_type" },
+        "secondary": { "type": "array", "items": { "$ref": "#/$defs/task_type" }, "maxItems": 12, "uniqueItems": true }
+      },
+      "required": ["primary", "secondary"],
+      "additionalProperties": false
+    },
+    "challenge_tag": {
+      "type": "string",
+      "enum": [
+        "colloquial", "ellipsis", "pronoun", "ui_reference", "recent_action_reference",
+        "multi_turn", "same_name_entity", "multiple_candidates", "missing_payer",
+        "missing_participants", "missing_split_method", "missing_amount", "missing_currency",
+        "missing_occurred_at", "contradictory_input", "typo", "asr_like", "cross_activity_reference",
+        "stale_context", "unknown_write_state", "unsupported", "permission_boundary",
+        "financial_risk", "gated_operation", "deferred_operation", "d4_preview_only",
+        "pending_default_policy", "multi_payer", "manual_split", "multi_currency"
+      ]
+    },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "ai_scope": { "type": "string", "enum": ["CORE", "SUPPORTED_BUT_GATED", "DEFERRED"] },
+        "intent_ids": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 100 }, "minItems": 1, "maxItems": 20, "uniqueItems": true },
+        "tool_ids": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 100 }, "maxItems": 20, "uniqueItems": true }
+      },
+      "required": ["ai_scope", "intent_ids", "tool_ids"],
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "surface_form_type": { "type": "string", "enum": ["human_authored", "teacher_generated", "programmatic_variant", "imported"] },
+        "generator": { "type": ["string", "null"], "maxLength": 200 },
+        "source_reference": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "teacher": {
+          "anyOf": [
+            { "$ref": "#/$defs/teacher_provenance" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": ["surface_form_type", "generator", "source_reference", "teacher"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "surface_form_type": { "const": "teacher_generated" } } },
+          "then": { "properties": { "teacher": { "$ref": "#/$defs/teacher_provenance" } } },
+          "else": { "properties": { "teacher": { "type": "null" } } }
+        }
+      ]
+    },
+    "teacher_provenance": {
+      "type": "object",
+      "properties": {
+        "provider": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "model": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "generation_run_id": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "prompt_version": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "temperature": { "type": "number", "minimum": 0, "maximum": 2 },
+        "seed": { "type": ["integer", "null"] }
+      },
+      "required": ["provider", "model", "generation_run_id", "prompt_version", "generated_at", "temperature", "seed"],
+      "additionalProperties": false
+    },
+    "trust": {
+      "type": "object",
+      "properties": {
+        "level": { "type": "string", "enum": ["GOLD", "SILVER", "SYNTHETIC_UNVERIFIED"] },
+        "ground_truth_locked": { "type": "boolean" },
+        "surface_form_reviewed": { "type": "boolean" },
+        "validation_evidence": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 1000 }, "maxItems": 30, "uniqueItems": true }
+      },
+      "required": ["level", "ground_truth_locked", "surface_form_reviewed", "validation_evidence"],
+      "additionalProperties": false
+    },
+    "conversation_turn": {
+      "type": "object",
+      "properties": {
+        "turn_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "role": { "type": "string", "enum": ["user", "assistant"] },
+        "content": { "type": "string", "minLength": 1, "maxLength": 4000 }
+      },
+      "required": ["turn_id", "role", "content"],
+      "additionalProperties": false
+    },
+    "surface_form": {
+      "type": "object",
+      "properties": {
+        "language": { "type": "string", "enum": ["zh-CN"] },
+        "register": { "type": "string", "enum": ["neutral", "colloquial", "asr_like", "mixed"] },
+        "conversation": { "type": "array", "items": { "$ref": "#/$defs/conversation_turn" }, "maxItems": 12 },
+        "context_turn_count": { "type": "integer", "minimum": 0, "maximum": 12 },
+        "user_message": { "type": "string", "minLength": 1, "maxLength": 8000 }
+      },
+      "required": ["language", "register", "conversation", "context_turn_count", "user_message"],
+      "additionalProperties": false
+    },
+    "execution": {
+      "type": "object",
+      "properties": {
+        "execution_allowed": { "type": "boolean" },
+        "confirmation_level": { "type": "integer", "minimum": 0, "maximum": 2 },
+        "confirmation_required": { "type": "boolean" },
+        "final_authorization": { "type": "string", "enum": ["not_applicable", "trusted_ui_event_required"] },
+        "successful_execution_label_allowed": { "type": "boolean" }
+      },
+      "required": ["execution_allowed", "confirmation_level", "confirmation_required", "final_authorization", "successful_execution_label_allowed"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "confirmation_level": { "const": 0 } } },
+          "then": { "properties": { "confirmation_required": { "const": false }, "final_authorization": { "const": "not_applicable" } } }
+        },
+        {
+          "if": { "properties": { "confirmation_level": { "enum": [1, 2] }, "confirmation_required": { "const": true } } },
+          "then": { "properties": { "final_authorization": { "const": "trusted_ui_event_required" } } }
+        },
+        {
+          "if": { "properties": { "confirmation_level": { "enum": [1, 2] }, "confirmation_required": { "const": false } } },
+          "then": { "properties": { "final_authorization": { "const": "not_applicable" } } }
+        }
+      ]
+    },
+    "entity_resolution": {
+      "type": "object",
+      "properties": {
+        "mention": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "candidate_ids": { "type": "array", "items": { "type": "string", "format": "uuid" }, "minItems": 1, "maxItems": 30, "uniqueItems": true },
+        "expected_entity_id": { "type": ["string", "null"], "format": "uuid" },
+        "resolution_status": { "type": "string", "enum": ["resolved", "clarification_required"] },
+        "evidence_source": { "type": "string", "enum": ["explicit_text", "selected_entity", "draft", "recent_action", "confirmed_binding", "server_candidates"] }
+      },
+      "required": ["mention", "candidate_ids", "expected_entity_id", "resolution_status", "evidence_source"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "resolution_status": { "const": "clarification_required" } } },
+          "then": { "properties": { "expected_entity_id": { "const": null } } }
+        },
+        {
+          "if": { "properties": { "resolution_status": { "const": "resolved" } } },
+          "then": { "properties": { "expected_entity_id": { "type": "string", "format": "uuid" } } }
+        }
+      ]
+    },
+    "clarification_annotation": {
+      "type": "object",
+      "properties": {
+        "reason": { "type": "string", "enum": ["missing_fields", "ambiguous_entity", "conflicting_context", "unresolved_reference", "needs_explicit_financial_choice"] },
+        "missing_fields": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 100 }, "maxItems": 30, "uniqueItems": true },
+        "candidate_entity_ids": { "type": "array", "items": { "type": "string", "format": "uuid" }, "maxItems": 30, "uniqueItems": true },
+        "question": { "type": "string", "minLength": 1, "maxLength": 1000 }
+      },
+      "required": ["reason", "missing_fields", "candidate_entity_ids", "question"],
+      "additionalProperties": false
+    },
+    "diff_item": {
+      "type": "object",
+      "properties": {
+        "field": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "before": {},
+        "after": {},
+        "added": { "type": "array", "items": {}, "maxItems": 100 },
+        "removed": { "type": "array", "items": {}, "maxItems": 100 }
+      },
+      "required": ["field"],
+      "additionalProperties": false,
+      "anyOf": [
+        { "required": ["before"] },
+        { "required": ["after"] },
+        { "required": ["added"] },
+        { "required": ["removed"] }
+      ]
+    },
+    "expected": {
+      "type": "object",
+      "properties": {
+        "output_type": { "type": "string", "enum": ["answer", "proposal", "tool_call", "clarification", "unsupported", "error"] },
+        "model_output": { "$ref": "https://shared-ledger.invalid/ai/v0.1/model_output.schema.json" },
+        "ground_truth_pointer": { "type": "string", "pattern": "^scenario_[a-z0-9_-]+#/ground_truth$" },
+        "execution": { "$ref": "#/$defs/execution" },
+        "clarification_annotation": { "$ref": "#/$defs/clarification_annotation" },
+        "entity_resolution": { "type": "array", "items": { "$ref": "#/$defs/entity_resolution" }, "maxItems": 30 },
+        "expected_diff": { "type": "array", "items": { "$ref": "#/$defs/diff_item" }, "minItems": 1, "maxItems": 30 },
+        "evidence_result_ids": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 100 }, "maxItems": 30, "uniqueItems": true }
+      },
+      "required": ["output_type", "model_output", "ground_truth_pointer", "execution", "entity_resolution", "evidence_result_ids"],
+      "additionalProperties": false
+    },
+    "dataset_metadata": {
+      "type": "object",
+      "properties": {
+        "normalization_key": { "type": "string", "pattern": "^surface:[a-z0-9:_-]{3,240}$" },
+        "dedup_key": { "type": "string", "pattern": "^sample:[a-z0-9:_-]{3,240}$" },
+        "semantic_group_key": { "type": "string", "pattern": "^semantic:[a-z0-9:_-]{3,240}$" },
+        "lifecycle_status": { "type": "string", "enum": ["draft", "generated", "validated", "reviewed", "approved", "rejected", "deprecated"] },
+        "deprecated_by_version": { "type": ["string", "null"], "pattern": "^[0-9]+\\.[0-9]+$" },
+        "contains_production_data": { "const": false },
+        "contains_real_personal_data": { "const": false },
+        "review_notes": { "type": ["string", "null"], "maxLength": 2000 }
+      },
+      "required": ["normalization_key", "dedup_key", "semantic_group_key", "lifecycle_status", "deprecated_by_version", "contains_production_data", "contains_real_personal_data", "review_notes"],
+      "additionalProperties": false
+    }
+  }
+}
