@@ -1,0 +1,1096 @@
+{
+  "status": "partial",
+  "target_blocked_samples": 69,
+  "reconstructable_samples": 9,
+  "blocked_samples": 60,
+  "scenario_count": 15,
+  "executed_fixture_count": 2,
+  "sample_coverage": [
+    {
+      "sample_id": "sample_gs_p0_015",
+      "scenario_id": "scenario_gs_p0a_009",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": true,
+      "result_ids": [
+        "52906326-7912-5bea-b956-1279bd792266"
+      ],
+      "blocker": null
+    },
+    {
+      "sample_id": "sample_gs_p0_016",
+      "scenario_id": "scenario_gs_p0a_009",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": true,
+      "result_ids": [
+        "52906326-7912-5bea-b956-1279bd792266"
+      ],
+      "blocker": null
+    },
+    {
+      "sample_id": "sample_gs_p0_017",
+      "scenario_id": "scenario_gs_p0b_004",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Recorded Expense seed omits catalog-required ledger_unit_id, base, fx_snapshot, split_method, occurred_at, note, icon_key and original_expense_id; cannot synthesize those historical facts."
+    },
+    {
+      "sample_id": "sample_gs_p0_018",
+      "scenario_id": "scenario_gs_p0b_004",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Recorded Expense seed omits catalog-required ledger_unit_id, base, fx_snapshot, split_method, occurred_at, note, icon_key and original_expense_id; cannot synthesize those historical facts."
+    },
+    {
+      "sample_id": "sample_gs_p0_032",
+      "scenario_id": "scenario_gs_p0a_015",
+      "tools": [
+        "get_participant_balance",
+        "get_prepayment_accounts"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null,
+        null
+      ],
+      "blocker": "Balance result omits base_reference; prepayment result has a non-contract account currency field and lacks an event-backed balance state. No underlying expense/debt/prepayment event ledger is recorded."
+    },
+    {
+      "sample_id": "sample_gs_p0_033",
+      "scenario_id": "scenario_gs_p0a_015",
+      "tools": [
+        "get_participant_balance",
+        "get_prepayment_accounts"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null,
+        null
+      ],
+      "blocker": "Balance result omits base_reference; prepayment result has a non-contract account currency field and lacks an event-backed balance state. No underlying expense/debt/prepayment event ledger is recorded."
+    },
+    {
+      "sample_id": "sample_gs_p0_036",
+      "scenario_id": "scenario_gs_p0b_010",
+      "tools": [
+        "get_debt"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Only one bilateral amount/currency row is recorded; full bilateral debt DTO and expense_progress history are absent."
+    },
+    {
+      "sample_id": "sample_gs_p0_037",
+      "scenario_id": "scenario_gs_p0a_011",
+      "tools": [
+        "get_transfer"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Transfer source contains only transfer_id and is_voided; required payment, participants, time, recorder and component/allocation details are absent."
+    },
+    {
+      "sample_id": "sample_gs_p0_040",
+      "scenario_id": "scenario_gs_p0b_012",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Original Expense source omits catalog-required ledger, base, FX snapshot, split method, time, note and icon; full repayment progress is also absent."
+    },
+    {
+      "sample_id": "sample_gs_p0_043",
+      "scenario_id": "scenario_gs_p0a_012",
+      "tools": [
+        "find_expenses"
+      ],
+      "reconstructable": true,
+      "result_ids": [
+        "f7407f6b-f74c-5b77-9378-ae50f7184c10"
+      ],
+      "blocker": null
+    },
+    {
+      "sample_id": "sample_gs_p0_044",
+      "scenario_id": "scenario_gs_p0b_016",
+      "tools": [
+        "find_expenses"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Expense search candidates contain only IDs/title/locked/refund IDs; amount, base/FX, payments and splits for complete Expense DTO are absent."
+    },
+    {
+      "sample_id": "sample_gs_p0_045",
+      "scenario_id": "scenario_gs_p0b_017",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Expense source has only ID/title/original/payments/splits; remaining required Expense DTO fields are absent."
+    },
+    {
+      "sample_id": "sample_gs_p0_046",
+      "scenario_id": "scenario_gs_p0b_017",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Expense source has only ID/title/original/payments/splits; remaining required Expense DTO fields are absent."
+    },
+    {
+      "sample_id": "sample_gs_p0_047",
+      "scenario_id": "scenario_gs_p0b_018",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Expense source has only ID/activity/title/original/payments/splits/lock/version/deleted; required DTO fields are absent."
+    },
+    {
+      "sample_id": "sample_gs_p0_048",
+      "scenario_id": "scenario_gs_p0b_018",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Expense source has only ID/activity/title/original/payments/splits/lock/version/deleted; required DTO fields are absent."
+    },
+    {
+      "sample_id": "sample_gs_p0_049",
+      "scenario_id": "scenario_gs_p0b_019",
+      "tools": [
+        "find_expenses"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Search candidate source has only ID/title/locked/deleted; complete Expense DTO fields are absent."
+    },
+    {
+      "sample_id": "sample_gs_p0_050",
+      "scenario_id": "scenario_gs_p0b_020",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Expense source has only ID/activity/title/original/payments/splits/lock/version/deleted; required DTO fields are absent."
+    },
+    {
+      "sample_id": "sample_gs_p0_051",
+      "scenario_id": "scenario_gs_p0b_020",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Expense source has only ID/activity/title/original/payments/splits/lock/version/deleted; required DTO fields are absent."
+    },
+    {
+      "sample_id": "sample_gs_p0_054",
+      "scenario_id": "scenario_gs_p0b_022",
+      "tools": [
+        "find_expenses"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Search result contains candidate IDs/query/resolution only; complete Expense DTOs and pagination result are absent."
+    },
+    {
+      "sample_id": "sample_gs_p0_055",
+      "scenario_id": "scenario_gs_p0b_022",
+      "tools": [
+        "find_expenses"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Search result contains candidate IDs/query/resolution only; complete Expense DTOs and pagination result are absent."
+    },
+    {
+      "sample_id": "sample_gs_p0_064",
+      "scenario_id": "scenario_gs_p0b_025",
+      "tools": [
+        "find_participants"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Participant lookup contains candidate IDs/resolution only; full Participant DTOs and query-result ordering fields are absent."
+    },
+    {
+      "sample_id": "sample_gs_p0_065",
+      "scenario_id": "scenario_gs_p0b_025",
+      "tools": [
+        "find_participants"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Participant lookup contains candidate IDs/resolution only; full Participant DTOs and query-result ordering fields are absent."
+    },
+    {
+      "sample_id": "sample_gs_p0_088",
+      "scenario_id": "scenario_gs_p0b_037",
+      "tools": [
+        "lookup_business_rule"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "The six dynamic samples include no original expense identity or prior refund event ledger. The database can compute totals, but target source events cannot be reconstructed without inventing refund history."
+    },
+    {
+      "sample_id": "sample_gs_p0_089",
+      "scenario_id": "scenario_gs_p0b_037",
+      "tools": [
+        "lookup_business_rule"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "The six dynamic samples include no original expense identity or prior refund event ledger. The database can compute totals, but target source events cannot be reconstructed without inventing refund history."
+    },
+    {
+      "sample_id": "sample_teacher_b3279e26f67e",
+      "scenario_id": "scenario_gs_p0b_004",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Recorded Expense seed omits catalog-required ledger_unit_id, base, fx_snapshot, split_method, occurred_at, note, icon_key and original_expense_id; cannot synthesize those historical facts."
+    },
+    {
+      "sample_id": "sample_teacher_480045ee9494",
+      "scenario_id": "scenario_gs_p0b_004",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Recorded Expense seed omits catalog-required ledger_unit_id, base, fx_snapshot, split_method, occurred_at, note, icon_key and original_expense_id; cannot synthesize those historical facts."
+    },
+    {
+      "sample_id": "sample_teacher_161678d4c59a",
+      "scenario_id": "scenario_gs_p0b_004",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Recorded Expense seed omits catalog-required ledger_unit_id, base, fx_snapshot, split_method, occurred_at, note, icon_key and original_expense_id; cannot synthesize those historical facts."
+    },
+    {
+      "sample_id": "sample_teacher_2e8431d0b6ac",
+      "scenario_id": "scenario_gs_p0b_020",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Expense source has only ID/activity/title/original/payments/splits/lock/version/deleted; required DTO fields are absent."
+    },
+    {
+      "sample_id": "sample_teacher_faac476ad63b",
+      "scenario_id": "scenario_gs_p0b_020",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Expense source has only ID/activity/title/original/payments/splits/lock/version/deleted; required DTO fields are absent."
+    },
+    {
+      "sample_id": "sample_teacher_574eac0ec13a",
+      "scenario_id": "scenario_gs_p0b_020",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Expense source has only ID/activity/title/original/payments/splits/lock/version/deleted; required DTO fields are absent."
+    },
+    {
+      "sample_id": "sample_teacher_268abd436036",
+      "scenario_id": "scenario_gs_p0b_017",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Expense source has only ID/title/original/payments/splits; remaining required Expense DTO fields are absent."
+    },
+    {
+      "sample_id": "sample_teacher_69c813a549e0",
+      "scenario_id": "scenario_gs_p0b_017",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Expense source has only ID/title/original/payments/splits; remaining required Expense DTO fields are absent."
+    },
+    {
+      "sample_id": "sample_teacher_25ac41485e33",
+      "scenario_id": "scenario_gs_p0b_017",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Expense source has only ID/title/original/payments/splits; remaining required Expense DTO fields are absent."
+    },
+    {
+      "sample_id": "sample_teacher_6b8c91b2ae67",
+      "scenario_id": "scenario_gs_p0a_009",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": true,
+      "result_ids": [
+        "52906326-7912-5bea-b956-1279bd792266"
+      ],
+      "blocker": null
+    },
+    {
+      "sample_id": "sample_teacher_d32231ae891a",
+      "scenario_id": "scenario_gs_p0a_009",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": true,
+      "result_ids": [
+        "52906326-7912-5bea-b956-1279bd792266"
+      ],
+      "blocker": null
+    },
+    {
+      "sample_id": "sample_teacher_e2d3fdbd7509",
+      "scenario_id": "scenario_gs_p0a_009",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": true,
+      "result_ids": [
+        "52906326-7912-5bea-b956-1279bd792266"
+      ],
+      "blocker": null
+    },
+    {
+      "sample_id": "sample_teacher_5493b48346db",
+      "scenario_id": "scenario_gs_p0a_011",
+      "tools": [
+        "get_transfer"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Transfer source contains only transfer_id and is_voided; required payment, participants, time, recorder and component/allocation details are absent."
+    },
+    {
+      "sample_id": "sample_teacher_4053b71f5faa",
+      "scenario_id": "scenario_gs_p0a_011",
+      "tools": [
+        "get_transfer"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Transfer source contains only transfer_id and is_voided; required payment, participants, time, recorder and component/allocation details are absent."
+    },
+    {
+      "sample_id": "sample_teacher_b761d7e46729",
+      "scenario_id": "scenario_gs_p0a_012",
+      "tools": [
+        "find_expenses"
+      ],
+      "reconstructable": true,
+      "result_ids": [
+        "f7407f6b-f74c-5b77-9378-ae50f7184c10"
+      ],
+      "blocker": null
+    },
+    {
+      "sample_id": "sample_teacher_ad6ed8c40b36",
+      "scenario_id": "scenario_gs_p0a_012",
+      "tools": [
+        "find_expenses"
+      ],
+      "reconstructable": true,
+      "result_ids": [
+        "f7407f6b-f74c-5b77-9378-ae50f7184c10"
+      ],
+      "blocker": null
+    },
+    {
+      "sample_id": "sample_teacher_e99928bfd34e",
+      "scenario_id": "scenario_gs_p0a_012",
+      "tools": [
+        "find_expenses"
+      ],
+      "reconstructable": true,
+      "result_ids": [
+        "f7407f6b-f74c-5b77-9378-ae50f7184c10"
+      ],
+      "blocker": null
+    },
+    {
+      "sample_id": "sample_teacher_36f4d8abe578",
+      "scenario_id": "scenario_gs_p0a_015",
+      "tools": [
+        "get_participant_balance",
+        "get_prepayment_accounts"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null,
+        null
+      ],
+      "blocker": "Balance result omits base_reference; prepayment result has a non-contract account currency field and lacks an event-backed balance state. No underlying expense/debt/prepayment event ledger is recorded."
+    },
+    {
+      "sample_id": "sample_teacher_50f39996a01a",
+      "scenario_id": "scenario_gs_p0a_015",
+      "tools": [
+        "get_participant_balance",
+        "get_prepayment_accounts"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null,
+        null
+      ],
+      "blocker": "Balance result omits base_reference; prepayment result has a non-contract account currency field and lacks an event-backed balance state. No underlying expense/debt/prepayment event ledger is recorded."
+    },
+    {
+      "sample_id": "sample_teacher_f5bc42a7c74f",
+      "scenario_id": "scenario_gs_p0a_015",
+      "tools": [
+        "get_participant_balance",
+        "get_prepayment_accounts"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null,
+        null
+      ],
+      "blocker": "Balance result omits base_reference; prepayment result has a non-contract account currency field and lacks an event-backed balance state. No underlying expense/debt/prepayment event ledger is recorded."
+    },
+    {
+      "sample_id": "sample_teacher_23cc3cf0f1ff",
+      "scenario_id": "scenario_gs_p0a_015",
+      "tools": [
+        "get_participant_balance",
+        "get_prepayment_accounts"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null,
+        null
+      ],
+      "blocker": "Balance result omits base_reference; prepayment result has a non-contract account currency field and lacks an event-backed balance state. No underlying expense/debt/prepayment event ledger is recorded."
+    },
+    {
+      "sample_id": "sample_teacher_08eb5acd22fa",
+      "scenario_id": "scenario_gs_p0b_010",
+      "tools": [
+        "get_debt"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Only one bilateral amount/currency row is recorded; full bilateral debt DTO and expense_progress history are absent."
+    },
+    {
+      "sample_id": "sample_teacher_cfc2011e329b",
+      "scenario_id": "scenario_gs_p0b_010",
+      "tools": [
+        "get_debt"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Only one bilateral amount/currency row is recorded; full bilateral debt DTO and expense_progress history are absent."
+    },
+    {
+      "sample_id": "sample_teacher_bf0e46c9db68",
+      "scenario_id": "scenario_gs_p0b_010",
+      "tools": [
+        "get_debt"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Only one bilateral amount/currency row is recorded; full bilateral debt DTO and expense_progress history are absent."
+    },
+    {
+      "sample_id": "sample_teacher_dd191fa70f40",
+      "scenario_id": "scenario_gs_p0b_012",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Original Expense source omits catalog-required ledger, base, FX snapshot, split method, time, note and icon; full repayment progress is also absent."
+    },
+    {
+      "sample_id": "sample_teacher_58846afd6083",
+      "scenario_id": "scenario_gs_p0b_012",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Original Expense source omits catalog-required ledger, base, FX snapshot, split method, time, note and icon; full repayment progress is also absent."
+    },
+    {
+      "sample_id": "sample_teacher_b65cc1030027",
+      "scenario_id": "scenario_gs_p0b_012",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Original Expense source omits catalog-required ledger, base, FX snapshot, split method, time, note and icon; full repayment progress is also absent."
+    },
+    {
+      "sample_id": "sample_teacher_b2b4896fa618",
+      "scenario_id": "scenario_gs_p0b_016",
+      "tools": [
+        "find_expenses"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Expense search candidates contain only IDs/title/locked/refund IDs; amount, base/FX, payments and splits for complete Expense DTO are absent."
+    },
+    {
+      "sample_id": "sample_teacher_232051cb0b25",
+      "scenario_id": "scenario_gs_p0b_016",
+      "tools": [
+        "find_expenses"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Expense search candidates contain only IDs/title/locked/refund IDs; amount, base/FX, payments and splits for complete Expense DTO are absent."
+    },
+    {
+      "sample_id": "sample_teacher_5f35c662e1c7",
+      "scenario_id": "scenario_gs_p0b_016",
+      "tools": [
+        "find_expenses"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Expense search candidates contain only IDs/title/locked/refund IDs; amount, base/FX, payments and splits for complete Expense DTO are absent."
+    },
+    {
+      "sample_id": "sample_teacher_66523a7b3d5d",
+      "scenario_id": "scenario_gs_p0b_018",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Expense source has only ID/activity/title/original/payments/splits/lock/version/deleted; required DTO fields are absent."
+    },
+    {
+      "sample_id": "sample_teacher_a95f5dc89bbe",
+      "scenario_id": "scenario_gs_p0b_018",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Expense source has only ID/activity/title/original/payments/splits/lock/version/deleted; required DTO fields are absent."
+    },
+    {
+      "sample_id": "sample_teacher_19ce0a5a6561",
+      "scenario_id": "scenario_gs_p0b_018",
+      "tools": [
+        "get_expense"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Expense source has only ID/activity/title/original/payments/splits/lock/version/deleted; required DTO fields are absent."
+    },
+    {
+      "sample_id": "sample_teacher_3ce6c734d9fa",
+      "scenario_id": "scenario_gs_p0b_019",
+      "tools": [
+        "find_expenses"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Search candidate source has only ID/title/locked/deleted; complete Expense DTO fields are absent."
+    },
+    {
+      "sample_id": "sample_teacher_e68f9f6780d6",
+      "scenario_id": "scenario_gs_p0b_019",
+      "tools": [
+        "find_expenses"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Search candidate source has only ID/title/locked/deleted; complete Expense DTO fields are absent."
+    },
+    {
+      "sample_id": "sample_teacher_3223b7f9ba5c",
+      "scenario_id": "scenario_gs_p0b_019",
+      "tools": [
+        "find_expenses"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Search candidate source has only ID/title/locked/deleted; complete Expense DTO fields are absent."
+    },
+    {
+      "sample_id": "sample_teacher_82a3262d2963",
+      "scenario_id": "scenario_gs_p0b_022",
+      "tools": [
+        "find_expenses"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Search result contains candidate IDs/query/resolution only; complete Expense DTOs and pagination result are absent."
+    },
+    {
+      "sample_id": "sample_teacher_5a804c54604a",
+      "scenario_id": "scenario_gs_p0b_022",
+      "tools": [
+        "find_expenses"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Search result contains candidate IDs/query/resolution only; complete Expense DTOs and pagination result are absent."
+    },
+    {
+      "sample_id": "sample_teacher_2027990b9be5",
+      "scenario_id": "scenario_gs_p0b_022",
+      "tools": [
+        "find_expenses"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Search result contains candidate IDs/query/resolution only; complete Expense DTOs and pagination result are absent."
+    },
+    {
+      "sample_id": "sample_teacher_d0f385cf37da",
+      "scenario_id": "scenario_gs_p0b_025",
+      "tools": [
+        "find_participants"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Participant lookup contains candidate IDs/resolution only; full Participant DTOs and query-result ordering fields are absent."
+    },
+    {
+      "sample_id": "sample_teacher_2a9ac77d78c2",
+      "scenario_id": "scenario_gs_p0b_025",
+      "tools": [
+        "find_participants"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "Participant lookup contains candidate IDs/resolution only; full Participant DTOs and query-result ordering fields are absent."
+    },
+    {
+      "sample_id": "sample_teacher_c892f4546f1b",
+      "scenario_id": "scenario_gs_p0b_037",
+      "tools": [
+        "lookup_business_rule"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "The six dynamic samples include no original expense identity or prior refund event ledger. The database can compute totals, but target source events cannot be reconstructed without inventing refund history."
+    },
+    {
+      "sample_id": "sample_teacher_e6b11034f4f2",
+      "scenario_id": "scenario_gs_p0b_037",
+      "tools": [
+        "lookup_business_rule"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "The six dynamic samples include no original expense identity or prior refund event ledger. The database can compute totals, but target source events cannot be reconstructed without inventing refund history."
+    },
+    {
+      "sample_id": "sample_teacher_817840633b17",
+      "scenario_id": "scenario_gs_p0b_037",
+      "tools": [
+        "lookup_business_rule"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "The six dynamic samples include no original expense identity or prior refund event ledger. The database can compute totals, but target source events cannot be reconstructed without inventing refund history."
+    },
+    {
+      "sample_id": "sample_teacher_32cdd4729633",
+      "scenario_id": "scenario_gs_p0b_037",
+      "tools": [
+        "lookup_business_rule"
+      ],
+      "reconstructable": false,
+      "result_ids": [
+        null
+      ],
+      "blocker": "The six dynamic samples include no original expense identity or prior refund event ledger. The database can compute totals, but target source events cannot be reconstructed without inventing refund history."
+    }
+  ],
+  "scenario_setup_plans": [
+    {
+      "scenario_id": "scenario_gs_p0a_009",
+      "tools": [
+        "get_expense"
+      ],
+      "recorded_seed_paths": [
+        "state.facts.verified_read_result"
+      ],
+      "minimum_database_preconditions": [
+        "Activity + ledger unit + complete Expense row + payments/splits + FX snapshot + actor references; call get_expense_repayment_progress using verified Activity/Expense scope."
+      ],
+      "seed_source_sha256": "ca548e7dcf5d7a792b1657c5f2dc23ccc300f3aeed6e6ea842cb62d5de27d1fb",
+      "disposition": "executed_and_reconstructed",
+      "blocker": null
+    },
+    {
+      "scenario_id": "scenario_gs_p0a_011",
+      "tools": [
+        "get_transfer"
+      ],
+      "recorded_seed_paths": [
+        "state.facts.supporting_lookup_result"
+      ],
+      "minimum_database_preconditions": [
+        "Activity + participants + transfer + payment/components/disputes/source allocation rows."
+      ],
+      "seed_source_sha256": "5e816a904b0157bba9aed4075e3b5e3c801e6ebda220a5a714f5e42e43321bd9",
+      "disposition": "blocked_missing_authoritative_seed_fields_or_events",
+      "blocker": "Transfer source contains only transfer_id and is_voided; required payment, participants, time, recorder and component/allocation details are absent."
+    },
+    {
+      "scenario_id": "scenario_gs_p0a_012",
+      "tools": [
+        "find_expenses"
+      ],
+      "recorded_seed_paths": [
+        "state.facts.supporting_lookup_result"
+      ],
+      "minimum_database_preconditions": [
+        "Activity + ledger unit + all matching Expense rows with full nested DTO source fields; run catalog filters, ordering and pagination against DB."
+      ],
+      "seed_source_sha256": "96921d429eeaedc7af997b5cf6f3b6cad144de6e2b2beb6602e72f72b01b6a26",
+      "disposition": "executed_and_reconstructed",
+      "blocker": null
+    },
+    {
+      "scenario_id": "scenario_gs_p0a_015",
+      "tools": [
+        "get_participant_balance",
+        "get_prepayment_accounts"
+      ],
+      "recorded_seed_paths": [
+        "state.facts.verified_read_results[0]",
+        "state.facts.verified_read_results[1]"
+      ],
+      "minimum_database_preconditions": [
+        "Activity + participant + source expense/payment/split/debt/transfer/prepayment events sufficient to recalculate participant_financial_status.",
+        "Activity + owner/custodian participants + source prepayment/return/usage transfers sufficient for real account balance and usage projections."
+      ],
+      "seed_source_sha256": "3ffc8acab495ccb565a898725e4afb1b421d3faf8ca076a1a03ab21cefabbe38",
+      "disposition": "blocked_missing_authoritative_seed_fields_or_events",
+      "blocker": "Balance result omits base_reference; prepayment result has a non-contract account currency field and lacks an event-backed balance state. No underlying expense/debt/prepayment event ledger is recorded."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_004",
+      "tools": [
+        "get_expense"
+      ],
+      "recorded_seed_paths": [
+        "state.facts.verified_read_result"
+      ],
+      "minimum_database_preconditions": [
+        "Activity + ledger unit + complete Expense row + payments/splits + FX snapshot + actor references; call get_expense_repayment_progress using verified Activity/Expense scope."
+      ],
+      "seed_source_sha256": "8f571da849e31aa7eb8eb1b12bbb573a090c103290317ceba02c734d834e5867",
+      "disposition": "blocked_missing_authoritative_seed_fields_or_events",
+      "blocker": "Recorded Expense seed omits catalog-required ledger_unit_id, base, fx_snapshot, split_method, occurred_at, note, icon_key and original_expense_id; cannot synthesize those historical facts."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_010",
+      "tools": [
+        "get_debt"
+      ],
+      "recorded_seed_paths": [
+        "state.facts.supporting_lookup_result"
+      ],
+      "minimum_database_preconditions": [
+        "Activity + debtor/creditor participants + exact bilateral debt facts + expense debt and repayment events sufficient for progress RPC rows."
+      ],
+      "seed_source_sha256": "603d4ca33b6ed7265f47ad1e3f92c5de782c33cc115f27f61a3522daf443faad",
+      "disposition": "blocked_missing_authoritative_seed_fields_or_events",
+      "blocker": "Only one bilateral amount/currency row is recorded; full bilateral debt DTO and expense_progress history are absent."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_012",
+      "tools": [
+        "get_expense"
+      ],
+      "recorded_seed_paths": [
+        "state.facts.verified_read_result"
+      ],
+      "minimum_database_preconditions": [
+        "Activity + ledger unit + complete Expense row + payments/splits + FX snapshot + actor references; call get_expense_repayment_progress using verified Activity/Expense scope."
+      ],
+      "seed_source_sha256": "02e28ff91a214b3849e031fbf56354884347255957fac5a6e7b99da67a5109f9",
+      "disposition": "blocked_missing_authoritative_seed_fields_or_events",
+      "blocker": "Original Expense source omits catalog-required ledger, base, FX snapshot, split method, time, note and icon; full repayment progress is also absent."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_016",
+      "tools": [
+        "find_expenses"
+      ],
+      "recorded_seed_paths": [
+        "state.facts.supporting_lookup_result"
+      ],
+      "minimum_database_preconditions": [
+        "Activity + ledger unit + all matching Expense rows with full nested DTO source fields; run catalog filters, ordering and pagination against DB."
+      ],
+      "seed_source_sha256": "899edaefa28c9ad15462798aee4a16fa5113188b2c0d1f6aef86479efbec55d9",
+      "disposition": "blocked_missing_authoritative_seed_fields_or_events",
+      "blocker": "Expense search candidates contain only IDs/title/locked/refund IDs; amount, base/FX, payments and splits for complete Expense DTO are absent."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_017",
+      "tools": [
+        "get_expense"
+      ],
+      "recorded_seed_paths": [
+        "state.facts.supporting_lookup_result"
+      ],
+      "minimum_database_preconditions": [
+        "Activity + ledger unit + complete Expense row + payments/splits + FX snapshot + actor references; call get_expense_repayment_progress using verified Activity/Expense scope."
+      ],
+      "seed_source_sha256": "be504c06bea2979af775a98ac3194b86f8cd02124a07ef8999c2d4f2f979db57",
+      "disposition": "blocked_missing_authoritative_seed_fields_or_events",
+      "blocker": "Expense source has only ID/title/original/payments/splits; remaining required Expense DTO fields are absent."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_018",
+      "tools": [
+        "get_expense"
+      ],
+      "recorded_seed_paths": [
+        "state.facts.verified_read_result"
+      ],
+      "minimum_database_preconditions": [
+        "Activity + ledger unit + complete Expense row + payments/splits + FX snapshot + actor references; call get_expense_repayment_progress using verified Activity/Expense scope."
+      ],
+      "seed_source_sha256": "6d0c34c4c72346eefd460aa50ecfa23f87161726766fb625d1dd897028b9fe82",
+      "disposition": "blocked_missing_authoritative_seed_fields_or_events",
+      "blocker": "Expense source has only ID/activity/title/original/payments/splits/lock/version/deleted; required DTO fields are absent."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_019",
+      "tools": [
+        "find_expenses"
+      ],
+      "recorded_seed_paths": [
+        "state.facts.supporting_lookup_result"
+      ],
+      "minimum_database_preconditions": [
+        "Activity + ledger unit + all matching Expense rows with full nested DTO source fields; run catalog filters, ordering and pagination against DB."
+      ],
+      "seed_source_sha256": "7ffaf89ddcf24c69c64928fa72c0e830be912e465e9745cc705c6c41be4211a2",
+      "disposition": "blocked_missing_authoritative_seed_fields_or_events",
+      "blocker": "Search candidate source has only ID/title/locked/deleted; complete Expense DTO fields are absent."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_020",
+      "tools": [
+        "get_expense"
+      ],
+      "recorded_seed_paths": [
+        "state.facts.verified_read_result"
+      ],
+      "minimum_database_preconditions": [
+        "Activity + ledger unit + complete Expense row + payments/splits + FX snapshot + actor references; call get_expense_repayment_progress using verified Activity/Expense scope."
+      ],
+      "seed_source_sha256": "9a0899c0685f46acd3c978042a01388ffe20d2c948bd35da2f8fdd41156ec601",
+      "disposition": "blocked_missing_authoritative_seed_fields_or_events",
+      "blocker": "Expense source has only ID/activity/title/original/payments/splits/lock/version/deleted; required DTO fields are absent."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_022",
+      "tools": [
+        "find_expenses"
+      ],
+      "recorded_seed_paths": [
+        "state.facts.supporting_lookup_result"
+      ],
+      "minimum_database_preconditions": [
+        "Activity + ledger unit + all matching Expense rows with full nested DTO source fields; run catalog filters, ordering and pagination against DB."
+      ],
+      "seed_source_sha256": "54fc91b6599d3aed9994de022994357e512b85e63b3a6c9c1c4fdb67e37ae525",
+      "disposition": "blocked_missing_authoritative_seed_fields_or_events",
+      "blocker": "Search result contains candidate IDs/query/resolution only; complete Expense DTOs and pagination result are absent."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_025",
+      "tools": [
+        "find_participants"
+      ],
+      "recorded_seed_paths": [
+        "state.facts.supporting_lookup_result"
+      ],
+      "minimum_database_preconditions": [
+        "Activity + participant rows and claims needed for exact matching and ordered result DTOs."
+      ],
+      "seed_source_sha256": "7b199ceae4ae6f43529a15001376e7d513c7188825b19d59a8831fc6841e1ca1",
+      "disposition": "blocked_missing_authoritative_seed_fields_or_events",
+      "blocker": "Participant lookup contains candidate IDs/resolution only; full Participant DTOs and query-result ordering fields are absent."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_037",
+      "tools": [
+        "lookup_business_rule"
+      ],
+      "recorded_seed_paths": [
+        "state.facts.supporting_lookup_result"
+      ],
+      "minimum_database_preconditions": [
+        "Frozen rule passage can be looked up directly; any claim about current cumulative refund additionally needs original Expense identity and all active linked refund event rows."
+      ],
+      "seed_source_sha256": "860d215b1b1000355e90ddb2031ce106d5d0a08176cabf76c797a49c4eb88604",
+      "disposition": "blocked_missing_authoritative_seed_fields_or_events",
+      "blocker": "The six dynamic samples include no original expense identity or prior refund event ledger. The database can compute totals, but target source events cannot be reconstructed without inventing refund history."
+    }
+  ],
+  "dynamic_refund_probe": {
+    "scenario_coverage": false,
+    "harness_only": true,
+    "dynamic_result": {
+      "computed_by": "public expense refund-limit trigger predicate from migration 20260923032928",
+      "refund_events": 2,
+      "over_limit_insert_rejected": true,
+      "aggregate_original_refund_amount": "100.0000"
+    },
+    "setup_sql_path": "docs/ai/dataset/experiments/v0.2/authoritative_backend_receipts/dynamic_refund_db_probe.sql",
+    "setup_sql_sha256": "3c4f5b39d16a1c761dff1adf8f291b3cb0ed0316043f4974146201d3073e4208",
+    "rollback_verified": true,
+    "rollback_row_count_after_run": 0,
+    "note": "SYNTHETIC_TEST_ONLY. This validates live database aggregation and cap enforcement using a controlled synthetic event ledger; the six target Samples remain blocked because their original refund event IDs/amounts are absent from frozen Scenario facts.",
+    "source_sha256": "db76ecfaeb258e0398d36e8779cb89d21e1f1c289c302e114cd7701ce6a9f7af"
+  }
+}

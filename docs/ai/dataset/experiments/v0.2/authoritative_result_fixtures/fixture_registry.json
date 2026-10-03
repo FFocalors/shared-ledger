@@ -1,0 +1,292 @@
+{
+  "status": "partial_fixtures_blocked_remaining_receipts",
+  "binding_rule": "Every materialized result_id binds to exactly one (scenario_id, tool); IDs are globally unique. Historical aliases are scoped by (scenario_id, tool, legacy_result_id).",
+  "fixtures": [],
+  "reserved_alias_bindings": [
+    {
+      "scenario_id": "scenario_gs_p0a_009",
+      "tool": "get_expense",
+      "legacy_result_id": "result-p0a-expense-009",
+      "reserved_unique_fixture_id": "result-p0a-expense-009",
+      "source_path": "state.facts.verified_read_result",
+      "source_record_sha256": "401533797665d6e955d64a2ebc6be52de14b9c8bb3511f08994018becefab8f5",
+      "materialized": false,
+      "usable_as_model_result_id": false,
+      "reason": "No complete source-backed receipt for the Expected external facts. This includes dynamic financial state absent from frozen policy documents; it cannot be derived from GT."
+    },
+    {
+      "scenario_id": "scenario_gs_p0a_011",
+      "tool": "get_transfer",
+      "legacy_result_id": "result-p0a-transfer-011",
+      "reserved_unique_fixture_id": "result-p0a-transfer-011",
+      "source_path": "state.facts.supporting_lookup_result",
+      "source_record_sha256": "ecd2c4857438ad34c5a07fca37d832fe8e1cb07e877eebc6727ea727a9bdd673",
+      "materialized": false,
+      "usable_as_model_result_id": false,
+      "reason": "No complete source-backed receipt for the Expected external facts. This includes dynamic financial state absent from frozen policy documents; it cannot be derived from GT."
+    },
+    {
+      "scenario_id": "scenario_gs_p0a_012",
+      "tool": "find_expenses",
+      "legacy_result_id": "result-p0a-delete-012",
+      "reserved_unique_fixture_id": "result-p0a-delete-012",
+      "source_path": "state.facts.supporting_lookup_result",
+      "source_record_sha256": "1083289354b039953ad81f29ccae80d9a43ad9af139088bacc7224b2479ef04c",
+      "materialized": false,
+      "usable_as_model_result_id": false,
+      "reason": "No complete source-backed receipt for the Expected external facts. This includes dynamic financial state absent from frozen policy documents; it cannot be derived from GT."
+    },
+    {
+      "scenario_id": "scenario_gs_p0a_015",
+      "tool": "get_participant_balance",
+      "legacy_result_id": "result-p0a-balance-015",
+      "reserved_unique_fixture_id": "result-p0a-balance-015",
+      "source_path": "state.facts.verified_read_results[0]",
+      "source_record_sha256": "0b785ff01555ef41e4de8493204309e8e8b2e2f43127f1e29fe53e0b93970c5d",
+      "materialized": false,
+      "usable_as_model_result_id": false,
+      "reason": "No complete source-backed receipt for the Expected external facts. This includes dynamic financial state absent from frozen policy documents; it cannot be derived from GT."
+    },
+    {
+      "scenario_id": "scenario_gs_p0a_015",
+      "tool": "get_prepayment_accounts",
+      "legacy_result_id": "result-p0a-prepayment-015",
+      "reserved_unique_fixture_id": "result-p0a-prepayment-015",
+      "source_path": "state.facts.verified_read_results[1]",
+      "source_record_sha256": "e0627e9ef085f3d8110566060a0169698c0b1f8c041170ce75552f6e18c22041",
+      "materialized": false,
+      "usable_as_model_result_id": false,
+      "reason": "No complete source-backed receipt for the Expected external facts. This includes dynamic financial state absent from frozen policy documents; it cannot be derived from GT."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_004",
+      "tool": "get_expense",
+      "legacy_result_id": "result-exp-edit-003-read",
+      "reserved_unique_fixture_id": "result-exp-edit-003-read",
+      "source_path": "state.facts.verified_read_result",
+      "source_record_sha256": "f2b590c3e877d68f949f75df92ae426eba7da8eb73d88368398b3de8aab4cb42",
+      "materialized": false,
+      "usable_as_model_result_id": false,
+      "reason": "No complete source-backed receipt for the Expected external facts. This includes dynamic financial state absent from frozen policy documents; it cannot be derived from GT."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_009",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-pre-core-003-verified",
+      "reserved_unique_fixture_id": "result-pre-core-003-verified",
+      "source_path": "state.facts.supporting_lookup_result",
+      "source_record_sha256": "c5cef496f27ba71d7ba7a3b027d2a11a449f2580ac9ed1214c268e5a96f5ac9d",
+      "materialized": true,
+      "usable_as_model_result_id": true,
+      "reason": "Legacy result_id is globally unique in the frozen references and is preserved; it binds to this single Scenario/Tool fixture."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_010",
+      "tool": "get_debt",
+      "legacy_result_id": "result-trf-002-verified",
+      "reserved_unique_fixture_id": "fixture-v02-b9b452fbf743544e7231",
+      "source_path": "state.facts.supporting_lookup_result",
+      "source_record_sha256": "a2bd541907eac5b567b8f370678c20ed7afca8649cbdd6206dc45460f00f6471",
+      "materialized": false,
+      "usable_as_model_result_id": false,
+      "reason": "No complete source-backed receipt for the Expected external facts. This includes dynamic financial state absent from frozen policy documents; it cannot be derived from GT."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_012",
+      "tool": "get_expense",
+      "legacy_result_id": "result-ref-001-original",
+      "reserved_unique_fixture_id": "result-ref-001-original",
+      "source_path": "state.facts.verified_read_result",
+      "source_record_sha256": "37dea33a8a9c74ee051f329022825fc38110c514a588a4442308322a3e4b4171",
+      "materialized": false,
+      "usable_as_model_result_id": false,
+      "reason": "No complete source-backed receipt for the Expected external facts. This includes dynamic financial state absent from frozen policy documents; it cannot be derived from GT."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_014",
+      "tool": "get_final_settlement",
+      "legacy_result_id": "result-trf-002-verified",
+      "reserved_unique_fixture_id": "fixture-v02-282607e7cd8ba87b4a8a",
+      "source_path": "state.facts.supporting_lookup_result",
+      "source_record_sha256": "5ebddf2836b6c61dbe8b1df78d62dc892c35d481dac7179e3bb4051012fbb906",
+      "materialized": false,
+      "usable_as_model_result_id": false,
+      "reason": "No complete source-backed receipt for the Expected external facts. This includes dynamic financial state absent from frozen policy documents; it cannot be derived from GT."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_016",
+      "tool": "find_expenses",
+      "legacy_result_id": "result-del-002-verified",
+      "reserved_unique_fixture_id": "result-del-002-verified",
+      "source_path": "state.facts.supporting_lookup_result",
+      "source_record_sha256": "81cf46c864750a331c0c22570506d62eff819d057281aa1ee7d8eef128f8115b",
+      "materialized": false,
+      "usable_as_model_result_id": false,
+      "reason": "No complete source-backed receipt for the Expected external facts. This includes dynamic financial state absent from frozen policy documents; it cannot be derived from GT."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_017",
+      "tool": "get_expense",
+      "legacy_result_id": "result-ui-001-verified",
+      "reserved_unique_fixture_id": "result-ui-001-verified",
+      "source_path": "state.facts.supporting_lookup_result",
+      "source_record_sha256": "33e2669e2e7c3528a42d1f4af72485bb13add76660837a63486b0b98a09fa836",
+      "materialized": false,
+      "usable_as_model_result_id": false,
+      "reason": "No complete source-backed receipt for the Expected external facts. This includes dynamic financial state absent from frozen policy documents; it cannot be derived from GT."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_018",
+      "tool": "get_expense",
+      "legacy_result_id": "result-ui-002-read",
+      "reserved_unique_fixture_id": "result-ui-002-read",
+      "source_path": "state.facts.verified_read_result",
+      "source_record_sha256": "3a84fa51eb251a0544877dcbe038fb94a50a7520e0ff0ed00c523018e78609e3",
+      "materialized": false,
+      "usable_as_model_result_id": false,
+      "reason": "No complete source-backed receipt for the Expected external facts. This includes dynamic financial state absent from frozen policy documents; it cannot be derived from GT."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_019",
+      "tool": "find_expenses",
+      "legacy_result_id": "result-ui-003-selected-expense",
+      "reserved_unique_fixture_id": "result-ui-003-selected-expense",
+      "source_path": "state.facts.supporting_lookup_result",
+      "source_record_sha256": "401c9540f15b26a12ac95b65035ea7d1588a5d09647d8efea8936fc66a28fa6c",
+      "materialized": false,
+      "usable_as_model_result_id": false,
+      "reason": "No complete source-backed receipt for the Expected external facts. This includes dynamic financial state absent from frozen policy documents; it cannot be derived from GT."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_020",
+      "tool": "get_expense",
+      "legacy_result_id": "result-ictx-001-read",
+      "reserved_unique_fixture_id": "result-ictx-001-read",
+      "source_path": "state.facts.verified_read_result",
+      "source_record_sha256": "5e2ce834db270543813a58fee959730d747af41c452d69aa62c0c02a613b6fa8",
+      "materialized": false,
+      "usable_as_model_result_id": false,
+      "reason": "No complete source-backed receipt for the Expected external facts. This includes dynamic financial state absent from frozen policy documents; it cannot be derived from GT."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_022",
+      "tool": "find_expenses",
+      "legacy_result_id": "result-ictx-003-verified",
+      "reserved_unique_fixture_id": "result-ictx-003-verified",
+      "source_path": "state.facts.supporting_lookup_result",
+      "source_record_sha256": "ef316f87c6f63a3caa884c5c2124baa5a28aa6404fbfab8228ff3a564276b7b5",
+      "materialized": false,
+      "usable_as_model_result_id": false,
+      "reason": "No complete source-backed receipt for the Expected external facts. This includes dynamic financial state absent from frozen policy documents; it cannot be derived from GT."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_025",
+      "tool": "find_participants",
+      "legacy_result_id": "result-ent-003-candidates",
+      "reserved_unique_fixture_id": "result-ent-003-candidates",
+      "source_path": "state.facts.supporting_lookup_result",
+      "source_record_sha256": "70b92e388c58f9048523845269e6bea7d33b9742d2c495d78aaca7aa751a8e44",
+      "materialized": false,
+      "usable_as_model_result_id": false,
+      "reason": "No complete source-backed receipt for the Expected external facts. This includes dynamic financial state absent from frozen policy documents; it cannot be derived from GT."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_033",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-001-verified",
+      "reserved_unique_fixture_id": "result-rule-001-verified",
+      "source_path": "state.facts.supporting_lookup_result",
+      "source_record_sha256": "f3d49ca056d78e6f9eedfde017c6876abde2a12658ded9a1cc85fe09066f7af7",
+      "materialized": true,
+      "usable_as_model_result_id": true,
+      "reason": "Legacy result_id is globally unique in the frozen references and is preserved; it binds to this single Scenario/Tool fixture."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_034",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-003-verified",
+      "reserved_unique_fixture_id": "result-rule-003-verified",
+      "source_path": "state.facts.supporting_lookup_result",
+      "source_record_sha256": "16822c9b128805a16153853cc7dd80fb191b774e38d2a7b4c12db9ec1456946d",
+      "materialized": true,
+      "usable_as_model_result_id": true,
+      "reason": "Legacy result_id is globally unique in the frozen references and is preserved; it binds to this single Scenario/Tool fixture."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_035",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-004-verified",
+      "reserved_unique_fixture_id": "result-rule-004-verified",
+      "source_path": "state.facts.supporting_lookup_result",
+      "source_record_sha256": "f376072a9b133244d4cb259986c0fa974860ee9c0854790b7688a594e859c7df",
+      "materialized": true,
+      "usable_as_model_result_id": true,
+      "reason": "Legacy result_id is globally unique in the frozen references and is preserved; it binds to this single Scenario/Tool fixture."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_036",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-005-verified",
+      "reserved_unique_fixture_id": "result-rule-005-verified",
+      "source_path": "state.facts.supporting_lookup_result",
+      "source_record_sha256": "218a9c691866c5cdc3fd5070464425fcec2a44b42dd8206b448c1dfb5a5ce61b",
+      "materialized": true,
+      "usable_as_model_result_id": true,
+      "reason": "Legacy result_id is globally unique in the frozen references and is preserved; it binds to this single Scenario/Tool fixture."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_037",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-006-verified",
+      "reserved_unique_fixture_id": "result-rule-006-verified",
+      "source_path": "state.facts.supporting_lookup_result",
+      "source_record_sha256": "c61b5a012242a4cf720061654cc13da1b8f00b6bfb9a1106d698ec018fc8e4e0",
+      "materialized": false,
+      "usable_as_model_result_id": false,
+      "reason": "No complete source-backed receipt for the Expected external facts. This includes dynamic financial state absent from frozen policy documents; it cannot be derived from GT."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_038",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-007-verified",
+      "reserved_unique_fixture_id": "result-rule-007-verified",
+      "source_path": "state.facts.supporting_lookup_result",
+      "source_record_sha256": "e3cde63d84f500868477cd939442368e16769677b3d93fab82ce82531bedd742",
+      "materialized": true,
+      "usable_as_model_result_id": true,
+      "reason": "Legacy result_id is globally unique in the frozen references and is preserved; it binds to this single Scenario/Tool fixture."
+    },
+    {
+      "scenario_id": "scenario_gs_p0b_039",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-008-verified",
+      "reserved_unique_fixture_id": "result-rule-008-verified",
+      "source_path": "state.facts.supporting_lookup_result",
+      "source_record_sha256": "5b6925473d127b9cbfed1d97762e8efda931337a97b7ddd115b304906ca5e624",
+      "materialized": true,
+      "usable_as_model_result_id": true,
+      "reason": "Legacy result_id is globally unique in the frozen references and is preserved; it binds to this single Scenario/Tool fixture."
+    }
+  ],
+  "legacy_id_conflicts": [
+    {
+      "legacy_result_id": "result-trf-002-verified",
+      "bindings": [
+        {
+          "scenario_id": "scenario_gs_p0b_010",
+          "tool": "get_debt",
+          "reserved_unique_fixture_id": "fixture-v02-b9b452fbf743544e7231"
+        },
+        {
+          "scenario_id": "scenario_gs_p0b_014",
+          "tool": "get_final_settlement",
+          "reserved_unique_fixture_id": "fixture-v02-282607e7cd8ba87b4a8a"
+        }
+      ],
+      "resolution": "scenario_tool_scoped_new_ids_required_before_materialization",
+      "sample_data_changed": false,
+      "materialized": false
+    }
+  ],
+  "fixture_ids_materialized": 7
+}

@@ -1,0 +1,17 @@
+{
+  "status": "valid",
+  "fixture_count": 7,
+  "model_visible_metadata_leakage": 0,
+  "fixture_binding_errors": [],
+  "fixture_schema_errors": [],
+  "schema_definition_errors": [],
+  "fixture_provenance_errors": [],
+  "alias_binding_errors": [],
+  "reserved_alias_count": 24,
+  "legacy_cross_scenario_or_tool_id_conflicts": 1,
+  "ambiguous_global_aliases_rejected": 1,
+  "body_dependent_samples": 108,
+  "covered_by_materialized_fixtures": 39,
+  "not_rebuildable": 69,
+  "readiness": "AUTHORITATIVE_RESULT_FIXTURES_BLOCKED"
+}

@@ -1,0 +1,14 @@
+{
+  "docs/ai/dataset/canonical_training/v0.1/samples.json": "768916c8781dc2608ac8220588a0e85ffc043d8f16a45e9bd3497b87a214e562",
+  "docs/ai/dataset/canonical_training/v0.1/scenarios.json": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+  "docs/ai/dataset/canonical_training/v0.1/split_assignment.json": "e3e1599673b3227edeaad3bc62f04e0f3249dd886946f502664428939d8d3765",
+  "docs/ai/dataset/canonical_training/v0.1/dataset_manifest.json": "7f8cc2ef70d1abedd49ea040826d93f4c3708a8cb5893e7e1fedcc488e2c2252",
+  "docs/ai/AI_MODEL_CONTRACT.md": "f6effbc7a4278d6e9b7f6a01298fc1644218be126f85d442da7d35acdf66100a",
+  "docs/ai/schema/tool_catalog.json": "e6f25251c6bdef6cd50f0ce01489adf9c0e6bb5efade5f789e847d86a7350744",
+  "scripts/ai_training_setup/export_dataset.py": "eaab37ce9d9b81a17c4c62bfaa575bed4aac2f2ecdb4072fac455d7c767b7350",
+  "scripts/ai_training_setup/audit_experiment_b_grounding.py": "f6854a572d3479ef8e636ab4c9ad92acaf6b91225c930faa813d2b2a0222b6da",
+  "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/samples.json": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f",
+  "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/scenarios.json": "09317331b1d1da3683847e804b0d96529e4ede203a7886dba74561ac4a73c523",
+  "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/dataset_manifest.json": "aff646574e69d55313ea6979ced593ed15738efb4e95a1062227e43b29c3d034",
+  "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/freeze_hashes.json": "afe5e81d32c5cabe2d4eb3c9e11e7e4ae01c98768af1e45a8bca92a1817682a3"
+}

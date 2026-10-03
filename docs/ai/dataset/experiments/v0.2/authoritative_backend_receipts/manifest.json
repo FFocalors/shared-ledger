@@ -1,0 +1,114 @@
+{
+  "status": "AUTHORITATIVE_BACKEND_RECEIPTS_PARTIALLY_BLOCKED",
+  "created_at": "2026-10-03T10:26:05+08:00",
+  "summary": {
+    "target_samples": 69,
+    "reconstructable_samples": 9,
+    "blocked_samples": 60,
+    "scenario_count": 15,
+    "backend_fixtures": 2,
+    "sample_coverage": "9/69; two fixture pairs"
+  },
+  "source_integrity": {
+    "frozen_and_authoritative_source_count": 79,
+    "hash_matches": 79,
+    "mismatches": 0,
+    "scope": {
+      "frozen_v0_1": "all regular files beneath docs/ai/dataset path segments containing v0.1",
+      "prior_authoritative_result_fixture_package": "all regular files in v0.2/authoritative_result_fixtures",
+      "backend": "all supabase/migrations/*.sql",
+      "contract_and_schema": [
+        "docs/ai/AI_MODEL_CONTRACT.md",
+        "docs/ai/schema/tool_catalog.json"
+      ]
+    }
+  },
+  "artifacts": [
+    {
+      "path": "authoritative_sources.json",
+      "sha256": "a0bc10dccd1dd5c7688fbba1c17a28d2464c0b20366d45b05903dc3884057a0c"
+    },
+    {
+      "path": "backend_result_fixtures.json",
+      "sha256": "fde4ab6ec6fa44be544b0a38d54277241c70d4aa9a858bbdb50574b96a38fc78"
+    },
+    {
+      "path": "batch_coverage.json",
+      "sha256": "6ad88f657e99721bf916eeddccb88155a976ea2c28506d023bd6a8c9318ceb72"
+    },
+    {
+      "path": "dynamic_refund_db_probe.sql",
+      "sha256": "3c4f5b39d16a1c761dff1adf8f291b3cb0ed0316043f4974146201d3073e4208"
+    },
+    {
+      "path": "pilot_run.json",
+      "sha256": "51b9d45cb38487bf62ade7de68e35e9e6389b7570b7a4209a3247317025efbfe"
+    },
+    {
+      "path": "README.md",
+      "sha256": "212b58dd9348025acb5b83b514b14ba59384138e96694f1ba63e6dfb3cf6b952"
+    },
+    {
+      "path": "result_id_registry.json",
+      "sha256": "6e2d7b86c7990d2dbf0d55b2773aeb6f39e459ade2d5c69e8440305909372a70"
+    },
+    {
+      "path": "scenario_gs_p0a_009__get_expense.sql",
+      "sha256": "0e6c0cb3b1c92b3b3d936b96caa1ab44871e7b08f3218ea8d2ad739b4425da8c"
+    },
+    {
+      "path": "scenario_gs_p0a_012__find_expenses.sql",
+      "sha256": "ddd3575490bcf41051005d1a3e54d17125e79f5686d9ccf6a1386851d91e1ad7"
+    },
+    {
+      "path": "validator_report.json",
+      "sha256": "7bd825ff546e201ebc11fb86a26f7d8aba6e16c1710a9e380027c046e949eee8"
+    },
+    {
+      "path": "static_hash_validation.json",
+      "sha256": "e70263c1f120a624a748453b34c6088457d959ad4ff1bbcbc8d4cc431fc5255a"
+    }
+  ],
+  "commands_executed": [
+    "python scripts/ai_training_setup/authoritative_backend_receipt_harness.py",
+    "python scripts/ai_training_setup/validate_authoritative_backend_receipts.py",
+    "python -m unittest scripts.ai_training_setup.test_authoritative_backend_receipts",
+    "git diff --check"
+  ],
+  "validation": {
+    "validator_status": "valid",
+    "validator_readiness": "AUTHORITATIVE_BACKEND_RECEIPTS_PARTIALLY_BLOCKED",
+    "receipt_schema_errors": 0,
+    "binding_and_provenance_errors": 0,
+    "tests": {
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "command": "python -m unittest scripts.ai_training_setup.test_authoritative_backend_receipts",
+      "run_date": "2026-10-03 Asia/Shanghai",
+      "exact_wall_clock_time": "not captured in the test command output"
+    },
+    "git_diff_check": "passed (only existing line-ending warnings were printed)"
+  },
+  "database": {
+    "identity": {
+      "container": "supabase_db_shared-ledger",
+      "compose_workdir": "D:\\project\\Android\\shared-ledger",
+      "host": "127.0.0.1",
+      "port": 54322,
+      "database": "postgres",
+      "server_version": "17.6"
+    },
+    "access": "local Docker container only; validated container workdir and port before each prior transaction",
+    "transaction_isolation": "fixture setup, query and receipt were wrapped in explicit transactions and rolled back; post-run row count 0 for both fixtures and synthetic refund probe",
+    "linked_or_remote_database_accessed": false
+  },
+  "dynamic_refund_probe": {
+    "classification": "SYNTHETIC_TEST_ONLY",
+    "aggregate": "100.0000 computed by database from two controlled test refund rows",
+    "over_cap_insert_rejected": true,
+    "counts_as_target_sample_coverage": false
+  },
+  "compatibility": "Scenario-symbol-to-UUID and legacy-result-ID-to-new-result-ID mappings are external v0.2 sidecars. Experiment B must resolve them while preserving Expected GT reference compatibility; it must not silently rewrite GT.",
+  "manifest_sha256_sidecar": "manifest.sha256"
+}

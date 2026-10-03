@@ -1,0 +1,2296 @@
+{
+  "status": "blocked_remaining_authority",
+  "summary": {
+    "body_dependent_samples": 108,
+    "rebuildable": 39,
+    "not_rebuildable": 69
+  },
+  "blockers": [
+    {
+      "sample_id": "sample_gs_p0_015",
+      "scenario_id": "scenario_gs_p0a_009",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "existing Expense amount/currency and the before-values for payments/splits",
+          "source_path": "state.facts.verified_read_result.expense.original; .payments; .splits",
+          "visible_input": "selected Expense ID is visible; no Expense DTO or prior amounts are visible. User supplies requested new values, not verified current state."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-p0a-expense-009",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "401533797665d6e955d64a2ebc6be52de14b9c8bb3511f08994018becefab8f5",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,observed_at,status",
+            "extra_properties:expense,repayment_progress",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_016",
+      "scenario_id": "scenario_gs_p0a_009",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "existing Expense amount/currency and the before-values for payments/splits",
+          "source_path": "state.facts.verified_read_result.expense.original; .payments; .splits",
+          "visible_input": "selected Expense ID is visible; no Expense DTO or prior amounts are visible. User supplies requested new values, not verified current state."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-p0a-expense-009",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "401533797665d6e955d64a2ebc6be52de14b9c8bb3511f08994018becefab8f5",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,observed_at,status",
+            "extra_properties:expense,repayment_progress",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_017",
+      "scenario_id": "scenario_gs_p0b_004",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "existing Expense amount/currency, payment and split values used as diff.before",
+          "source_path": "state.facts.verified_read_result.expense.original; .payments; .splits",
+          "visible_input": "The user mentions an old amount, but current persisted payment/split state is not present in model-visible context."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-exp-edit-003-read",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "f2b590c3e877d68f949f75df92ae426eba7da8eb73d88368398b3de8aab4cb42",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_018",
+      "scenario_id": "scenario_gs_p0b_004",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "existing Expense amount/currency, payment and split values used as diff.before",
+          "source_path": "state.facts.verified_read_result.expense.original; .payments; .splits",
+          "visible_input": "The user mentions an old amount, but current persisted payment/split state is not present in model-visible context."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-exp-edit-003-read",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "f2b590c3e877d68f949f75df92ae426eba7da8eb73d88368398b3de8aab4cb42",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_032",
+      "scenario_id": "scenario_gs_p0a_015",
+      "split": "validation",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "JPY payable/net balance 0.01 and CNY prepayment account balance 20",
+          "source_path": "state.facts.verified_read_results[result-p0a-balance-015].data.balance_by_currency; state.facts.verified_read_results[result-p0a-prepayment-015].data.accounts",
+          "visible_input": "The user asks for balances; tool_results is empty, so neither authoritative DTO is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-p0a-balance-015",
+          "tool": "get_participant_balance",
+          "authoritative_source_path": "state.facts.verified_read_results[0]",
+          "source_record_sha256": "0b785ff01555ef41e4de8493204309e8e8b2e2f43127f1e29fe53e0b93970c5d",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:financial_version,observed_at,status",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_missing_required:base_reference"
+          ]
+        },
+        {
+          "legacy_result_id": "result-p0a-prepayment-015",
+          "tool": "get_prepayment_accounts",
+          "authoritative_source_path": "state.facts.verified_read_results[1]",
+          "source_record_sha256": "e0627e9ef085f3d8110566060a0169698c0b1f8c041170ce75552f6e18c22041",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:financial_version,observed_at,status",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_033",
+      "scenario_id": "scenario_gs_p0a_015",
+      "split": "validation",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "JPY payable/net balance 0.01 and CNY prepayment account balance 20",
+          "source_path": "state.facts.verified_read_results[result-p0a-balance-015].data.balance_by_currency; state.facts.verified_read_results[result-p0a-prepayment-015].data.accounts",
+          "visible_input": "The user asks for balances; tool_results is empty, so neither authoritative DTO is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-p0a-balance-015",
+          "tool": "get_participant_balance",
+          "authoritative_source_path": "state.facts.verified_read_results[0]",
+          "source_record_sha256": "0b785ff01555ef41e4de8493204309e8e8b2e2f43127f1e29fe53e0b93970c5d",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:financial_version,observed_at,status",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_missing_required:base_reference"
+          ]
+        },
+        {
+          "legacy_result_id": "result-p0a-prepayment-015",
+          "tool": "get_prepayment_accounts",
+          "authoritative_source_path": "state.facts.verified_read_results[1]",
+          "source_record_sha256": "e0627e9ef085f3d8110566060a0169698c0b1f8c041170ce75552f6e18c22041",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:financial_version,observed_at,status",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_036",
+      "scenario_id": "scenario_gs_p0b_010",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "verified bilateral CNY debt amount 80 used to explain the 80 CNY cap",
+          "source_path": "state.facts.supporting_lookup_result.debts[0]",
+          "visible_input": "The user states the attempted transfer amount and asks about a cap; verified debt DTO is absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-trf-002-verified",
+          "tool": "get_debt",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "a2bd541907eac5b567b8f370678c20ed7afca8649cbdd6206dc45460f00f6471",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:debts",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_037",
+      "scenario_id": "scenario_gs_p0a_011",
+      "split": "validation",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "target transfer ID and current is_voided=false state before proposing void",
+          "source_path": "state.facts.supporting_lookup_result.transfer_id; .is_voided",
+          "visible_input": "Activity ID and the user's reason are visible; no selected transfer binding or transfer status is in the serialized input."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-p0a-transfer-011",
+          "tool": "get_transfer",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "ecd2c4857438ad34c5a07fca37d832fe8e1cb07e877eebc6727ea727a9bdd673",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:is_voided,transfer_id",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_040",
+      "scenario_id": "scenario_gs_p0b_012",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "original expense identity and facts required to bind the negative refund expense to its source",
+          "source_path": "state.facts.verified_read_result.expense.id; .original; .original_expense_id",
+          "visible_input": "The user provides refund amount/date/beneficiary, but the persisted original-expense DTO and its ID are absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ref-001-original",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "37dea33a8a9c74ee051f329022825fc38110c514a588a4442308322a3e4b4171",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_043",
+      "scenario_id": "scenario_gs_p0a_012",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "unique expense match, expense ID, and deletion-relevant expense state",
+          "source_path": "state.facts.supporting_lookup_result.candidate_ids; .resolution; .expense",
+          "visible_input": "The user query/title is visible, but the matching server candidate ID and DTO are absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-p0a-delete-012",
+          "tool": "find_expenses",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "1083289354b039953ad81f29ccae80d9a43ad9af139088bacc7224b2479ef04c",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,expense,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_044",
+      "scenario_id": "scenario_gs_p0b_016",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "financial_locked=true and linked refund history explaining why deletion is blocked",
+          "source_path": "state.facts.supporting_lookup_result.expenses[0].financial_locked; .linked_refund_ids",
+          "visible_input": "The user reports deletion failure; no lookup result body establishing the lock/reason is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-del-002-verified",
+          "tool": "find_expenses",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "81cf46c864750a331c0c22570506d62eff819d057281aa1ee7d8eef128f8115b",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,expenses,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_045",
+      "scenario_id": "scenario_gs_p0b_017",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "who paid and who bears this Expense, including the amount/currency",
+          "source_path": "state.facts.supporting_lookup_result.expense.payments; .splits; .original",
+          "visible_input": "The selected Expense ID and question are visible; payer/split DTO values are absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ui-001-verified",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "33e2669e2e7c3528a42d1f4af72485bb13add76660837a63486b0b98a09fa836",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_046",
+      "scenario_id": "scenario_gs_p0b_017",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "who paid and who bears this Expense, including the amount/currency",
+          "source_path": "state.facts.supporting_lookup_result.expense.payments; .splits; .original",
+          "visible_input": "The selected Expense ID and question are visible; payer/split DTO values are absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ui-001-verified",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "33e2669e2e7c3528a42d1f4af72485bb13add76660837a63486b0b98a09fa836",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_047",
+      "scenario_id": "scenario_gs_p0b_018",
+      "split": "test",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "current persisted Expense title/amount/payment/split values used for update diff",
+          "source_path": "state.facts.verified_read_result.expense",
+          "visible_input": "Selected Expense ID and edit form state are visible; the persisted DTO is absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ui-002-read",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "3a84fa51eb251a0544877dcbe038fb94a50a7520e0ff0ed00c523018e78609e3",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_048",
+      "scenario_id": "scenario_gs_p0b_018",
+      "split": "test",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "current persisted Expense title/amount/payment/split values used for update diff",
+          "source_path": "state.facts.verified_read_result.expense",
+          "visible_input": "Selected Expense ID and edit form state are visible; the persisted DTO is absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ui-002-read",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "3a84fa51eb251a0544877dcbe038fb94a50a7520e0ff0ed00c523018e78609e3",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_049",
+      "scenario_id": "scenario_gs_p0b_019",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "unique selected Expense match and unlocked state required by the proposal summary",
+          "source_path": "state.facts.supporting_lookup_result.resolution; .candidate_ids; .expenses[0].financial_locked",
+          "visible_input": "Selected Expense ID and route identify the target, but no authoritative current lock/read result is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ui-003-selected-expense",
+          "tool": "find_expenses",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "401c9540f15b26a12ac95b65035ea7d1588a5d09647d8efea8936fc66a28fa6c",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,expenses,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_050",
+      "scenario_id": "scenario_gs_p0b_020",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "persisted current title and Expense data used for the recent-action edit diff",
+          "source_path": "state.facts.verified_read_result.expense",
+          "visible_input": "Recent action reports create success and identifies an entity; its persisted current DTO is not included."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ictx-001-read",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "5e2ce834db270543813a58fee959730d747af41c452d69aa62c0c02a613b6fa8",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_051",
+      "scenario_id": "scenario_gs_p0b_020",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "persisted current title and Expense data used for the recent-action edit diff",
+          "source_path": "state.facts.verified_read_result.expense",
+          "visible_input": "Recent action reports create success and identifies an entity; its persisted current DTO is not included."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ictx-001-read",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "5e2ce834db270543813a58fee959730d747af41c452d69aa62c0c02a613b6fa8",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_054",
+      "scenario_id": "scenario_gs_p0b_022",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "zero matching expense result needed to say the attempted expense is not currently found",
+          "source_path": "state.facts.supporting_lookup_result.resolution; .candidate_ids",
+          "visible_input": "Recent action reports a failed write, but failure alone does not prove no row persisted; the lookup body is absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ictx-003-verified",
+          "tool": "find_expenses",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "ef316f87c6f63a3caa884c5c2124baa5a28aa6404fbfab8228ff3a564276b7b5",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,query,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_055",
+      "scenario_id": "scenario_gs_p0b_022",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "zero matching expense result needed to say the attempted expense is not currently found",
+          "source_path": "state.facts.supporting_lookup_result.resolution; .candidate_ids",
+          "visible_input": "Recent action reports a failed write, but failure alone does not prove no row persisted; the lookup body is absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ictx-003-verified",
+          "tool": "find_expenses",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "ef316f87c6f63a3caa884c5c2124baa5a28aa6404fbfab8228ff3a564276b7b5",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,query,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_064",
+      "scenario_id": "scenario_gs_p0b_025",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "multiple participant candidates and their display labels for clarification",
+          "source_path": "state.facts.supporting_lookup_result.candidate_ids; state.entities[id].display_name",
+          "visible_input": "The user pronoun is visible; neither candidate list nor candidate labels are in model-visible context."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ent-003-candidates",
+          "tool": "find_participants",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "70b92e388c58f9048523845269e6bea7d33b9742d2c495d78aaca7aa751a8e44",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_065",
+      "scenario_id": "scenario_gs_p0b_025",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "multiple participant candidates and their display labels for clarification",
+          "source_path": "state.facts.supporting_lookup_result.candidate_ids; state.entities[id].display_name",
+          "visible_input": "The user pronoun is visible; neither candidate list nor candidate labels are in model-visible context."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ent-003-candidates",
+          "tool": "find_participants",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "70b92e388c58f9048523845269e6bea7d33b9742d2c495d78aaca7aa751a8e44",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_gs_p0_088",
+      "scenario_id": "scenario_gs_p0b_037",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "cumulative refund cap and the service rejection threshold",
+          "source_path": "state.facts.supporting_lookup_result.passage",
+          "visible_input": "The user gives the attempted amount; no verified policy passage or refund-history result is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-rule-006-verified",
+          "tool": "lookup_business_rule",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "c61b5a012242a4cf720061654cc13da1b8f00b6bfb9a1106d698ec018fc8e4e0",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:passage",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "Frozen policy documents establish the refund cap rule but do not establish this Scenario’s current cumulative refund amount; the user supplies only original Expense amount. This dynamic financial state has no complete source-backed receipt and cannot be inferred."
+    },
+    {
+      "sample_id": "sample_gs_p0_089",
+      "scenario_id": "scenario_gs_p0b_037",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "cumulative refund cap and the service rejection threshold",
+          "source_path": "state.facts.supporting_lookup_result.passage",
+          "visible_input": "The user gives the attempted amount; no verified policy passage or refund-history result is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-rule-006-verified",
+          "tool": "lookup_business_rule",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "c61b5a012242a4cf720061654cc13da1b8f00b6bfb9a1106d698ec018fc8e4e0",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:passage",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "Frozen policy documents establish the refund cap rule but do not establish this Scenario’s current cumulative refund amount; the user supplies only original Expense amount. This dynamic financial state has no complete source-backed receipt and cannot be inferred."
+    },
+    {
+      "sample_id": "sample_teacher_b3279e26f67e",
+      "scenario_id": "scenario_gs_p0b_004",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "existing Expense amount/currency, payment and split values used as diff.before",
+          "source_path": "state.facts.verified_read_result.expense.original; .payments; .splits",
+          "visible_input": "The user mentions an old amount, but current persisted payment/split state is not present in model-visible context."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-exp-edit-003-read",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "f2b590c3e877d68f949f75df92ae426eba7da8eb73d88368398b3de8aab4cb42",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_480045ee9494",
+      "scenario_id": "scenario_gs_p0b_004",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "existing Expense amount/currency, payment and split values used as diff.before",
+          "source_path": "state.facts.verified_read_result.expense.original; .payments; .splits",
+          "visible_input": "The user mentions an old amount, but current persisted payment/split state is not present in model-visible context."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-exp-edit-003-read",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "f2b590c3e877d68f949f75df92ae426eba7da8eb73d88368398b3de8aab4cb42",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_161678d4c59a",
+      "scenario_id": "scenario_gs_p0b_004",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "existing Expense amount/currency, payment and split values used as diff.before",
+          "source_path": "state.facts.verified_read_result.expense.original; .payments; .splits",
+          "visible_input": "The user mentions an old amount, but current persisted payment/split state is not present in model-visible context."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-exp-edit-003-read",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "f2b590c3e877d68f949f75df92ae426eba7da8eb73d88368398b3de8aab4cb42",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_2e8431d0b6ac",
+      "scenario_id": "scenario_gs_p0b_020",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "persisted current title and Expense data used for the recent-action edit diff",
+          "source_path": "state.facts.verified_read_result.expense",
+          "visible_input": "Recent action reports create success and identifies an entity; its persisted current DTO is not included."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ictx-001-read",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "5e2ce834db270543813a58fee959730d747af41c452d69aa62c0c02a613b6fa8",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_faac476ad63b",
+      "scenario_id": "scenario_gs_p0b_020",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "persisted current title and Expense data used for the recent-action edit diff",
+          "source_path": "state.facts.verified_read_result.expense",
+          "visible_input": "Recent action reports create success and identifies an entity; its persisted current DTO is not included."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ictx-001-read",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "5e2ce834db270543813a58fee959730d747af41c452d69aa62c0c02a613b6fa8",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_574eac0ec13a",
+      "scenario_id": "scenario_gs_p0b_020",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "persisted current title and Expense data used for the recent-action edit diff",
+          "source_path": "state.facts.verified_read_result.expense",
+          "visible_input": "Recent action reports create success and identifies an entity; its persisted current DTO is not included."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ictx-001-read",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "5e2ce834db270543813a58fee959730d747af41c452d69aa62c0c02a613b6fa8",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_268abd436036",
+      "scenario_id": "scenario_gs_p0b_017",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "who paid and who bears this Expense, including the amount/currency",
+          "source_path": "state.facts.supporting_lookup_result.expense.payments; .splits; .original",
+          "visible_input": "The selected Expense ID and question are visible; payer/split DTO values are absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ui-001-verified",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "33e2669e2e7c3528a42d1f4af72485bb13add76660837a63486b0b98a09fa836",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_69c813a549e0",
+      "scenario_id": "scenario_gs_p0b_017",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "who paid and who bears this Expense, including the amount/currency",
+          "source_path": "state.facts.supporting_lookup_result.expense.payments; .splits; .original",
+          "visible_input": "The selected Expense ID and question are visible; payer/split DTO values are absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ui-001-verified",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "33e2669e2e7c3528a42d1f4af72485bb13add76660837a63486b0b98a09fa836",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_25ac41485e33",
+      "scenario_id": "scenario_gs_p0b_017",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "who paid and who bears this Expense, including the amount/currency",
+          "source_path": "state.facts.supporting_lookup_result.expense.payments; .splits; .original",
+          "visible_input": "The selected Expense ID and question are visible; payer/split DTO values are absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ui-001-verified",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "33e2669e2e7c3528a42d1f4af72485bb13add76660837a63486b0b98a09fa836",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_6b8c91b2ae67",
+      "scenario_id": "scenario_gs_p0a_009",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "existing Expense amount/currency and the before-values for payments/splits",
+          "source_path": "state.facts.verified_read_result.expense.original; .payments; .splits",
+          "visible_input": "selected Expense ID is visible; no Expense DTO or prior amounts are visible. User supplies requested new values, not verified current state."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-p0a-expense-009",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "401533797665d6e955d64a2ebc6be52de14b9c8bb3511f08994018becefab8f5",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,observed_at,status",
+            "extra_properties:expense,repayment_progress",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_d32231ae891a",
+      "scenario_id": "scenario_gs_p0a_009",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "existing Expense amount/currency and the before-values for payments/splits",
+          "source_path": "state.facts.verified_read_result.expense.original; .payments; .splits",
+          "visible_input": "selected Expense ID is visible; no Expense DTO or prior amounts are visible. User supplies requested new values, not verified current state."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-p0a-expense-009",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "401533797665d6e955d64a2ebc6be52de14b9c8bb3511f08994018becefab8f5",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,observed_at,status",
+            "extra_properties:expense,repayment_progress",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_e2d3fdbd7509",
+      "scenario_id": "scenario_gs_p0a_009",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "existing Expense amount/currency and the before-values for payments/splits",
+          "source_path": "state.facts.verified_read_result.expense.original; .payments; .splits",
+          "visible_input": "selected Expense ID is visible; no Expense DTO or prior amounts are visible. User supplies requested new values, not verified current state."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-p0a-expense-009",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "401533797665d6e955d64a2ebc6be52de14b9c8bb3511f08994018becefab8f5",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,observed_at,status",
+            "extra_properties:expense,repayment_progress",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_5493b48346db",
+      "scenario_id": "scenario_gs_p0a_011",
+      "split": "validation",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "target transfer ID and current is_voided=false state before proposing void",
+          "source_path": "state.facts.supporting_lookup_result.transfer_id; .is_voided",
+          "visible_input": "Activity ID and the user's reason are visible; no selected transfer binding or transfer status is in the serialized input."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-p0a-transfer-011",
+          "tool": "get_transfer",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "ecd2c4857438ad34c5a07fca37d832fe8e1cb07e877eebc6727ea727a9bdd673",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:is_voided,transfer_id",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_4053b71f5faa",
+      "scenario_id": "scenario_gs_p0a_011",
+      "split": "validation",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "target transfer ID and current is_voided=false state before proposing void",
+          "source_path": "state.facts.supporting_lookup_result.transfer_id; .is_voided",
+          "visible_input": "Activity ID and the user's reason are visible; no selected transfer binding or transfer status is in the serialized input."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-p0a-transfer-011",
+          "tool": "get_transfer",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "ecd2c4857438ad34c5a07fca37d832fe8e1cb07e877eebc6727ea727a9bdd673",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:is_voided,transfer_id",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_b761d7e46729",
+      "scenario_id": "scenario_gs_p0a_012",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "unique expense match, expense ID, and deletion-relevant expense state",
+          "source_path": "state.facts.supporting_lookup_result.candidate_ids; .resolution; .expense",
+          "visible_input": "The user query/title is visible, but the matching server candidate ID and DTO are absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-p0a-delete-012",
+          "tool": "find_expenses",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "1083289354b039953ad81f29ccae80d9a43ad9af139088bacc7224b2479ef04c",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,expense,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_ad6ed8c40b36",
+      "scenario_id": "scenario_gs_p0a_012",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "unique expense match, expense ID, and deletion-relevant expense state",
+          "source_path": "state.facts.supporting_lookup_result.candidate_ids; .resolution; .expense",
+          "visible_input": "The user query/title is visible, but the matching server candidate ID and DTO are absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-p0a-delete-012",
+          "tool": "find_expenses",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "1083289354b039953ad81f29ccae80d9a43ad9af139088bacc7224b2479ef04c",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,expense,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_e99928bfd34e",
+      "scenario_id": "scenario_gs_p0a_012",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "unique expense match, expense ID, and deletion-relevant expense state",
+          "source_path": "state.facts.supporting_lookup_result.candidate_ids; .resolution; .expense",
+          "visible_input": "The user query/title is visible, but the matching server candidate ID and DTO are absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-p0a-delete-012",
+          "tool": "find_expenses",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "1083289354b039953ad81f29ccae80d9a43ad9af139088bacc7224b2479ef04c",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,expense,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_36f4d8abe578",
+      "scenario_id": "scenario_gs_p0a_015",
+      "split": "validation",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "JPY payable/net balance 0.01 and CNY prepayment account balance 20",
+          "source_path": "state.facts.verified_read_results[result-p0a-balance-015].data.balance_by_currency; state.facts.verified_read_results[result-p0a-prepayment-015].data.accounts",
+          "visible_input": "The user asks for balances; tool_results is empty, so neither authoritative DTO is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-p0a-balance-015",
+          "tool": "get_participant_balance",
+          "authoritative_source_path": "state.facts.verified_read_results[0]",
+          "source_record_sha256": "0b785ff01555ef41e4de8493204309e8e8b2e2f43127f1e29fe53e0b93970c5d",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:financial_version,observed_at,status",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_missing_required:base_reference"
+          ]
+        },
+        {
+          "legacy_result_id": "result-p0a-prepayment-015",
+          "tool": "get_prepayment_accounts",
+          "authoritative_source_path": "state.facts.verified_read_results[1]",
+          "source_record_sha256": "e0627e9ef085f3d8110566060a0169698c0b1f8c041170ce75552f6e18c22041",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:financial_version,observed_at,status",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_50f39996a01a",
+      "scenario_id": "scenario_gs_p0a_015",
+      "split": "validation",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "JPY payable/net balance 0.01 and CNY prepayment account balance 20",
+          "source_path": "state.facts.verified_read_results[result-p0a-balance-015].data.balance_by_currency; state.facts.verified_read_results[result-p0a-prepayment-015].data.accounts",
+          "visible_input": "The user asks for balances; tool_results is empty, so neither authoritative DTO is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-p0a-balance-015",
+          "tool": "get_participant_balance",
+          "authoritative_source_path": "state.facts.verified_read_results[0]",
+          "source_record_sha256": "0b785ff01555ef41e4de8493204309e8e8b2e2f43127f1e29fe53e0b93970c5d",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:financial_version,observed_at,status",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_missing_required:base_reference"
+          ]
+        },
+        {
+          "legacy_result_id": "result-p0a-prepayment-015",
+          "tool": "get_prepayment_accounts",
+          "authoritative_source_path": "state.facts.verified_read_results[1]",
+          "source_record_sha256": "e0627e9ef085f3d8110566060a0169698c0b1f8c041170ce75552f6e18c22041",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:financial_version,observed_at,status",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_f5bc42a7c74f",
+      "scenario_id": "scenario_gs_p0a_015",
+      "split": "validation",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "JPY payable/net balance 0.01 and CNY prepayment account balance 20",
+          "source_path": "state.facts.verified_read_results[result-p0a-balance-015].data.balance_by_currency; state.facts.verified_read_results[result-p0a-prepayment-015].data.accounts",
+          "visible_input": "The user asks for balances; tool_results is empty, so neither authoritative DTO is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-p0a-balance-015",
+          "tool": "get_participant_balance",
+          "authoritative_source_path": "state.facts.verified_read_results[0]",
+          "source_record_sha256": "0b785ff01555ef41e4de8493204309e8e8b2e2f43127f1e29fe53e0b93970c5d",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:financial_version,observed_at,status",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_missing_required:base_reference"
+          ]
+        },
+        {
+          "legacy_result_id": "result-p0a-prepayment-015",
+          "tool": "get_prepayment_accounts",
+          "authoritative_source_path": "state.facts.verified_read_results[1]",
+          "source_record_sha256": "e0627e9ef085f3d8110566060a0169698c0b1f8c041170ce75552f6e18c22041",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:financial_version,observed_at,status",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_23cc3cf0f1ff",
+      "scenario_id": "scenario_gs_p0a_015",
+      "split": "validation",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "JPY payable/net balance 0.01 and CNY prepayment account balance 20",
+          "source_path": "state.facts.verified_read_results[result-p0a-balance-015].data.balance_by_currency; state.facts.verified_read_results[result-p0a-prepayment-015].data.accounts",
+          "visible_input": "The user asks for balances; tool_results is empty, so neither authoritative DTO is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-p0a-balance-015",
+          "tool": "get_participant_balance",
+          "authoritative_source_path": "state.facts.verified_read_results[0]",
+          "source_record_sha256": "0b785ff01555ef41e4de8493204309e8e8b2e2f43127f1e29fe53e0b93970c5d",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:financial_version,observed_at,status",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_missing_required:base_reference"
+          ]
+        },
+        {
+          "legacy_result_id": "result-p0a-prepayment-015",
+          "tool": "get_prepayment_accounts",
+          "authoritative_source_path": "state.facts.verified_read_results[1]",
+          "source_record_sha256": "e0627e9ef085f3d8110566060a0169698c0b1f8c041170ce75552f6e18c22041",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:financial_version,observed_at,status",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_08eb5acd22fa",
+      "scenario_id": "scenario_gs_p0b_010",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "verified bilateral CNY debt amount 80 used to explain the 80 CNY cap",
+          "source_path": "state.facts.supporting_lookup_result.debts[0]",
+          "visible_input": "The user states the attempted transfer amount and asks about a cap; verified debt DTO is absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-trf-002-verified",
+          "tool": "get_debt",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "a2bd541907eac5b567b8f370678c20ed7afca8649cbdd6206dc45460f00f6471",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:debts",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_cfc2011e329b",
+      "scenario_id": "scenario_gs_p0b_010",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "verified bilateral CNY debt amount 80 used to explain the 80 CNY cap",
+          "source_path": "state.facts.supporting_lookup_result.debts[0]",
+          "visible_input": "The user states the attempted transfer amount and asks about a cap; verified debt DTO is absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-trf-002-verified",
+          "tool": "get_debt",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "a2bd541907eac5b567b8f370678c20ed7afca8649cbdd6206dc45460f00f6471",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:debts",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_bf0e46c9db68",
+      "scenario_id": "scenario_gs_p0b_010",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "verified bilateral CNY debt amount 80 used to explain the 80 CNY cap",
+          "source_path": "state.facts.supporting_lookup_result.debts[0]",
+          "visible_input": "The user states the attempted transfer amount and asks about a cap; verified debt DTO is absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-trf-002-verified",
+          "tool": "get_debt",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "a2bd541907eac5b567b8f370678c20ed7afca8649cbdd6206dc45460f00f6471",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:debts",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_dd191fa70f40",
+      "scenario_id": "scenario_gs_p0b_012",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "original expense identity and facts required to bind the negative refund expense to its source",
+          "source_path": "state.facts.verified_read_result.expense.id; .original; .original_expense_id",
+          "visible_input": "The user provides refund amount/date/beneficiary, but the persisted original-expense DTO and its ID are absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ref-001-original",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "37dea33a8a9c74ee051f329022825fc38110c514a588a4442308322a3e4b4171",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_58846afd6083",
+      "scenario_id": "scenario_gs_p0b_012",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "original expense identity and facts required to bind the negative refund expense to its source",
+          "source_path": "state.facts.verified_read_result.expense.id; .original; .original_expense_id",
+          "visible_input": "The user provides refund amount/date/beneficiary, but the persisted original-expense DTO and its ID are absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ref-001-original",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "37dea33a8a9c74ee051f329022825fc38110c514a588a4442308322a3e4b4171",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_b65cc1030027",
+      "scenario_id": "scenario_gs_p0b_012",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "original expense identity and facts required to bind the negative refund expense to its source",
+          "source_path": "state.facts.verified_read_result.expense.id; .original; .original_expense_id",
+          "visible_input": "The user provides refund amount/date/beneficiary, but the persisted original-expense DTO and its ID are absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ref-001-original",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "37dea33a8a9c74ee051f329022825fc38110c514a588a4442308322a3e4b4171",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_b2b4896fa618",
+      "scenario_id": "scenario_gs_p0b_016",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "financial_locked=true and linked refund history explaining why deletion is blocked",
+          "source_path": "state.facts.supporting_lookup_result.expenses[0].financial_locked; .linked_refund_ids",
+          "visible_input": "The user reports deletion failure; no lookup result body establishing the lock/reason is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-del-002-verified",
+          "tool": "find_expenses",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "81cf46c864750a331c0c22570506d62eff819d057281aa1ee7d8eef128f8115b",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,expenses,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_232051cb0b25",
+      "scenario_id": "scenario_gs_p0b_016",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "financial_locked=true and linked refund history explaining why deletion is blocked",
+          "source_path": "state.facts.supporting_lookup_result.expenses[0].financial_locked; .linked_refund_ids",
+          "visible_input": "The user reports deletion failure; no lookup result body establishing the lock/reason is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-del-002-verified",
+          "tool": "find_expenses",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "81cf46c864750a331c0c22570506d62eff819d057281aa1ee7d8eef128f8115b",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,expenses,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_5f35c662e1c7",
+      "scenario_id": "scenario_gs_p0b_016",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "financial_locked=true and linked refund history explaining why deletion is blocked",
+          "source_path": "state.facts.supporting_lookup_result.expenses[0].financial_locked; .linked_refund_ids",
+          "visible_input": "The user reports deletion failure; no lookup result body establishing the lock/reason is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-del-002-verified",
+          "tool": "find_expenses",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "81cf46c864750a331c0c22570506d62eff819d057281aa1ee7d8eef128f8115b",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,expenses,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_66523a7b3d5d",
+      "scenario_id": "scenario_gs_p0b_018",
+      "split": "test",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "current persisted Expense title/amount/payment/split values used for update diff",
+          "source_path": "state.facts.verified_read_result.expense",
+          "visible_input": "Selected Expense ID and edit form state are visible; the persisted DTO is absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ui-002-read",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "3a84fa51eb251a0544877dcbe038fb94a50a7520e0ff0ed00c523018e78609e3",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_a95f5dc89bbe",
+      "scenario_id": "scenario_gs_p0b_018",
+      "split": "test",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "current persisted Expense title/amount/payment/split values used for update diff",
+          "source_path": "state.facts.verified_read_result.expense",
+          "visible_input": "Selected Expense ID and edit form state are visible; the persisted DTO is absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ui-002-read",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "3a84fa51eb251a0544877dcbe038fb94a50a7520e0ff0ed00c523018e78609e3",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_19ce0a5a6561",
+      "scenario_id": "scenario_gs_p0b_018",
+      "split": "test",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "current persisted Expense title/amount/payment/split values used for update diff",
+          "source_path": "state.facts.verified_read_result.expense",
+          "visible_input": "Selected Expense ID and edit form state are visible; the persisted DTO is absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ui-002-read",
+          "tool": "get_expense",
+          "authoritative_source_path": "state.facts.verified_read_result",
+          "source_record_sha256": "3a84fa51eb251a0544877dcbe038fb94a50a7520e0ff0ed00c523018e78609e3",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:expense",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_3ce6c734d9fa",
+      "scenario_id": "scenario_gs_p0b_019",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "unique selected Expense match and unlocked state required by the proposal summary",
+          "source_path": "state.facts.supporting_lookup_result.resolution; .candidate_ids; .expenses[0].financial_locked",
+          "visible_input": "Selected Expense ID and route identify the target, but no authoritative current lock/read result is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ui-003-selected-expense",
+          "tool": "find_expenses",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "401c9540f15b26a12ac95b65035ea7d1588a5d09647d8efea8936fc66a28fa6c",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,expenses,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_e68f9f6780d6",
+      "scenario_id": "scenario_gs_p0b_019",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "unique selected Expense match and unlocked state required by the proposal summary",
+          "source_path": "state.facts.supporting_lookup_result.resolution; .candidate_ids; .expenses[0].financial_locked",
+          "visible_input": "Selected Expense ID and route identify the target, but no authoritative current lock/read result is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ui-003-selected-expense",
+          "tool": "find_expenses",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "401c9540f15b26a12ac95b65035ea7d1588a5d09647d8efea8936fc66a28fa6c",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,expenses,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_3223b7f9ba5c",
+      "scenario_id": "scenario_gs_p0b_019",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "unique selected Expense match and unlocked state required by the proposal summary",
+          "source_path": "state.facts.supporting_lookup_result.resolution; .candidate_ids; .expenses[0].financial_locked",
+          "visible_input": "Selected Expense ID and route identify the target, but no authoritative current lock/read result is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ui-003-selected-expense",
+          "tool": "find_expenses",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "401c9540f15b26a12ac95b65035ea7d1588a5d09647d8efea8936fc66a28fa6c",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,expenses,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_82a3262d2963",
+      "scenario_id": "scenario_gs_p0b_022",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "zero matching expense result needed to say the attempted expense is not currently found",
+          "source_path": "state.facts.supporting_lookup_result.resolution; .candidate_ids",
+          "visible_input": "Recent action reports a failed write, but failure alone does not prove no row persisted; the lookup body is absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ictx-003-verified",
+          "tool": "find_expenses",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "ef316f87c6f63a3caa884c5c2124baa5a28aa6404fbfab8228ff3a564276b7b5",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,query,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_5a804c54604a",
+      "scenario_id": "scenario_gs_p0b_022",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "zero matching expense result needed to say the attempted expense is not currently found",
+          "source_path": "state.facts.supporting_lookup_result.resolution; .candidate_ids",
+          "visible_input": "Recent action reports a failed write, but failure alone does not prove no row persisted; the lookup body is absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ictx-003-verified",
+          "tool": "find_expenses",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "ef316f87c6f63a3caa884c5c2124baa5a28aa6404fbfab8228ff3a564276b7b5",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,query,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_2027990b9be5",
+      "scenario_id": "scenario_gs_p0b_022",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "zero matching expense result needed to say the attempted expense is not currently found",
+          "source_path": "state.facts.supporting_lookup_result.resolution; .candidate_ids",
+          "visible_input": "Recent action reports a failed write, but failure alone does not prove no row persisted; the lookup body is absent."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ictx-003-verified",
+          "tool": "find_expenses",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "ef316f87c6f63a3caa884c5c2124baa5a28aa6404fbfab8228ff3a564276b7b5",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,query,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_d0f385cf37da",
+      "scenario_id": "scenario_gs_p0b_025",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "multiple participant candidates and their display labels for clarification",
+          "source_path": "state.facts.supporting_lookup_result.candidate_ids; state.entities[id].display_name",
+          "visible_input": "The user pronoun is visible; neither candidate list nor candidate labels are in model-visible context."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ent-003-candidates",
+          "tool": "find_participants",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "70b92e388c58f9048523845269e6bea7d33b9742d2c495d78aaca7aa751a8e44",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_2a9ac77d78c2",
+      "scenario_id": "scenario_gs_p0b_025",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "multiple participant candidates and their display labels for clarification",
+          "source_path": "state.facts.supporting_lookup_result.candidate_ids; state.entities[id].display_name",
+          "visible_input": "The user pronoun is visible; neither candidate list nor candidate labels are in model-visible context."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-ent-003-candidates",
+          "tool": "find_participants",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "70b92e388c58f9048523845269e6bea7d33b9742d2c495d78aaca7aa751a8e44",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:candidate_ids,resolution",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "No complete authoritative fixture for every source. Current RPC/query implementation has no Scenario-specific captured result; missing state/DTO fields cannot be inferred or filled from Expected GT."
+    },
+    {
+      "sample_id": "sample_teacher_c892f4546f1b",
+      "scenario_id": "scenario_gs_p0b_037",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "cumulative refund cap and the service rejection threshold",
+          "source_path": "state.facts.supporting_lookup_result.passage",
+          "visible_input": "The user gives the attempted amount; no verified policy passage or refund-history result is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-rule-006-verified",
+          "tool": "lookup_business_rule",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "c61b5a012242a4cf720061654cc13da1b8f00b6bfb9a1106d698ec018fc8e4e0",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:passage",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "Frozen policy documents establish the refund cap rule but do not establish this Scenario’s current cumulative refund amount; the user supplies only original Expense amount. This dynamic financial state has no complete source-backed receipt and cannot be inferred."
+    },
+    {
+      "sample_id": "sample_teacher_e6b11034f4f2",
+      "scenario_id": "scenario_gs_p0b_037",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "cumulative refund cap and the service rejection threshold",
+          "source_path": "state.facts.supporting_lookup_result.passage",
+          "visible_input": "The user gives the attempted amount; no verified policy passage or refund-history result is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-rule-006-verified",
+          "tool": "lookup_business_rule",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "c61b5a012242a4cf720061654cc13da1b8f00b6bfb9a1106d698ec018fc8e4e0",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:passage",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "Frozen policy documents establish the refund cap rule but do not establish this Scenario’s current cumulative refund amount; the user supplies only original Expense amount. This dynamic financial state has no complete source-backed receipt and cannot be inferred."
+    },
+    {
+      "sample_id": "sample_teacher_817840633b17",
+      "scenario_id": "scenario_gs_p0b_037",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "cumulative refund cap and the service rejection threshold",
+          "source_path": "state.facts.supporting_lookup_result.passage",
+          "visible_input": "The user gives the attempted amount; no verified policy passage or refund-history result is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-rule-006-verified",
+          "tool": "lookup_business_rule",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "c61b5a012242a4cf720061654cc13da1b8f00b6bfb9a1106d698ec018fc8e4e0",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:passage",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "Frozen policy documents establish the refund cap rule but do not establish this Scenario’s current cumulative refund amount; the user supplies only original Expense amount. This dynamic financial state has no complete source-backed receipt and cannot be inferred."
+    },
+    {
+      "sample_id": "sample_teacher_32cdd4729633",
+      "scenario_id": "scenario_gs_p0b_037",
+      "split": "train",
+      "expected_fact_claims": [
+        {
+          "expected_fact": "cumulative refund cap and the service rejection threshold",
+          "source_path": "state.facts.supporting_lookup_result.passage",
+          "visible_input": "The user gives the attempted amount; no verified policy passage or refund-history result is visible."
+        }
+      ],
+      "result_sources": [
+        {
+          "legacy_result_id": "result-rule-006-verified",
+          "tool": "lookup_business_rule",
+          "authoritative_source_path": "state.facts.supporting_lookup_result",
+          "source_record_sha256": "c61b5a012242a4cf720061654cc13da1b8f00b6bfb9a1106d698ec018fc8e4e0",
+          "fixture_result_id": null,
+          "new_model_visible_result_content": null,
+          "fixture_source": null,
+          "schema_gaps": [
+            "missing_required:data,financial_version,observed_at,status",
+            "extra_properties:passage",
+            "status_not_source_recorded_success",
+            "observed_at_missing_or_invalid",
+            "data_not_present_as_contract_object"
+          ]
+        }
+      ],
+      "rebuildable": false,
+      "blocker": "Frozen policy documents establish the refund cap rule but do not establish this Scenario’s current cumulative refund amount; the user supplies only original Expense amount. This dynamic financial state has no complete source-backed receipt and cannot be inferred."
+    }
+  ]
+}

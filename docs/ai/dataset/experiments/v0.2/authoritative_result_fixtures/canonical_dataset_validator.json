@@ -1,0 +1,1307 @@
+{
+  "valid": true,
+  "errors": [],
+  "warnings": [
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_0e69b6cdf402",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_001."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_0cf7d81d873a",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_001."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_ea6c29cb2a39",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_007."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_a97ec8d7e826",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_007."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_9eb37c32ad23",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_021."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_848d9a926256",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_021."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_fc17b2a875e6",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_021."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_636b5cba0e9b",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_023."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_edd7a5ace59b",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_023."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_b3279e26f67e",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_017."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_480045ee9494",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_017."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_161678d4c59a",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_017."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_2e8431d0b6ac",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_050."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_faac476ad63b",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_050."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_574eac0ec13a",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_050."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_90e9a7631200",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_070."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_a7f51daa36fa",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_070."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_276dad2a82ed",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_070."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_268abd436036",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_045."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_69c813a549e0",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_045."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_25ac41485e33",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_045."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_58f01b6ed68e",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_003."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_c128c76ca78f",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_003."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_985eb5e70c3a",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_003."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_e5e76c768727",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_011."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_e421ad41522e",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_011."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_a238839a2fa3",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_011."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_c5701eeab491",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_060."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_9f49b9503b27",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_060."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_715e102130e3",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_060."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_dff5dd3357fa",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_061."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_0c08d19b8851",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_025."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_8ac8867f26ac",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_025."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_08cd09d8cba0",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_025."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_7412d419fb81",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_058."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_f5b087b3a945",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_058."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_2dbf589d2030",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_058."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_1da644e38dbe",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_059."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_6b8c91b2ae67",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_015."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_d32231ae891a",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_015."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_e2d3fdbd7509",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_015."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_598c007bc8b5",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_038."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_75bf6ec27c31",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_038."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_5493b48346db",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_037."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_4053b71f5faa",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_037."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_b761d7e46729",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_043."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_ad6ed8c40b36",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_043."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_e99928bfd34e",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_043."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_4d0c6a3c830d",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_094."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_48b075e13229",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_094."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_c40771581c3f",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_094."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_9cfc5f620246",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_095."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_f38285d92ed9",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_028."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_ff44a7eae6d8",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_028."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_ac08c6c5d7f6",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_028."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_0e4d53c72cc9",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_029."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_36f4d8abe578",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_032."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_50f39996a01a",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_032."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_f5bc42a7c74f",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_032."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_23cc3cf0f1ff",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_033."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_c9a47d5c46c1",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_005."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_9f7abf0f5427",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_009."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_2d5820e72855",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_009."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_7d0f32240c99",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_013."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_32ad1381953c",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_019."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_fd2553095750",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_019."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_64d7671b8fc8",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_027."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_fa433647504b",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_030."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_af9233e650ce",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_030."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_a81e575e0d2c",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_030."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_e24b1a12d1e4",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_034."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_ae1660aab544",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_034."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_2b0ab71ccf9c",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_034."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_7e6dab2d3489",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_035."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_08eb5acd22fa",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_036."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_cfc2011e329b",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_036."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_bf0e46c9db68",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_036."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_790c8dd3aa13",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_039."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_73ea3f65bb09",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_039."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_dd191fa70f40",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_040."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_58846afd6083",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_040."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_b65cc1030027",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_040."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_1da3f26d874a",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_041."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_56c4b297703f",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_041."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_c58d3d09d02e",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_042."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_ae32df1af28a",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_042."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_1c4303e0c9ce",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_042."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_b2b4896fa618",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_044."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_232051cb0b25",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_044."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_5f35c662e1c7",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_044."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_66523a7b3d5d",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_047."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_a95f5dc89bbe",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_047."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_19ce0a5a6561",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_047."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_3ce6c734d9fa",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_049."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_e68f9f6780d6",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_049."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_3223b7f9ba5c",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_049."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_b982aca563b9",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_052."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_bc9ebe671629",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_052."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_66f28faf4613",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_052."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_af455ef74b7a",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_053."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_82a3262d2963",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_054."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_5a804c54604a",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_054."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_2027990b9be5",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_055."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_d297b437b69f",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_056."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_f356c41754b7",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_056."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_c1653e23f624",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_056."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_1fe35ed207a7",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_057."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_4ce07990954a",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_062."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_f0ceafd58e74",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_062."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_40d57e97fbcb",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_062."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_d0f385cf37da",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_064."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_2a9ac77d78c2",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_065."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_2b9aff7e9226",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_066."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_a5d6cc2321ba",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_066."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_978dfdef0483",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_066."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_6083ac87afca",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_066."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_7ff88ac99eca",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_068."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_11c37bf16b8f",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_072."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_c2ddfe3d9b8c",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_072."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_4e0e97563296",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_072."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_45726dede955",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_074."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_f14a99a2f144",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_074."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_0bba9ffaab3a",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_074."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_65d2ed870553",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_075."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_201ba093c3ba",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_076."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_4ac11b83bee9",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_076."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_e9828ad60251",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_076."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_bd17f48c54fa",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_077."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_4a97ceae6344",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_078."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_2de8b1ddfe0a",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_078."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_b6a3bfa9da68",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_080."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_d128b17c1db8",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_081."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_401a2f5ad127",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_082."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_f3941370d729",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_082."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_191d11c1745f",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_082."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_6c16bbf26c83",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_083."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_495133fe795c",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_084."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_af85b5a16d3b",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_084."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_2a2434a010ba",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_085."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_8e1096f2010d",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_085."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_0847b1b27f7f",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_086."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_538a5e7bdb1e",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_086."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_720594c4fe1e",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_086."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_c892f4546f1b",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_088."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_e6b11034f4f2",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_088."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_817840633b17",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_089."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_32cdd4729633",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_089."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_c2e46813f818",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_090."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_0c10938359b3",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_090."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_95b271a2d3c6",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_090."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_a75531445264",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_091."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_5d586b9bd796",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_092."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_ba1b62eae9d7",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_092."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_f0b77cc4c158",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_093."
+    },
+    {
+      "severity": "WARNING",
+      "code": "SEMANTIC_GROUP_REVIEW",
+      "file": "samples.json",
+      "record_id": "sample_teacher_fa5cc2f3d068",
+      "json_path": "/dataset_metadata/semantic_group_key",
+      "message": "Semantic group repeats within a split; review family-level deduplication against sample_gs_p0_093."
+    }
+  ],
+  "info": [],
+  "statistics": {
+    "scenarios": 54,
+    "samples": 250,
+    "families": 54,
+    "splits": {
+      "train": 171,
+      "hard_test": 12,
+      "validation": 24,
+      "test": 37,
+      "unassigned": 6
+    },
+    "tasks": {
+      "parameter_extraction": 17,
+      "proposal_generation": 31,
+      "clarification": 45,
+      "tool_call": 22,
+      "result_explanation": 25,
+      "ui_context_reasoning": 14,
+      "entity_resolution": 14,
+      "interaction_context_reasoning": 17,
+      "conversation_context_reasoning": 14,
+      "intent_classification": 6,
+      "rule_qa": 21,
+      "error_handling": 18,
+      "unsupported_detection": 6
+    },
+    "scopes": {
+      "CORE": 211,
+      "SUPPORTED_BUT_GATED": 39
+    },
+    "sources": {
+      "manual": 95,
+      "teacher_generated": 155
+    },
+    "trust": {
+      "GOLD": 95,
+      "SILVER": 155,
+      "SYNTHETIC_UNVERIFIED": 0
+    },
+    "difficulty": {
+      "easy": 28,
+      "normal": 137,
+      "hard": 79,
+      "ood": 6
+    },
+    "lifecycle": {
+      "draft": 0,
+      "generated": 0,
+      "validated": 0,
+      "reviewed": 0,
+      "approved": 250,
+      "rejected": 0,
+      "deprecated": 0
+    },
+    "supporting_lookup_resolutions": {
+      "unique": 5,
+      "multiple": 3,
+      "zero": 1
+    }
+  }
+}

@@ -1,0 +1,217 @@
+{
+  "schema_version": "v0.2-authoritative-backend-receipts-1",
+  "fixtures": [
+    {
+      "scenario_id": "scenario_gs_p0a_009",
+      "tool": "get_expense",
+      "legacy_result_id": "result-p0a-expense-009",
+      "result": {
+        "data": {
+          "expense": {
+            "id": "724bcbab-b6d4-51d7-8a55-df568a31df31",
+            "base": {
+              "amount": "100.0",
+              "currency": "CNY"
+            },
+            "note": null,
+            "title": "设备租赁",
+            "splits": [
+              {
+                "amount": "100.0000",
+                "participant_id": "6eb661f2-881c-5fdb-aa4a-e864b84c05fc"
+              }
+            ],
+            "version": "3",
+            "icon_key": "money",
+            "original": {
+              "amount": "100.0000",
+              "currency": "CNY"
+            },
+            "payments": [
+              {
+                "amount": "100.0000",
+                "participant_id": "daf4ead9-d551-5167-9b02-88e82602d7e8"
+              }
+            ],
+            "is_deleted": false,
+            "activity_id": "fa2b65a9-06af-5d36-b737-5672e256af7b",
+            "fx_snapshot": {
+              "rate": "1.0000000000",
+              "source": "base_currency",
+              "observed_at": null
+            },
+            "occurred_at": "2026-09-14T02:00:00+00:00",
+            "split_method": "manual",
+            "ledger_unit_id": "d75de571-967c-5276-a1be-05bd29b8ef19",
+            "financial_locked": false,
+            "original_expense_id": null
+          },
+          "repayment_progress": [
+            {
+              "currency": "CNY",
+              "expense_id": "724bcbab-b6d4-51d7-8a55-df568a31df31",
+              "base_currency": "CNY",
+              "owed_base_amount": "100.0",
+              "owed_original_amount": "100.0000",
+              "debtor_participant_id": "6eb661f2-881c-5fdb-aa4a-e864b84c05fc",
+              "remaining_base_amount": "100.0",
+              "prepayment_base_amount": "0.0",
+              "creditor_participant_id": "daf4ead9-d551-5167-9b02-88e82602d7e8",
+              "remaining_original_amount": "100.0000",
+              "prepayment_original_amount": "0.0000",
+              "reverse_offset_base_amount": "0.0",
+              "settled_transfer_base_amount": "0.0",
+              "reverse_offset_original_amount": "0.0000",
+              "settled_transfer_original_amount": "0.0000"
+            }
+          ]
+        },
+        "status": "success",
+        "result_id": "52906326-7912-5bea-b956-1279bd792266",
+        "observed_at": "2026-10-03T02:44:03.004Z",
+        "financial_version": "11"
+      },
+      "raw_backend_result": {
+        "rpc": "public.get_expense_repayment_progress",
+        "rows": [
+          {
+            "expense_id": "724bcbab-b6d4-51d7-8a55-df568a31df31",
+            "debt_currency": "CNY",
+            "debt_base_amount": 100.0,
+            "financial_version": 11,
+            "offset_base_amount": 0.0,
+            "settled_base_amount": 0.0,
+            "debt_original_amount": 100.0,
+            "debtor_participant_id": "6eb661f2-881c-5fdb-aa4a-e864b84c05fc",
+            "remaining_base_amount": 100.0,
+            "offset_original_amount": 0.0,
+            "prepayment_base_amount": 0.0,
+            "creditor_participant_id": "daf4ead9-d551-5167-9b02-88e82602d7e8",
+            "settled_original_amount": 0.0,
+            "remaining_original_amount": 100.0,
+            "prepayment_original_amount": 0.0
+          }
+        ]
+      },
+      "schema_errors": [],
+      "source_record_sha256": "a5f06715dc00d88a00349e308a7c120b5b284bf2a29efbf9e40686720a9973cd",
+      "setup_sql_path": "docs/ai/dataset/experiments/v0.2/authoritative_backend_receipts/scenario_gs_p0a_009__get_expense.sql",
+      "setup_sql_sha256": "0e6c0cb3b1c92b3b3d936b96caa1ab44871e7b08f3218ea8d2ad739b4425da8c",
+      "mapping": {
+        "A001": "fa2b65a9-06af-5d36-b737-5672e256af7b",
+        "L001": "d75de571-967c-5276-a1be-05bd29b8ef19",
+        "P001": "daf4ead9-d551-5167-9b02-88e82602d7e8",
+        "E001": "724bcbab-b6d4-51d7-8a55-df568a31df31",
+        "P002": "6eb661f2-881c-5fdb-aa4a-e864b84c05fc",
+        "harness_actor": "6a4710b5-aa72-57fa-a5c1-bbff8356c126"
+      },
+      "rpc": "public.get_expense_repayment_progress(uuid,uuid)",
+      "adapter": "catalog_query_composition_sql",
+      "rollback_verified": true,
+      "rollback_row_count_after_run": 0
+    },
+    {
+      "scenario_id": "scenario_gs_p0a_012",
+      "tool": "find_expenses",
+      "legacy_result_id": "result-p0a-delete-012",
+      "result": {
+        "data": {
+          "items": [
+            {
+              "id": "2b6cbad0-6f9a-5371-9e98-0193d6e9475a",
+              "base": {
+                "amount": "100.0",
+                "currency": "CNY"
+              },
+              "note": null,
+              "title": "设备租赁",
+              "splits": [
+                {
+                  "amount": "100.0000",
+                  "participant_id": "c948c03b-62c4-5696-9972-e8f8723aad5e"
+                }
+              ],
+              "version": "1",
+              "icon_key": "money",
+              "original": {
+                "amount": "100.0000",
+                "currency": "CNY"
+              },
+              "payments": [
+                {
+                  "amount": "100.0000",
+                  "participant_id": "b260e598-edcb-57d6-92b0-4d6c31656395"
+                }
+              ],
+              "is_deleted": false,
+              "activity_id": "30efdb39-223f-5ad1-a0a1-7b4e2d90c3f8",
+              "fx_snapshot": {
+                "rate": "1.0000000000",
+                "source": "base_currency",
+                "observed_at": null
+              },
+              "occurred_at": "2026-09-10T10:00:00+00:00",
+              "split_method": "manual",
+              "ledger_unit_id": "fe075cab-d132-5f00-a594-5c8a1542630d",
+              "financial_locked": false,
+              "original_expense_id": null
+            }
+          ],
+          "truncated": false,
+          "next_cursor": null
+        },
+        "status": "success",
+        "result_id": "f7407f6b-f74c-5b77-9378-ae50f7184c10",
+        "observed_at": "2026-10-03T02:44:03.460Z",
+        "financial_version": "0"
+      },
+      "raw_backend_result": {
+        "rows": [
+          {
+            "id": "2b6cbad0-6f9a-5371-9e98-0193d6e9475a",
+            "note": null,
+            "title": "设备租赁",
+            "fx_rate": 1.0,
+            "version": 1,
+            "icon_key": "money",
+            "created_at": "2026-10-03T02:44:03.411367+00:00",
+            "created_by": "6baf0140-42b5-586f-804c-c0ccf8e39a95",
+            "deleted_at": null,
+            "deleted_by": null,
+            "is_deleted": false,
+            "updated_at": "2026-10-03T02:44:03.411367+00:00",
+            "updated_by": "6baf0140-42b5-586f-804c-c0ccf8e39a95",
+            "base_amount": 100.0,
+            "occurred_at": "2026-09-10T10:00:00+00:00",
+            "split_method": "manual",
+            "fx_rate_source": "same_currency",
+            "ledger_unit_id": "fe075cab-d132-5f00-a594-5c8a1542630d",
+            "original_amount": 100.0,
+            "financial_locked": false,
+            "original_currency": "CNY",
+            "fx_rate_observed_at": null,
+            "original_expense_id": null
+          }
+        ],
+        "query": "public.expenses + ledger_units + activities"
+      },
+      "schema_errors": [],
+      "source_record_sha256": "64f4c2b80055a91bad9cb578b4fadc5393f53a219107cada345cc80195130447",
+      "setup_sql_path": "docs/ai/dataset/experiments/v0.2/authoritative_backend_receipts/scenario_gs_p0a_012__find_expenses.sql",
+      "setup_sql_sha256": "ddd3575490bcf41051005d1a3e54d17125e79f5686d9ccf6a1386851d91e1ad7",
+      "mapping": {
+        "A001": "30efdb39-223f-5ad1-a0a1-7b4e2d90c3f8",
+        "L001": "fe075cab-d132-5f00-a594-5c8a1542630d",
+        "U001": "d074f7de-8001-527a-a13c-ee4a6ace2962",
+        "E012": "2b6cbad0-6f9a-5371-9e98-0193d6e9475a",
+        "P001": "b260e598-edcb-57d6-92b0-4d6c31656395",
+        "P002": "c948c03b-62c4-5696-9972-e8f8723aad5e",
+        "harness_actor": "6baf0140-42b5-586f-804c-c0ccf8e39a95"
+      },
+      "rpc": null,
+      "adapter": "catalog_query_composition_sql",
+      "rollback_verified": true,
+      "rollback_row_count_after_run": 0
+    }
+  ]
+}

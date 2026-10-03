@@ -1,0 +1,13 @@
+{
+  "status": "valid",
+  "readiness": "AUTHORITATIVE_BACKEND_RECEIPTS_PARTIALLY_BLOCKED",
+  "fixture_count": 2,
+  "receipt_schema_errors": [],
+  "binding_and_provenance_errors": [],
+  "result_id_bindings_unique": true,
+  "sample_count": 69,
+  "reconstructable_samples": 9,
+  "blocked_samples": 60,
+  "legacy_result_trf_002_verified_scoped_only": true,
+  "dynamic_refund_probe_is_sample_fixture": false
+}

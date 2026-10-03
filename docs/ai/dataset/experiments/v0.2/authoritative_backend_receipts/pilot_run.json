@@ -1,0 +1,320 @@
+{
+  "status": "pilot_complete",
+  "fixtures": [
+    {
+      "scenario_id": "scenario_gs_p0a_009",
+      "tool": "get_expense",
+      "legacy_result_id": "result-p0a-expense-009",
+      "result": {
+        "data": {
+          "expense": {
+            "id": "724bcbab-b6d4-51d7-8a55-df568a31df31",
+            "base": {
+              "amount": "100.0",
+              "currency": "CNY"
+            },
+            "note": null,
+            "title": "设备租赁",
+            "splits": [
+              {
+                "amount": "100.0000",
+                "participant_id": "6eb661f2-881c-5fdb-aa4a-e864b84c05fc"
+              }
+            ],
+            "version": "3",
+            "icon_key": "money",
+            "original": {
+              "amount": "100.0000",
+              "currency": "CNY"
+            },
+            "payments": [
+              {
+                "amount": "100.0000",
+                "participant_id": "daf4ead9-d551-5167-9b02-88e82602d7e8"
+              }
+            ],
+            "is_deleted": false,
+            "activity_id": "fa2b65a9-06af-5d36-b737-5672e256af7b",
+            "fx_snapshot": {
+              "rate": "1.0000000000",
+              "source": "base_currency",
+              "observed_at": null
+            },
+            "occurred_at": "2026-09-14T02:00:00+00:00",
+            "split_method": "manual",
+            "ledger_unit_id": "d75de571-967c-5276-a1be-05bd29b8ef19",
+            "financial_locked": false,
+            "original_expense_id": null
+          },
+          "repayment_progress": [
+            {
+              "currency": "CNY",
+              "expense_id": "724bcbab-b6d4-51d7-8a55-df568a31df31",
+              "base_currency": "CNY",
+              "owed_base_amount": "100.0",
+              "owed_original_amount": "100.0000",
+              "debtor_participant_id": "6eb661f2-881c-5fdb-aa4a-e864b84c05fc",
+              "remaining_base_amount": "100.0",
+              "prepayment_base_amount": "0.0",
+              "creditor_participant_id": "daf4ead9-d551-5167-9b02-88e82602d7e8",
+              "remaining_original_amount": "100.0000",
+              "prepayment_original_amount": "0.0000",
+              "reverse_offset_base_amount": "0.0",
+              "settled_transfer_base_amount": "0.0",
+              "reverse_offset_original_amount": "0.0000",
+              "settled_transfer_original_amount": "0.0000"
+            }
+          ]
+        },
+        "status": "success",
+        "result_id": "52906326-7912-5bea-b956-1279bd792266",
+        "observed_at": "2026-10-03T02:44:03.004Z",
+        "financial_version": "11"
+      },
+      "raw_backend_result": {
+        "rpc": "public.get_expense_repayment_progress",
+        "rows": [
+          {
+            "expense_id": "724bcbab-b6d4-51d7-8a55-df568a31df31",
+            "debt_currency": "CNY",
+            "debt_base_amount": 100.0,
+            "financial_version": 11,
+            "offset_base_amount": 0.0,
+            "settled_base_amount": 0.0,
+            "debt_original_amount": 100.0,
+            "debtor_participant_id": "6eb661f2-881c-5fdb-aa4a-e864b84c05fc",
+            "remaining_base_amount": 100.0,
+            "offset_original_amount": 0.0,
+            "prepayment_base_amount": 0.0,
+            "creditor_participant_id": "daf4ead9-d551-5167-9b02-88e82602d7e8",
+            "settled_original_amount": 0.0,
+            "remaining_original_amount": 100.0,
+            "prepayment_original_amount": 0.0
+          }
+        ]
+      },
+      "schema_errors": [],
+      "source_record_sha256": "a5f06715dc00d88a00349e308a7c120b5b284bf2a29efbf9e40686720a9973cd",
+      "setup_sql_path": "docs/ai/dataset/experiments/v0.2/authoritative_backend_receipts/scenario_gs_p0a_009__get_expense.sql",
+      "setup_sql_sha256": "0e6c0cb3b1c92b3b3d936b96caa1ab44871e7b08f3218ea8d2ad739b4425da8c",
+      "mapping": {
+        "A001": "fa2b65a9-06af-5d36-b737-5672e256af7b",
+        "L001": "d75de571-967c-5276-a1be-05bd29b8ef19",
+        "P001": "daf4ead9-d551-5167-9b02-88e82602d7e8",
+        "E001": "724bcbab-b6d4-51d7-8a55-df568a31df31",
+        "P002": "6eb661f2-881c-5fdb-aa4a-e864b84c05fc",
+        "harness_actor": "6a4710b5-aa72-57fa-a5c1-bbff8356c126"
+      },
+      "rpc": "public.get_expense_repayment_progress(uuid,uuid)",
+      "adapter": "catalog_query_composition_sql",
+      "rollback_verified": true,
+      "rollback_row_count_after_run": 0
+    },
+    {
+      "scenario_id": "scenario_gs_p0a_012",
+      "tool": "find_expenses",
+      "legacy_result_id": "result-p0a-delete-012",
+      "result": {
+        "data": {
+          "items": [
+            {
+              "id": "2b6cbad0-6f9a-5371-9e98-0193d6e9475a",
+              "base": {
+                "amount": "100.0",
+                "currency": "CNY"
+              },
+              "note": null,
+              "title": "设备租赁",
+              "splits": [
+                {
+                  "amount": "100.0000",
+                  "participant_id": "c948c03b-62c4-5696-9972-e8f8723aad5e"
+                }
+              ],
+              "version": "1",
+              "icon_key": "money",
+              "original": {
+                "amount": "100.0000",
+                "currency": "CNY"
+              },
+              "payments": [
+                {
+                  "amount": "100.0000",
+                  "participant_id": "b260e598-edcb-57d6-92b0-4d6c31656395"
+                }
+              ],
+              "is_deleted": false,
+              "activity_id": "30efdb39-223f-5ad1-a0a1-7b4e2d90c3f8",
+              "fx_snapshot": {
+                "rate": "1.0000000000",
+                "source": "base_currency",
+                "observed_at": null
+              },
+              "occurred_at": "2026-09-10T10:00:00+00:00",
+              "split_method": "manual",
+              "ledger_unit_id": "fe075cab-d132-5f00-a594-5c8a1542630d",
+              "financial_locked": false,
+              "original_expense_id": null
+            }
+          ],
+          "truncated": false,
+          "next_cursor": null
+        },
+        "status": "success",
+        "result_id": "f7407f6b-f74c-5b77-9378-ae50f7184c10",
+        "observed_at": "2026-10-03T02:44:03.460Z",
+        "financial_version": "0"
+      },
+      "raw_backend_result": {
+        "rows": [
+          {
+            "id": "2b6cbad0-6f9a-5371-9e98-0193d6e9475a",
+            "note": null,
+            "title": "设备租赁",
+            "fx_rate": 1.0,
+            "version": 1,
+            "icon_key": "money",
+            "created_at": "2026-10-03T02:44:03.411367+00:00",
+            "created_by": "6baf0140-42b5-586f-804c-c0ccf8e39a95",
+            "deleted_at": null,
+            "deleted_by": null,
+            "is_deleted": false,
+            "updated_at": "2026-10-03T02:44:03.411367+00:00",
+            "updated_by": "6baf0140-42b5-586f-804c-c0ccf8e39a95",
+            "base_amount": 100.0,
+            "occurred_at": "2026-09-10T10:00:00+00:00",
+            "split_method": "manual",
+            "fx_rate_source": "same_currency",
+            "ledger_unit_id": "fe075cab-d132-5f00-a594-5c8a1542630d",
+            "original_amount": 100.0,
+            "financial_locked": false,
+            "original_currency": "CNY",
+            "fx_rate_observed_at": null,
+            "original_expense_id": null
+          }
+        ],
+        "query": "public.expenses + ledger_units + activities"
+      },
+      "schema_errors": [],
+      "source_record_sha256": "64f4c2b80055a91bad9cb578b4fadc5393f53a219107cada345cc80195130447",
+      "setup_sql_path": "docs/ai/dataset/experiments/v0.2/authoritative_backend_receipts/scenario_gs_p0a_012__find_expenses.sql",
+      "setup_sql_sha256": "ddd3575490bcf41051005d1a3e54d17125e79f5686d9ccf6a1386851d91e1ad7",
+      "mapping": {
+        "A001": "30efdb39-223f-5ad1-a0a1-7b4e2d90c3f8",
+        "L001": "fe075cab-d132-5f00-a594-5c8a1542630d",
+        "U001": "d074f7de-8001-527a-a13c-ee4a6ace2962",
+        "E012": "2b6cbad0-6f9a-5371-9e98-0193d6e9475a",
+        "P001": "b260e598-edcb-57d6-92b0-4d6c31656395",
+        "P002": "c948c03b-62c4-5696-9972-e8f8723aad5e",
+        "harness_actor": "6baf0140-42b5-586f-804c-c0ccf8e39a95"
+      },
+      "rpc": null,
+      "adapter": "catalog_query_composition_sql",
+      "rollback_verified": true,
+      "rollback_row_count_after_run": 0
+    }
+  ],
+  "schema_errors": [],
+  "source_hashes": {
+    "docs/ai/AI_MODEL_CONTRACT.md": "f6effbc7a4278d6e9b7f6a01298fc1644218be126f85d442da7d35acdf66100a",
+    "docs/ai/dataset/canonical_training/v0.1/coverage_report.json": "a213bb66a34462921c46cc0f2eecc6ef95722f8b0b53944d862c7b428dfb9672",
+    "docs/ai/dataset/canonical_training/v0.1/dataset_manifest.json": "7f8cc2ef70d1abedd49ea040826d93f4c3708a8cb5893e7e1fedcc488e2c2252",
+    "docs/ai/dataset/canonical_training/v0.1/README.md": "5164a02df3bda490c882be8dfddd232e253119d337cc01b8c9f1901aac79c435",
+    "docs/ai/dataset/canonical_training/v0.1/samples.json": "768916c8781dc2608ac8220588a0e85ffc043d8f16a45e9bd3497b87a214e562",
+    "docs/ai/dataset/canonical_training/v0.1/scenarios.json": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+    "docs/ai/dataset/canonical_training/v0.1/split_assignment.json": "e3e1599673b3227edeaad3bc62f04e0f3249dd886946f502664428939d8d3765",
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/canonical_dataset_validator.json": "4895a45ff68bbed6ac8b30e1878fda2b05fa9cd0f3f21fc842a51360e5db58f6",
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/fixture_registry.json": "d1304c231a49e5a521f1909ebaf5781f0c230e38fa907805de48aadc44354024",
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/fixture_validation_report.json": "8e304a041c841ad94af62926ccef00559bc1492f591b44d94503b2f7aa54e4b5",
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/manifest.json": "c4ee7a5fb838d7683420088687d7e19433bcb87c34e671c9094e3f7121fa3c66",
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/manifest.sha256": "c5757c4470c4024f141a7cdc5ef5332966bb4cc1b37ba2e398418e268f561d1d",
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/README.md": "a4985fa83a050ac0d567062880c05055ae88f57fb348bb29a1398cec38fc13c7",
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/result_fixtures.json": "de41f1d377e4f14394f4a8564ca888c0855d2545900a1c6560fdd3e509996c65",
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/sample_blockers.json": "837cc26b3683e93ee26ad120e15125e16a2e992b8ebe2cb91a2f3344651402c3",
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/sample_rebuildability.json": "70d6bf267839d2dfda98d5496d528fcb913148c90386e65f6c3abf96a5e1db82",
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/tool_receipt_schema_inventory.json": "d33d61eece2604abec6179ae8449d7849e853d5df4836227a0d88fbbb4a8cd21",
+    "docs/ai/dataset/gold_seed/v0.1/p0/dataset_manifest.json": "cb0bc5918534aba996383574e1715327730d83bcc64ed57df57a2fb4ddc4e6eb",
+    "docs/ai/dataset/gold_seed/v0.1/p0/README.md": "2117cf1112028e73178d32b895019dfc29dabd711d8af34f54a02eb3aa1276c0",
+    "docs/ai/dataset/gold_seed/v0.1/p0/samples.json": "34ffd94d9c5ccbb17e6632b8689194c4be53f7275db828e983f6d6540b406dee",
+    "docs/ai/dataset/gold_seed/v0.1/p0/scenarios.json": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+    "docs/ai/dataset/gold_seed/v0.1/P0_FINAL_REVIEW.md": "a2497e67df45f6776ffa1d9070c626e431bdde9a09120be651c8afd54ed4ca71",
+    "docs/ai/dataset/gold_seed/v0.1/P0_GOLD_SAMPLE_REVIEW.md": "f020e284eed45febd74069a3012af9c5771072536d150d0f05c153727dfae636",
+    "docs/ai/dataset/gold_seed/v0.1/p0a/P0A_BUSINESS_REREVIEW.md": "157431dd0e1c04ca4772e5cd809173e4fccdfcaf64de629b0f3858036487f8bd",
+    "docs/ai/dataset/gold_seed/v0.1/p0a/P0A_BUSINESS_REVIEW.md": "b7fb437e70c7f72ca5be3de2b6495766fe2d113981faa2b1384ad6aa28664552",
+    "docs/ai/dataset/gold_seed/v0.1/p0a/README.md": "01102967958d2813f128e4ca22a201591ca831e3f665f8e041e391cd7e6ff338",
+    "docs/ai/dataset/gold_seed/v0.1/p0a/scenarios.json": "5d7e779633ec6e4f840e13aa44395e6872855f5a5aa10b2b862149946ef3a57e",
+    "docs/ai/dataset/gold_seed/v0.1/p0b/P0B_BUSINESS_REREVIEW.md": "c0a43db355a639f2d73426fe8c523daa5dfdcbea5f73f79bef75bc7b6f633730",
+    "docs/ai/dataset/gold_seed/v0.1/p0b/P0B_BUSINESS_REVIEW.md": "018494aa57cca89b4acc4f8c714dd3ccf1f3deac4c51cb5ddfafd84309e63b43",
+    "docs/ai/dataset/gold_seed/v0.1/p0b/README.md": "9c86bd24750ba3cc39ed5ffeeff68a49f4a7d9a68ada916dc5a8825f605e5fb2",
+    "docs/ai/dataset/gold_seed/v0.1/p0b/scenarios.json": "3ca48ed59d62265c49f1e4d898e0acf6d6798c9eea640df4afac7f35afab986e",
+    "docs/ai/dataset/teacher/v0.1/dataset_manifest.json": "2add79d8111feff4aca4453480cc3380fe0cf81d1ef32f090aee0246bbdf5895",
+    "docs/ai/dataset/teacher/v0.1/README.md": "8429522e7f5a3dcef8092251621ac83ff766ec254cfe5253a3311a37531b84cf",
+    "docs/ai/dataset/teacher/v0.1/samples.json": "5d2ca222d8ee4a87ae9e17cdaa0dd22dbfa8bf6835458e34e3be6c9292e4c4d9",
+    "docs/ai/dataset/teacher/v0.1/scenarios.json": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+    "docs/ai/schema/tool_catalog.json": "e6f25251c6bdef6cd50f0ce01489adf9c0e6bb5efade5f789e847d86a7350744",
+    "supabase/migrations/20260830100421_backend_foundation_types.sql": "effbf39c0609aa074e78612bf2d7c510cc3a955ca874b43c9bc391d304b3bcf4",
+    "supabase/migrations/20260830100423_profiles_and_auth.sql": "e5cf0d9230156b150cf1afb92428c0c5043193cc972588d5c80d14a8260fc65e",
+    "supabase/migrations/20260830100424_activities_and_members.sql": "ab242220864266a058c0203227955b0f2ddf99aff86fb2ef42bc9f99f5ae21fb",
+    "supabase/migrations/20260830100426_ledger_units_and_participants.sql": "6e64bcc140927653b53b6ed459f4d6caf9151b53378dfde27675a0824db90ad5",
+    "supabase/migrations/20260830100429_foundation_rls.sql": "2b92e78d3d7b83f5dbb3a360560f4b17898047277a15b348ad2d5c83e61faa49",
+    "supabase/migrations/20260830105311_activity_lifecycle_rpc.sql": "7fe62353eab45a8a29bda2ff2f18a35eca4156376f03ccea8e07a97be5b7d198",
+    "supabase/migrations/20260830115348_expense_core_schema.sql": "5f360d3b8e78e28b4da694f49fc2bdb455b5788ee88a36667ae479403e540edc",
+    "supabase/migrations/20260830115402_expense_core_rpc.sql": "afb83d71404d4b6a9476807eb0bf6eb98f43360767d08e789cdd01db81e04d09",
+    "supabase/migrations/20260830115418_expense_core_rls.sql": "11d9d3dc363f45cf0a149ae4b3157f6377bd4bb2cfd9c2702d4185592a83535e",
+    "supabase/migrations/20260830151327_base_amount_normalization.sql": "46f54b6a6e1ec46d227d016b8d93d004777a76b20e16e02b480a96025b34acf6",
+    "supabase/migrations/20260830191659_backend_debt_projection.sql": "58268ac227b17d5484940189218ee3aa88be8a827b79e432d91d90b35e919959",
+    "supabase/migrations/20260831034645_backend_settlement_transfer.sql": "891252d21de940979e9a33bc9bd57b67528823022bda0117472a1b8d8d6abf97",
+    "supabase/migrations/20260831055425_backend_prepayment.sql": "6496a004e6caa032d52634c7e5e80251a3d01ae63d892a3c6ea8d285d5780c0c",
+    "supabase/migrations/20260831120000_phase5_fk_indexes.sql": "eb61a8c44086f1102767f2ef9fe4bb27879747b4e147e58cebb7d235fe07607c",
+    "supabase/migrations/20260831160108_backend_final_settlement_archive.sql": "97b0e0a5412a435e6bb976e7163fcecdec77b9a1af21a0f4433cd2d40bba82b1",
+    "supabase/migrations/20260901124212_backend_finalization_integration_readiness.sql": "6cdb4600575dd03b7e19762e82d2e0b80d73499126b675270df99e58efd367d5",
+    "supabase/migrations/20260905151820_expense_deleted_read_restore.sql": "0e3d72fc29c10de00d14efb1d6a53048a1290cc5c4ab9aa332b571d6c8913a36",
+    "supabase/migrations/20260908063410_transfer_restore_contract.sql": "7324c856779a11e16de7edfd379701194bfcc0bb2a60b396ef9a37d774238a46",
+    "supabase/migrations/20260908092201_allow_members_create_sub_activity.sql": "83935dc51de2bd421cbae951bcf08bf57e92fc9eaf0585edc5b356fe07fc72cb",
+    "supabase/migrations/20260910133739_fair_aa_base_allocation.sql": "266404746e4457b84bb7460756837c8d61047d7067b31421ff00caf6ed9c3e6f",
+    "supabase/migrations/20260913112306_sub_activity_delete_restore.sql": "498e170f9723a747fcdf9de0e4f38e4dfd34e37e57f1ef589c2bb9a523f1d373",
+    "supabase/migrations/20260913112419_ecb_exchange_rate_expense_snapshots.sql": "6f5b11b4c7cb09dfb96ccfc61c2f6965b40255caa7bf33985ae78fefeaa58025",
+    "supabase/migrations/20260913120850_schedule_ecb_exchange_rate_sync.sql": "3d13c23963d249a32728de4590a2f717545a2dbb08f465ea548d61e6cf5b2316",
+    "supabase/migrations/20260913121250_fix_ecb_cron_net_http_post.sql": "65094ec31aaf8470513c3ad5d0a7754eaa933a5dd880cdd393a91aedde2d0c0e",
+    "supabase/migrations/20260913123459_fix_exchange_rate_cache_update_where.sql": "12c03e358b6ef2763d5f636c81817fed9bafadf95c828cbbd05a933d84000f3b",
+    "supabase/migrations/20260918054229_profiles_avatar_style_presets.sql": "ea84572be10304f9b443113267e31ac64e611bd0cde16089196a2de88b530773",
+    "supabase/migrations/20260919094626_expense_icon_keys.sql": "6015fd998f9944a9d3413f5e7a32b031ed223a51e5a0e93a5b423f9110b8aaf7",
+    "supabase/migrations/20260919164707_multi_currency_settlement.sql": "0bbd478a18adbedb645b5e905c07af76433fa42a532642126a4778ebaf1c07e8",
+    "supabase/migrations/20260920112458_fix_original_currency_debt_projection.sql": "4d79f5548a4dad4d6ae2b7e00baf7ed1a9bb6470b132444dbda03b7027105435",
+    "supabase/migrations/20260920120259_fix_multi_currency_allocation_invariants.sql": "ea962f18b93e3e36a84fa5817ad3240aff9c7d86c069df7fea3b4918f9d76fe0",
+    "supabase/migrations/20260920142845_multi_currency_prepayment_final_settlement_core.sql": "2e41d6cdf18acd1de97bf095c3c5255bfdb48ecea634f3902c8acdb8d38cfad0",
+    "supabase/migrations/20260920142942_immutable_transfer_delete_restore_contract.sql": "8e481330fb27387fba5b399459e0e4eed02871c636ace2aa6273db368451cdaa",
+    "supabase/migrations/20260920151825_fix_transfer_source_expenses_indexes.sql": "33879e71a100527127733bfe497be97046e589a39da38e417637caaf89bf2fe6",
+    "supabase/migrations/20260920152349_fix_prepayment_currency_priority.sql": "28483dca957af7f14cb2a3a32ee551401288959ca16ee6b1725b9c634a0f9f1a",
+    "supabase/migrations/20260921022101_allow_members_create_prepayment.sql": "dbe15e28717e5c625e2919e241a1a3fab52aa56a3f56eba79cfed38259cd6c53",
+    "supabase/migrations/20260921043414_expense_financial_lock_presentation_update.sql": "eb738fc9e5ee6e09239d7991cd16b76050ec9d47768878ff5d973d9667b3a563",
+    "supabase/migrations/20260921051720_targeted_expense_repayment_contract.sql": "d7d198ce22395e512d4049a92c3af22f728914d8da8b36e52f509a404be4be34",
+    "supabase/migrations/20260922031227_fix_final_settlement_transfer_mode.sql": "df2c2b4855bb10549c85dd074c1a0ac1529a6e8316a534b498e1959574773ff9",
+    "supabase/migrations/20260922072033_final_settlement_member_actor_gate.sql": "7df8287e5c69bd576c03952da6c9c66a181ee6c807d38208c5f57fc8716b2475",
+    "supabase/migrations/20260923022250_business_logic_finalization.sql": "4e000b18ec5a66e09a77838b26b854d21c731e4b72a712f2bb160fd314c20b28",
+    "supabase/migrations/20260923032928_refund_limits_and_legacy_rpc_permissions.sql": "db76ecfaeb258e0398d36e8779cb89d21e1f1c289c302e114cd7701ce6a9f7af",
+    "supabase/migrations/20260924020249_fix_aa_original_currency_debt_preservation.sql": "5cb53e9da9b30fb9cbc3596d445f127a6ade13f087a4f500dff549055920e038",
+    "supabase/migrations/20260925133211_fix_negative_expense_base_debt_allocation.sql": "d6a153948c005ec5e9d1c50767103d6864c7d1dc2b36010b6219312c4b62a5d6"
+  },
+  "reproducible": {
+    "command": "python scripts/ai_training_setup/authoritative_backend_receipt_harness.py",
+    "database": "repository-owned local container only; host mapping 127.0.0.1:54322; no linked connection",
+    "transaction": "one SQL transaction per scenario, explicit ROLLBACK"
+  },
+  "dynamic_refund_engine_probe": {
+    "scenario_coverage": false,
+    "harness_only": true,
+    "dynamic_result": {
+      "computed_by": "public expense refund-limit trigger predicate from migration 20260923032928",
+      "refund_events": 2,
+      "over_limit_insert_rejected": true,
+      "aggregate_original_refund_amount": "100.0000"
+    },
+    "setup_sql_path": "docs/ai/dataset/experiments/v0.2/authoritative_backend_receipts/dynamic_refund_db_probe.sql",
+    "setup_sql_sha256": "3c4f5b39d16a1c761dff1adf8f291b3cb0ed0316043f4974146201d3073e4208",
+    "rollback_verified": true,
+    "rollback_row_count_after_run": 0,
+    "note": "SYNTHETIC_TEST_ONLY. This validates live database aggregation and cap enforcement using a controlled synthetic event ledger; the six target Samples remain blocked because their original refund event IDs/amounts are absent from frozen Scenario facts.",
+    "source_sha256": "db76ecfaeb258e0398d36e8779cb89d21e1f1c289c302e114cd7701ce6a9f7af"
+  }
+}

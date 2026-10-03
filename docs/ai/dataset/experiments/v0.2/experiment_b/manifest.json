@@ -1,0 +1,138 @@
+{
+  "experiment_version": "0.2-experiment-b",
+  "status": "blocked_by_missing_authority",
+  "created_at_local_date": "2026-10-02T13:08:19+08:00",
+  "source_dataset": {
+    "path": "docs/ai/dataset/canonical_training/v0.1",
+    "sample_count": 250,
+    "splits_unchanged": true,
+    "sha256": {
+      "docs/ai/dataset/canonical_training/v0.1/samples.json": "768916c8781dc2608ac8220588a0e85ffc043d8f16a45e9bd3497b87a214e562",
+      "docs/ai/dataset/canonical_training/v0.1/scenarios.json": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+      "docs/ai/dataset/canonical_training/v0.1/split_assignment.json": "e3e1599673b3227edeaad3bc62f04e0f3249dd886946f502664428939d8d3765",
+      "docs/ai/dataset/canonical_training/v0.1/dataset_manifest.json": "7f8cc2ef70d1abedd49ea040826d93f4c3708a8cb5893e7e1fedcc488e2c2252"
+    }
+  },
+  "overlay": {
+    "samples_modified": 0,
+    "patches_artifact": "overlay_patches.json",
+    "status": "not_produced_due_to_missing_contract_valid_receipts"
+  },
+  "audit_summary": {
+    "canonical_sample_count": 250,
+    "canonical_scenario_count": 54,
+    "split_counts": {
+      "train": 171,
+      "hard_test": 12,
+      "validation": 24,
+      "test": 37,
+      "unassigned": 6
+    },
+    "frozen_v0_1_hashes_match_manifest": true,
+    "frozen_experiment_a_hashes_match_freeze_record": true,
+    "experiment_a_frozen_hashes_verified": 7,
+    "result_referenced_sample_count": 112,
+    "result_fact_dependent_sample_count": 108,
+    "no_prior_result_body_needed_sample_count": 4,
+    "complete_visible_authoritative_grounding_sample_count": 0,
+    "id_only_or_body_insufficient_sample_count": 108,
+    "safe_to_overlay_sample_count": 0,
+    "samples_with_no_business_payload_authority": 0,
+    "samples_missing_contract_valid_receipt_authority": 108,
+    "referenced_unique_result_id_count": 23,
+    "referenced_ids_with_scenario_server_result_body_count": 23,
+    "referenced_ids_with_contract_valid_receipt_count": 1,
+    "referenced_scenario_result_pair_count": 24,
+    "referenced_scenario_result_pairs_with_contract_valid_receipt_count": 1,
+    "referenced_scenario_result_pairs_missing_contract_valid_receipt_count": 23,
+    "reused_result_ids_across_scenarios": [
+      {
+        "result_id": "result-trf-002-verified",
+        "scenario_tool_pairs": [
+          {
+            "scenario_id": "scenario_gs_p0b_010",
+            "tool": "get_debt"
+          },
+          {
+            "scenario_id": "scenario_gs_p0b_014",
+            "tool": "get_final_settlement"
+          }
+        ],
+        "conflicting_record_count": 2
+      }
+    ],
+    "split_result_grounding_counts": {
+      "hard_test": {
+        "result_referenced": 6,
+        "body_dependent": 6,
+        "no_prior_body_needed": 0,
+        "id_only_or_body_insufficient": 6
+      },
+      "test": {
+        "result_referenced": 17,
+        "body_dependent": 17,
+        "no_prior_body_needed": 0,
+        "id_only_or_body_insufficient": 17
+      },
+      "train": {
+        "result_referenced": 74,
+        "body_dependent": 70,
+        "no_prior_body_needed": 4,
+        "id_only_or_body_insufficient": 70
+      },
+      "unassigned": {
+        "result_referenced": 0,
+        "body_dependent": 0,
+        "no_prior_body_needed": 0,
+        "id_only_or_body_insufficient": 0
+      },
+      "validation": {
+        "result_referenced": 15,
+        "body_dependent": 15,
+        "no_prior_body_needed": 0,
+        "id_only_or_body_insufficient": 15
+      }
+    },
+    "serializer_rows_checked": 250,
+    "serializer_errors": 0,
+    "model_visible_metadata_leakage_check": "export_record_metadata_guard",
+    "model_visible_metadata_leakage_checked_rows": 250,
+    "model_visible_metadata_leakage_rows": 0,
+    "canonical_dataset_validator": {
+      "status": "valid",
+      "errors": 0,
+      "warnings": 155,
+      "warning_codes": {
+        "SEMANTIC_GROUP_REVIEW": 155
+      },
+      "report_artifact": "source_validator_report.json"
+    },
+    "source_receipt_schema_error_counts": {
+      "missing_required:data,observed_at,status": 1,
+      "extra_properties:expense,repayment_progress": 1,
+      "status_not_source_recorded_success": 23,
+      "observed_at_missing_or_invalid": 23,
+      "data_not_present_as_contract_object": 21,
+      "missing_required:data,financial_version,observed_at,status": 20,
+      "extra_properties:expense": 5,
+      "missing_required:financial_version,observed_at,status": 2,
+      "data_missing_required:base_reference": 1,
+      "extra_properties:passage": 8,
+      "extra_properties:debts": 1,
+      "extra_properties:is_voided,transfer_id": 1,
+      "extra_properties:candidate_ids,expense,resolution": 1,
+      "extra_properties:candidate_ids,expenses,resolution": 2,
+      "extra_properties:candidate_ids,query,resolution": 1,
+      "extra_properties:candidate_ids,resolution": 1
+    },
+    "overlay_patch_count": 0,
+    "status": "blocked_by_missing_authority"
+  },
+  "artifacts": {
+    "grounding_audit.json": "e1057172aa64721b1eaa3dcf433d2636837a33199a470bd62ef699ac72dcca48",
+    "overlay_patches.json": "08b22bc459376029d8175aa61119cc183e824789d59b8c384b7ce3ada324a9d8",
+    "source_hashes.json": "bda0fe8d745e7099d3c6c534b09f42d2750150657a8f4b438e597f27e9e6c40f",
+    "README.md": "d25e78c74086e1f3edd7723711039fe1bd7aeaee852deeb8a33fb17a065430ce",
+    "source_validator_report.json": "4895a45ff68bbed6ac8b30e1878fda2b05fa9cd0f3f21fc842a51360e5db58f6"
+  }
+}
