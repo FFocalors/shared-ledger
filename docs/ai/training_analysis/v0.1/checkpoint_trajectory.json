@@ -1,0 +1,138 @@
+{
+  "source": "saved validation records only",
+  "checkpoints": {
+    "checkpoint_11": {
+      "records": 24,
+      "raw_json": 12,
+      "extractable_json": 18,
+      "schema_valid": 0,
+      "type_correct": 7,
+      "business_structure_match": 0,
+      "unsafe_rows": 24,
+      "violation_flag_counts": {
+        "model_output_schema_invalid": 24
+      },
+      "field_fact_correct": 8,
+      "field_fact_total": 114,
+      "key_fact_correct": 8,
+      "key_fact_total": 90,
+      "eval_loss": 1.8060883283615112,
+      "type_confusion": {
+        "clarification→<unparsed>": 3,
+        "tool_call→debt": 1,
+        "tool_call→clarification": 3,
+        "answer→answer": 7,
+        "answer→<unparsed>": 5,
+        "proposal→<unparsed>": 1,
+        "proposal→answer": 1,
+        "proposal→clarification": 1,
+        "tool_call→<unparsed>": 1,
+        "tool_call→object": 1
+      }
+    },
+    "checkpoint_22": {
+      "records": 24,
+      "raw_json": 24,
+      "extractable_json": 24,
+      "schema_valid": 12,
+      "type_correct": 20,
+      "business_structure_match": 11,
+      "unsafe_rows": 12,
+      "violation_flag_counts": {
+        "model_output_schema_invalid": 12,
+        "intent_tool_call_not_enabled": 5,
+        "tool_not_mapped_to_intent": 5
+      },
+      "field_fact_correct": 56,
+      "field_fact_total": 114,
+      "key_fact_correct": 55,
+      "key_fact_total": 90,
+      "eval_loss": 1.6279317140579224,
+      "type_confusion": {
+        "clarification→clarification": 3,
+        "tool_call→tool_call": 5,
+        "answer→answer": 12,
+        "proposal→clarification": 3,
+        "tool_call→clarification": 1
+      }
+    },
+    "checkpoint_33": {
+      "records": 24,
+      "raw_json": 24,
+      "extractable_json": 24,
+      "schema_valid": 13,
+      "type_correct": 21,
+      "business_structure_match": 11,
+      "unsafe_rows": 11,
+      "violation_flag_counts": {
+        "model_output_schema_invalid": 11,
+        "intent_tool_call_not_enabled": 6,
+        "tool_not_mapped_to_intent": 6
+      },
+      "field_fact_correct": 59,
+      "field_fact_total": 114,
+      "key_fact_correct": 57,
+      "key_fact_total": 90,
+      "eval_loss": 1.6059846878051758,
+      "type_confusion": {
+        "clarification→clarification": 3,
+        "tool_call→tool_call": 6,
+        "answer→answer": 12,
+        "proposal→clarification": 3
+      }
+    }
+  },
+  "paired_checkpoint_22_to_33_changes": {
+    "paired_records": 24,
+    "comparison": "checkpoint-22 validation to checkpoint-33 validation; saved records only",
+    "metrics": {
+      "schema_valid": {
+        "improved_rows": 2,
+        "unchanged_rows": 21,
+        "regressed_rows": 1,
+        "net_count_change": 1
+      },
+      "type_correct": {
+        "improved_rows": 1,
+        "unchanged_rows": 23,
+        "regressed_rows": 0,
+        "net_count_change": 1
+      },
+      "business_structure_match": {
+        "improved_rows": 1,
+        "unchanged_rows": 22,
+        "regressed_rows": 1,
+        "net_count_change": 0
+      },
+      "safe_row": {
+        "improved_rows": 2,
+        "unchanged_rows": 21,
+        "regressed_rows": 1,
+        "net_count_change": 1
+      },
+      "field_facts_correct": {
+        "improved_rows": 3,
+        "unchanged_rows": 19,
+        "regressed_rows": 2,
+        "net_count_change": 3
+      },
+      "key_facts_correct": {
+        "improved_rows": 2,
+        "unchanged_rows": 20,
+        "regressed_rows": 2,
+        "net_count_change": 2
+      }
+    }
+  },
+  "selection_metric_revision": {
+    "unit": "unsafe validation rows; each row counted once if any safety violation",
+    "historical_best": "checkpoint-22; retained unchanged in original run artifacts",
+    "diagnostic_rank": "recomputed below using row count first, then normalized business structure, key facts, schema-valid, eval loss, lower step",
+    "ranked_checkpoints": [
+      "checkpoint_33",
+      "checkpoint_22",
+      "checkpoint_11"
+    ],
+    "test_or_hard_used_for_rank": false
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "rows": "expected output_type",
+  "columns": "predicted type; <unparsed> when no JSON object",
+  "matrix": {
+    "answer": {
+      "<unparsed>": 1,
+      "answer": 31,
+      "clarification": 1,
+      "proposal": 0,
+      "tool_call": 0
+    },
+    "clarification": {
+      "<unparsed>": 0,
+      "answer": 4,
+      "clarification": 12,
+      "proposal": 0,
+      "tool_call": 2
+    },
+    "proposal": {
+      "<unparsed>": 0,
+      "answer": 0,
+      "clarification": 14,
+      "proposal": 0,
+      "tool_call": 0
+    },
+    "tool_call": {
+      "<unparsed>": 0,
+      "answer": 0,
+      "clarification": 1,
+      "proposal": 0,
+      "tool_call": 7
+    }
+  },
+  "counts": {
+    "answer": 33,
+    "clarification": 18,
+    "proposal": 14,
+    "tool_call": 8
+  }
+}

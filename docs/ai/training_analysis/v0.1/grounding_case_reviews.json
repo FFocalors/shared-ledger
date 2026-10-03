@@ -1,0 +1,318 @@
+{
+  "method": "Manual semantic review of five saved best-checkpoint rows against the exact serialized runtime input, frozen expected output, and cited scenario evidence; no inference performed.",
+  "limits": [
+    "A literal substring is not proof of correct semantic binding.",
+    "No literal match is not proof that a fact is absent: normalization, derivation, or implicit binding may apply.",
+    "Scenario evidence_refs and hidden scenario.state are not assumed to be model-visible.",
+    "No claim is made about attention or causal use of a visible field."
+  ],
+  "cases": [
+    {
+      "sample_id": "sample_gs_p0_028",
+      "scenario_id": "scenario_gs_p0a_014",
+      "family_id": "family_debt_001",
+      "split": "validation",
+      "expected_type": "tool_call",
+      "user_message": "查一下这个活动里的债务总览。",
+      "history": [],
+      "ui_context": {
+        "route": "activity/00000000-0000-4000-8000-000000000100",
+        "page_type": "normal_activity",
+        "screen_instance_id": "d274142e-37b4-5c32-b526-f1b2d4100f28",
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "claimed_participant_id": null,
+      "enabled_tools": [
+        "get_debt"
+      ],
+      "verified_result_ids": [],
+      "tool_results": [],
+      "expected_model_output": {
+        "type": "tool_call",
+        "intent_id": "query_debt",
+        "tool": "get_debt",
+        "arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      },
+      "actual_model_output": {
+        "type": "tool_call",
+        "intent_id": "query_debt_summary",
+        "tool": "get_debt",
+        "arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+          "participant_id": null
+        },
+        "reason": "user_requested_debt_summary",
+        "evidence_result_ids": []
+      },
+      "evidence_refs_not_model_visible": [],
+      "kind": "UI-bound read tool routing",
+      "assessment": "The activity id and enabled get_debt tool are model-visible; the output preserves the activity id but emits the wrong intent and adds unsupported ledger_unit_id/participant_id arguments plus undeclared fields. This supports routing/contract mismatch, not missing-id evidence.",
+      "confidence": "high for visible id and structural mismatch; no causal claim about attention"
+    },
+    {
+      "sample_id": "sample_gs_p0_027",
+      "scenario_id": "scenario_gs_p0b_007",
+      "family_id": "family_act_002",
+      "split": "test",
+      "expected_type": "tool_call",
+      "user_message": "这个活动最近有哪些账目和还款？",
+      "history": [],
+      "ui_context": {
+        "route": "activity/00000000-0000-4000-8000-000000000100",
+        "page_type": "normal_activity",
+        "screen_instance_id": "c24f0cac-0bff-5d97-9393-d8729cf263fd",
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "claimed_participant_id": null,
+      "enabled_tools": [
+        "get_activity_context"
+      ],
+      "verified_result_ids": [],
+      "tool_results": [],
+      "expected_model_output": {
+        "type": "tool_call",
+        "intent_id": "query_activity",
+        "tool": "get_activity_context",
+        "arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100"
+        }
+      },
+      "actual_model_output": {
+        "type": "tool_call",
+        "intent_id": "query_recent_entries",
+        "tool": "get_activity_context",
+        "arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "limit": 10,
+          "order": "desc"
+        },
+        "reason": "answer_user_question"
+      },
+      "evidence_refs_not_model_visible": [],
+      "kind": "UI-bound activity query",
+      "assessment": "The activity id and enabled get_activity_context tool are visible and copied correctly. The output routes through query_recent_entries instead of query_activity and adds limit/order/reason fields. Source value is available; intent/tool argument compatibility is the observed failure.",
+      "confidence": "high for visible id and structural mismatch; no causal claim about attention"
+    },
+    {
+      "sample_id": "sample_gs_p0_032",
+      "scenario_id": "scenario_gs_p0a_015",
+      "family_id": "family_debt_004",
+      "split": "validation",
+      "expected_type": "answer",
+      "user_message": "解释我这边的应付余额和预存账户余额。",
+      "history": [],
+      "ui_context": {
+        "route": "activity/00000000-0000-4000-8000-000000000100",
+        "page_type": "normal_activity",
+        "screen_instance_id": "ed3131b0-e820-5316-9001-c7955b285033",
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "claimed_participant_id": "00000000-0000-4000-8000-000000000103",
+      "enabled_tools": [
+        "get_participant_balance",
+        "get_prepayment_accounts"
+      ],
+      "verified_result_ids": [
+        "result-p0a-balance-015",
+        "result-p0a-prepayment-015"
+      ],
+      "tool_results": [],
+      "expected_model_output": {
+        "type": "answer",
+        "content": "当前净余额不能合并成一个跨币种金额：服务端仍返回 0.01 JPY 原币债务；另有 20 CNY 预存账户余额，预存不等同于普通债务抵扣。",
+        "evidence_result_ids": [
+          "result-p0a-balance-015",
+          "result-p0a-prepayment-015"
+        ]
+      },
+      "actual_model_output": {
+        "type": "answer",
+        "content": "当前会话中，你只能查看自己参与的活动。活动 00000000-0000-4000-8000-000000000100 的应付余额为 15.00 元，预存账户余额为 0.00 元。这些数字来自已验证结果，不能用于提出新的写操作。",
+        "evidence_result_ids": [
+          "result-p0a-balance-015",
+          "result-p0a-prepayment-015"
+        ]
+      },
+      "evidence_refs_not_model_visible": [],
+      "kind": "verified result IDs without result payload",
+      "assessment": "The user asks for the debt/prepayment balances without stating amounts. verified_result_ids contains the balance and prepayment result identifiers, but tool_results is empty and the compact visible UI/context contains neither 0.01 JPY nor 20 CNY. Expected answer requires those amounts; model instead states 15.00 and 0.00. The concrete gap is that result identifiers are serialized without the result DTO values needed to answer.",
+      "confidence": "high for absence of the expected amounts from the serialized sample input; this is a data representation gap, not a claim about general model behavior"
+    },
+    {
+      "sample_id": "sample_gs_p0_092",
+      "scenario_id": "scenario_gs_p0b_039",
+      "family_id": "family_rule_008",
+      "split": "test",
+      "expected_type": "answer",
+      "user_message": "活动归档后还能补录昨天的消费吗？",
+      "history": [],
+      "ui_context": {
+        "route": "activity/00000000-0000-4000-8000-000000000100",
+        "page_type": "normal_activity",
+        "screen_instance_id": "00f38e4e-c07d-5b63-bdae-4eab6575e660",
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "claimed_participant_id": null,
+      "enabled_tools": [
+        "lookup_business_rule"
+      ],
+      "verified_result_ids": [
+        "result-rule-008-verified"
+      ],
+      "tool_results": [],
+      "expected_model_output": {
+        "type": "answer",
+        "content": "归档后的活动只读，不能新增消费。需要先由活动创建者解除归档，再按当前活动状态处理。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "actual_model_output": {
+        "type": "answer",
+        "content": "不能。活动归档后不再接受补录消费。归档会锁定该活动的所有收支记录，后续只能由活动管理员发起新的活动或重新创建活动。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "evidence_refs_not_model_visible": [],
+      "kind": "business rule result id without rule payload",
+      "assessment": "The user asks whether an archived activity can receive expenses. lookup_business_rule and result-rule-008-verified are visible, but tool_results is empty and the archived-activity rule text is absent from model-visible context/messages. Expected answer requires the creator-only unarchive rule; actual output adds an unsupported admin create/recreate alternative. The scenario evidence reference is not part of the serialized model input.",
+      "confidence": "high for visible fields and serialized payload absence; source policy itself is supported by the frozen expected contract/evidence and not inferred from an ID"
+    },
+    {
+      "sample_id": "sample_gs_p0_005",
+      "scenario_id": "scenario_gs_p0b_001",
+      "family_id": "family_exp_create_005",
+      "split": "hard_test",
+      "expected_type": "proposal",
+      "user_message": "2026年9月12日中午，早餐花了50元，我付的，这笔只算我一个人。",
+      "history": [],
+      "ui_context": {
+        "route": "activity/00000000-0000-4000-8000-000000000100",
+        "page_type": "normal_activity",
+        "screen_instance_id": "042bd547-ea43-52de-a3a7-059087570fe0",
+        "activity_id": "00000000-0000-4000-8000-000000000100",
+        "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "claimed_participant_id": "00000000-0000-4000-8000-000000000103",
+      "enabled_tools": [
+        "create_expense"
+      ],
+      "verified_result_ids": [],
+      "tool_results": [],
+      "expected_model_output": {
+        "type": "proposal",
+        "intent_id": "create_expense",
+        "operation": {
+          "tool": "create_expense",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+            "title": "周末早餐",
+            "original_amount": "50",
+            "original_currency": "CNY",
+            "split_method": "manual",
+            "payments": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "50"
+              }
+            ],
+            "manual_splits": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "50"
+              }
+            ],
+            "aa_participant_ids": [],
+            "occurred_at": "2026-09-12T12:00:00+08:00"
+          }
+        },
+        "preview": {
+          "kind": "create",
+          "summary": "我会按你说的把50元早餐记为本人付款、本人承担的方案；这种自付自担消费仍可正常记账。",
+          "diff": [
+            {
+              "field": "target",
+              "after": {
+                "activity_id": "00000000-0000-4000-8000-000000000100",
+                "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+                "title": "周末早餐",
+                "original_amount": "50",
+                "original_currency": "CNY",
+                "split_method": "manual",
+                "payments": [
+                  {
+                    "participant_id": "00000000-0000-4000-8000-000000000103",
+                    "amount": "50"
+                  }
+                ],
+                "manual_splits": [
+                  {
+                    "participant_id": "00000000-0000-4000-8000-000000000103",
+                    "amount": "50"
+                  }
+                ],
+                "aa_participant_ids": [],
+                "occurred_at": "2026-09-12T12:00:00+08:00"
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 1,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": true,
+          "reason": "confirmation_required"
+        }
+      },
+      "actual_model_output": {
+        "type": "clarification",
+        "intent_id": "create_expense",
+        "question": "这笔支出需要关联到当前账本吗？如果不关联，无法在共享账本中记账。",
+        "reason": "missing_required_field",
+        "missing_fields": [
+          "account_id"
+        ],
+        "pending_clarification": {
+          "intent_id": "create_expense",
+          "question": "这笔支出需要关联到当前账本吗？如果不关联，无法在共享账本中记账。",
+          "reason": "missing_required_field",
+          "missing_fields": [
+            "account_id"
+          ],
+          "type": "clarification"
+        },
+        "candidates": []
+      },
+      "evidence_refs_not_model_visible": [],
+      "kind": "expense proposal versus stale clarification vocabulary",
+      "assessment": "The user supplies the date/time, expense title, amount, self-payment and self-only allocation; the activity/ledger ids, claimed participant, and enabled create_expense tool are visible. Expected output binds the current participant and creates a manual-split proposal. Actual output asks for account_id, a field absent from this frozen operation contract. This points to output-vocabulary/routing mismatch rather than absent core input facts.",
+      "confidence": "high for visible values and expected/actual structure; account ownership semantics are interpreted from this canonical scenario, not independently inferred"
+    }
+  ]
+}

@@ -1,0 +1,2479 @@
+{
+  "method": "LLaMA-Factory qwen3_5_nothink encode_multiturn; tokenizer/processor loaded local-only, no model weights/inference",
+  "template": "qwen3_5_nothink",
+  "count": 244,
+  "grouped": {
+    "output_type": {
+      "answer": {
+        "target_tokens": {
+          "count": 77,
+          "mean": 57.49,
+          "median": 56,
+          "max": 83,
+          "min": 36
+        },
+        "input_tokens": {
+          "count": 77,
+          "mean": 373.83,
+          "median": 359,
+          "max": 486,
+          "min": 312
+        },
+        "context_json_tokens": {
+          "count": 77,
+          "mean": 296.08,
+          "median": 276,
+          "max": 399,
+          "min": 241
+        },
+        "target_json_chars": {
+          "count": 77,
+          "mean": 134.29,
+          "median": 136,
+          "max": 176,
+          "min": 89
+        }
+      },
+      "clarification": {
+        "target_tokens": {
+          "count": 69,
+          "mean": 116.35,
+          "median": 59,
+          "max": 275,
+          "min": 47
+        },
+        "input_tokens": {
+          "count": 69,
+          "mean": 378.68,
+          "median": 350,
+          "max": 688,
+          "min": 286
+        },
+        "context_json_tokens": {
+          "count": 69,
+          "mean": 307.28,
+          "median": 270,
+          "max": 614,
+          "min": 227
+        },
+        "target_json_chars": {
+          "count": 69,
+          "mean": 276.23,
+          "median": 198,
+          "max": 490,
+          "min": 158
+        }
+      },
+      "proposal": {
+        "target_tokens": {
+          "count": 60,
+          "mean": 507.85,
+          "median": 603.0,
+          "max": 665,
+          "min": 187
+        },
+        "input_tokens": {
+          "count": 60,
+          "mean": 433.92,
+          "median": 424.0,
+          "max": 590,
+          "min": 344
+        },
+        "context_json_tokens": {
+          "count": 60,
+          "mean": 349.53,
+          "median": 352.0,
+          "max": 505,
+          "min": 279
+        },
+        "target_json_chars": {
+          "count": 60,
+          "mean": 1089.45,
+          "median": 1255.0,
+          "max": 1421,
+          "min": 523
+        }
+      },
+      "tool_call": {
+        "target_tokens": {
+          "count": 32,
+          "mean": 104.56,
+          "median": 71.0,
+          "max": 151,
+          "min": 62
+        },
+        "input_tokens": {
+          "count": 32,
+          "mean": 390.53,
+          "median": 354.5,
+          "max": 612,
+          "min": 327
+        },
+        "context_json_tokens": {
+          "count": 32,
+          "mean": 317.75,
+          "median": 281.0,
+          "max": 499,
+          "min": 265
+        },
+        "target_json_chars": {
+          "count": 32,
+          "mean": 200.81,
+          "median": 176.0,
+          "max": 270,
+          "min": 130
+        }
+      },
+      "unsupported": {
+        "target_tokens": {
+          "count": 6,
+          "mean": 50,
+          "median": 50.0,
+          "max": 50,
+          "min": 50
+        },
+        "input_tokens": {
+          "count": 6,
+          "mean": 342,
+          "median": 341.5,
+          "max": 350,
+          "min": 335
+        },
+        "context_json_tokens": {
+          "count": 6,
+          "mean": 265,
+          "median": 265.0,
+          "max": 265,
+          "min": 265
+        },
+        "target_json_chars": {
+          "count": 6,
+          "mean": 113,
+          "median": 113.0,
+          "max": 113,
+          "min": 113
+        }
+      }
+    },
+    "split": {
+      "hard_test": {
+        "target_tokens": {
+          "count": 12,
+          "mean": 227.58,
+          "median": 148.0,
+          "max": 565,
+          "min": 50
+        },
+        "input_tokens": {
+          "count": 12,
+          "mean": 387,
+          "median": 366.0,
+          "max": 467,
+          "min": 343
+        },
+        "context_json_tokens": {
+          "count": 12,
+          "mean": 312.5,
+          "median": 289.5,
+          "max": 395,
+          "min": 276
+        },
+        "target_json_chars": {
+          "count": 12,
+          "mean": 482.5,
+          "median": 293.0,
+          "max": 1219,
+          "min": 125
+        }
+      },
+      "test": {
+        "target_tokens": {
+          "count": 37,
+          "mean": 187.84,
+          "median": 52,
+          "max": 607,
+          "min": 46
+        },
+        "input_tokens": {
+          "count": 37,
+          "mean": 408.81,
+          "median": 353,
+          "max": 688,
+          "min": 287
+        },
+        "context_json_tokens": {
+          "count": 37,
+          "mean": 333.65,
+          "median": 276,
+          "max": 614,
+          "min": 227
+        },
+        "target_json_chars": {
+          "count": 37,
+          "mean": 408.08,
+          "median": 170,
+          "max": 1270,
+          "min": 103
+        }
+      },
+      "train": {
+        "target_tokens": {
+          "count": 171,
+          "mean": 204.18,
+          "median": 67,
+          "max": 665,
+          "min": 36
+        },
+        "input_tokens": {
+          "count": 171,
+          "mean": 392.93,
+          "median": 375,
+          "max": 612,
+          "min": 286
+        },
+        "context_json_tokens": {
+          "count": 171,
+          "mean": 314.35,
+          "median": 303,
+          "max": 505,
+          "min": 227
+        },
+        "target_json_chars": {
+          "count": 171,
+          "mean": 445.35,
+          "median": 198,
+          "max": 1421,
+          "min": 89
+        }
+      },
+      "validation": {
+        "target_tokens": {
+          "count": 24,
+          "mean": 82.33,
+          "median": 64.0,
+          "max": 189,
+          "min": 58
+        },
+        "input_tokens": {
+          "count": 24,
+          "mean": 355.71,
+          "median": 345.0,
+          "max": 410,
+          "min": 330
+        },
+        "context_json_tokens": {
+          "count": 24,
+          "mean": 286.75,
+          "median": 276.0,
+          "max": 330,
+          "min": 267
+        },
+        "target_json_chars": {
+          "count": 24,
+          "mean": 201.12,
+          "median": 160.0,
+          "max": 523,
+          "min": 130
+        }
+      }
+    }
+  },
+  "rows": [
+    {
+      "sample_id": "sample_gs_p0_001",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 624,
+      "input_tokens": 393,
+      "context_json_tokens": 307,
+      "target_json_chars": 1272
+    },
+    {
+      "sample_id": "sample_gs_p0_002",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 624,
+      "input_tokens": 388,
+      "context_json_tokens": 307,
+      "target_json_chars": 1272
+    },
+    {
+      "sample_id": "sample_gs_p0_003",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 665,
+      "input_tokens": 399,
+      "context_json_tokens": 303,
+      "target_json_chars": 1421
+    },
+    {
+      "sample_id": "sample_gs_p0_004",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 665,
+      "input_tokens": 386,
+      "context_json_tokens": 303,
+      "target_json_chars": 1421
+    },
+    {
+      "sample_id": "sample_gs_p0_007",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 47,
+      "input_tokens": 353,
+      "context_json_tokens": 270,
+      "target_json_chars": 158
+    },
+    {
+      "sample_id": "sample_gs_p0_008",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 47,
+      "input_tokens": 340,
+      "context_json_tokens": 270,
+      "target_json_chars": 158
+    },
+    {
+      "sample_id": "sample_gs_p0_009",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 47,
+      "input_tokens": 335,
+      "context_json_tokens": 267,
+      "target_json_chars": 167
+    },
+    {
+      "sample_id": "sample_gs_p0_010",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 47,
+      "input_tokens": 341,
+      "context_json_tokens": 267,
+      "target_json_chars": 167
+    },
+    {
+      "sample_id": "sample_gs_p0_011",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 54,
+      "input_tokens": 394,
+      "context_json_tokens": 302,
+      "target_json_chars": 191
+    },
+    {
+      "sample_id": "sample_gs_p0_012",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 54,
+      "input_tokens": 379,
+      "context_json_tokens": 302,
+      "target_json_chars": 191
+    },
+    {
+      "sample_id": "sample_gs_p0_015",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 603,
+      "input_tokens": 423,
+      "context_json_tokens": 358,
+      "target_json_chars": 1288
+    },
+    {
+      "sample_id": "sample_gs_p0_016",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 603,
+      "input_tokens": 433,
+      "context_json_tokens": 358,
+      "target_json_chars": 1288
+    },
+    {
+      "sample_id": "sample_gs_p0_017",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 592,
+      "input_tokens": 470,
+      "context_json_tokens": 390,
+      "target_json_chars": 1255
+    },
+    {
+      "sample_id": "sample_gs_p0_018",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 592,
+      "input_tokens": 465,
+      "context_json_tokens": 390,
+      "target_json_chars": 1255
+    },
+    {
+      "sample_id": "sample_gs_p0_019",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 202,
+      "input_tokens": 424,
+      "context_json_tokens": 352,
+      "target_json_chars": 558
+    },
+    {
+      "sample_id": "sample_gs_p0_020",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 202,
+      "input_tokens": 423,
+      "context_json_tokens": 352,
+      "target_json_chars": 558
+    },
+    {
+      "sample_id": "sample_gs_p0_021",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 149,
+      "input_tokens": 329,
+      "context_json_tokens": 265,
+      "target_json_chars": 265
+    },
+    {
+      "sample_id": "sample_gs_p0_022",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 149,
+      "input_tokens": 328,
+      "context_json_tokens": 265,
+      "target_json_chars": 265
+    },
+    {
+      "sample_id": "sample_gs_p0_023",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 275,
+      "input_tokens": 289,
+      "context_json_tokens": 230,
+      "target_json_chars": 490
+    },
+    {
+      "sample_id": "sample_gs_p0_024",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 275,
+      "input_tokens": 300,
+      "context_json_tokens": 230,
+      "target_json_chars": 490
+    },
+    {
+      "sample_id": "sample_gs_p0_025",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 63,
+      "input_tokens": 372,
+      "context_json_tokens": 313,
+      "target_json_chars": 135
+    },
+    {
+      "sample_id": "sample_gs_p0_026",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 63,
+      "input_tokens": 374,
+      "context_json_tokens": 313,
+      "target_json_chars": 135
+    },
+    {
+      "sample_id": "sample_gs_p0_030",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 151,
+      "input_tokens": 371,
+      "context_json_tokens": 303,
+      "target_json_chars": 270
+    },
+    {
+      "sample_id": "sample_gs_p0_031",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 151,
+      "input_tokens": 372,
+      "context_json_tokens": 303,
+      "target_json_chars": 270
+    },
+    {
+      "sample_id": "sample_gs_p0_036",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 51,
+      "input_tokens": 385,
+      "context_json_tokens": 311,
+      "target_json_chars": 122
+    },
+    {
+      "sample_id": "sample_gs_p0_039",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 56,
+      "input_tokens": 361,
+      "context_json_tokens": 293,
+      "target_json_chars": 192
+    },
+    {
+      "sample_id": "sample_gs_p0_040",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 664,
+      "input_tokens": 401,
+      "context_json_tokens": 310,
+      "target_json_chars": 1361
+    },
+    {
+      "sample_id": "sample_gs_p0_042",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 71,
+      "input_tokens": 348,
+      "context_json_tokens": 281,
+      "target_json_chars": 176
+    },
+    {
+      "sample_id": "sample_gs_p0_043",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 225,
+      "input_tokens": 421,
+      "context_json_tokens": 361,
+      "target_json_chars": 571
+    },
+    {
+      "sample_id": "sample_gs_p0_044",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 45,
+      "input_tokens": 371,
+      "context_json_tokens": 311,
+      "target_json_chars": 119
+    },
+    {
+      "sample_id": "sample_gs_p0_045",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 67,
+      "input_tokens": 461,
+      "context_json_tokens": 393,
+      "target_json_chars": 153
+    },
+    {
+      "sample_id": "sample_gs_p0_046",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 67,
+      "input_tokens": 458,
+      "context_json_tokens": 393,
+      "target_json_chars": 153
+    },
+    {
+      "sample_id": "sample_gs_p0_049",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 253,
+      "input_tokens": 422,
+      "context_json_tokens": 359,
+      "target_json_chars": 556
+    },
+    {
+      "sample_id": "sample_gs_p0_050",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 606,
+      "input_tokens": 579,
+      "context_json_tokens": 505,
+      "target_json_chars": 1313
+    },
+    {
+      "sample_id": "sample_gs_p0_051",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 606,
+      "input_tokens": 576,
+      "context_json_tokens": 505,
+      "target_json_chars": 1313
+    },
+    {
+      "sample_id": "sample_gs_p0_054",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 59,
+      "input_tokens": 479,
+      "context_json_tokens": 399,
+      "target_json_chars": 137
+    },
+    {
+      "sample_id": "sample_gs_p0_055",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 59,
+      "input_tokens": 474,
+      "context_json_tokens": 399,
+      "target_json_chars": 137
+    },
+    {
+      "sample_id": "sample_gs_p0_058",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 54,
+      "input_tokens": 411,
+      "context_json_tokens": 350,
+      "target_json_chars": 200
+    },
+    {
+      "sample_id": "sample_gs_p0_059",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 54,
+      "input_tokens": 421,
+      "context_json_tokens": 348,
+      "target_json_chars": 200
+    },
+    {
+      "sample_id": "sample_gs_p0_060",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 231,
+      "input_tokens": 356,
+      "context_json_tokens": 270,
+      "target_json_chars": 451
+    },
+    {
+      "sample_id": "sample_gs_p0_061",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 231,
+      "input_tokens": 344,
+      "context_json_tokens": 270,
+      "target_json_chars": 451
+    },
+    {
+      "sample_id": "sample_gs_p0_062",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 61,
+      "input_tokens": 326,
+      "context_json_tokens": 265,
+      "target_json_chars": 198
+    },
+    {
+      "sample_id": "sample_gs_p0_063",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 61,
+      "input_tokens": 334,
+      "context_json_tokens": 265,
+      "target_json_chars": 198
+    },
+    {
+      "sample_id": "sample_gs_p0_064",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 233,
+      "input_tokens": 371,
+      "context_json_tokens": 312,
+      "target_json_chars": 458
+    },
+    {
+      "sample_id": "sample_gs_p0_065",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 233,
+      "input_tokens": 376,
+      "context_json_tokens": 312,
+      "target_json_chars": 458
+    },
+    {
+      "sample_id": "sample_gs_p0_066",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 620,
+      "input_tokens": 432,
+      "context_json_tokens": 305,
+      "target_json_chars": 1218
+    },
+    {
+      "sample_id": "sample_gs_p0_067",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 620,
+      "input_tokens": 423,
+      "context_json_tokens": 305,
+      "target_json_chars": 1218
+    },
+    {
+      "sample_id": "sample_gs_p0_070",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 149,
+      "input_tokens": 609,
+      "context_json_tokens": 499,
+      "target_json_chars": 260
+    },
+    {
+      "sample_id": "sample_gs_p0_071",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 149,
+      "input_tokens": 612,
+      "context_json_tokens": 499,
+      "target_json_chars": 260
+    },
+    {
+      "sample_id": "sample_gs_p0_072",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 36,
+      "input_tokens": 358,
+      "context_json_tokens": 267,
+      "target_json_chars": 89
+    },
+    {
+      "sample_id": "sample_gs_p0_073",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 36,
+      "input_tokens": 358,
+      "context_json_tokens": 267,
+      "target_json_chars": 89
+    },
+    {
+      "sample_id": "sample_gs_p0_076",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 47,
+      "input_tokens": 287,
+      "context_json_tokens": 227,
+      "target_json_chars": 162
+    },
+    {
+      "sample_id": "sample_gs_p0_077",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 47,
+      "input_tokens": 289,
+      "context_json_tokens": 227,
+      "target_json_chars": 162
+    },
+    {
+      "sample_id": "sample_gs_p0_078",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 59,
+      "input_tokens": 339,
+      "context_json_tokens": 267,
+      "target_json_chars": 206
+    },
+    {
+      "sample_id": "sample_gs_p0_079",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 59,
+      "input_tokens": 342,
+      "context_json_tokens": 267,
+      "target_json_chars": 206
+    },
+    {
+      "sample_id": "sample_gs_p0_080",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 83,
+      "input_tokens": 353,
+      "context_json_tokens": 276,
+      "target_json_chars": 156
+    },
+    {
+      "sample_id": "sample_gs_p0_081",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 83,
+      "input_tokens": 358,
+      "context_json_tokens": 276,
+      "target_json_chars": 156
+    },
+    {
+      "sample_id": "sample_gs_p0_086",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 57,
+      "input_tokens": 368,
+      "context_json_tokens": 276,
+      "target_json_chars": 136
+    },
+    {
+      "sample_id": "sample_gs_p0_087",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 57,
+      "input_tokens": 370,
+      "context_json_tokens": 276,
+      "target_json_chars": 136
+    },
+    {
+      "sample_id": "sample_gs_p0_088",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 66,
+      "input_tokens": 348,
+      "context_json_tokens": 278,
+      "target_json_chars": 143
+    },
+    {
+      "sample_id": "sample_gs_p0_089",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 66,
+      "input_tokens": 354,
+      "context_json_tokens": 278,
+      "target_json_chars": 143
+    },
+    {
+      "sample_id": "sample_gs_p0_090",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 56,
+      "input_tokens": 345,
+      "context_json_tokens": 278,
+      "target_json_chars": 137
+    },
+    {
+      "sample_id": "sample_gs_p0_091",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 56,
+      "input_tokens": 351,
+      "context_json_tokens": 278,
+      "target_json_chars": 137
+    },
+    {
+      "sample_id": "sample_gs_p0_094",
+      "split": "train",
+      "output_type": "unsupported",
+      "target_tokens": 50,
+      "input_tokens": 338,
+      "context_json_tokens": 265,
+      "target_json_chars": 113
+    },
+    {
+      "sample_id": "sample_gs_p0_095",
+      "split": "train",
+      "output_type": "unsupported",
+      "target_tokens": 50,
+      "input_tokens": 335,
+      "context_json_tokens": 265,
+      "target_json_chars": 113
+    },
+    {
+      "sample_id": "sample_teacher_0e69b6cdf402",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 622,
+      "input_tokens": 396,
+      "context_json_tokens": 307,
+      "target_json_chars": 1272
+    },
+    {
+      "sample_id": "sample_teacher_0cf7d81d873a",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 622,
+      "input_tokens": 398,
+      "context_json_tokens": 307,
+      "target_json_chars": 1272
+    },
+    {
+      "sample_id": "sample_teacher_ea6c29cb2a39",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 47,
+      "input_tokens": 350,
+      "context_json_tokens": 270,
+      "target_json_chars": 158
+    },
+    {
+      "sample_id": "sample_teacher_a97ec8d7e826",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 47,
+      "input_tokens": 359,
+      "context_json_tokens": 270,
+      "target_json_chars": 158
+    },
+    {
+      "sample_id": "sample_teacher_9eb37c32ad23",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 149,
+      "input_tokens": 327,
+      "context_json_tokens": 265,
+      "target_json_chars": 265
+    },
+    {
+      "sample_id": "sample_teacher_848d9a926256",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 149,
+      "input_tokens": 335,
+      "context_json_tokens": 265,
+      "target_json_chars": 265
+    },
+    {
+      "sample_id": "sample_teacher_fc17b2a875e6",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 149,
+      "input_tokens": 329,
+      "context_json_tokens": 265,
+      "target_json_chars": 265
+    },
+    {
+      "sample_id": "sample_teacher_636b5cba0e9b",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 274,
+      "input_tokens": 294,
+      "context_json_tokens": 230,
+      "target_json_chars": 490
+    },
+    {
+      "sample_id": "sample_teacher_edd7a5ace59b",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 274,
+      "input_tokens": 292,
+      "context_json_tokens": 230,
+      "target_json_chars": 490
+    },
+    {
+      "sample_id": "sample_teacher_b3279e26f67e",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 589,
+      "input_tokens": 470,
+      "context_json_tokens": 390,
+      "target_json_chars": 1255
+    },
+    {
+      "sample_id": "sample_teacher_480045ee9494",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 589,
+      "input_tokens": 477,
+      "context_json_tokens": 390,
+      "target_json_chars": 1255
+    },
+    {
+      "sample_id": "sample_teacher_161678d4c59a",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 589,
+      "input_tokens": 467,
+      "context_json_tokens": 390,
+      "target_json_chars": 1255
+    },
+    {
+      "sample_id": "sample_teacher_2e8431d0b6ac",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 603,
+      "input_tokens": 584,
+      "context_json_tokens": 505,
+      "target_json_chars": 1313
+    },
+    {
+      "sample_id": "sample_teacher_faac476ad63b",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 603,
+      "input_tokens": 590,
+      "context_json_tokens": 505,
+      "target_json_chars": 1313
+    },
+    {
+      "sample_id": "sample_teacher_574eac0ec13a",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 603,
+      "input_tokens": 582,
+      "context_json_tokens": 505,
+      "target_json_chars": 1313
+    },
+    {
+      "sample_id": "sample_teacher_90e9a7631200",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 149,
+      "input_tokens": 612,
+      "context_json_tokens": 499,
+      "target_json_chars": 260
+    },
+    {
+      "sample_id": "sample_teacher_a7f51daa36fa",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 149,
+      "input_tokens": 612,
+      "context_json_tokens": 499,
+      "target_json_chars": 260
+    },
+    {
+      "sample_id": "sample_teacher_276dad2a82ed",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 149,
+      "input_tokens": 608,
+      "context_json_tokens": 499,
+      "target_json_chars": 260
+    },
+    {
+      "sample_id": "sample_teacher_268abd436036",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 67,
+      "input_tokens": 461,
+      "context_json_tokens": 393,
+      "target_json_chars": 153
+    },
+    {
+      "sample_id": "sample_teacher_69c813a549e0",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 67,
+      "input_tokens": 466,
+      "context_json_tokens": 393,
+      "target_json_chars": 153
+    },
+    {
+      "sample_id": "sample_teacher_25ac41485e33",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 67,
+      "input_tokens": 459,
+      "context_json_tokens": 393,
+      "target_json_chars": 153
+    },
+    {
+      "sample_id": "sample_teacher_58f01b6ed68e",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 663,
+      "input_tokens": 413,
+      "context_json_tokens": 303,
+      "target_json_chars": 1421
+    },
+    {
+      "sample_id": "sample_teacher_c128c76ca78f",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 663,
+      "input_tokens": 405,
+      "context_json_tokens": 303,
+      "target_json_chars": 1421
+    },
+    {
+      "sample_id": "sample_teacher_985eb5e70c3a",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 663,
+      "input_tokens": 393,
+      "context_json_tokens": 303,
+      "target_json_chars": 1421
+    },
+    {
+      "sample_id": "sample_teacher_e5e76c768727",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 54,
+      "input_tokens": 397,
+      "context_json_tokens": 302,
+      "target_json_chars": 191
+    },
+    {
+      "sample_id": "sample_teacher_e421ad41522e",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 54,
+      "input_tokens": 407,
+      "context_json_tokens": 302,
+      "target_json_chars": 191
+    },
+    {
+      "sample_id": "sample_teacher_a238839a2fa3",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 54,
+      "input_tokens": 393,
+      "context_json_tokens": 302,
+      "target_json_chars": 191
+    },
+    {
+      "sample_id": "sample_teacher_c5701eeab491",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 230,
+      "input_tokens": 370,
+      "context_json_tokens": 270,
+      "target_json_chars": 451
+    },
+    {
+      "sample_id": "sample_teacher_9f49b9503b27",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 230,
+      "input_tokens": 369,
+      "context_json_tokens": 270,
+      "target_json_chars": 451
+    },
+    {
+      "sample_id": "sample_teacher_715e102130e3",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 230,
+      "input_tokens": 355,
+      "context_json_tokens": 270,
+      "target_json_chars": 451
+    },
+    {
+      "sample_id": "sample_teacher_dff5dd3357fa",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 230,
+      "input_tokens": 372,
+      "context_json_tokens": 270,
+      "target_json_chars": 451
+    },
+    {
+      "sample_id": "sample_teacher_0c08d19b8851",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 63,
+      "input_tokens": 373,
+      "context_json_tokens": 313,
+      "target_json_chars": 135
+    },
+    {
+      "sample_id": "sample_teacher_8ac8867f26ac",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 63,
+      "input_tokens": 379,
+      "context_json_tokens": 313,
+      "target_json_chars": 135
+    },
+    {
+      "sample_id": "sample_teacher_08cd09d8cba0",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 63,
+      "input_tokens": 371,
+      "context_json_tokens": 313,
+      "target_json_chars": 135
+    },
+    {
+      "sample_id": "sample_teacher_7412d419fb81",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 54,
+      "input_tokens": 413,
+      "context_json_tokens": 349,
+      "target_json_chars": 200
+    },
+    {
+      "sample_id": "sample_teacher_f5b087b3a945",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 54,
+      "input_tokens": 416,
+      "context_json_tokens": 349,
+      "target_json_chars": 200
+    },
+    {
+      "sample_id": "sample_teacher_2dbf589d2030",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 54,
+      "input_tokens": 410,
+      "context_json_tokens": 349,
+      "target_json_chars": 200
+    },
+    {
+      "sample_id": "sample_teacher_1da644e38dbe",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 54,
+      "input_tokens": 423,
+      "context_json_tokens": 347,
+      "target_json_chars": 200
+    },
+    {
+      "sample_id": "sample_teacher_6b8c91b2ae67",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 600,
+      "input_tokens": 427,
+      "context_json_tokens": 358,
+      "target_json_chars": 1288
+    },
+    {
+      "sample_id": "sample_teacher_d32231ae891a",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 600,
+      "input_tokens": 427,
+      "context_json_tokens": 358,
+      "target_json_chars": 1288
+    },
+    {
+      "sample_id": "sample_teacher_e2d3fdbd7509",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 600,
+      "input_tokens": 422,
+      "context_json_tokens": 358,
+      "target_json_chars": 1288
+    },
+    {
+      "sample_id": "sample_teacher_b761d7e46729",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 223,
+      "input_tokens": 425,
+      "context_json_tokens": 361,
+      "target_json_chars": 571
+    },
+    {
+      "sample_id": "sample_teacher_ad6ed8c40b36",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 223,
+      "input_tokens": 425,
+      "context_json_tokens": 361,
+      "target_json_chars": 571
+    },
+    {
+      "sample_id": "sample_teacher_e99928bfd34e",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 223,
+      "input_tokens": 423,
+      "context_json_tokens": 361,
+      "target_json_chars": 571
+    },
+    {
+      "sample_id": "sample_teacher_4d0c6a3c830d",
+      "split": "train",
+      "output_type": "unsupported",
+      "target_tokens": 50,
+      "input_tokens": 350,
+      "context_json_tokens": 265,
+      "target_json_chars": 113
+    },
+    {
+      "sample_id": "sample_teacher_48b075e13229",
+      "split": "train",
+      "output_type": "unsupported",
+      "target_tokens": 50,
+      "input_tokens": 343,
+      "context_json_tokens": 265,
+      "target_json_chars": 113
+    },
+    {
+      "sample_id": "sample_teacher_c40771581c3f",
+      "split": "train",
+      "output_type": "unsupported",
+      "target_tokens": 50,
+      "input_tokens": 340,
+      "context_json_tokens": 265,
+      "target_json_chars": 113
+    },
+    {
+      "sample_id": "sample_teacher_9cfc5f620246",
+      "split": "train",
+      "output_type": "unsupported",
+      "target_tokens": 50,
+      "input_tokens": 346,
+      "context_json_tokens": 265,
+      "target_json_chars": 113
+    },
+    {
+      "sample_id": "sample_teacher_9f7abf0f5427",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 47,
+      "input_tokens": 337,
+      "context_json_tokens": 267,
+      "target_json_chars": 167
+    },
+    {
+      "sample_id": "sample_teacher_2d5820e72855",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 47,
+      "input_tokens": 340,
+      "context_json_tokens": 267,
+      "target_json_chars": 167
+    },
+    {
+      "sample_id": "sample_teacher_32ad1381953c",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 200,
+      "input_tokens": 430,
+      "context_json_tokens": 352,
+      "target_json_chars": 558
+    },
+    {
+      "sample_id": "sample_teacher_fd2553095750",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 200,
+      "input_tokens": 430,
+      "context_json_tokens": 352,
+      "target_json_chars": 558
+    },
+    {
+      "sample_id": "sample_teacher_fa433647504b",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 151,
+      "input_tokens": 373,
+      "context_json_tokens": 303,
+      "target_json_chars": 270
+    },
+    {
+      "sample_id": "sample_teacher_af9233e650ce",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 151,
+      "input_tokens": 375,
+      "context_json_tokens": 303,
+      "target_json_chars": 270
+    },
+    {
+      "sample_id": "sample_teacher_a81e575e0d2c",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 151,
+      "input_tokens": 375,
+      "context_json_tokens": 303,
+      "target_json_chars": 270
+    },
+    {
+      "sample_id": "sample_teacher_08eb5acd22fa",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 51,
+      "input_tokens": 387,
+      "context_json_tokens": 311,
+      "target_json_chars": 122
+    },
+    {
+      "sample_id": "sample_teacher_cfc2011e329b",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 51,
+      "input_tokens": 390,
+      "context_json_tokens": 311,
+      "target_json_chars": 122
+    },
+    {
+      "sample_id": "sample_teacher_bf0e46c9db68",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 51,
+      "input_tokens": 385,
+      "context_json_tokens": 311,
+      "target_json_chars": 122
+    },
+    {
+      "sample_id": "sample_teacher_790c8dd3aa13",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 56,
+      "input_tokens": 361,
+      "context_json_tokens": 292,
+      "target_json_chars": 192
+    },
+    {
+      "sample_id": "sample_teacher_73ea3f65bb09",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 56,
+      "input_tokens": 364,
+      "context_json_tokens": 292,
+      "target_json_chars": 192
+    },
+    {
+      "sample_id": "sample_teacher_dd191fa70f40",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 662,
+      "input_tokens": 410,
+      "context_json_tokens": 310,
+      "target_json_chars": 1361
+    },
+    {
+      "sample_id": "sample_teacher_58846afd6083",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 662,
+      "input_tokens": 409,
+      "context_json_tokens": 310,
+      "target_json_chars": 1361
+    },
+    {
+      "sample_id": "sample_teacher_b65cc1030027",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 662,
+      "input_tokens": 403,
+      "context_json_tokens": 310,
+      "target_json_chars": 1361
+    },
+    {
+      "sample_id": "sample_teacher_c58d3d09d02e",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 71,
+      "input_tokens": 351,
+      "context_json_tokens": 281,
+      "target_json_chars": 176
+    },
+    {
+      "sample_id": "sample_teacher_ae32df1af28a",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 71,
+      "input_tokens": 358,
+      "context_json_tokens": 281,
+      "target_json_chars": 176
+    },
+    {
+      "sample_id": "sample_teacher_1c4303e0c9ce",
+      "split": "train",
+      "output_type": "tool_call",
+      "target_tokens": 71,
+      "input_tokens": 349,
+      "context_json_tokens": 281,
+      "target_json_chars": 176
+    },
+    {
+      "sample_id": "sample_teacher_b2b4896fa618",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 45,
+      "input_tokens": 377,
+      "context_json_tokens": 311,
+      "target_json_chars": 119
+    },
+    {
+      "sample_id": "sample_teacher_232051cb0b25",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 45,
+      "input_tokens": 384,
+      "context_json_tokens": 311,
+      "target_json_chars": 119
+    },
+    {
+      "sample_id": "sample_teacher_5f35c662e1c7",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 45,
+      "input_tokens": 375,
+      "context_json_tokens": 311,
+      "target_json_chars": 119
+    },
+    {
+      "sample_id": "sample_teacher_3ce6c734d9fa",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 251,
+      "input_tokens": 426,
+      "context_json_tokens": 359,
+      "target_json_chars": 556
+    },
+    {
+      "sample_id": "sample_teacher_e68f9f6780d6",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 251,
+      "input_tokens": 429,
+      "context_json_tokens": 359,
+      "target_json_chars": 556
+    },
+    {
+      "sample_id": "sample_teacher_3223b7f9ba5c",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 251,
+      "input_tokens": 424,
+      "context_json_tokens": 359,
+      "target_json_chars": 556
+    },
+    {
+      "sample_id": "sample_teacher_82a3262d2963",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 59,
+      "input_tokens": 486,
+      "context_json_tokens": 399,
+      "target_json_chars": 137
+    },
+    {
+      "sample_id": "sample_teacher_5a804c54604a",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 59,
+      "input_tokens": 481,
+      "context_json_tokens": 399,
+      "target_json_chars": 137
+    },
+    {
+      "sample_id": "sample_teacher_2027990b9be5",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 59,
+      "input_tokens": 481,
+      "context_json_tokens": 399,
+      "target_json_chars": 137
+    },
+    {
+      "sample_id": "sample_teacher_4ce07990954a",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 61,
+      "input_tokens": 329,
+      "context_json_tokens": 265,
+      "target_json_chars": 198
+    },
+    {
+      "sample_id": "sample_teacher_f0ceafd58e74",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 61,
+      "input_tokens": 335,
+      "context_json_tokens": 265,
+      "target_json_chars": 198
+    },
+    {
+      "sample_id": "sample_teacher_40d57e97fbcb",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 61,
+      "input_tokens": 329,
+      "context_json_tokens": 265,
+      "target_json_chars": 198
+    },
+    {
+      "sample_id": "sample_teacher_d0f385cf37da",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 233,
+      "input_tokens": 378,
+      "context_json_tokens": 312,
+      "target_json_chars": 458
+    },
+    {
+      "sample_id": "sample_teacher_2a9ac77d78c2",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 233,
+      "input_tokens": 378,
+      "context_json_tokens": 312,
+      "target_json_chars": 458
+    },
+    {
+      "sample_id": "sample_teacher_2b9aff7e9226",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 618,
+      "input_tokens": 435,
+      "context_json_tokens": 305,
+      "target_json_chars": 1218
+    },
+    {
+      "sample_id": "sample_teacher_a5d6cc2321ba",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 618,
+      "input_tokens": 451,
+      "context_json_tokens": 305,
+      "target_json_chars": 1218
+    },
+    {
+      "sample_id": "sample_teacher_978dfdef0483",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 618,
+      "input_tokens": 434,
+      "context_json_tokens": 305,
+      "target_json_chars": 1218
+    },
+    {
+      "sample_id": "sample_teacher_6083ac87afca",
+      "split": "train",
+      "output_type": "proposal",
+      "target_tokens": 618,
+      "input_tokens": 434,
+      "context_json_tokens": 305,
+      "target_json_chars": 1218
+    },
+    {
+      "sample_id": "sample_teacher_11c37bf16b8f",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 36,
+      "input_tokens": 368,
+      "context_json_tokens": 267,
+      "target_json_chars": 89
+    },
+    {
+      "sample_id": "sample_teacher_c2ddfe3d9b8c",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 36,
+      "input_tokens": 364,
+      "context_json_tokens": 267,
+      "target_json_chars": 89
+    },
+    {
+      "sample_id": "sample_teacher_4e0e97563296",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 36,
+      "input_tokens": 362,
+      "context_json_tokens": 267,
+      "target_json_chars": 89
+    },
+    {
+      "sample_id": "sample_teacher_201ba093c3ba",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 47,
+      "input_tokens": 289,
+      "context_json_tokens": 227,
+      "target_json_chars": 162
+    },
+    {
+      "sample_id": "sample_teacher_4ac11b83bee9",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 47,
+      "input_tokens": 289,
+      "context_json_tokens": 227,
+      "target_json_chars": 162
+    },
+    {
+      "sample_id": "sample_teacher_e9828ad60251",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 47,
+      "input_tokens": 286,
+      "context_json_tokens": 227,
+      "target_json_chars": 162
+    },
+    {
+      "sample_id": "sample_teacher_bd17f48c54fa",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 47,
+      "input_tokens": 289,
+      "context_json_tokens": 227,
+      "target_json_chars": 162
+    },
+    {
+      "sample_id": "sample_teacher_4a97ceae6344",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 59,
+      "input_tokens": 342,
+      "context_json_tokens": 267,
+      "target_json_chars": 206
+    },
+    {
+      "sample_id": "sample_teacher_2de8b1ddfe0a",
+      "split": "train",
+      "output_type": "clarification",
+      "target_tokens": 59,
+      "input_tokens": 348,
+      "context_json_tokens": 267,
+      "target_json_chars": 206
+    },
+    {
+      "sample_id": "sample_teacher_b6a3bfa9da68",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 83,
+      "input_tokens": 360,
+      "context_json_tokens": 276,
+      "target_json_chars": 156
+    },
+    {
+      "sample_id": "sample_teacher_d128b17c1db8",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 83,
+      "input_tokens": 362,
+      "context_json_tokens": 276,
+      "target_json_chars": 156
+    },
+    {
+      "sample_id": "sample_teacher_0847b1b27f7f",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 57,
+      "input_tokens": 377,
+      "context_json_tokens": 276,
+      "target_json_chars": 136
+    },
+    {
+      "sample_id": "sample_teacher_538a5e7bdb1e",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 57,
+      "input_tokens": 372,
+      "context_json_tokens": 276,
+      "target_json_chars": 136
+    },
+    {
+      "sample_id": "sample_teacher_720594c4fe1e",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 57,
+      "input_tokens": 371,
+      "context_json_tokens": 276,
+      "target_json_chars": 136
+    },
+    {
+      "sample_id": "sample_teacher_c892f4546f1b",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 66,
+      "input_tokens": 354,
+      "context_json_tokens": 278,
+      "target_json_chars": 143
+    },
+    {
+      "sample_id": "sample_teacher_e6b11034f4f2",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 66,
+      "input_tokens": 358,
+      "context_json_tokens": 278,
+      "target_json_chars": 143
+    },
+    {
+      "sample_id": "sample_teacher_817840633b17",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 66,
+      "input_tokens": 359,
+      "context_json_tokens": 278,
+      "target_json_chars": 143
+    },
+    {
+      "sample_id": "sample_teacher_32cdd4729633",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 66,
+      "input_tokens": 360,
+      "context_json_tokens": 278,
+      "target_json_chars": 143
+    },
+    {
+      "sample_id": "sample_teacher_c2e46813f818",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 56,
+      "input_tokens": 354,
+      "context_json_tokens": 278,
+      "target_json_chars": 137
+    },
+    {
+      "sample_id": "sample_teacher_0c10938359b3",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 56,
+      "input_tokens": 351,
+      "context_json_tokens": 278,
+      "target_json_chars": 137
+    },
+    {
+      "sample_id": "sample_teacher_95b271a2d3c6",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 56,
+      "input_tokens": 348,
+      "context_json_tokens": 278,
+      "target_json_chars": 137
+    },
+    {
+      "sample_id": "sample_teacher_a75531445264",
+      "split": "train",
+      "output_type": "answer",
+      "target_tokens": 56,
+      "input_tokens": 355,
+      "context_json_tokens": 278,
+      "target_json_chars": 137
+    },
+    {
+      "sample_id": "sample_gs_p0_013",
+      "split": "validation",
+      "output_type": "clarification",
+      "target_tokens": 65,
+      "input_tokens": 330,
+      "context_json_tokens": 267,
+      "target_json_chars": 186
+    },
+    {
+      "sample_id": "sample_gs_p0_014",
+      "split": "validation",
+      "output_type": "clarification",
+      "target_tokens": 65,
+      "input_tokens": 343,
+      "context_json_tokens": 267,
+      "target_json_chars": 186
+    },
+    {
+      "sample_id": "sample_gs_p0_028",
+      "split": "validation",
+      "output_type": "tool_call",
+      "target_tokens": 63,
+      "input_tokens": 330,
+      "context_json_tokens": 268,
+      "target_json_chars": 130
+    },
+    {
+      "sample_id": "sample_gs_p0_029",
+      "split": "validation",
+      "output_type": "tool_call",
+      "target_tokens": 63,
+      "input_tokens": 333,
+      "context_json_tokens": 268,
+      "target_json_chars": 130
+    },
+    {
+      "sample_id": "sample_gs_p0_032",
+      "split": "validation",
+      "output_type": "answer",
+      "target_tokens": 82,
+      "input_tokens": 394,
+      "context_json_tokens": 330,
+      "target_json_chars": 176
+    },
+    {
+      "sample_id": "sample_gs_p0_033",
+      "split": "validation",
+      "output_type": "answer",
+      "target_tokens": 82,
+      "input_tokens": 400,
+      "context_json_tokens": 330,
+      "target_json_chars": 176
+    },
+    {
+      "sample_id": "sample_gs_p0_037",
+      "split": "validation",
+      "output_type": "proposal",
+      "target_tokens": 189,
+      "input_tokens": 345,
+      "context_json_tokens": 279,
+      "target_json_chars": 523
+    },
+    {
+      "sample_id": "sample_gs_p0_082",
+      "split": "validation",
+      "output_type": "answer",
+      "target_tokens": 58,
+      "input_tokens": 344,
+      "context_json_tokens": 276,
+      "target_json_chars": 144
+    },
+    {
+      "sample_id": "sample_gs_p0_083",
+      "split": "validation",
+      "output_type": "answer",
+      "target_tokens": 58,
+      "input_tokens": 346,
+      "context_json_tokens": 276,
+      "target_json_chars": 144
+    },
+    {
+      "sample_id": "sample_teacher_5493b48346db",
+      "split": "validation",
+      "output_type": "proposal",
+      "target_tokens": 187,
+      "input_tokens": 351,
+      "context_json_tokens": 279,
+      "target_json_chars": 523
+    },
+    {
+      "sample_id": "sample_teacher_4053b71f5faa",
+      "split": "validation",
+      "output_type": "proposal",
+      "target_tokens": 187,
+      "input_tokens": 344,
+      "context_json_tokens": 279,
+      "target_json_chars": 523
+    },
+    {
+      "sample_id": "sample_teacher_f38285d92ed9",
+      "split": "validation",
+      "output_type": "tool_call",
+      "target_tokens": 63,
+      "input_tokens": 331,
+      "context_json_tokens": 268,
+      "target_json_chars": 130
+    },
+    {
+      "sample_id": "sample_teacher_ff44a7eae6d8",
+      "split": "validation",
+      "output_type": "tool_call",
+      "target_tokens": 63,
+      "input_tokens": 336,
+      "context_json_tokens": 268,
+      "target_json_chars": 130
+    },
+    {
+      "sample_id": "sample_teacher_ac08c6c5d7f6",
+      "split": "validation",
+      "output_type": "tool_call",
+      "target_tokens": 63,
+      "input_tokens": 330,
+      "context_json_tokens": 268,
+      "target_json_chars": 130
+    },
+    {
+      "sample_id": "sample_teacher_0e4d53c72cc9",
+      "split": "validation",
+      "output_type": "tool_call",
+      "target_tokens": 63,
+      "input_tokens": 331,
+      "context_json_tokens": 268,
+      "target_json_chars": 130
+    },
+    {
+      "sample_id": "sample_teacher_36f4d8abe578",
+      "split": "validation",
+      "output_type": "answer",
+      "target_tokens": 82,
+      "input_tokens": 403,
+      "context_json_tokens": 330,
+      "target_json_chars": 176
+    },
+    {
+      "sample_id": "sample_teacher_50f39996a01a",
+      "split": "validation",
+      "output_type": "answer",
+      "target_tokens": 82,
+      "input_tokens": 407,
+      "context_json_tokens": 330,
+      "target_json_chars": 176
+    },
+    {
+      "sample_id": "sample_teacher_f5bc42a7c74f",
+      "split": "validation",
+      "output_type": "answer",
+      "target_tokens": 82,
+      "input_tokens": 398,
+      "context_json_tokens": 330,
+      "target_json_chars": 176
+    },
+    {
+      "sample_id": "sample_teacher_23cc3cf0f1ff",
+      "split": "validation",
+      "output_type": "answer",
+      "target_tokens": 82,
+      "input_tokens": 410,
+      "context_json_tokens": 330,
+      "target_json_chars": 176
+    },
+    {
+      "sample_id": "sample_teacher_7d0f32240c99",
+      "split": "validation",
+      "output_type": "clarification",
+      "target_tokens": 65,
+      "input_tokens": 332,
+      "context_json_tokens": 267,
+      "target_json_chars": 186
+    },
+    {
+      "sample_id": "sample_teacher_401a2f5ad127",
+      "split": "validation",
+      "output_type": "answer",
+      "target_tokens": 58,
+      "input_tokens": 348,
+      "context_json_tokens": 276,
+      "target_json_chars": 144
+    },
+    {
+      "sample_id": "sample_teacher_f3941370d729",
+      "split": "validation",
+      "output_type": "answer",
+      "target_tokens": 58,
+      "input_tokens": 354,
+      "context_json_tokens": 276,
+      "target_json_chars": 144
+    },
+    {
+      "sample_id": "sample_teacher_191d11c1745f",
+      "split": "validation",
+      "output_type": "answer",
+      "target_tokens": 58,
+      "input_tokens": 345,
+      "context_json_tokens": 276,
+      "target_json_chars": 144
+    },
+    {
+      "sample_id": "sample_teacher_6c16bbf26c83",
+      "split": "validation",
+      "output_type": "answer",
+      "target_tokens": 58,
+      "input_tokens": 352,
+      "context_json_tokens": 276,
+      "target_json_chars": 144
+    },
+    {
+      "sample_id": "sample_gs_p0_027",
+      "split": "test",
+      "output_type": "tool_call",
+      "target_tokens": 62,
+      "input_tokens": 330,
+      "context_json_tokens": 268,
+      "target_json_chars": 146
+    },
+    {
+      "sample_id": "sample_gs_p0_034",
+      "split": "test",
+      "output_type": "answer",
+      "target_tokens": 52,
+      "input_tokens": 314,
+      "context_json_tokens": 241,
+      "target_json_chars": 131
+    },
+    {
+      "sample_id": "sample_gs_p0_035",
+      "split": "test",
+      "output_type": "answer",
+      "target_tokens": 52,
+      "input_tokens": 312,
+      "context_json_tokens": 241,
+      "target_json_chars": 131
+    },
+    {
+      "sample_id": "sample_gs_p0_038",
+      "split": "test",
+      "output_type": "proposal",
+      "target_tokens": 446,
+      "input_tokens": 397,
+      "context_json_tokens": 305,
+      "target_json_chars": 942
+    },
+    {
+      "sample_id": "sample_gs_p0_047",
+      "split": "test",
+      "output_type": "proposal",
+      "target_tokens": 607,
+      "input_tokens": 467,
+      "context_json_tokens": 389,
+      "target_json_chars": 1270
+    },
+    {
+      "sample_id": "sample_gs_p0_048",
+      "split": "test",
+      "output_type": "proposal",
+      "target_tokens": 607,
+      "input_tokens": 465,
+      "context_json_tokens": 389,
+      "target_json_chars": 1270
+    },
+    {
+      "sample_id": "sample_gs_p0_052",
+      "split": "test",
+      "output_type": "clarification",
+      "target_tokens": 236,
+      "input_tokens": 677,
+      "context_json_tokens": 614,
+      "target_json_chars": 464
+    },
+    {
+      "sample_id": "sample_gs_p0_053",
+      "split": "test",
+      "output_type": "clarification",
+      "target_tokens": 236,
+      "input_tokens": 681,
+      "context_json_tokens": 614,
+      "target_json_chars": 464
+    },
+    {
+      "sample_id": "sample_gs_p0_068",
+      "split": "test",
+      "output_type": "answer",
+      "target_tokens": 46,
+      "input_tokens": 364,
+      "context_json_tokens": 267,
+      "target_json_chars": 103
+    },
+    {
+      "sample_id": "sample_gs_p0_069",
+      "split": "test",
+      "output_type": "answer",
+      "target_tokens": 46,
+      "input_tokens": 362,
+      "context_json_tokens": 267,
+      "target_json_chars": 103
+    },
+    {
+      "sample_id": "sample_gs_p0_074",
+      "split": "test",
+      "output_type": "clarification",
+      "target_tokens": 51,
+      "input_tokens": 287,
+      "context_json_tokens": 227,
+      "target_json_chars": 170
+    },
+    {
+      "sample_id": "sample_gs_p0_075",
+      "split": "test",
+      "output_type": "clarification",
+      "target_tokens": 51,
+      "input_tokens": 293,
+      "context_json_tokens": 227,
+      "target_json_chars": 170
+    },
+    {
+      "sample_id": "sample_gs_p0_092",
+      "split": "test",
+      "output_type": "answer",
+      "target_tokens": 49,
+      "input_tokens": 339,
+      "context_json_tokens": 276,
+      "target_json_chars": 122
+    },
+    {
+      "sample_id": "sample_gs_p0_093",
+      "split": "test",
+      "output_type": "answer",
+      "target_tokens": 49,
+      "input_tokens": 346,
+      "context_json_tokens": 276,
+      "target_json_chars": 122
+    },
+    {
+      "sample_id": "sample_teacher_598c007bc8b5",
+      "split": "test",
+      "output_type": "proposal",
+      "target_tokens": 444,
+      "input_tokens": 396,
+      "context_json_tokens": 305,
+      "target_json_chars": 942
+    },
+    {
+      "sample_id": "sample_teacher_75bf6ec27c31",
+      "split": "test",
+      "output_type": "proposal",
+      "target_tokens": 444,
+      "input_tokens": 397,
+      "context_json_tokens": 305,
+      "target_json_chars": 942
+    },
+    {
+      "sample_id": "sample_teacher_64d7671b8fc8",
+      "split": "test",
+      "output_type": "tool_call",
+      "target_tokens": 62,
+      "input_tokens": 334,
+      "context_json_tokens": 268,
+      "target_json_chars": 146
+    },
+    {
+      "sample_id": "sample_teacher_e24b1a12d1e4",
+      "split": "test",
+      "output_type": "answer",
+      "target_tokens": 52,
+      "input_tokens": 319,
+      "context_json_tokens": 241,
+      "target_json_chars": 131
+    },
+    {
+      "sample_id": "sample_teacher_ae1660aab544",
+      "split": "test",
+      "output_type": "answer",
+      "target_tokens": 52,
+      "input_tokens": 322,
+      "context_json_tokens": 241,
+      "target_json_chars": 131
+    },
+    {
+      "sample_id": "sample_teacher_2b0ab71ccf9c",
+      "split": "test",
+      "output_type": "answer",
+      "target_tokens": 52,
+      "input_tokens": 319,
+      "context_json_tokens": 241,
+      "target_json_chars": 131
+    },
+    {
+      "sample_id": "sample_teacher_7e6dab2d3489",
+      "split": "test",
+      "output_type": "answer",
+      "target_tokens": 52,
+      "input_tokens": 326,
+      "context_json_tokens": 241,
+      "target_json_chars": 131
+    },
+    {
+      "sample_id": "sample_teacher_66523a7b3d5d",
+      "split": "test",
+      "output_type": "proposal",
+      "target_tokens": 604,
+      "input_tokens": 471,
+      "context_json_tokens": 389,
+      "target_json_chars": 1270
+    },
+    {
+      "sample_id": "sample_teacher_a95f5dc89bbe",
+      "split": "test",
+      "output_type": "proposal",
+      "target_tokens": 604,
+      "input_tokens": 480,
+      "context_json_tokens": 389,
+      "target_json_chars": 1270
+    },
+    {
+      "sample_id": "sample_teacher_19ce0a5a6561",
+      "split": "test",
+      "output_type": "proposal",
+      "target_tokens": 604,
+      "input_tokens": 477,
+      "context_json_tokens": 389,
+      "target_json_chars": 1270
+    },
+    {
+      "sample_id": "sample_teacher_b982aca563b9",
+      "split": "test",
+      "output_type": "clarification",
+      "target_tokens": 236,
+      "input_tokens": 680,
+      "context_json_tokens": 614,
+      "target_json_chars": 464
+    },
+    {
+      "sample_id": "sample_teacher_bc9ebe671629",
+      "split": "test",
+      "output_type": "clarification",
+      "target_tokens": 236,
+      "input_tokens": 680,
+      "context_json_tokens": 614,
+      "target_json_chars": 464
+    },
+    {
+      "sample_id": "sample_teacher_66f28faf4613",
+      "split": "test",
+      "output_type": "clarification",
+      "target_tokens": 236,
+      "input_tokens": 678,
+      "context_json_tokens": 614,
+      "target_json_chars": 464
+    },
+    {
+      "sample_id": "sample_teacher_af455ef74b7a",
+      "split": "test",
+      "output_type": "clarification",
+      "target_tokens": 236,
+      "input_tokens": 688,
+      "context_json_tokens": 614,
+      "target_json_chars": 464
+    },
+    {
+      "sample_id": "sample_teacher_7ff88ac99eca",
+      "split": "test",
+      "output_type": "answer",
+      "target_tokens": 46,
+      "input_tokens": 369,
+      "context_json_tokens": 267,
+      "target_json_chars": 103
+    },
+    {
+      "sample_id": "sample_teacher_45726dede955",
+      "split": "test",
+      "output_type": "clarification",
+      "target_tokens": 51,
+      "input_tokens": 287,
+      "context_json_tokens": 227,
+      "target_json_chars": 170
+    },
+    {
+      "sample_id": "sample_teacher_f14a99a2f144",
+      "split": "test",
+      "output_type": "clarification",
+      "target_tokens": 51,
+      "input_tokens": 294,
+      "context_json_tokens": 227,
+      "target_json_chars": 170
+    },
+    {
+      "sample_id": "sample_teacher_0bba9ffaab3a",
+      "split": "test",
+      "output_type": "clarification",
+      "target_tokens": 51,
+      "input_tokens": 287,
+      "context_json_tokens": 227,
+      "target_json_chars": 170
+    },
+    {
+      "sample_id": "sample_teacher_65d2ed870553",
+      "split": "test",
+      "output_type": "clarification",
+      "target_tokens": 51,
+      "input_tokens": 294,
+      "context_json_tokens": 227,
+      "target_json_chars": 170
+    },
+    {
+      "sample_id": "sample_teacher_5d586b9bd796",
+      "split": "test",
+      "output_type": "answer",
+      "target_tokens": 49,
+      "input_tokens": 344,
+      "context_json_tokens": 276,
+      "target_json_chars": 122
+    },
+    {
+      "sample_id": "sample_teacher_ba1b62eae9d7",
+      "split": "test",
+      "output_type": "answer",
+      "target_tokens": 49,
+      "input_tokens": 344,
+      "context_json_tokens": 276,
+      "target_json_chars": 122
+    },
+    {
+      "sample_id": "sample_teacher_f0b77cc4c158",
+      "split": "test",
+      "output_type": "answer",
+      "target_tokens": 49,
+      "input_tokens": 353,
+      "context_json_tokens": 276,
+      "target_json_chars": 122
+    },
+    {
+      "sample_id": "sample_teacher_fa5cc2f3d068",
+      "split": "test",
+      "output_type": "answer",
+      "target_tokens": 49,
+      "input_tokens": 353,
+      "context_json_tokens": 276,
+      "target_json_chars": 122
+    },
+    {
+      "sample_id": "sample_gs_p0_005",
+      "split": "hard_test",
+      "output_type": "proposal",
+      "target_tokens": 565,
+      "input_tokens": 382,
+      "context_json_tokens": 303,
+      "target_json_chars": 1219
+    },
+    {
+      "sample_id": "sample_gs_p0_006",
+      "split": "hard_test",
+      "output_type": "proposal",
+      "target_tokens": 565,
+      "input_tokens": 376,
+      "context_json_tokens": 303,
+      "target_json_chars": 1219
+    },
+    {
+      "sample_id": "sample_gs_p0_041",
+      "split": "hard_test",
+      "output_type": "clarification",
+      "target_tokens": 246,
+      "input_tokens": 462,
+      "context_json_tokens": 395,
+      "target_json_chars": 461
+    },
+    {
+      "sample_id": "sample_gs_p0_084",
+      "split": "hard_test",
+      "output_type": "answer",
+      "target_tokens": 50,
+      "input_tokens": 343,
+      "context_json_tokens": 276,
+      "target_json_chars": 125
+    },
+    {
+      "sample_id": "sample_gs_p0_085",
+      "split": "hard_test",
+      "output_type": "answer",
+      "target_tokens": 50,
+      "input_tokens": 348,
+      "context_json_tokens": 276,
+      "target_json_chars": 125
+    },
+    {
+      "sample_id": "sample_teacher_c9a47d5c46c1",
+      "split": "hard_test",
+      "output_type": "proposal",
+      "target_tokens": 563,
+      "input_tokens": 390,
+      "context_json_tokens": 303,
+      "target_json_chars": 1219
+    },
+    {
+      "sample_id": "sample_teacher_1da3f26d874a",
+      "split": "hard_test",
+      "output_type": "clarification",
+      "target_tokens": 246,
+      "input_tokens": 467,
+      "context_json_tokens": 395,
+      "target_json_chars": 461
+    },
+    {
+      "sample_id": "sample_teacher_56c4b297703f",
+      "split": "hard_test",
+      "output_type": "clarification",
+      "target_tokens": 246,
+      "input_tokens": 467,
+      "context_json_tokens": 395,
+      "target_json_chars": 461
+    },
+    {
+      "sample_id": "sample_teacher_495133fe795c",
+      "split": "hard_test",
+      "output_type": "answer",
+      "target_tokens": 50,
+      "input_tokens": 345,
+      "context_json_tokens": 276,
+      "target_json_chars": 125
+    },
+    {
+      "sample_id": "sample_teacher_af85b5a16d3b",
+      "split": "hard_test",
+      "output_type": "answer",
+      "target_tokens": 50,
+      "input_tokens": 354,
+      "context_json_tokens": 276,
+      "target_json_chars": 125
+    },
+    {
+      "sample_id": "sample_teacher_2a2434a010ba",
+      "split": "hard_test",
+      "output_type": "answer",
+      "target_tokens": 50,
+      "input_tokens": 356,
+      "context_json_tokens": 276,
+      "target_json_chars": 125
+    },
+    {
+      "sample_id": "sample_teacher_8e1096f2010d",
+      "split": "hard_test",
+      "output_type": "answer",
+      "target_tokens": 50,
+      "input_tokens": 354,
+      "context_json_tokens": 276,
+      "target_json_chars": 125
+    }
+  ]
+}

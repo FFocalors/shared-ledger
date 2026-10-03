@@ -1,0 +1,195 @@
+{
+  "baseline_report": "D:/AI/runs/shared-ledger/training_runs/qlora-v0.1/20260930-143013/final_source_hash_check.json",
+  "checked_at": "2026-09-30",
+  "files_checked": 31,
+  "unchanged": 31,
+  "changed": [],
+  "files": [
+    {
+      "path": "docs\\ai\\dataset\\canonical_training\\v0.1\\coverage_report.json",
+      "baseline_sha256": "a213bb66a34462921c46cc0f2eecc6ef95722f8b0b53944d862c7b428dfb9672",
+      "current_sha256": "a213bb66a34462921c46cc0f2eecc6ef95722f8b0b53944d862c7b428dfb9672",
+      "matches_baseline": true
+    },
+    {
+      "path": "docs\\ai\\dataset\\canonical_training\\v0.1\\dataset_manifest.json",
+      "baseline_sha256": "7f8cc2ef70d1abedd49ea040826d93f4c3708a8cb5893e7e1fedcc488e2c2252",
+      "current_sha256": "7f8cc2ef70d1abedd49ea040826d93f4c3708a8cb5893e7e1fedcc488e2c2252",
+      "matches_baseline": true
+    },
+    {
+      "path": "docs\\ai\\dataset\\canonical_training\\v0.1\\README.md",
+      "baseline_sha256": "5164a02df3bda490c882be8dfddd232e253119d337cc01b8c9f1901aac79c435",
+      "current_sha256": "5164a02df3bda490c882be8dfddd232e253119d337cc01b8c9f1901aac79c435",
+      "matches_baseline": true
+    },
+    {
+      "path": "docs\\ai\\dataset\\canonical_training\\v0.1\\samples.json",
+      "baseline_sha256": "768916c8781dc2608ac8220588a0e85ffc043d8f16a45e9bd3497b87a214e562",
+      "current_sha256": "768916c8781dc2608ac8220588a0e85ffc043d8f16a45e9bd3497b87a214e562",
+      "matches_baseline": true
+    },
+    {
+      "path": "docs\\ai\\dataset\\canonical_training\\v0.1\\scenarios.json",
+      "baseline_sha256": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+      "current_sha256": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+      "matches_baseline": true
+    },
+    {
+      "path": "docs\\ai\\dataset\\canonical_training\\v0.1\\split_assignment.json",
+      "baseline_sha256": "e3e1599673b3227edeaad3bc62f04e0f3249dd886946f502664428939d8d3765",
+      "current_sha256": "e3e1599673b3227edeaad3bc62f04e0f3249dd886946f502664428939d8d3765",
+      "matches_baseline": true
+    },
+    {
+      "path": "docs\\ai\\training_setup\\v0.1\\llamafactory\\dataset_info.json",
+      "baseline_sha256": "2ac44f2ba48c5c0b21cff58590802d956c570cde92edba8cb7a9bae618ee2907",
+      "current_sha256": "2ac44f2ba48c5c0b21cff58590802d956c570cde92edba8cb7a9bae618ee2907",
+      "matches_baseline": true
+    },
+    {
+      "path": "docs\\ai\\training_setup\\v0.1\\llamafactory\\hard_test.json",
+      "baseline_sha256": "bd9e36c5f1fcf30fd11f87ade672515a901cb8f0c0114debe36b8919c0d9be8e",
+      "current_sha256": "bd9e36c5f1fcf30fd11f87ade672515a901cb8f0c0114debe36b8919c0d9be8e",
+      "matches_baseline": true
+    },
+    {
+      "path": "docs\\ai\\training_setup\\v0.1\\llamafactory\\test.json",
+      "baseline_sha256": "35c5119a2f49e7e9c7561a19b90598e094216e351fb450f499b1382a158cbaa0",
+      "current_sha256": "35c5119a2f49e7e9c7561a19b90598e094216e351fb450f499b1382a158cbaa0",
+      "matches_baseline": true
+    },
+    {
+      "path": "docs\\ai\\training_setup\\v0.1\\llamafactory\\train.json",
+      "baseline_sha256": "7ab16f1e1dca751a404b3156458bb90c1f08b9daeefa87224ef9876867377c35",
+      "current_sha256": "7ab16f1e1dca751a404b3156458bb90c1f08b9daeefa87224ef9876867377c35",
+      "matches_baseline": true
+    },
+    {
+      "path": "docs\\ai\\training_setup\\v0.1\\llamafactory\\validation.json",
+      "baseline_sha256": "9db71eb05e10596cfe106b3da03e46ec7ceed77bafbf066f4385abe41404413d",
+      "current_sha256": "9db71eb05e10596cfe106b3da03e46ec7ceed77bafbf066f4385abe41404413d",
+      "matches_baseline": true
+    },
+    {
+      "path": "docs\\ai\\training_setup\\v0.1\\manifest.json",
+      "baseline_sha256": "0ea288d01fc33389996473f795c0632999e12b568f7541de12e29ba4fea2d67c",
+      "current_sha256": "0ea288d01fc33389996473f795c0632999e12b568f7541de12e29ba4fea2d67c",
+      "matches_baseline": true
+    },
+    {
+      "path": "docs\\ai\\training_setup\\v0.1\\validation_report.json",
+      "baseline_sha256": "16392b32a995c5ccf9caff1057b7233fd794631fa5980307fec264a2ac1c0c55",
+      "current_sha256": "16392b32a995c5ccf9caff1057b7233fd794631fa5980307fec264a2ac1c0c55",
+      "matches_baseline": true
+    },
+    {
+      "path": "docs\\ai\\training_setup\\v0.1\\traceability.json",
+      "baseline_sha256": "ad8fd7ba663216c8c185307945bc5507809895f4856c7739603213bf261c42ba",
+      "current_sha256": "ad8fd7ba663216c8c185307945bc5507809895f4856c7739603213bf261c42ba",
+      "matches_baseline": true
+    },
+    {
+      "path": "docs\\ai\\training_setup\\v0.1\\qlora.yaml",
+      "baseline_sha256": "b621a212b42169a2852e1db81cc7ba2da6c486e42eaeb3ece6b405e08e214561",
+      "current_sha256": "b621a212b42169a2852e1db81cc7ba2da6c486e42eaeb3ece6b405e08e214561",
+      "matches_baseline": true
+    },
+    {
+      "path": "scripts\\ai_training_setup\\export_dataset.py",
+      "baseline_sha256": "eaab37ce9d9b81a17c4c62bfaa575bed4aac2f2ecdb4072fac455d7c767b7350",
+      "current_sha256": "eaab37ce9d9b81a17c4c62bfaa575bed4aac2f2ecdb4072fac455d7c767b7350",
+      "matches_baseline": true
+    },
+    {
+      "path": "scripts\\ai_training_setup\\run_with_monitor.py",
+      "baseline_sha256": "b300e58d129e5c70b0fa806fabb3f754cb62266ddac499f1b00ee2ed7b36e77e",
+      "current_sha256": "b300e58d129e5c70b0fa806fabb3f754cb62266ddac499f1b00ee2ed7b36e77e",
+      "matches_baseline": true
+    },
+    {
+      "path": "scripts\\ai_training_setup\\validate_setup.py",
+      "baseline_sha256": "624f3c65ecacfc460625077ffd640acb71f62d74dd803f871808b7c4894ed8e3",
+      "current_sha256": "624f3c65ecacfc460625077ffd640acb71f62d74dd803f871808b7c4894ed8e3",
+      "matches_baseline": true
+    },
+    {
+      "path": "scripts\\ai_training_setup\\tests\\test_export_dataset.py",
+      "baseline_sha256": "c5b327039a7bd524f01287ecec47bee5b28ad13acf152b287df1c57f32c4ff7e",
+      "current_sha256": "c5b327039a7bd524f01287ecec47bee5b28ad13acf152b287df1c57f32c4ff7e",
+      "matches_baseline": true
+    },
+    {
+      "path": "D:\\AI\\models\\Qwen3.5-4B\\chat_template.jinja",
+      "baseline_sha256": "a4aee8afcf2e0711942cf848899be66016f8d14a889ff9ede07bca099c28f715",
+      "current_sha256": "a4aee8afcf2e0711942cf848899be66016f8d14a889ff9ede07bca099c28f715",
+      "matches_baseline": true
+    },
+    {
+      "path": "D:\\AI\\models\\Qwen3.5-4B\\config.json",
+      "baseline_sha256": "ddc63e1c717afa86c865bb5e01313d89d72bb53b97ad4a8a03ba8510c0621670",
+      "current_sha256": "ddc63e1c717afa86c865bb5e01313d89d72bb53b97ad4a8a03ba8510c0621670",
+      "matches_baseline": true
+    },
+    {
+      "path": "D:\\AI\\models\\Qwen3.5-4B\\merges.txt",
+      "baseline_sha256": "a9d356d7bdf1ef4949e3e748e95b8e10ad9d4e2e838eddc38a0a7b6b94d1db8d",
+      "current_sha256": "a9d356d7bdf1ef4949e3e748e95b8e10ad9d4e2e838eddc38a0a7b6b94d1db8d",
+      "matches_baseline": true
+    },
+    {
+      "path": "D:\\AI\\models\\Qwen3.5-4B\\model.safetensors-00001-of-00002.safetensors",
+      "baseline_sha256": "26a93f066e1916adb13453dae5a0c707c0fbc71299ed98779571a907b8e74c61",
+      "current_sha256": "26a93f066e1916adb13453dae5a0c707c0fbc71299ed98779571a907b8e74c61",
+      "matches_baseline": true
+    },
+    {
+      "path": "D:\\AI\\models\\Qwen3.5-4B\\model.safetensors-00002-of-00002.safetensors",
+      "baseline_sha256": "cb544bd9bfae93dc59b0f22b292f5933573854a7f9b97835c67060d7d910e188",
+      "current_sha256": "cb544bd9bfae93dc59b0f22b292f5933573854a7f9b97835c67060d7d910e188",
+      "matches_baseline": true
+    },
+    {
+      "path": "D:\\AI\\models\\Qwen3.5-4B\\model.safetensors.index.json",
+      "baseline_sha256": "cf3f798ee02ba45f9622aa8892a47369ab667d0afbf154ee7c2212de42e6302d",
+      "current_sha256": "cf3f798ee02ba45f9622aa8892a47369ab667d0afbf154ee7c2212de42e6302d",
+      "matches_baseline": true
+    },
+    {
+      "path": "D:\\AI\\models\\Qwen3.5-4B\\preprocessor_config.json",
+      "baseline_sha256": "27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516",
+      "current_sha256": "27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516",
+      "matches_baseline": true
+    },
+    {
+      "path": "D:\\AI\\models\\Qwen3.5-4B\\tokenizer.json",
+      "baseline_sha256": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+      "current_sha256": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+      "matches_baseline": true
+    },
+    {
+      "path": "D:\\AI\\models\\Qwen3.5-4B\\tokenizer_config.json",
+      "baseline_sha256": "316230d6a809701f4db5ea8f8fc862bc3a6f3229c937c174e674ff3ca0a64ac8",
+      "current_sha256": "316230d6a809701f4db5ea8f8fc862bc3a6f3229c937c174e674ff3ca0a64ac8",
+      "matches_baseline": true
+    },
+    {
+      "path": "D:\\AI\\models\\Qwen3.5-4B\\video_preprocessor_config.json",
+      "baseline_sha256": "7768af27c1fafa9cc9011c1dc20067e03f8915e03b63504550e11d5066986d13",
+      "current_sha256": "7768af27c1fafa9cc9011c1dc20067e03f8915e03b63504550e11d5066986d13",
+      "matches_baseline": true
+    },
+    {
+      "path": "D:\\AI\\models\\Qwen3.5-4B\\vocab.json",
+      "baseline_sha256": "ce99b4cb2983d118806ce0a8b777a35b093e2000a503ebde25853284c9dfa003",
+      "current_sha256": "ce99b4cb2983d118806ce0a8b777a35b093e2000a503ebde25853284c9dfa003",
+      "matches_baseline": true
+    },
+    {
+      "path": "D:\\AI\\models\\Qwen3.5-4B\\.cache\\huggingface\\trees\\851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a.json",
+      "baseline_sha256": "c56456ec46cb6cb9b78fa934b4211da84aa3eca403f845e2665efdec575c762e",
+      "current_sha256": "c56456ec46cb6cb9b78fa934b4211da84aa3eca403f845e2665efdec575c762e",
+      "matches_baseline": true
+    }
+  ]
+}

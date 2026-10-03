@@ -1,0 +1,37 @@
+{
+  "status": "diagnostic hypotheses; no v0.1 source data changed",
+  "items": [
+    {
+      "area": "data / runtime evidence",
+      "evidence": "sample_gs_p0_032 has verified result IDs but empty tool_results; expected amounts are absent from user/history/UI/context and answer amounts are wrong. sample_gs_p0_092 similarly has a verified policy result ID but no visible policy payload.",
+      "hypothesis": "IDs alone do not expose enough numerical or policy content for grounded answers in these rows.",
+      "proposed_change": "In a new dataset version, serialize a sanitized, authoritative verified-result payload (or explicitly route to a read tool before answering) and keep the result ID-to-payload binding deterministic.",
+      "validation": "Hold contract/model/config fixed; validation-only tests must verify source payload visibility, correct citation, exact amount/policy fact, and zero invented alternatives.",
+      "evidence_strength": "high for these two serialized rows; scope/generalization requires new cases"
+    },
+    {
+      "area": "data / state diversity",
+      "evidence": "Train has 171 rows but only 36 canonical scenarios, 36 exact GTs and 36 state hashes; 106 rows are Teacher surface variants preserving those exact GTs. Heldout has 73 rows/16 canonical states and family isolation gives zero same-family train rows by policy.",
+      "hypothesis": "Surface variety improves wording exposure but cannot add new decision-state coverage; transfer relies on related capability peers.",
+      "proposed_change": "Prioritize additional canonical business states for weak decisions (tool routing, required-field resolution, guarded proposal and rule/result grounding), not more same-GT paraphrases alone.",
+      "validation": "Preserve family/split-group isolation; compare capability peers and newly sealed families using predeclared row-level safety and structured fact metrics.",
+      "evidence_strength": "high for exact source counts; causal performance impact is unproven"
+    },
+    {
+      "area": "representation / contract guidance",
+      "evidence": "sample_gs_p0_028 and _027 show visible IDs/tools copied into actual calls, but wrong intent/extra args; sample_gs_p0_005 has required user values and create_expense enabled but asks for account_id absent from operation schema.",
+      "hypothesis": "The current serialized examples/system guidance may not sufficiently distinguish allowed intent-tool-argument combinations and current-user entity binding from legacy vocabulary.",
+      "proposed_change": "Test a concise schema-grounded serialization/system guidance revision in a new version, without changing frozen business semantics or output schema.",
+      "validation": "One-factor prompt/representation ablation; score the same validation capability slices and require schema/tool mapping and entity correctness without worsening proposal safety.",
+      "evidence_strength": "medium; observed errors are clear, cause is a hypothesis"
+    },
+    {
+      "area": "training / capacity and optimization",
+      "evidence": "Validation improves from ckpt11 to ckpt33; under the corrected row-level safety unit, unsafe rows are 24, 12, 11, while loss falls 1.8061, 1.6279, 1.6060. Structure stays 11/24 from ckpt22 to ckpt33; schema-valid rises 12 to 13.",
+      "hypothesis": "Additional optimization might improve some metrics, but available checkpoints do not show broad structured convergence and do not isolate capacity, LR, data, or prompt effects.",
+      "proposed_change": "Do not increase epochs/rank based on this run alone. After data and grounding fixes, test one training variable in a separately versioned, budget-capped validation run.",
+      "validation": "Same data/serialization; vary only one optimizer/model parameter; select on validation with row-level safety first and report schema/type/field metrics. No test/hard retuning.",
+      "evidence_strength": "high for saved metrics; causal diagnosis is unsupported"
+    }
+  ]
+}

@@ -1,0 +1,154 @@
+{
+  "analysis_version": "0.1",
+  "run_id": "20260930-143013",
+  "dataset": {
+    "samples": 250,
+    "assigned_samples": 244,
+    "heldout_rows": 73
+  },
+  "frozen_source_hashes_sha256": {
+    "docs\\ai\\dataset\\canonical_training\\v0.1\\samples.json": "768916c8781dc2608ac8220588a0e85ffc043d8f16a45e9bd3497b87a214e562",
+    "docs\\ai\\dataset\\canonical_training\\v0.1\\scenarios.json": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+    "docs\\ai\\dataset\\canonical_training\\v0.1\\split_assignment.json": "e3e1599673b3227edeaad3bc62f04e0f3249dd886946f502664428939d8d3765",
+    "docs\\ai\\dataset\\canonical_training\\v0.1\\coverage_report.json": "a213bb66a34462921c46cc0f2eecc6ef95722f8b0b53944d862c7b428dfb9672",
+    "docs\\ai\\dataset\\canonical_training\\v0.1\\dataset_manifest.json": "7f8cc2ef70d1abedd49ea040826d93f4c3708a8cb5893e7e1fedcc488e2c2252",
+    "docs\\ai\\training_setup\\v0.1\\traceability.json": "ad8fd7ba663216c8c185307945bc5507809895f4856c7739603213bf261c42ba",
+    "docs\\ai\\training_setup\\v0.1\\manifest.json": "0ea288d01fc33389996473f795c0632999e12b568f7541de12e29ba4fea2d67c",
+    "docs\\ai\\training_setup\\v0.1\\validation_report.json": "16392b32a995c5ccf9caff1057b7233fd794631fa5980307fec264a2ac1c0c55",
+    "docs\\ai\\training_setup\\v0.1\\qlora.yaml": "b621a212b42169a2852e1db81cc7ba2da6c486e42eaeb3ece6b405e08e214561",
+    "docs\\ai\\schema\\model_output.schema.json": "5ad944f7e1163c5b186cd4b9aea4b3ddf8c39910b9cbaf63554a7718af689bd9",
+    "docs\\ai\\schema\\tool_catalog.json": "e6f25251c6bdef6cd50f0ce01489adf9c0e6bb5efade5f789e847d86a7350744",
+    "docs\\ai\\AI_MODEL_CONTRACT.md": "f6effbc7a4278d6e9b7f6a01298fc1644218be126f85d442da7d35acdf66100a",
+    "docs\\ai\\AI_SCOPE_FREEZE_V0.1.md": "e5808e18c7cd3eaffd446fc20bfa3eb90e1a08c17402e94dbe0c0f01600fd4fb"
+  },
+  "checkpoint_file_hashes_sha256": {
+    "D:\\AI\\runs\\shared-ledger\\training_runs\\qlora-v0.1\\20260930-143013\\train\\checkpoints\\checkpoint-11": [
+      {
+        "file": "train\\checkpoints\\checkpoint-11\\adapter_config.json",
+        "sha256": "46ab7ff6f66c8887e72f1e30ae42b97f335700bcf19baa4d1886ececf3f059e9",
+        "bytes": 1189
+      },
+      {
+        "file": "train\\checkpoints\\checkpoint-11\\adapter_model.safetensors",
+        "sha256": "1571f2af0d5b210b1ecc0107dc51efc27321d50efa63a287f25a95d0af58f8d3",
+        "bytes": 65003848
+      },
+      {
+        "file": "train\\checkpoints\\checkpoint-11\\processor_config.json",
+        "sha256": "f196d5698d1771c734bb3a24bd658ba75536fc4feafc5b83c035b7693511a2db",
+        "bytes": 1251
+      },
+      {
+        "file": "train\\checkpoints\\checkpoint-11\\tokenizer.json",
+        "sha256": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523",
+        "bytes": 19989325
+      },
+      {
+        "file": "train\\checkpoints\\checkpoint-11\\tokenizer_config.json",
+        "sha256": "695b8ea2ebc3bc31bd88c7ff7037ce8098f53b56afa76e40893931b11fa734c3",
+        "bytes": 1225
+      },
+      {
+        "file": "train\\checkpoints\\checkpoint-11\\trainer_state.json",
+        "sha256": "4f828bea1288e0a6d4c3f51813c26c7979f3293013ea21bbf3a71acfa454cd1e",
+        "bytes": 1196
+      },
+      {
+        "file": "train\\checkpoints\\checkpoint-11\\training_args.bin",
+        "sha256": "943315679d758349382711ea10b01f760d05740d27a3aa6a14b87f5ab45cf774",
+        "bytes": 5560
+      }
+    ],
+    "D:\\AI\\runs\\shared-ledger\\training_runs\\qlora-v0.1\\20260930-143013\\train\\checkpoints\\checkpoint-22": [
+      {
+        "file": "train\\checkpoints\\checkpoint-22\\adapter_config.json",
+        "sha256": "46ab7ff6f66c8887e72f1e30ae42b97f335700bcf19baa4d1886ececf3f059e9",
+        "bytes": 1189
+      },
+      {
+        "file": "train\\checkpoints\\checkpoint-22\\adapter_model.safetensors",
+        "sha256": "f42c6523f443f0e6b3a24aa22c4981be29e27f6cb7edb62f6d67ee73f974d9ea",
+        "bytes": 65003848
+      },
+      {
+        "file": "train\\checkpoints\\checkpoint-22\\processor_config.json",
+        "sha256": "f196d5698d1771c734bb3a24bd658ba75536fc4feafc5b83c035b7693511a2db",
+        "bytes": 1251
+      },
+      {
+        "file": "train\\checkpoints\\checkpoint-22\\tokenizer.json",
+        "sha256": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523",
+        "bytes": 19989325
+      },
+      {
+        "file": "train\\checkpoints\\checkpoint-22\\tokenizer_config.json",
+        "sha256": "695b8ea2ebc3bc31bd88c7ff7037ce8098f53b56afa76e40893931b11fa734c3",
+        "bytes": 1225
+      },
+      {
+        "file": "train\\checkpoints\\checkpoint-22\\trainer_state.json",
+        "sha256": "f9a95d3408349d796c6d14d1efa657163a003d4921289f36e378faa3de0b0d10",
+        "bytes": 1594
+      },
+      {
+        "file": "train\\checkpoints\\checkpoint-22\\training_args.bin",
+        "sha256": "943315679d758349382711ea10b01f760d05740d27a3aa6a14b87f5ab45cf774",
+        "bytes": 5560
+      }
+    ],
+    "D:\\AI\\runs\\shared-ledger\\training_runs\\qlora-v0.1\\20260930-143013\\train\\checkpoints\\checkpoint-33": [
+      {
+        "file": "train\\checkpoints\\checkpoint-33\\adapter_config.json",
+        "sha256": "46ab7ff6f66c8887e72f1e30ae42b97f335700bcf19baa4d1886ececf3f059e9",
+        "bytes": 1189
+      },
+      {
+        "file": "train\\checkpoints\\checkpoint-33\\adapter_model.safetensors",
+        "sha256": "e44bd00c49b53e5141b96a99640e9a3857d4aee89508f081b4372d70bca415f0",
+        "bytes": 65003848
+      },
+      {
+        "file": "train\\checkpoints\\checkpoint-33\\processor_config.json",
+        "sha256": "f196d5698d1771c734bb3a24bd658ba75536fc4feafc5b83c035b7693511a2db",
+        "bytes": 1251
+      },
+      {
+        "file": "train\\checkpoints\\checkpoint-33\\tokenizer.json",
+        "sha256": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523",
+        "bytes": 19989325
+      },
+      {
+        "file": "train\\checkpoints\\checkpoint-33\\tokenizer_config.json",
+        "sha256": "695b8ea2ebc3bc31bd88c7ff7037ce8098f53b56afa76e40893931b11fa734c3",
+        "bytes": 1225
+      },
+      {
+        "file": "train\\checkpoints\\checkpoint-33\\trainer_state.json",
+        "sha256": "b843ccfee83710faa70122ac8c73499b2ded01c88fb19d1813f243fe142c0365",
+        "bytes": 1989
+      },
+      {
+        "file": "train\\checkpoints\\checkpoint-33\\training_args.bin",
+        "sha256": "943315679d758349382711ea10b01f760d05740d27a3aa6a14b87f5ab45cf774",
+        "bytes": 5560
+      }
+    ]
+  },
+  "artifacts_sha256": {
+    "checkpoint_trajectory.json": "a19854036672b771bdb599d294b1199de7698dff683d74d1cd3506ecc4c07bb7",
+    "complexity_and_context.json": "6e5edb3d77fbb8541c60077fb880d1ca04accf89592e2fe808d6140fd0d0f8d1",
+    "failure_matrix.csv": "b928ebf2a250fbe0839b56e7b9f070e710e917937deb99e0e1f51b10e4417f14",
+    "failure_matrix.json": "40c6c6151b8de988eaa1009123f6d288dd36470092721aec283f12eb76577c85",
+    "FINAL_REPORT.md": "1916cbc6c4106446c2f19101e2c02c7bdfeded081e37afa6a4eff4ba695df3ed",
+    "grounding_case_reviews.json": "1b80a359341b5305ad04f909354cd9d0b9d56613a473f0d499a0ed4fec91668a",
+    "grounding_field_trace.json": "f0ac45482db084e29330049d61456ab4f8e466d37b7b43158d6f1cfc66c1d72d",
+    "output_routing_confusion.json": "612130b9934dc3811ab254a86e39ac18e1940e35f52d816879b6e437a17fe1bc",
+    "root_cause_matrix.json": "b8bc42efa76f01ed43af584850d547ed9b7b1566c92f76d178f0ad356f78b9b5",
+    "source_integrity_check.json": "01f62673f2671f0ffea3f20e89743fc8774974078a768e740dead528a43c551c",
+    "tokenizer_counts.json": "0763980949a6a22447b8895f768679d5aac70c684b69d947bf40d36a6de10589",
+    "train_heldout_coverage.json": "80795bcf07dcc3df2d1fb9775574e3492dd1e24383819bb7c9eba09e839a1ff9",
+    "v02_experiment_plan.json": "9a9b680f0243ef189533379668232062a0f84767363f53a75a37845198492af6"
+  },
+  "no_model_loaded": true,
+  "no_inference_training_or_source_mutation": true
+}

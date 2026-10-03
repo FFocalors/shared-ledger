@@ -1,0 +1,40 @@
+{
+  "status": "design only; no v0.2 samples or training created",
+  "max_experiments": 3,
+  "test_policy": "The v0.1 test and hard_test have been inspected and are legacy diagnostics only; future selection uses validation and newly sealed family-isolated evaluation.",
+  "experiments": [
+    {
+      "id": "V02-A",
+      "variable": "canonical business-state coverage",
+      "change": "Add a small, pre-registered set of new canonical decision states (recommended initial budget: 12 states, one or two reviewed surface forms each) in weak capability areas; do not count paraphrases as new GT states.",
+      "hold_fixed": "Contract/schema, serializer, prompt, optimizer, model, training budget, and existing family split policy.",
+      "evaluation": "Validation-only on newly sealed families plus existing validation for comparability; no test/hard selection. Stratify tool routing, clarification, proposal binding, guarded operations and policy/read results.",
+      "primary_metric": "unsafe validation rows (one row once), then expected branch/schema and key-fact accuracy",
+      "gate": "No added dangerous proposal/tool call; every expected fact has model-visible evidence or the sample is excluded from answerable evaluation.",
+      "budget": "12 new GT states; max 24 train surface records; one training run capped at the v0.1 optimizer-step budget",
+      "priority": 1
+    },
+    {
+      "id": "V02-B",
+      "variable": "runtime verified-result payload serialization",
+      "change": "For authoritative read results, compare ID-only context with a sanitized, bounded result payload containing the exact values/policy text keyed by the same result ID. Requires authoritative payloads; never synthesize them.",
+      "hold_fixed": "Same canonical states/surface, expected output, contract, prompt, model, optimizer, and training-step budget; only runtime context serialization differs.",
+      "evaluation": "Paired validation cases where source IDs and payloads are independently verified; new sealed scenario families; retain current heldout only as legacy diagnostic.",
+      "primary_metric": "grounded amount/entity/policy facts, evidence ID correctness and hallucinated/contradictory natural-language facts",
+      "gate": "No result payload without source provenance; zero cross-ID payload binding; no change to business rules.",
+      "budget": "Up to 12 matched examples, one small run at the existing step budget",
+      "priority": 2
+    },
+    {
+      "id": "V02-C",
+      "variable": "concise contract guidance in model-visible system prompt",
+      "change": "A/B test a short, frozen-catalog-derived intent/tool/argument and current-user-binding reminder against the existing concise system prompt.",
+      "hold_fixed": "Dataset content/splits, runtime context, model, optimizer, steps, and output contract.",
+      "evaluation": "Validation only on new sealed or existing validation families; no test/hard tuning.",
+      "primary_metric": "intent-tool mapping, argument/schema validity and clarification-versus-proposal routing, with safety as hard gate",
+      "gate": "No scope expansion, no loosening write confirmation, and no worse unsafe-row count.",
+      "budget": "One prompt variant and at most one capped training run; only after V02-A/B data gaps are addressed",
+      "priority": 3
+    }
+  ]
+}

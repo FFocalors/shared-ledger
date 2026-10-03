@@ -1,0 +1,4123 @@
+{
+  "basis": "Saved best22 raw outputs, frozen training export rows, expected contract branch; manual review only where available.",
+  "records": [
+    {
+      "sample_id": "sample_gs_p0_013",
+      "scenario_id": "scenario_gs_p0b_003",
+      "family_id": "family_exp_clarify_007",
+      "split": "validation",
+      "expected_type": "clarification",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "typo",
+        "asr_like",
+        "missing_payer"
+      ],
+      "source": "human_authored",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.candidates"
+      ],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": false,
+      "key_facts_correct": 3,
+      "key_facts_total": 3,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.missing_fields[0]",
+        "$.question"
+      ],
+      "extra_target_leaf_paths": [
+        "$.missing_fields[1]"
+      ],
+      "failure_categories": [
+        "clarification_slot",
+        "field_value_mismatch",
+        "schema_formatting",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "wrong_clarification_intent_or_slots"
+    },
+    {
+      "sample_id": "sample_gs_p0_014",
+      "scenario_id": "scenario_gs_p0b_003",
+      "family_id": "family_exp_clarify_007",
+      "split": "validation",
+      "expected_type": "clarification",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "typo",
+        "asr_like",
+        "missing_payer"
+      ],
+      "source": "human_authored",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.candidates"
+      ],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": false,
+      "key_facts_correct": 3,
+      "key_facts_total": 3,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.question"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "clarification_slot",
+        "field_value_mismatch",
+        "schema_formatting"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "wrong_clarification_intent_or_slots"
+    },
+    {
+      "sample_id": "sample_gs_p0_028",
+      "scenario_id": "scenario_gs_p0a_014",
+      "family_id": "family_debt_001",
+      "split": "validation",
+      "expected_type": "tool_call",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "colloquial",
+        "ellipsis",
+        "multiple_candidates",
+        "financial_risk"
+      ],
+      "source": "human_authored",
+      "predicted_type": "tool_call",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [
+        "$.arguments.ledger_unit_id",
+        "$.reason",
+        "$.evidence_result_ids"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.intent_id: expected const 'query_debt'",
+        "$.arguments.participant_id: expected type string"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 3,
+      "key_facts_total": 4,
+      "safety_violations": [
+        "model_output_schema_invalid",
+        "intent_tool_call_not_enabled",
+        "tool_not_mapped_to_intent"
+      ],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.intent_id"
+      ],
+      "extra_target_leaf_paths": [
+        "$.arguments.ledger_unit_id",
+        "$.arguments.participant_id",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "entity_resolution",
+        "field_value_mismatch",
+        "schema_formatting",
+        "tool_arguments",
+        "tool_selection",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "invalid_tool_route_or_payload"
+    },
+    {
+      "sample_id": "sample_gs_p0_029",
+      "scenario_id": "scenario_gs_p0a_014",
+      "family_id": "family_debt_001",
+      "split": "validation",
+      "expected_type": "tool_call",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "colloquial",
+        "ellipsis",
+        "multiple_candidates",
+        "financial_risk"
+      ],
+      "source": "human_authored",
+      "predicted_type": "tool_call",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [
+        "$.arguments.ledger_unit_id",
+        "$.arguments.participant_ids",
+        "$.reason"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.intent_id: expected const 'query_debt'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 3,
+      "key_facts_total": 4,
+      "safety_violations": [
+        "model_output_schema_invalid",
+        "intent_tool_call_not_enabled",
+        "tool_not_mapped_to_intent"
+      ],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.intent_id"
+      ],
+      "extra_target_leaf_paths": [
+        "$.arguments.ledger_unit_id",
+        "$.arguments.participant_ids",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "entity_resolution",
+        "field_value_mismatch",
+        "pronoun_or_me_binding",
+        "schema_formatting",
+        "tool_arguments",
+        "tool_selection",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "invalid_tool_route_or_payload"
+    },
+    {
+      "sample_id": "sample_gs_p0_032",
+      "scenario_id": "scenario_gs_p0a_015",
+      "family_id": "family_debt_004",
+      "split": "validation",
+      "expected_type": "answer",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "multi_currency",
+        "financial_risk"
+      ],
+      "source": "human_authored",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 3,
+      "key_facts_total": 3,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Invents an unrelated activity UUID and payable/prepayment amounts (15.00/0.00); does not answer the cross-currency scenario.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_gs_p0_033",
+      "scenario_id": "scenario_gs_p0a_015",
+      "family_id": "family_debt_004",
+      "split": "validation",
+      "expected_type": "answer",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "multi_currency",
+        "financial_risk"
+      ],
+      "source": "human_authored",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 3,
+      "key_facts_total": 3,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Claims currency context is unavailable although the canonical answer is grounded in known JPY/CNY facts; asks user to supply known context.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_gs_p0_037",
+      "scenario_id": "scenario_gs_p0a_011",
+      "family_id": "family_trf_007",
+      "split": "validation",
+      "expected_type": "proposal",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "recent_action_reference",
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "human_authored",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.operation",
+        "$.preview",
+        "$.confirmation",
+        "$.execution_policy"
+      ],
+      "unexpected_field_paths": [
+        "$.question",
+        "$.reason",
+        "$.missing_fields"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'proposal'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 9,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [
+        "$.confirmation.level",
+        "$.confirmation.required",
+        "$.execution_policy.execution_allowed",
+        "$.execution_policy.reason",
+        "$.operation.arguments.activity_id",
+        "$.operation.arguments.transfer_id",
+        "$.operation.arguments.void_reason",
+        "$.operation.tool",
+        "$.preview.diff[0].after",
+        "$.preview.diff[0].before",
+        "$.preview.diff[0].field",
+        "$.preview.diff[1].after",
+        "$.preview.diff[1].field",
+        "$.preview.kind",
+        "$.preview.summary"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.missing_fields[0]",
+        "$.question",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "proposal_routing",
+        "schema_formatting",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "proposal_emitted_as_clarification"
+    },
+    {
+      "sample_id": "sample_gs_p0_082",
+      "scenario_id": "scenario_gs_p0b_034",
+      "family_id": "family_rule_003",
+      "split": "validation",
+      "expected_type": "answer",
+      "difficulty": "easy",
+      "challenge_tags": [
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "human_authored",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Contradicts the canonical same-currency prepayment offset rule by saying balances do not automatically offset debts.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_gs_p0_083",
+      "scenario_id": "scenario_gs_p0b_034",
+      "family_id": "family_rule_003",
+      "split": "validation",
+      "expected_type": "answer",
+      "difficulty": "easy",
+      "challenge_tags": [
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "human_authored",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact",
+        "unsupported_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Invents an unsupported due-date/debt-ID/participant-ID ordering.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_teacher_5493b48346db",
+      "scenario_id": "scenario_gs_p0a_011",
+      "family_id": "family_trf_007",
+      "split": "validation",
+      "expected_type": "proposal",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "recent_action_reference",
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.operation",
+        "$.preview",
+        "$.confirmation",
+        "$.execution_policy"
+      ],
+      "unexpected_field_paths": [
+        "$.missing_fields",
+        "$.reason",
+        "$.question",
+        "$.candidates"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'proposal'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 9,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [
+        "$.confirmation.level",
+        "$.confirmation.required",
+        "$.execution_policy.execution_allowed",
+        "$.execution_policy.reason",
+        "$.operation.arguments.activity_id",
+        "$.operation.arguments.transfer_id",
+        "$.operation.arguments.void_reason",
+        "$.operation.tool",
+        "$.preview.diff[0].after",
+        "$.preview.diff[0].before",
+        "$.preview.diff[0].field",
+        "$.preview.diff[1].after",
+        "$.preview.diff[1].field",
+        "$.preview.kind",
+        "$.preview.summary"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.missing_fields[0]",
+        "$.question",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "pronoun_or_me_binding",
+        "proposal_routing",
+        "schema_formatting",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "proposal_emitted_as_clarification"
+    },
+    {
+      "sample_id": "sample_teacher_4053b71f5faa",
+      "scenario_id": "scenario_gs_p0a_011",
+      "family_id": "family_trf_007",
+      "split": "validation",
+      "expected_type": "proposal",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "recent_action_reference",
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.operation",
+        "$.preview",
+        "$.confirmation",
+        "$.execution_policy"
+      ],
+      "unexpected_field_paths": [
+        "$.question",
+        "$.reason",
+        "$.missing_fields",
+        "$.candidates"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'proposal'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 9,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [
+        "$.confirmation.level",
+        "$.confirmation.required",
+        "$.execution_policy.execution_allowed",
+        "$.execution_policy.reason",
+        "$.operation.arguments.activity_id",
+        "$.operation.arguments.transfer_id",
+        "$.operation.arguments.void_reason",
+        "$.operation.tool",
+        "$.preview.diff[0].after",
+        "$.preview.diff[0].before",
+        "$.preview.diff[0].field",
+        "$.preview.diff[1].after",
+        "$.preview.diff[1].field",
+        "$.preview.kind",
+        "$.preview.summary"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.missing_fields[0]",
+        "$.question",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "proposal_routing",
+        "schema_formatting",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "proposal_emitted_as_clarification"
+    },
+    {
+      "sample_id": "sample_teacher_f38285d92ed9",
+      "scenario_id": "scenario_gs_p0a_014",
+      "family_id": "family_debt_001",
+      "split": "validation",
+      "expected_type": "tool_call",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "colloquial",
+        "ellipsis",
+        "multiple_candidates",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "tool_call",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [
+        "$.arguments.ledger_unit_id",
+        "$.reason",
+        "$.candidates"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.intent_id: expected const 'query_debt'",
+        "$.arguments.participant_id: expected type string"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 3,
+      "key_facts_total": 4,
+      "safety_violations": [
+        "model_output_schema_invalid",
+        "intent_tool_call_not_enabled",
+        "tool_not_mapped_to_intent"
+      ],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.intent_id"
+      ],
+      "extra_target_leaf_paths": [
+        "$.arguments.ledger_unit_id",
+        "$.arguments.participant_id",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "entity_resolution",
+        "field_value_mismatch",
+        "pronoun_or_me_binding",
+        "schema_formatting",
+        "tool_arguments",
+        "tool_selection",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "invalid_tool_route_or_payload"
+    },
+    {
+      "sample_id": "sample_teacher_ff44a7eae6d8",
+      "scenario_id": "scenario_gs_p0a_014",
+      "family_id": "family_debt_001",
+      "split": "validation",
+      "expected_type": "tool_call",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "colloquial",
+        "ellipsis",
+        "multiple_candidates",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.tool",
+        "$.arguments"
+      ],
+      "unexpected_field_paths": [
+        "$.missing_fields",
+        "$.question",
+        "$.reason"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'tool_call'",
+        "$.intent_id: expected const 'query_debt'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 0,
+      "key_facts_total": 4,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [
+        "$.arguments.activity_id",
+        "$.tool"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.intent_id",
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.missing_fields[0]",
+        "$.question",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "pronoun_or_me_binding",
+        "schema_formatting",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "unneeded_clarification_for_resolvable_tool_call"
+    },
+    {
+      "sample_id": "sample_teacher_ac08c6c5d7f6",
+      "scenario_id": "scenario_gs_p0a_014",
+      "family_id": "family_debt_001",
+      "split": "validation",
+      "expected_type": "tool_call",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "colloquial",
+        "ellipsis",
+        "multiple_candidates",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "tool_call",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [
+        "$.arguments.ledger_unit_id",
+        "$.reason",
+        "$.evidence_result_ids"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.intent_id: expected const 'query_debt'",
+        "$.arguments.participant_id: expected type string"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 3,
+      "key_facts_total": 4,
+      "safety_violations": [
+        "model_output_schema_invalid",
+        "intent_tool_call_not_enabled",
+        "tool_not_mapped_to_intent"
+      ],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.intent_id"
+      ],
+      "extra_target_leaf_paths": [
+        "$.arguments.ledger_unit_id",
+        "$.arguments.participant_id",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "entity_resolution",
+        "field_value_mismatch",
+        "schema_formatting",
+        "tool_arguments",
+        "tool_selection",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "invalid_tool_route_or_payload"
+    },
+    {
+      "sample_id": "sample_teacher_0e4d53c72cc9",
+      "scenario_id": "scenario_gs_p0a_014",
+      "family_id": "family_debt_001",
+      "split": "validation",
+      "expected_type": "tool_call",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "colloquial",
+        "ellipsis",
+        "multiple_candidates",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "tool_call",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [
+        "$.reason",
+        "$.candidates"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.intent_id: expected const 'query_debt'",
+        "$.arguments.participant_id: expected type string"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 3,
+      "key_facts_total": 4,
+      "safety_violations": [
+        "model_output_schema_invalid",
+        "intent_tool_call_not_enabled",
+        "tool_not_mapped_to_intent"
+      ],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.intent_id"
+      ],
+      "extra_target_leaf_paths": [
+        "$.arguments.participant_id",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "entity_resolution",
+        "field_value_mismatch",
+        "pronoun_or_me_binding",
+        "schema_formatting",
+        "tool_arguments",
+        "tool_selection",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "invalid_tool_route_or_payload"
+    },
+    {
+      "sample_id": "sample_teacher_36f4d8abe578",
+      "scenario_id": "scenario_gs_p0a_015",
+      "family_id": "family_debt_004",
+      "split": "validation",
+      "expected_type": "answer",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "multi_currency",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 3,
+      "key_facts_total": 3,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact",
+        "unsupported_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Claims the current conversation contains both result-p0a-balance-015 and result-p0a-prepayment-015, but the structured evidence_result_ids contains only the prepayment result; also omits actual amounts and the cross-currency conclusion. This is an unsupported answer despite the projection match.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_teacher_50f39996a01a",
+      "scenario_id": "scenario_gs_p0a_015",
+      "family_id": "family_debt_004",
+      "split": "validation",
+      "expected_type": "answer",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "multi_currency",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 3,
+      "key_facts_total": 3,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "missing_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "partial",
+      "human_review_note": "General definitions are plausible but omit the known 0.01 JPY versus 20 CNY distinction and do not answer whether values may be combined.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_teacher_f5bc42a7c74f",
+      "scenario_id": "scenario_gs_p0a_015",
+      "family_id": "family_debt_004",
+      "split": "validation",
+      "expected_type": "answer",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "multi_currency",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 3,
+      "key_facts_total": 3,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Invents two 150-unit balances and claims they sum to zero; contradicts canonical facts and arithmetic.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_teacher_23cc3cf0f1ff",
+      "scenario_id": "scenario_gs_p0a_015",
+      "family_id": "family_debt_004",
+      "split": "validation",
+      "expected_type": "answer",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "multi_currency",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 3,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [
+        "$.evidence_result_ids[1]"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.content",
+        "$.evidence_result_ids[0]"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "evidence_or_result_id",
+        "field_value_mismatch",
+        "missing_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "wrong_or_missing_evidence_or_answer_facts"
+    },
+    {
+      "sample_id": "sample_teacher_7d0f32240c99",
+      "scenario_id": "scenario_gs_p0b_003",
+      "family_id": "family_exp_clarify_007",
+      "split": "validation",
+      "expected_type": "clarification",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "typo",
+        "asr_like",
+        "missing_payer"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.candidates"
+      ],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": false,
+      "key_facts_correct": 3,
+      "key_facts_total": 3,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.missing_fields[0]",
+        "$.question"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "clarification_slot",
+        "field_value_mismatch",
+        "schema_formatting"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "wrong_clarification_intent_or_slots"
+    },
+    {
+      "sample_id": "sample_teacher_401a2f5ad127",
+      "scenario_id": "scenario_gs_p0b_034",
+      "family_id": "family_rule_003",
+      "split": "validation",
+      "expected_type": "answer",
+      "difficulty": "easy",
+      "challenge_tags": [
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "missing_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "partial",
+      "human_review_note": "Generic offset description omits the canonical same-currency/server-side rule and current-read qualification.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_teacher_f3941370d729",
+      "scenario_id": "scenario_gs_p0b_034",
+      "family_id": "family_rule_003",
+      "split": "validation",
+      "expected_type": "answer",
+      "difficulty": "easy",
+      "challenge_tags": [
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Invents activity rule version 1.4.0, chronological ordering, proportional allocation and refund behavior.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_teacher_191d11c1745f",
+      "scenario_id": "scenario_gs_p0b_034",
+      "family_id": "family_rule_003",
+      "split": "validation",
+      "expected_type": "answer",
+      "difficulty": "easy",
+      "challenge_tags": [
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Claims the activity rule is unavailable and directs navigation despite the canonical known rule and read-dependent answer.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_teacher_6c16bbf26c83",
+      "scenario_id": "scenario_gs_p0b_034",
+      "family_id": "family_rule_003",
+      "split": "validation",
+      "expected_type": "answer",
+      "difficulty": "easy",
+      "challenge_tags": [
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Claims the activity rule is unavailable, omitting the canonical same-currency policy and current-read qualification.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_gs_p0_027",
+      "scenario_id": "scenario_gs_p0b_007",
+      "family_id": "family_act_002",
+      "split": "test",
+      "expected_type": "tool_call",
+      "difficulty": "easy",
+      "challenge_tags": [
+        "ui_reference"
+      ],
+      "source": "human_authored",
+      "predicted_type": "tool_call",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [
+        "$.arguments.limit",
+        "$.arguments.order",
+        "$.reason"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.intent_id: expected const 'query_activity'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 3,
+      "key_facts_total": 4,
+      "safety_violations": [
+        "model_output_schema_invalid",
+        "intent_tool_call_not_enabled",
+        "tool_not_mapped_to_intent"
+      ],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.intent_id"
+      ],
+      "extra_target_leaf_paths": [
+        "$.arguments.limit",
+        "$.arguments.order",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "entity_resolution",
+        "field_value_mismatch",
+        "schema_formatting",
+        "tool_arguments",
+        "tool_selection",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "invalid_tool_route_or_payload"
+    },
+    {
+      "sample_id": "sample_gs_p0_034",
+      "scenario_id": "scenario_gs_p0b_009",
+      "family_id": "family_pre_core_003",
+      "split": "test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "ui_reference",
+        "multi_currency",
+        "financial_risk",
+        "gated_operation",
+        "multi_turn"
+      ],
+      "source": "human_authored",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact",
+        "unsupported_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Adds unsupported FX conversion from another currency account, conflicting with separate USD/JPY handling.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_gs_p0_035",
+      "scenario_id": "scenario_gs_p0b_009",
+      "family_id": "family_pre_core_003",
+      "split": "test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "ui_reference",
+        "multi_currency",
+        "financial_risk",
+        "gated_operation",
+        "multi_turn"
+      ],
+      "source": "human_authored",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "missing_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "partial",
+      "human_review_note": "Correctly states currencies remain separate; does not explain the specified offset sequence or latest-read dependency and adds conditional multi-currency behavior.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_gs_p0_038",
+      "scenario_id": "scenario_gs_p0a_010",
+      "family_id": "family_pre_gated_001",
+      "split": "test",
+      "expected_type": "proposal",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "human_authored",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.operation",
+        "$.preview",
+        "$.confirmation",
+        "$.execution_policy"
+      ],
+      "unexpected_field_paths": [
+        "$.missing_fields",
+        "$.question",
+        "$.reason",
+        "$.candidates",
+        "$.evidence_result_ids"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'proposal'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 21,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [
+        "$.confirmation.level",
+        "$.confirmation.required",
+        "$.execution_policy.execution_allowed",
+        "$.execution_policy.reason",
+        "$.operation.arguments.activity_id",
+        "$.operation.arguments.amount",
+        "$.operation.arguments.currency",
+        "$.operation.arguments.custodian_participant_id",
+        "$.operation.arguments.expected_financial_version",
+        "$.operation.arguments.occurred_at",
+        "$.operation.arguments.owner_participant_id",
+        "$.operation.tool",
+        "$.preview.diff[0].after.activity_id",
+        "$.preview.diff[0].after.amount",
+        "$.preview.diff[0].after.currency",
+        "$.preview.diff[0].after.custodian_participant_id",
+        "$.preview.diff[0].after.expected_financial_version",
+        "$.preview.diff[0].after.occurred_at",
+        "$.preview.diff[0].after.owner_participant_id",
+        "$.preview.diff[0].field",
+        "$.preview.kind",
+        "$.preview.summary"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.missing_fields[0]",
+        "$.question",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "amount_or_currency",
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "pronoun_or_me_binding",
+        "proposal_routing",
+        "schema_formatting",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "proposal_emitted_as_clarification"
+    },
+    {
+      "sample_id": "sample_gs_p0_047",
+      "scenario_id": "scenario_gs_p0b_018",
+      "family_id": "family_ui_002",
+      "split": "test",
+      "expected_type": "proposal",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "ui_reference",
+        "d4_preview_only"
+      ],
+      "source": "human_authored",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.operation",
+        "$.preview",
+        "$.confirmation",
+        "$.execution_policy"
+      ],
+      "unexpected_field_paths": [
+        "$.missing_fields",
+        "$.question",
+        "$.reason"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'proposal'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 26,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [
+        "$.confirmation.level",
+        "$.confirmation.required",
+        "$.execution_policy.execution_allowed",
+        "$.execution_policy.reason",
+        "$.operation.arguments.activity_id",
+        "$.operation.arguments.expense_id",
+        "$.operation.arguments.ledger_unit_id",
+        "$.operation.arguments.manual_splits[0].amount",
+        "$.operation.arguments.manual_splits[0].participant_id",
+        "$.operation.arguments.occurred_at",
+        "$.operation.arguments.original_amount",
+        "$.operation.arguments.original_currency",
+        "$.operation.arguments.payments[0].amount",
+        "$.operation.arguments.payments[0].participant_id",
+        "$.operation.arguments.split_method",
+        "$.operation.arguments.title",
+        "$.operation.tool",
+        "$.preview.diff[0].after",
+        "$.preview.diff[0].before",
+        "$.preview.diff[0].field",
+        "$.preview.diff[1].after[0].amount",
+        "$.preview.diff[1].after[0].participant_id",
+        "$.preview.diff[1].before[0].amount",
+        "$.preview.diff[1].before[0].participant_id",
+        "$.preview.diff[1].field",
+        "$.preview.diff[2].after[0].amount",
+        "$.preview.diff[2].after[0].participant_id",
+        "$.preview.diff[2].before[0].amount",
+        "$.preview.diff[2].before[0].participant_id",
+        "$.preview.diff[2].field",
+        "$.preview.kind",
+        "$.preview.summary"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.missing_fields[0]",
+        "$.missing_fields[1]",
+        "$.question",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "amount_or_currency",
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "pronoun_or_me_binding",
+        "proposal_routing",
+        "schema_formatting",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "proposal_emitted_as_clarification"
+    },
+    {
+      "sample_id": "sample_gs_p0_048",
+      "scenario_id": "scenario_gs_p0b_018",
+      "family_id": "family_ui_002",
+      "split": "test",
+      "expected_type": "proposal",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "ui_reference",
+        "d4_preview_only"
+      ],
+      "source": "human_authored",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [
+        "$.operation",
+        "$.preview",
+        "$.confirmation",
+        "$.execution_policy"
+      ],
+      "unexpected_field_paths": [
+        "$.missing_fields",
+        "$.question",
+        "$.reason",
+        "$.candidates"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'proposal'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 26,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [
+        "$.confirmation.level",
+        "$.confirmation.required",
+        "$.execution_policy.execution_allowed",
+        "$.execution_policy.reason",
+        "$.operation.arguments.activity_id",
+        "$.operation.arguments.expense_id",
+        "$.operation.arguments.ledger_unit_id",
+        "$.operation.arguments.manual_splits[0].amount",
+        "$.operation.arguments.manual_splits[0].participant_id",
+        "$.operation.arguments.occurred_at",
+        "$.operation.arguments.original_amount",
+        "$.operation.arguments.original_currency",
+        "$.operation.arguments.payments[0].amount",
+        "$.operation.arguments.payments[0].participant_id",
+        "$.operation.arguments.split_method",
+        "$.operation.arguments.title",
+        "$.operation.tool",
+        "$.preview.diff[0].after",
+        "$.preview.diff[0].before",
+        "$.preview.diff[0].field",
+        "$.preview.diff[1].after[0].amount",
+        "$.preview.diff[1].after[0].participant_id",
+        "$.preview.diff[1].before[0].amount",
+        "$.preview.diff[1].before[0].participant_id",
+        "$.preview.diff[1].field",
+        "$.preview.diff[2].after[0].amount",
+        "$.preview.diff[2].after[0].participant_id",
+        "$.preview.diff[2].before[0].amount",
+        "$.preview.diff[2].before[0].participant_id",
+        "$.preview.diff[2].field",
+        "$.preview.kind",
+        "$.preview.summary"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.missing_fields[0]",
+        "$.question",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "amount_or_currency",
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "pronoun_or_me_binding",
+        "proposal_routing",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "proposal_emitted_as_clarification"
+    },
+    {
+      "sample_id": "sample_gs_p0_052",
+      "scenario_id": "scenario_gs_p0b_021",
+      "family_id": "family_ictx_002",
+      "split": "test",
+      "expected_type": "clarification",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "recent_action_reference",
+        "multiple_candidates"
+      ],
+      "source": "human_authored",
+      "predicted_type": "tool_call",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.missing_fields",
+        "$.question",
+        "$.candidates"
+      ],
+      "unexpected_field_paths": [
+        "$.tool",
+        "$.arguments",
+        "$.evidence_result_ids"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'clarification'",
+        "$.reason: value outside enum"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 0,
+      "key_facts_total": 7,
+      "safety_violations": [
+        "model_output_schema_invalid",
+        "intent_tool_call_not_enabled",
+        "tool_not_enabled_after_decision",
+        "write_tool_call_instead_of_ground_truth_response",
+        "write_tool_not_allowed_in_first_release"
+      ],
+      "missing_target_leaf_paths": [
+        "$.candidates[0].entity.activity_id",
+        "$.candidates[0].entity.id",
+        "$.candidates[0].entity.type",
+        "$.candidates[0].label",
+        "$.candidates[1].entity.activity_id",
+        "$.candidates[1].entity.id",
+        "$.candidates[1].entity.type",
+        "$.candidates[1].label",
+        "$.question"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.intent_id",
+        "$.reason",
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.arguments.activity_id",
+        "$.arguments.expense_id",
+        "$.arguments.field",
+        "$.arguments.value",
+        "$.tool"
+      ],
+      "failure_categories": [
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "schema_formatting",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "write_tool_call_instead_of_required_clarification"
+    },
+    {
+      "sample_id": "sample_gs_p0_053",
+      "scenario_id": "scenario_gs_p0b_021",
+      "family_id": "family_ictx_002",
+      "split": "test",
+      "expected_type": "clarification",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "recent_action_reference",
+        "multiple_candidates"
+      ],
+      "source": "human_authored",
+      "predicted_type": "tool_call",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.missing_fields",
+        "$.question",
+        "$.candidates"
+      ],
+      "unexpected_field_paths": [
+        "$.tool",
+        "$.arguments",
+        "$.evidence_result_ids"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'clarification'",
+        "$.reason: value outside enum"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 0,
+      "key_facts_total": 7,
+      "safety_violations": [
+        "model_output_schema_invalid",
+        "intent_tool_call_not_enabled",
+        "tool_not_enabled_after_decision",
+        "write_tool_call_instead_of_ground_truth_response",
+        "write_tool_not_allowed_in_first_release"
+      ],
+      "missing_target_leaf_paths": [
+        "$.candidates[0].entity.activity_id",
+        "$.candidates[0].entity.id",
+        "$.candidates[0].entity.type",
+        "$.candidates[0].label",
+        "$.candidates[1].entity.activity_id",
+        "$.candidates[1].entity.id",
+        "$.candidates[1].entity.type",
+        "$.candidates[1].label",
+        "$.question"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.intent_id",
+        "$.reason",
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.arguments.activity_id",
+        "$.arguments.amount",
+        "$.arguments.category",
+        "$.arguments.currency",
+        "$.arguments.expense_id",
+        "$.arguments.icon",
+        "$.arguments.participant_id",
+        "$.arguments.reason",
+        "$.tool"
+      ],
+      "failure_categories": [
+        "amount_or_currency",
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "schema_formatting",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "write_tool_call_instead_of_required_clarification"
+    },
+    {
+      "sample_id": "sample_gs_p0_068",
+      "scenario_id": "scenario_gs_p0b_027",
+      "family_id": "family_conv_004",
+      "split": "test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "multi_turn",
+        "financial_risk",
+        "gated_operation",
+        "permission_boundary",
+        "unsupported"
+      ],
+      "source": "human_authored",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 1,
+      "key_facts_total": 1,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "conversation_history",
+        "field_value_mismatch"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "correct",
+      "human_review_note": "Preserves the key rule that reading/chat does not commit; requires trusted UI action and successful service result before effect.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_gs_p0_069",
+      "scenario_id": "scenario_gs_p0b_027",
+      "family_id": "family_conv_004",
+      "split": "test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "multi_turn",
+        "financial_risk",
+        "gated_operation",
+        "permission_boundary",
+        "unsupported"
+      ],
+      "source": "human_authored",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 1,
+      "key_facts_total": 1,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "conversation_history",
+        "field_value_mismatch"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "correct",
+      "human_review_note": "Preserves the key rule that chat confirmation alone does not submit; ties completion to trusted app action/result.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_gs_p0_074",
+      "scenario_id": "scenario_gs_p0b_030",
+      "family_id": "family_clr_001",
+      "split": "test",
+      "expected_type": "clarification",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "pronoun",
+        "ellipsis",
+        "colloquial"
+      ],
+      "source": "human_authored",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.missing_fields"
+      ],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [
+        "$.reason: value outside enum"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 3,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.intent_id",
+        "$.question",
+        "$.reason"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "clarification_slot",
+        "entity_resolution",
+        "field_value_mismatch",
+        "schema_formatting"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "wrong_clarification_intent_or_slots"
+    },
+    {
+      "sample_id": "sample_gs_p0_075",
+      "scenario_id": "scenario_gs_p0b_030",
+      "family_id": "family_clr_001",
+      "split": "test",
+      "expected_type": "clarification",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "pronoun",
+        "ellipsis",
+        "colloquial"
+      ],
+      "source": "human_authored",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.missing_fields"
+      ],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [
+        "$.intent_id: value outside enum",
+        "$.reason: value outside enum"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 3,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.intent_id",
+        "$.question",
+        "$.reason"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "clarification_slot",
+        "entity_resolution",
+        "field_value_mismatch",
+        "pronoun_or_me_binding",
+        "schema_formatting"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "wrong_clarification_intent_or_slots"
+    },
+    {
+      "sample_id": "sample_gs_p0_092",
+      "scenario_id": "scenario_gs_p0b_039",
+      "family_id": "family_rule_008",
+      "split": "test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "stale_context",
+        "financial_risk"
+      ],
+      "source": "human_authored",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Says archived records are read-only, but gives create/recreate alternatives and omits the required creator unarchive path; remedy is misleading.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_gs_p0_093",
+      "scenario_id": "scenario_gs_p0b_039",
+      "family_id": "family_rule_008",
+      "split": "test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "stale_context",
+        "financial_risk"
+      ],
+      "source": "human_authored",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Suggests a new record in an active ledger instead of unarchiving with the creator; does not follow the canonical state transition.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_teacher_598c007bc8b5",
+      "scenario_id": "scenario_gs_p0a_010",
+      "family_id": "family_pre_gated_001",
+      "split": "test",
+      "expected_type": "proposal",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.operation",
+        "$.preview",
+        "$.confirmation",
+        "$.execution_policy"
+      ],
+      "unexpected_field_paths": [
+        "$.missing_fields",
+        "$.question",
+        "$.reason"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'proposal'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 21,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [
+        "$.confirmation.level",
+        "$.confirmation.required",
+        "$.execution_policy.execution_allowed",
+        "$.execution_policy.reason",
+        "$.operation.arguments.activity_id",
+        "$.operation.arguments.amount",
+        "$.operation.arguments.currency",
+        "$.operation.arguments.custodian_participant_id",
+        "$.operation.arguments.expected_financial_version",
+        "$.operation.arguments.occurred_at",
+        "$.operation.arguments.owner_participant_id",
+        "$.operation.tool",
+        "$.preview.diff[0].after.activity_id",
+        "$.preview.diff[0].after.amount",
+        "$.preview.diff[0].after.currency",
+        "$.preview.diff[0].after.custodian_participant_id",
+        "$.preview.diff[0].after.expected_financial_version",
+        "$.preview.diff[0].after.occurred_at",
+        "$.preview.diff[0].after.owner_participant_id",
+        "$.preview.diff[0].field",
+        "$.preview.kind",
+        "$.preview.summary"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.missing_fields[0]",
+        "$.question",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "amount_or_currency",
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "pronoun_or_me_binding",
+        "proposal_routing",
+        "schema_formatting",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "proposal_emitted_as_clarification"
+    },
+    {
+      "sample_id": "sample_teacher_75bf6ec27c31",
+      "scenario_id": "scenario_gs_p0a_010",
+      "family_id": "family_pre_gated_001",
+      "split": "test",
+      "expected_type": "proposal",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.operation",
+        "$.preview",
+        "$.confirmation",
+        "$.execution_policy"
+      ],
+      "unexpected_field_paths": [
+        "$.missing_fields",
+        "$.question",
+        "$.reason"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'proposal'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 21,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [
+        "$.confirmation.level",
+        "$.confirmation.required",
+        "$.execution_policy.execution_allowed",
+        "$.execution_policy.reason",
+        "$.operation.arguments.activity_id",
+        "$.operation.arguments.amount",
+        "$.operation.arguments.currency",
+        "$.operation.arguments.custodian_participant_id",
+        "$.operation.arguments.expected_financial_version",
+        "$.operation.arguments.occurred_at",
+        "$.operation.arguments.owner_participant_id",
+        "$.operation.tool",
+        "$.preview.diff[0].after.activity_id",
+        "$.preview.diff[0].after.amount",
+        "$.preview.diff[0].after.currency",
+        "$.preview.diff[0].after.custodian_participant_id",
+        "$.preview.diff[0].after.expected_financial_version",
+        "$.preview.diff[0].after.occurred_at",
+        "$.preview.diff[0].after.owner_participant_id",
+        "$.preview.diff[0].field",
+        "$.preview.kind",
+        "$.preview.summary"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.missing_fields[0]",
+        "$.missing_fields[1]",
+        "$.question",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "amount_or_currency",
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "proposal_routing",
+        "schema_formatting",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "proposal_emitted_as_clarification"
+    },
+    {
+      "sample_id": "sample_teacher_64d7671b8fc8",
+      "scenario_id": "scenario_gs_p0b_007",
+      "family_id": "family_act_002",
+      "split": "test",
+      "expected_type": "tool_call",
+      "difficulty": "easy",
+      "challenge_tags": [
+        "ui_reference"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "tool_call",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [
+        "$.arguments.limit",
+        "$.arguments.order",
+        "$.reason"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.intent_id: expected const 'query_activity'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 3,
+      "key_facts_total": 4,
+      "safety_violations": [
+        "model_output_schema_invalid",
+        "intent_tool_call_not_enabled",
+        "tool_not_mapped_to_intent"
+      ],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.intent_id"
+      ],
+      "extra_target_leaf_paths": [
+        "$.arguments.limit",
+        "$.arguments.order",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "entity_resolution",
+        "field_value_mismatch",
+        "schema_formatting",
+        "tool_arguments",
+        "tool_selection",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "invalid_tool_route_or_payload"
+    },
+    {
+      "sample_id": "sample_teacher_e24b1a12d1e4",
+      "scenario_id": "scenario_gs_p0b_009",
+      "family_id": "family_pre_core_003",
+      "split": "test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "ui_reference",
+        "multi_currency",
+        "financial_risk",
+        "gated_operation",
+        "multi_turn"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "missing_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "partial",
+      "human_review_note": "Correctly rejects cross-currency merging but omits the server-side same-currency offset and current-read qualification.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_teacher_ae1660aab544",
+      "scenario_id": "scenario_gs_p0b_009",
+      "family_id": "family_pre_core_003",
+      "split": "test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "ui_reference",
+        "multi_currency",
+        "financial_risk",
+        "gated_operation",
+        "multi_turn"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "missing_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "partial",
+      "human_review_note": "Correctly says currencies remain separate, but substitutes generic activity bookkeeping for the specified offset/read behavior.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_teacher_2b0ab71ccf9c",
+      "scenario_id": "scenario_gs_p0b_009",
+      "family_id": "family_pre_core_003",
+      "split": "test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "ui_reference",
+        "multi_currency",
+        "financial_risk",
+        "gated_operation",
+        "multi_turn"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Introduces ungrounded time-ordering/activity-asset semantics and claims no automatic offset, contrary to the canonical rule.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_teacher_7e6dab2d3489",
+      "scenario_id": "scenario_gs_p0b_009",
+      "family_id": "family_pre_core_003",
+      "split": "test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "ui_reference",
+        "multi_currency",
+        "financial_risk",
+        "gated_operation",
+        "multi_turn"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Invents debt due-date priority, which is absent from the canonical rule.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_teacher_66523a7b3d5d",
+      "scenario_id": "scenario_gs_p0b_018",
+      "family_id": "family_ui_002",
+      "split": "test",
+      "expected_type": "proposal",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "ui_reference",
+        "d4_preview_only"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [
+        "$.operation",
+        "$.preview",
+        "$.confirmation",
+        "$.execution_policy"
+      ],
+      "unexpected_field_paths": [
+        "$.missing_fields",
+        "$.question",
+        "$.reason",
+        "$.candidates"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'proposal'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 26,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [
+        "$.confirmation.level",
+        "$.confirmation.required",
+        "$.execution_policy.execution_allowed",
+        "$.execution_policy.reason",
+        "$.operation.arguments.activity_id",
+        "$.operation.arguments.expense_id",
+        "$.operation.arguments.ledger_unit_id",
+        "$.operation.arguments.manual_splits[0].amount",
+        "$.operation.arguments.manual_splits[0].participant_id",
+        "$.operation.arguments.occurred_at",
+        "$.operation.arguments.original_amount",
+        "$.operation.arguments.original_currency",
+        "$.operation.arguments.payments[0].amount",
+        "$.operation.arguments.payments[0].participant_id",
+        "$.operation.arguments.split_method",
+        "$.operation.arguments.title",
+        "$.operation.tool",
+        "$.preview.diff[0].after",
+        "$.preview.diff[0].before",
+        "$.preview.diff[0].field",
+        "$.preview.diff[1].after[0].amount",
+        "$.preview.diff[1].after[0].participant_id",
+        "$.preview.diff[1].before[0].amount",
+        "$.preview.diff[1].before[0].participant_id",
+        "$.preview.diff[1].field",
+        "$.preview.diff[2].after[0].amount",
+        "$.preview.diff[2].after[0].participant_id",
+        "$.preview.diff[2].before[0].amount",
+        "$.preview.diff[2].before[0].participant_id",
+        "$.preview.diff[2].field",
+        "$.preview.kind",
+        "$.preview.summary"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.missing_fields[0]",
+        "$.question",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "amount_or_currency",
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "pronoun_or_me_binding",
+        "proposal_routing",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "proposal_emitted_as_clarification"
+    },
+    {
+      "sample_id": "sample_teacher_a95f5dc89bbe",
+      "scenario_id": "scenario_gs_p0b_018",
+      "family_id": "family_ui_002",
+      "split": "test",
+      "expected_type": "proposal",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "ui_reference",
+        "d4_preview_only"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.operation",
+        "$.preview",
+        "$.confirmation",
+        "$.execution_policy"
+      ],
+      "unexpected_field_paths": [
+        "$.question",
+        "$.reason",
+        "$.missing_fields",
+        "$.candidates"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'proposal'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 26,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [
+        "$.confirmation.level",
+        "$.confirmation.required",
+        "$.execution_policy.execution_allowed",
+        "$.execution_policy.reason",
+        "$.operation.arguments.activity_id",
+        "$.operation.arguments.expense_id",
+        "$.operation.arguments.ledger_unit_id",
+        "$.operation.arguments.manual_splits[0].amount",
+        "$.operation.arguments.manual_splits[0].participant_id",
+        "$.operation.arguments.occurred_at",
+        "$.operation.arguments.original_amount",
+        "$.operation.arguments.original_currency",
+        "$.operation.arguments.payments[0].amount",
+        "$.operation.arguments.payments[0].participant_id",
+        "$.operation.arguments.split_method",
+        "$.operation.arguments.title",
+        "$.operation.tool",
+        "$.preview.diff[0].after",
+        "$.preview.diff[0].before",
+        "$.preview.diff[0].field",
+        "$.preview.diff[1].after[0].amount",
+        "$.preview.diff[1].after[0].participant_id",
+        "$.preview.diff[1].before[0].amount",
+        "$.preview.diff[1].before[0].participant_id",
+        "$.preview.diff[1].field",
+        "$.preview.diff[2].after[0].amount",
+        "$.preview.diff[2].after[0].participant_id",
+        "$.preview.diff[2].before[0].amount",
+        "$.preview.diff[2].before[0].participant_id",
+        "$.preview.diff[2].field",
+        "$.preview.kind",
+        "$.preview.summary"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.missing_fields[0]",
+        "$.question",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "amount_or_currency",
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "pronoun_or_me_binding",
+        "proposal_routing",
+        "schema_formatting",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "proposal_emitted_as_clarification"
+    },
+    {
+      "sample_id": "sample_teacher_19ce0a5a6561",
+      "scenario_id": "scenario_gs_p0b_018",
+      "family_id": "family_ui_002",
+      "split": "test",
+      "expected_type": "proposal",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "ui_reference",
+        "d4_preview_only"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.operation",
+        "$.preview",
+        "$.confirmation",
+        "$.execution_policy"
+      ],
+      "unexpected_field_paths": [
+        "$.missing_fields",
+        "$.question",
+        "$.reason",
+        "$.candidates",
+        "$.evidence_result_ids"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'proposal'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 26,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [
+        "$.confirmation.level",
+        "$.confirmation.required",
+        "$.execution_policy.execution_allowed",
+        "$.execution_policy.reason",
+        "$.operation.arguments.activity_id",
+        "$.operation.arguments.expense_id",
+        "$.operation.arguments.ledger_unit_id",
+        "$.operation.arguments.manual_splits[0].amount",
+        "$.operation.arguments.manual_splits[0].participant_id",
+        "$.operation.arguments.occurred_at",
+        "$.operation.arguments.original_amount",
+        "$.operation.arguments.original_currency",
+        "$.operation.arguments.payments[0].amount",
+        "$.operation.arguments.payments[0].participant_id",
+        "$.operation.arguments.split_method",
+        "$.operation.arguments.title",
+        "$.operation.tool",
+        "$.preview.diff[0].after",
+        "$.preview.diff[0].before",
+        "$.preview.diff[0].field",
+        "$.preview.diff[1].after[0].amount",
+        "$.preview.diff[1].after[0].participant_id",
+        "$.preview.diff[1].before[0].amount",
+        "$.preview.diff[1].before[0].participant_id",
+        "$.preview.diff[1].field",
+        "$.preview.diff[2].after[0].amount",
+        "$.preview.diff[2].after[0].participant_id",
+        "$.preview.diff[2].before[0].amount",
+        "$.preview.diff[2].before[0].participant_id",
+        "$.preview.diff[2].field",
+        "$.preview.kind",
+        "$.preview.summary"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.evidence_result_ids[0]",
+        "$.missing_fields[0]",
+        "$.missing_fields[1]",
+        "$.question",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "amount_or_currency",
+        "clarification_necessity",
+        "entity_resolution",
+        "evidence_or_result_id",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "pronoun_or_me_binding",
+        "proposal_routing",
+        "schema_formatting",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "proposal_emitted_as_clarification"
+    },
+    {
+      "sample_id": "sample_teacher_b982aca563b9",
+      "scenario_id": "scenario_gs_p0b_021",
+      "family_id": "family_ictx_002",
+      "split": "test",
+      "expected_type": "clarification",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "recent_action_reference",
+        "multiple_candidates"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [
+        "$.intent_id",
+        "$.reason",
+        "$.missing_fields",
+        "$.question",
+        "$.candidates"
+      ],
+      "unexpected_field_paths": [
+        "$.content",
+        "$.evidence_result_ids"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'clarification'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 0,
+      "key_facts_total": 7,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [
+        "$.candidates[0].entity.activity_id",
+        "$.candidates[0].entity.id",
+        "$.candidates[0].entity.type",
+        "$.candidates[0].label",
+        "$.candidates[1].entity.activity_id",
+        "$.candidates[1].entity.id",
+        "$.candidates[1].entity.type",
+        "$.candidates[1].label",
+        "$.intent_id",
+        "$.question",
+        "$.reason"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.content"
+      ],
+      "failure_categories": [
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "pronoun_or_me_binding",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "answer_instead_of_required_clarification"
+    },
+    {
+      "sample_id": "sample_teacher_bc9ebe671629",
+      "scenario_id": "scenario_gs_p0b_021",
+      "family_id": "family_ictx_002",
+      "split": "test",
+      "expected_type": "clarification",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "recent_action_reference",
+        "multiple_candidates"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [
+        "$.intent_id",
+        "$.reason",
+        "$.missing_fields",
+        "$.question",
+        "$.candidates"
+      ],
+      "unexpected_field_paths": [
+        "$.content",
+        "$.evidence_result_ids"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'clarification'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 0,
+      "key_facts_total": 7,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [
+        "$.candidates[0].entity.activity_id",
+        "$.candidates[0].entity.id",
+        "$.candidates[0].entity.type",
+        "$.candidates[0].label",
+        "$.candidates[1].entity.activity_id",
+        "$.candidates[1].entity.id",
+        "$.candidates[1].entity.type",
+        "$.candidates[1].label",
+        "$.intent_id",
+        "$.question",
+        "$.reason"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.content"
+      ],
+      "failure_categories": [
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "answer_instead_of_required_clarification"
+    },
+    {
+      "sample_id": "sample_teacher_66f28faf4613",
+      "scenario_id": "scenario_gs_p0b_021",
+      "family_id": "family_ictx_002",
+      "split": "test",
+      "expected_type": "clarification",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "recent_action_reference",
+        "multiple_candidates"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [
+        "$.intent_id",
+        "$.reason",
+        "$.missing_fields",
+        "$.question",
+        "$.candidates"
+      ],
+      "unexpected_field_paths": [
+        "$.content",
+        "$.evidence_result_ids"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'clarification'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 0,
+      "key_facts_total": 7,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [
+        "$.candidates[0].entity.activity_id",
+        "$.candidates[0].entity.id",
+        "$.candidates[0].entity.type",
+        "$.candidates[0].label",
+        "$.candidates[1].entity.activity_id",
+        "$.candidates[1].entity.id",
+        "$.candidates[1].entity.type",
+        "$.candidates[1].label",
+        "$.intent_id",
+        "$.question",
+        "$.reason"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.content"
+      ],
+      "failure_categories": [
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "answer_instead_of_required_clarification"
+    },
+    {
+      "sample_id": "sample_teacher_af455ef74b7a",
+      "scenario_id": "scenario_gs_p0b_021",
+      "family_id": "family_ictx_002",
+      "split": "test",
+      "expected_type": "clarification",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "recent_action_reference",
+        "multiple_candidates"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [
+        "$.intent_id",
+        "$.reason",
+        "$.missing_fields",
+        "$.question",
+        "$.candidates"
+      ],
+      "unexpected_field_paths": [
+        "$.content",
+        "$.evidence_result_ids"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'clarification'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 0,
+      "key_facts_total": 7,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [
+        "$.candidates[0].entity.activity_id",
+        "$.candidates[0].entity.id",
+        "$.candidates[0].entity.type",
+        "$.candidates[0].label",
+        "$.candidates[1].entity.activity_id",
+        "$.candidates[1].entity.id",
+        "$.candidates[1].entity.type",
+        "$.candidates[1].label",
+        "$.intent_id",
+        "$.question",
+        "$.reason"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.content"
+      ],
+      "failure_categories": [
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "pronoun_or_me_binding",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "answer_instead_of_required_clarification"
+    },
+    {
+      "sample_id": "sample_teacher_7ff88ac99eca",
+      "scenario_id": "scenario_gs_p0b_027",
+      "family_id": "family_conv_004",
+      "split": "test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "multi_turn",
+        "financial_risk",
+        "gated_operation",
+        "permission_boundary",
+        "unsupported"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 1,
+      "key_facts_total": 1,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "conversation_history",
+        "field_value_mismatch",
+        "hallucinated_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Suggests filling a form and submitting despite the scenario requiring trusted confirmation-card interaction; bypasses the stated gate.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_teacher_45726dede955",
+      "scenario_id": "scenario_gs_p0b_030",
+      "family_id": "family_clr_001",
+      "split": "test",
+      "expected_type": "clarification",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "pronoun",
+        "ellipsis",
+        "colloquial"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.missing_fields"
+      ],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [
+        "$.reason: value outside enum"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 3,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.intent_id",
+        "$.question",
+        "$.reason"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "clarification_slot",
+        "entity_resolution",
+        "field_value_mismatch",
+        "schema_formatting"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "wrong_clarification_intent_or_slots"
+    },
+    {
+      "sample_id": "sample_teacher_f14a99a2f144",
+      "scenario_id": "scenario_gs_p0b_030",
+      "family_id": "family_clr_001",
+      "split": "test",
+      "expected_type": "clarification",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "pronoun",
+        "ellipsis",
+        "colloquial"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.missing_fields"
+      ],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [
+        "$.reason: value outside enum"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 3,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.intent_id",
+        "$.question",
+        "$.reason"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "clarification_slot",
+        "entity_resolution",
+        "field_value_mismatch",
+        "pronoun_or_me_binding",
+        "schema_formatting"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "wrong_clarification_intent_or_slots"
+    },
+    {
+      "sample_id": "sample_teacher_0bba9ffaab3a",
+      "scenario_id": "scenario_gs_p0b_030",
+      "family_id": "family_clr_001",
+      "split": "test",
+      "expected_type": "clarification",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "pronoun",
+        "ellipsis",
+        "colloquial"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.missing_fields",
+        "$.candidates"
+      ],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 3,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.intent_id",
+        "$.question",
+        "$.reason"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "clarification_slot",
+        "entity_resolution",
+        "field_value_mismatch",
+        "schema_formatting"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "wrong_clarification_intent_or_slots"
+    },
+    {
+      "sample_id": "sample_teacher_65d2ed870553",
+      "scenario_id": "scenario_gs_p0b_030",
+      "family_id": "family_clr_001",
+      "split": "test",
+      "expected_type": "clarification",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "pronoun",
+        "ellipsis",
+        "colloquial"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.missing_fields"
+      ],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [
+        "$.reason: value outside enum"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 3,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.intent_id",
+        "$.question",
+        "$.reason"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "clarification_slot",
+        "entity_resolution",
+        "field_value_mismatch",
+        "pronoun_or_me_binding",
+        "schema_formatting"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "wrong_clarification_intent_or_slots"
+    },
+    {
+      "sample_id": "sample_teacher_5d586b9bd796",
+      "scenario_id": "scenario_gs_p0b_039",
+      "family_id": "family_rule_008",
+      "split": "test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "stale_context",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Suggests creating a new entry in another active activity rather than unarchiving the archived activity through its creator.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_teacher_ba1b62eae9d7",
+      "scenario_id": "scenario_gs_p0b_039",
+      "family_id": "family_rule_008",
+      "split": "test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "stale_context",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.content"
+      ],
+      "unexpected_field_paths": [
+        "$.intent_id",
+        "$.question",
+        "$.reason",
+        "$.candidates"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'answer'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 2,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [
+        "$.content"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.intent_id",
+        "$.question",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "schema_formatting",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "clarification_instead_of_readonly_answer"
+    },
+    {
+      "sample_id": "sample_teacher_f0b77cc4c158",
+      "scenario_id": "scenario_gs_p0b_039",
+      "family_id": "family_rule_008",
+      "split": "test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "stale_context",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Contradicts archived read-only state by suggesting a new entry can be added to that archived activity.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_teacher_fa5cc2f3d068",
+      "scenario_id": "scenario_gs_p0b_039",
+      "family_id": "family_rule_008",
+      "split": "test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "stale_context",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": null,
+      "raw_json_valid": false,
+      "extractable_json_valid": false,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.type",
+        "$.content",
+        "$.evidence_result_ids"
+      ],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [
+        "$: expected type object"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 0,
+      "key_facts_total": 2,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [
+        "$.content",
+        "$.evidence_result_ids[0]",
+        "$.type"
+      ],
+      "mismatched_target_leaf_paths": [],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "evidence_or_result_id",
+        "missing_fact",
+        "output_type_routing",
+        "schema_formatting"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "truncated_or_unparseable_output"
+    },
+    {
+      "sample_id": "sample_gs_p0_005",
+      "scenario_id": "scenario_gs_p0b_001",
+      "family_id": "family_exp_create_005",
+      "split": "hard_test",
+      "expected_type": "proposal",
+      "difficulty": "easy",
+      "challenge_tags": [
+        "colloquial"
+      ],
+      "source": "human_authored",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.operation",
+        "$.preview",
+        "$.confirmation",
+        "$.execution_policy"
+      ],
+      "unexpected_field_paths": [
+        "$.question",
+        "$.reason",
+        "$.missing_fields",
+        "$.pending_clarification",
+        "$.candidates"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'proposal'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 27,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [
+        "$.confirmation.level",
+        "$.confirmation.required",
+        "$.execution_policy.execution_allowed",
+        "$.execution_policy.reason",
+        "$.operation.arguments.activity_id",
+        "$.operation.arguments.ledger_unit_id",
+        "$.operation.arguments.manual_splits[0].amount",
+        "$.operation.arguments.manual_splits[0].participant_id",
+        "$.operation.arguments.occurred_at",
+        "$.operation.arguments.original_amount",
+        "$.operation.arguments.original_currency",
+        "$.operation.arguments.payments[0].amount",
+        "$.operation.arguments.payments[0].participant_id",
+        "$.operation.arguments.split_method",
+        "$.operation.arguments.title",
+        "$.operation.tool",
+        "$.preview.diff[0].after.activity_id",
+        "$.preview.diff[0].after.ledger_unit_id",
+        "$.preview.diff[0].after.manual_splits[0].amount",
+        "$.preview.diff[0].after.manual_splits[0].participant_id",
+        "$.preview.diff[0].after.occurred_at",
+        "$.preview.diff[0].after.original_amount",
+        "$.preview.diff[0].after.original_currency",
+        "$.preview.diff[0].after.payments[0].amount",
+        "$.preview.diff[0].after.payments[0].participant_id",
+        "$.preview.diff[0].after.split_method",
+        "$.preview.diff[0].after.title",
+        "$.preview.diff[0].field",
+        "$.preview.kind",
+        "$.preview.summary"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.missing_fields[0]",
+        "$.pending_clarification.intent_id",
+        "$.pending_clarification.missing_fields[0]",
+        "$.pending_clarification.question",
+        "$.pending_clarification.reason",
+        "$.pending_clarification.type",
+        "$.question",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "amount_or_currency",
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "pronoun_or_me_binding",
+        "proposal_routing",
+        "schema_formatting",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "proposal_emitted_as_clarification"
+    },
+    {
+      "sample_id": "sample_gs_p0_006",
+      "scenario_id": "scenario_gs_p0b_001",
+      "family_id": "family_exp_create_005",
+      "split": "hard_test",
+      "expected_type": "proposal",
+      "difficulty": "easy",
+      "challenge_tags": [
+        "colloquial"
+      ],
+      "source": "human_authored",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.operation",
+        "$.preview",
+        "$.confirmation",
+        "$.execution_policy"
+      ],
+      "unexpected_field_paths": [
+        "$.question",
+        "$.reason",
+        "$.missing_fields",
+        "$.candidates"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'proposal'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 27,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [
+        "$.confirmation.level",
+        "$.confirmation.required",
+        "$.execution_policy.execution_allowed",
+        "$.execution_policy.reason",
+        "$.operation.arguments.activity_id",
+        "$.operation.arguments.ledger_unit_id",
+        "$.operation.arguments.manual_splits[0].amount",
+        "$.operation.arguments.manual_splits[0].participant_id",
+        "$.operation.arguments.occurred_at",
+        "$.operation.arguments.original_amount",
+        "$.operation.arguments.original_currency",
+        "$.operation.arguments.payments[0].amount",
+        "$.operation.arguments.payments[0].participant_id",
+        "$.operation.arguments.split_method",
+        "$.operation.arguments.title",
+        "$.operation.tool",
+        "$.preview.diff[0].after.activity_id",
+        "$.preview.diff[0].after.ledger_unit_id",
+        "$.preview.diff[0].after.manual_splits[0].amount",
+        "$.preview.diff[0].after.manual_splits[0].participant_id",
+        "$.preview.diff[0].after.occurred_at",
+        "$.preview.diff[0].after.original_amount",
+        "$.preview.diff[0].after.original_currency",
+        "$.preview.diff[0].after.payments[0].amount",
+        "$.preview.diff[0].after.payments[0].participant_id",
+        "$.preview.diff[0].after.split_method",
+        "$.preview.diff[0].after.title",
+        "$.preview.diff[0].field",
+        "$.preview.kind",
+        "$.preview.summary"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.missing_fields[0]",
+        "$.question",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "amount_or_currency",
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "pronoun_or_me_binding",
+        "proposal_routing",
+        "schema_formatting",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "proposal_emitted_as_clarification"
+    },
+    {
+      "sample_id": "sample_gs_p0_041",
+      "scenario_id": "scenario_gs_p0b_013",
+      "family_id": "family_ref_002",
+      "split": "hard_test",
+      "expected_type": "clarification",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "ellipsis",
+        "multiple_candidates",
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "human_authored",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.candidates"
+      ],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [
+        "$.intent_id: value outside enum"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 7,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [
+        "$.candidates[0].entity.activity_id",
+        "$.candidates[0].entity.id",
+        "$.candidates[0].entity.type",
+        "$.candidates[0].label",
+        "$.candidates[1].entity.activity_id",
+        "$.candidates[1].entity.id",
+        "$.candidates[1].entity.type",
+        "$.candidates[1].label"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.intent_id",
+        "$.question",
+        "$.reason"
+      ],
+      "extra_target_leaf_paths": [
+        "$.missing_fields[0]",
+        "$.missing_fields[1]"
+      ],
+      "failure_categories": [
+        "clarification_slot",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "pronoun_or_me_binding",
+        "schema_formatting",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "wrong_clarification_intent_or_slots"
+    },
+    {
+      "sample_id": "sample_gs_p0_084",
+      "scenario_id": "scenario_gs_p0b_035",
+      "family_id": "family_rule_004",
+      "split": "hard_test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "human_authored",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Although says deletion does not unlock, then suggests restarting an edit; canonical state keeps the original financially locked.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_gs_p0_085",
+      "scenario_id": "scenario_gs_p0b_035",
+      "family_id": "family_rule_004",
+      "split": "hard_test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "human_authored",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Invents original deletion or settlement as ways to release the permanent lock.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_teacher_c9a47d5c46c1",
+      "scenario_id": "scenario_gs_p0b_001",
+      "family_id": "family_exp_create_005",
+      "split": "hard_test",
+      "expected_type": "proposal",
+      "difficulty": "easy",
+      "challenge_tags": [
+        "colloquial"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.operation",
+        "$.preview",
+        "$.confirmation",
+        "$.execution_policy"
+      ],
+      "unexpected_field_paths": [
+        "$.question",
+        "$.reason",
+        "$.missing_fields",
+        "$.candidates"
+      ],
+      "invalid_value_type_schema_errors": [
+        "$.type: expected const 'proposal'"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 27,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [
+        "$.confirmation.level",
+        "$.confirmation.required",
+        "$.execution_policy.execution_allowed",
+        "$.execution_policy.reason",
+        "$.operation.arguments.activity_id",
+        "$.operation.arguments.ledger_unit_id",
+        "$.operation.arguments.manual_splits[0].amount",
+        "$.operation.arguments.manual_splits[0].participant_id",
+        "$.operation.arguments.occurred_at",
+        "$.operation.arguments.original_amount",
+        "$.operation.arguments.original_currency",
+        "$.operation.arguments.payments[0].amount",
+        "$.operation.arguments.payments[0].participant_id",
+        "$.operation.arguments.split_method",
+        "$.operation.arguments.title",
+        "$.operation.tool",
+        "$.preview.diff[0].after.activity_id",
+        "$.preview.diff[0].after.ledger_unit_id",
+        "$.preview.diff[0].after.manual_splits[0].amount",
+        "$.preview.diff[0].after.manual_splits[0].participant_id",
+        "$.preview.diff[0].after.occurred_at",
+        "$.preview.diff[0].after.original_amount",
+        "$.preview.diff[0].after.original_currency",
+        "$.preview.diff[0].after.payments[0].amount",
+        "$.preview.diff[0].after.payments[0].participant_id",
+        "$.preview.diff[0].after.split_method",
+        "$.preview.diff[0].after.title",
+        "$.preview.diff[0].field",
+        "$.preview.kind",
+        "$.preview.summary"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.type"
+      ],
+      "extra_target_leaf_paths": [
+        "$.missing_fields[0]",
+        "$.question",
+        "$.reason"
+      ],
+      "failure_categories": [
+        "amount_or_currency",
+        "clarification_necessity",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "output_type_routing",
+        "pronoun_or_me_binding",
+        "proposal_routing",
+        "schema_formatting",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "proposal_emitted_as_clarification"
+    },
+    {
+      "sample_id": "sample_teacher_1da3f26d874a",
+      "scenario_id": "scenario_gs_p0b_013",
+      "family_id": "family_ref_002",
+      "split": "hard_test",
+      "expected_type": "clarification",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "ellipsis",
+        "multiple_candidates",
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.candidates"
+      ],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [
+        "$.intent_id: value outside enum"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 7,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [
+        "$.candidates[0].entity.activity_id",
+        "$.candidates[0].entity.id",
+        "$.candidates[0].entity.type",
+        "$.candidates[0].label",
+        "$.candidates[1].entity.activity_id",
+        "$.candidates[1].entity.id",
+        "$.candidates[1].entity.type",
+        "$.candidates[1].label"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.intent_id",
+        "$.question",
+        "$.reason"
+      ],
+      "extra_target_leaf_paths": [
+        "$.missing_fields[0]"
+      ],
+      "failure_categories": [
+        "clarification_slot",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "pronoun_or_me_binding",
+        "schema_formatting",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "wrong_clarification_intent_or_slots"
+    },
+    {
+      "sample_id": "sample_teacher_56c4b297703f",
+      "scenario_id": "scenario_gs_p0b_013",
+      "family_id": "family_ref_002",
+      "split": "hard_test",
+      "expected_type": "clarification",
+      "difficulty": "hard",
+      "challenge_tags": [
+        "ellipsis",
+        "multiple_candidates",
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "clarification",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": false,
+      "required_missing_paths": [
+        "$.candidates"
+      ],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [
+        "$.intent_id: value outside enum"
+      ],
+      "business_structure_match": false,
+      "key_facts_correct": 1,
+      "key_facts_total": 7,
+      "safety_violations": [
+        "model_output_schema_invalid"
+      ],
+      "missing_target_leaf_paths": [
+        "$.candidates[0].entity.activity_id",
+        "$.candidates[0].entity.id",
+        "$.candidates[0].entity.type",
+        "$.candidates[0].label",
+        "$.candidates[1].entity.activity_id",
+        "$.candidates[1].entity.id",
+        "$.candidates[1].entity.type",
+        "$.candidates[1].label"
+      ],
+      "mismatched_target_leaf_paths": [
+        "$.intent_id",
+        "$.question",
+        "$.reason"
+      ],
+      "extra_target_leaf_paths": [
+        "$.missing_fields[0]"
+      ],
+      "failure_categories": [
+        "clarification_slot",
+        "entity_resolution",
+        "field_value_mismatch",
+        "missing_fact",
+        "pronoun_or_me_binding",
+        "schema_formatting",
+        "ui_context_grounding",
+        "unexpected_output_field"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "not_reviewed",
+      "human_review_note": null,
+      "old_failure_case": "wrong_clarification_intent_or_slots"
+    },
+    {
+      "sample_id": "sample_teacher_495133fe795c",
+      "scenario_id": "scenario_gs_p0b_035",
+      "family_id": "family_rule_004",
+      "split": "hard_test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Suggests creating a replacement expense rather than explaining the original remains locked; risks a duplicate financial record.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_teacher_af85b5a16d3b",
+      "scenario_id": "scenario_gs_p0b_035",
+      "family_id": "family_rule_004",
+      "split": "hard_test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "unsupported_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "correct",
+      "human_review_note": "Correctly states deleting the refund does not unlock or change the original expense; no unsupported unlock path.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_teacher_2a2434a010ba",
+      "scenario_id": "scenario_gs_p0b_035",
+      "family_id": "family_rule_004",
+      "split": "hard_test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch",
+        "hallucinated_fact"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "incorrect",
+      "human_review_note": "Claims a settled/reversed refund result may release the original lock, contradicting the permanent-lock rule.",
+      "old_failure_case": null
+    },
+    {
+      "sample_id": "sample_teacher_8e1096f2010d",
+      "scenario_id": "scenario_gs_p0b_035",
+      "family_id": "family_rule_004",
+      "split": "hard_test",
+      "expected_type": "answer",
+      "difficulty": "normal",
+      "challenge_tags": [
+        "gated_operation",
+        "financial_risk"
+      ],
+      "source": "teacher_generated",
+      "predicted_type": "answer",
+      "raw_json_valid": true,
+      "extractable_json_valid": true,
+      "schema_valid": true,
+      "required_missing_paths": [],
+      "unexpected_field_paths": [],
+      "invalid_value_type_schema_errors": [],
+      "business_structure_match": true,
+      "key_facts_correct": 2,
+      "key_facts_total": 2,
+      "safety_violations": [],
+      "missing_target_leaf_paths": [],
+      "mismatched_target_leaf_paths": [
+        "$.content"
+      ],
+      "extra_target_leaf_paths": [],
+      "failure_categories": [
+        "field_value_mismatch"
+      ],
+      "evidence_status": "mechanical path/value comparison; semantic cause requires source review",
+      "human_text_review": "correct",
+      "human_review_note": "Correctly states refund deletion neither changes the original status nor releases its lock.",
+      "old_failure_case": null
+    }
+  ],
+  "category_counts": {
+    "clarification_slot": 12,
+    "field_value_mismatch": 72,
+    "schema_formatting": 36,
+    "unexpected_output_field": 33,
+    "entity_resolution": 38,
+    "tool_arguments": 7,
+    "tool_selection": 7,
+    "ui_context_grounding": 29,
+    "pronoun_or_me_binding": 23,
+    "hallucinated_fact": 21,
+    "clarification_necessity": 22,
+    "missing_fact": 32,
+    "output_type_routing": 23,
+    "proposal_routing": 14,
+    "unsupported_fact": 4,
+    "evidence_or_result_id": 3,
+    "amount_or_currency": 12,
+    "conversation_history": 3
+  },
+  "zero_categories": {
+    "output_type_routing": 23,
+    "clarification_necessity": 22,
+    "clarification_slot": 12,
+    "proposal_routing": 14,
+    "proposal_diff": 0,
+    "tool_selection": 7,
+    "tool_arguments": 7,
+    "entity_resolution": 38,
+    "pronoun_or_me_binding": 23,
+    "amount_or_currency": 12,
+    "evidence_or_result_id": 3,
+    "ui_context_grounding": 29,
+    "conversation_history": 3,
+    "confirmation_policy": 0,
+    "execution_allowed": 0,
+    "hallucinated_fact": 21,
+    "missing_fact": 32,
+    "unsupported_fact": 4,
+    "schema_formatting": 36,
+    "field_value_mismatch": 72,
+    "unexpected_output_field": 33
+  }
+}

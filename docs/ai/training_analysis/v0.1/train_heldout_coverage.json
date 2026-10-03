@@ -1,0 +1,2867 @@
+{
+  "family_isolation_policy": "scenario_family_id and split_group closure; same-family train zero is intentional, inspect shared output+task+intent analogues.",
+  "failure_families": [
+    {
+      "family_id": "family_act_002",
+      "scenario_ids": [
+        "scenario_gs_p0b_007"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 2,
+      "gold_sample_count": 1,
+      "teacher_sample_count": 1,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 2,
+      "output_type": "tool_call",
+      "intent_ids": [
+        "query_activity"
+      ],
+      "task_primary": "tool_call",
+      "rule_tags": [
+        "expense"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101"
+      ],
+      "heldout_failure_sample_count": 2,
+      "heldout_failure_categories": {
+        "entity_resolution": 2,
+        "field_value_mismatch": 2,
+        "schema_formatting": 2,
+        "tool_arguments": 2,
+        "tool_selection": 2,
+        "unexpected_output_field": 2
+      },
+      "same_family_train_samples": 0,
+      "same_family_train_canonical_scenarios": 0,
+      "train_peer_samples_same_output_task_and_intent": 0,
+      "train_peer_families": 0,
+      "train_peer_distinct_gt": 0,
+      "train_capability_peers": {
+        "shared_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_output_type": {
+          "samples": 24,
+          "families": 5,
+          "scenarios": 5,
+          "exact_ground_truths": 5
+        },
+        "shared_task": {
+          "samples": 14,
+          "families": 3,
+          "scenarios": 3,
+          "exact_ground_truths": 3
+        },
+        "shared_output_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_output_and_task": {
+          "samples": 14,
+          "families": 3,
+          "scenarios": 3,
+          "exact_ground_truths": 3
+        },
+        "shared_output_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        }
+      },
+      "interpretation": "same-family zero is intentional family isolation; peer counts show transfer opportunity, not exact scenario-state equivalence"
+    },
+    {
+      "family_id": "family_clr_001",
+      "scenario_ids": [
+        "scenario_gs_p0b_030"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 6,
+      "output_type": "clarification",
+      "intent_ids": [
+        "clarify_reference"
+      ],
+      "task_primary": "clarification",
+      "rule_tags": [
+        "clarification",
+        "entity_resolution"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101"
+      ],
+      "heldout_failure_sample_count": 6,
+      "heldout_failure_categories": {
+        "clarification_slot": 6,
+        "entity_resolution": 6,
+        "field_value_mismatch": 6,
+        "schema_formatting": 6,
+        "pronoun_or_me_binding": 3
+      },
+      "same_family_train_samples": 0,
+      "same_family_train_canonical_scenarios": 0,
+      "train_peer_samples_same_output_task_and_intent": 0,
+      "train_peer_families": 0,
+      "train_peer_distinct_gt": 0,
+      "train_capability_peers": {
+        "shared_intent": {
+          "samples": 6,
+          "families": 1,
+          "scenarios": 1,
+          "exact_ground_truths": 1
+        },
+        "shared_output_type": {
+          "samples": 51,
+          "families": 11,
+          "scenarios": 11,
+          "exact_ground_truths": 11
+        },
+        "shared_task": {
+          "samples": 30,
+          "families": 7,
+          "scenarios": 7,
+          "exact_ground_truths": 7
+        },
+        "shared_output_and_intent": {
+          "samples": 6,
+          "families": 1,
+          "scenarios": 1,
+          "exact_ground_truths": 1
+        },
+        "shared_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_output_and_task": {
+          "samples": 30,
+          "families": 7,
+          "scenarios": 7,
+          "exact_ground_truths": 7
+        },
+        "shared_output_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        }
+      },
+      "interpretation": "same-family zero is intentional family isolation; peer counts show transfer opportunity, not exact scenario-state equivalence"
+    },
+    {
+      "family_id": "family_debt_001",
+      "scenario_ids": [
+        "scenario_gs_p0a_014"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 6,
+      "output_type": "tool_call",
+      "intent_ids": [
+        "query_debt"
+      ],
+      "task_primary": "tool_call",
+      "rule_tags": [
+        "activity",
+        "bilateral_debt"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101"
+      ],
+      "heldout_failure_sample_count": 6,
+      "heldout_failure_categories": {
+        "entity_resolution": 6,
+        "field_value_mismatch": 6,
+        "schema_formatting": 6,
+        "tool_arguments": 5,
+        "tool_selection": 5,
+        "ui_context_grounding": 6,
+        "unexpected_output_field": 6,
+        "pronoun_or_me_binding": 4,
+        "clarification_necessity": 1,
+        "missing_fact": 1,
+        "output_type_routing": 1
+      },
+      "same_family_train_samples": 0,
+      "same_family_train_canonical_scenarios": 0,
+      "train_peer_samples_same_output_task_and_intent": 0,
+      "train_peer_families": 0,
+      "train_peer_distinct_gt": 0,
+      "train_capability_peers": {
+        "shared_intent": {
+          "samples": 5,
+          "families": 1,
+          "scenarios": 1,
+          "exact_ground_truths": 1
+        },
+        "shared_output_type": {
+          "samples": 24,
+          "families": 5,
+          "scenarios": 5,
+          "exact_ground_truths": 5
+        },
+        "shared_task": {
+          "samples": 14,
+          "families": 3,
+          "scenarios": 3,
+          "exact_ground_truths": 3
+        },
+        "shared_output_and_intent": {
+          "samples": 5,
+          "families": 1,
+          "scenarios": 1,
+          "exact_ground_truths": 1
+        },
+        "shared_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_output_and_task": {
+          "samples": 14,
+          "families": 3,
+          "scenarios": 3,
+          "exact_ground_truths": 3
+        },
+        "shared_output_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        }
+      },
+      "interpretation": "same-family zero is intentional family isolation; peer counts show transfer opportunity, not exact scenario-state equivalence"
+    },
+    {
+      "family_id": "family_debt_004",
+      "scenario_ids": [
+        "scenario_gs_p0a_015"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 6,
+      "output_type": "answer",
+      "intent_ids": [
+        "explain_balance"
+      ],
+      "task_primary": "result_explanation",
+      "rule_tags": [
+        "participant_balance",
+        "prepayment",
+        "bilateral_debt",
+        "multi_currency"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104",
+        "00000000-0000-4000-8000-000000000115",
+        "result-p0a-balance-015",
+        "result-p0a-prepayment-015"
+      ],
+      "heldout_failure_sample_count": 6,
+      "heldout_failure_categories": {
+        "field_value_mismatch": 6,
+        "hallucinated_fact": 4,
+        "unsupported_fact": 1,
+        "missing_fact": 2,
+        "evidence_or_result_id": 1
+      },
+      "same_family_train_samples": 0,
+      "same_family_train_canonical_scenarios": 0,
+      "train_peer_samples_same_output_task_and_intent": 0,
+      "train_peer_families": 0,
+      "train_peer_distinct_gt": 0,
+      "train_capability_peers": {
+        "shared_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_output_type": {
+          "samples": 44,
+          "families": 9,
+          "scenarios": 9,
+          "exact_ground_truths": 9
+        },
+        "shared_task": {
+          "samples": 13,
+          "families": 3,
+          "scenarios": 3,
+          "exact_ground_truths": 3
+        },
+        "shared_output_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_output_and_task": {
+          "samples": 13,
+          "families": 3,
+          "scenarios": 3,
+          "exact_ground_truths": 3
+        },
+        "shared_output_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        }
+      },
+      "interpretation": "same-family zero is intentional family isolation; peer counts show transfer opportunity, not exact scenario-state equivalence"
+    },
+    {
+      "family_id": "family_exp_clarify_007",
+      "scenario_ids": [
+        "scenario_gs_p0b_003"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 3,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 1,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 3,
+      "output_type": "clarification",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "task_primary": "parameter_extraction",
+      "rule_tags": [
+        "clarification"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101"
+      ],
+      "heldout_failure_sample_count": 3,
+      "heldout_failure_categories": {
+        "clarification_slot": 3,
+        "field_value_mismatch": 3,
+        "schema_formatting": 3,
+        "unexpected_output_field": 1
+      },
+      "same_family_train_samples": 0,
+      "same_family_train_canonical_scenarios": 0,
+      "train_peer_samples_same_output_task_and_intent": 0,
+      "train_peer_families": 0,
+      "train_peer_distinct_gt": 0,
+      "train_capability_peers": {
+        "shared_intent": {
+          "samples": 48,
+          "families": 10,
+          "scenarios": 10,
+          "exact_ground_truths": 10
+        },
+        "shared_output_type": {
+          "samples": 51,
+          "families": 11,
+          "scenarios": 11,
+          "exact_ground_truths": 11
+        },
+        "shared_task": {
+          "samples": 14,
+          "families": 3,
+          "scenarios": 3,
+          "exact_ground_truths": 3
+        },
+        "shared_output_and_intent": {
+          "samples": 28,
+          "families": 6,
+          "scenarios": 6,
+          "exact_ground_truths": 6
+        },
+        "shared_task_and_intent": {
+          "samples": 9,
+          "families": 2,
+          "scenarios": 2,
+          "exact_ground_truths": 2
+        },
+        "shared_output_and_task": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_output_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        }
+      },
+      "interpretation": "same-family zero is intentional family isolation; peer counts show transfer opportunity, not exact scenario-state equivalence"
+    },
+    {
+      "family_id": "family_exp_create_005",
+      "scenario_ids": [
+        "scenario_gs_p0b_001"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 3,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 1,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 3,
+      "output_type": "proposal",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "task_primary": "proposal_generation",
+      "rule_tags": [
+        "expense"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103"
+      ],
+      "heldout_failure_sample_count": 3,
+      "heldout_failure_categories": {
+        "amount_or_currency": 3,
+        "clarification_necessity": 3,
+        "entity_resolution": 3,
+        "field_value_mismatch": 3,
+        "missing_fact": 3,
+        "output_type_routing": 3,
+        "pronoun_or_me_binding": 3,
+        "proposal_routing": 3,
+        "schema_formatting": 3,
+        "ui_context_grounding": 3,
+        "unexpected_output_field": 3
+      },
+      "same_family_train_samples": 0,
+      "same_family_train_canonical_scenarios": 0,
+      "train_peer_samples_same_output_task_and_intent": 0,
+      "train_peer_families": 0,
+      "train_peer_distinct_gt": 0,
+      "train_capability_peers": {
+        "shared_intent": {
+          "samples": 48,
+          "families": 10,
+          "scenarios": 10,
+          "exact_ground_truths": 10
+        },
+        "shared_output_type": {
+          "samples": 46,
+          "families": 10,
+          "scenarios": 10,
+          "exact_ground_truths": 10
+        },
+        "shared_task": {
+          "samples": 22,
+          "families": 5,
+          "scenarios": 5,
+          "exact_ground_truths": 5
+        },
+        "shared_output_and_intent": {
+          "samples": 15,
+          "families": 3,
+          "scenarios": 3,
+          "exact_ground_truths": 3
+        },
+        "shared_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_output_and_task": {
+          "samples": 22,
+          "families": 5,
+          "scenarios": 5,
+          "exact_ground_truths": 5
+        },
+        "shared_output_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        }
+      },
+      "interpretation": "same-family zero is intentional family isolation; peer counts show transfer opportunity, not exact scenario-state equivalence"
+    },
+    {
+      "family_id": "family_ictx_002",
+      "scenario_ids": [
+        "scenario_gs_p0b_021"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 2,
+      "unique_surface_variant_count": 6,
+      "output_type": "clarification",
+      "intent_ids": [
+        "update_expense_presentation"
+      ],
+      "task_primary": "clarification",
+      "rule_tags": [
+        "clarification",
+        "entity_resolution",
+        "interaction_context"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000120",
+        "00000000-0000-4000-8000-000000000122",
+        "result-recent-parking-east",
+        "result-recent-parking-west"
+      ],
+      "heldout_failure_sample_count": 6,
+      "heldout_failure_categories": {
+        "clarification_necessity": 6,
+        "entity_resolution": 6,
+        "field_value_mismatch": 6,
+        "missing_fact": 6,
+        "output_type_routing": 6,
+        "schema_formatting": 2,
+        "ui_context_grounding": 6,
+        "unexpected_output_field": 6,
+        "amount_or_currency": 1,
+        "pronoun_or_me_binding": 2
+      },
+      "same_family_train_samples": 0,
+      "same_family_train_canonical_scenarios": 0,
+      "train_peer_samples_same_output_task_and_intent": 0,
+      "train_peer_families": 0,
+      "train_peer_distinct_gt": 0,
+      "train_capability_peers": {
+        "shared_intent": {
+          "samples": 4,
+          "families": 1,
+          "scenarios": 1,
+          "exact_ground_truths": 1
+        },
+        "shared_output_type": {
+          "samples": 51,
+          "families": 11,
+          "scenarios": 11,
+          "exact_ground_truths": 11
+        },
+        "shared_task": {
+          "samples": 30,
+          "families": 7,
+          "scenarios": 7,
+          "exact_ground_truths": 7
+        },
+        "shared_output_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_output_and_task": {
+          "samples": 30,
+          "families": 7,
+          "scenarios": 7,
+          "exact_ground_truths": 7
+        },
+        "shared_output_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        }
+      },
+      "interpretation": "same-family zero is intentional family isolation; peer counts show transfer opportunity, not exact scenario-state equivalence"
+    },
+    {
+      "family_id": "family_pre_gated_001",
+      "scenario_ids": [
+        "scenario_gs_p0a_010"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 3,
+      "gold_sample_count": 1,
+      "teacher_sample_count": 2,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 3,
+      "output_type": "proposal",
+      "intent_ids": [
+        "create_prepayment"
+      ],
+      "task_primary": "proposal_generation",
+      "rule_tags": [
+        "activity",
+        "prepayment"
+      ],
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104",
+        "result-p0a-prepayment-state-010"
+      ],
+      "heldout_failure_sample_count": 3,
+      "heldout_failure_categories": {
+        "amount_or_currency": 3,
+        "clarification_necessity": 3,
+        "entity_resolution": 3,
+        "field_value_mismatch": 3,
+        "missing_fact": 3,
+        "output_type_routing": 3,
+        "pronoun_or_me_binding": 2,
+        "proposal_routing": 3,
+        "schema_formatting": 3,
+        "ui_context_grounding": 3,
+        "unexpected_output_field": 3
+      },
+      "same_family_train_samples": 0,
+      "same_family_train_canonical_scenarios": 0,
+      "train_peer_samples_same_output_task_and_intent": 0,
+      "train_peer_families": 0,
+      "train_peer_distinct_gt": 0,
+      "train_capability_peers": {
+        "shared_intent": {
+          "samples": 3,
+          "families": 1,
+          "scenarios": 1,
+          "exact_ground_truths": 1
+        },
+        "shared_output_type": {
+          "samples": 46,
+          "families": 10,
+          "scenarios": 10,
+          "exact_ground_truths": 10
+        },
+        "shared_task": {
+          "samples": 22,
+          "families": 5,
+          "scenarios": 5,
+          "exact_ground_truths": 5
+        },
+        "shared_output_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_output_and_task": {
+          "samples": 22,
+          "families": 5,
+          "scenarios": 5,
+          "exact_ground_truths": 5
+        },
+        "shared_output_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        }
+      },
+      "interpretation": "same-family zero is intentional family isolation; peer counts show transfer opportunity, not exact scenario-state equivalence"
+    },
+    {
+      "family_id": "family_ref_002",
+      "scenario_ids": [
+        "scenario_gs_p0b_013"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 3,
+      "gold_sample_count": 1,
+      "teacher_sample_count": 2,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 3,
+      "output_type": "clarification",
+      "intent_ids": [
+        "create_refund",
+        "create_negative_adjustment"
+      ],
+      "task_primary": "clarification",
+      "rule_tags": [
+        "clarification",
+        "entity_resolution",
+        "refund",
+        "ui_context"
+      ],
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000120",
+        "00000000-0000-4000-8000-000000000122"
+      ],
+      "heldout_failure_sample_count": 3,
+      "heldout_failure_categories": {
+        "clarification_slot": 3,
+        "entity_resolution": 3,
+        "field_value_mismatch": 3,
+        "missing_fact": 3,
+        "pronoun_or_me_binding": 3,
+        "schema_formatting": 3,
+        "ui_context_grounding": 3,
+        "unexpected_output_field": 3
+      },
+      "same_family_train_samples": 0,
+      "same_family_train_canonical_scenarios": 0,
+      "train_peer_samples_same_output_task_and_intent": 0,
+      "train_peer_families": 0,
+      "train_peer_distinct_gt": 0,
+      "train_capability_peers": {
+        "shared_intent": {
+          "samples": 4,
+          "families": 1,
+          "scenarios": 1,
+          "exact_ground_truths": 1
+        },
+        "shared_output_type": {
+          "samples": 51,
+          "families": 11,
+          "scenarios": 11,
+          "exact_ground_truths": 11
+        },
+        "shared_task": {
+          "samples": 30,
+          "families": 7,
+          "scenarios": 7,
+          "exact_ground_truths": 7
+        },
+        "shared_output_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_output_and_task": {
+          "samples": 30,
+          "families": 7,
+          "scenarios": 7,
+          "exact_ground_truths": 7
+        },
+        "shared_output_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        }
+      },
+      "interpretation": "same-family zero is intentional family isolation; peer counts show transfer opportunity, not exact scenario-state equivalence"
+    },
+    {
+      "family_id": "family_rule_008",
+      "scenario_ids": [
+        "scenario_gs_p0b_039"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 6,
+      "output_type": "answer",
+      "intent_ids": [
+        "explain_error"
+      ],
+      "task_primary": "error_handling",
+      "rule_tags": [
+        "expense"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "result-rule-008-verified"
+      ],
+      "heldout_failure_sample_count": 6,
+      "heldout_failure_categories": {
+        "field_value_mismatch": 5,
+        "hallucinated_fact": 4,
+        "clarification_necessity": 1,
+        "entity_resolution": 1,
+        "missing_fact": 2,
+        "output_type_routing": 2,
+        "schema_formatting": 2,
+        "unexpected_output_field": 1,
+        "evidence_or_result_id": 1
+      },
+      "same_family_train_samples": 0,
+      "same_family_train_canonical_scenarios": 0,
+      "train_peer_samples_same_output_task_and_intent": 12,
+      "train_peer_families": 2,
+      "train_peer_distinct_gt": 2,
+      "train_capability_peers": {
+        "shared_intent": {
+          "samples": 21,
+          "families": 4,
+          "scenarios": 4,
+          "exact_ground_truths": 4
+        },
+        "shared_output_type": {
+          "samples": 44,
+          "families": 9,
+          "scenarios": 9,
+          "exact_ground_truths": 9
+        },
+        "shared_task": {
+          "samples": 12,
+          "families": 2,
+          "scenarios": 2,
+          "exact_ground_truths": 2
+        },
+        "shared_output_and_intent": {
+          "samples": 16,
+          "families": 3,
+          "scenarios": 3,
+          "exact_ground_truths": 3
+        },
+        "shared_task_and_intent": {
+          "samples": 12,
+          "families": 2,
+          "scenarios": 2,
+          "exact_ground_truths": 2
+        },
+        "shared_output_and_task": {
+          "samples": 12,
+          "families": 2,
+          "scenarios": 2,
+          "exact_ground_truths": 2
+        },
+        "shared_output_task_and_intent": {
+          "samples": 12,
+          "families": 2,
+          "scenarios": 2,
+          "exact_ground_truths": 2
+        }
+      },
+      "interpretation": "same-family zero is intentional family isolation; peer counts show transfer opportunity, not exact scenario-state equivalence"
+    },
+    {
+      "family_id": "family_trf_007",
+      "scenario_ids": [
+        "scenario_gs_p0a_011"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 3,
+      "gold_sample_count": 1,
+      "teacher_sample_count": 2,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 3,
+      "output_type": "proposal",
+      "intent_ids": [
+        "void_transfer"
+      ],
+      "task_primary": "proposal_generation",
+      "rule_tags": [
+        "activity",
+        "transfer",
+        "void"
+      ],
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000111",
+        "result-p0a-transfer-011",
+        "金额登记错误"
+      ],
+      "heldout_failure_sample_count": 3,
+      "heldout_failure_categories": {
+        "clarification_necessity": 3,
+        "entity_resolution": 3,
+        "field_value_mismatch": 3,
+        "missing_fact": 3,
+        "output_type_routing": 3,
+        "proposal_routing": 3,
+        "schema_formatting": 3,
+        "ui_context_grounding": 3,
+        "unexpected_output_field": 3,
+        "pronoun_or_me_binding": 1
+      },
+      "same_family_train_samples": 0,
+      "same_family_train_canonical_scenarios": 0,
+      "train_peer_samples_same_output_task_and_intent": 0,
+      "train_peer_families": 0,
+      "train_peer_distinct_gt": 0,
+      "train_capability_peers": {
+        "shared_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_output_type": {
+          "samples": 46,
+          "families": 10,
+          "scenarios": 10,
+          "exact_ground_truths": 10
+        },
+        "shared_task": {
+          "samples": 22,
+          "families": 5,
+          "scenarios": 5,
+          "exact_ground_truths": 5
+        },
+        "shared_output_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_output_and_task": {
+          "samples": 22,
+          "families": 5,
+          "scenarios": 5,
+          "exact_ground_truths": 5
+        },
+        "shared_output_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        }
+      },
+      "interpretation": "same-family zero is intentional family isolation; peer counts show transfer opportunity, not exact scenario-state equivalence"
+    },
+    {
+      "family_id": "family_ui_002",
+      "scenario_ids": [
+        "scenario_gs_p0b_018"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 5,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 5,
+      "output_type": "proposal",
+      "intent_ids": [
+        "update_expense"
+      ],
+      "task_primary": "ui_context_reasoning",
+      "rule_tags": [
+        "d4_preview_only",
+        "ui_context"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104",
+        "00000000-0000-4000-8000-000000000120",
+        "result-ui-002-read"
+      ],
+      "heldout_failure_sample_count": 5,
+      "heldout_failure_categories": {
+        "amount_or_currency": 5,
+        "clarification_necessity": 5,
+        "entity_resolution": 5,
+        "field_value_mismatch": 5,
+        "missing_fact": 5,
+        "output_type_routing": 5,
+        "pronoun_or_me_binding": 5,
+        "proposal_routing": 5,
+        "schema_formatting": 3,
+        "ui_context_grounding": 5,
+        "unexpected_output_field": 5,
+        "evidence_or_result_id": 1
+      },
+      "same_family_train_samples": 0,
+      "same_family_train_canonical_scenarios": 0,
+      "train_peer_samples_same_output_task_and_intent": 0,
+      "train_peer_families": 0,
+      "train_peer_distinct_gt": 0,
+      "train_capability_peers": {
+        "shared_intent": {
+          "samples": 15,
+          "families": 3,
+          "scenarios": 3,
+          "exact_ground_truths": 3
+        },
+        "shared_output_type": {
+          "samples": 46,
+          "families": 10,
+          "scenarios": 10,
+          "exact_ground_truths": 10
+        },
+        "shared_task": {
+          "samples": 9,
+          "families": 2,
+          "scenarios": 2,
+          "exact_ground_truths": 2
+        },
+        "shared_output_and_intent": {
+          "samples": 15,
+          "families": 3,
+          "scenarios": 3,
+          "exact_ground_truths": 3
+        },
+        "shared_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        },
+        "shared_output_and_task": {
+          "samples": 4,
+          "families": 1,
+          "scenarios": 1,
+          "exact_ground_truths": 1
+        },
+        "shared_output_task_and_intent": {
+          "samples": 0,
+          "families": 0,
+          "scenarios": 0,
+          "exact_ground_truths": 0
+        }
+      },
+      "interpretation": "same-family zero is intentional family isolation; peer counts show transfer opportunity, not exact scenario-state equivalence"
+    }
+  ],
+  "capability_slices": {
+    "clarification": {
+      "samples": 69,
+      "train_samples": 51,
+      "heldout_samples": 18,
+      "families": 15,
+      "canonical_scenarios": 15,
+      "unique_gt": 15,
+      "gold": 28,
+      "teacher": 41
+    },
+    "proposal": {
+      "samples": 60,
+      "train_samples": 46,
+      "heldout_samples": 14,
+      "families": 14,
+      "canonical_scenarios": 14,
+      "unique_gt": 14,
+      "gold": 23,
+      "teacher": 37
+    },
+    "tool_call": {
+      "samples": 32,
+      "train_samples": 24,
+      "heldout_samples": 8,
+      "families": 7,
+      "canonical_scenarios": 7,
+      "unique_gt": 7,
+      "gold": 12,
+      "teacher": 20
+    },
+    "context_heavy": {
+      "samples": 170,
+      "train_samples": 124,
+      "heldout_samples": 46,
+      "families": 36,
+      "canonical_scenarios": 36,
+      "unique_gt": 36,
+      "gold": 64,
+      "teacher": 106
+    },
+    "entity_ambiguity": {
+      "samples": 77,
+      "train_samples": 53,
+      "heldout_samples": 24,
+      "families": 16,
+      "canonical_scenarios": 16,
+      "unique_gt": 16,
+      "gold": 31,
+      "teacher": 46
+    },
+    "financial_risk": {
+      "samples": 146,
+      "train_samples": 95,
+      "heldout_samples": 51,
+      "families": 31,
+      "canonical_scenarios": 31,
+      "unique_gt": 31,
+      "gold": 54,
+      "teacher": 92
+    },
+    "gated": {
+      "samples": 39,
+      "train_samples": 27,
+      "heldout_samples": 12,
+      "families": 11,
+      "canonical_scenarios": 11,
+      "unique_gt": 11,
+      "gold": 12,
+      "teacher": 27
+    }
+  },
+  "all_family_profile": {
+    "family_act_002": {
+      "family_id": "family_act_002",
+      "scenario_ids": [
+        "scenario_gs_p0b_007"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 2,
+      "gold_sample_count": 1,
+      "teacher_sample_count": 1,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 2,
+      "output_type": "tool_call",
+      "intent_ids": [
+        "query_activity"
+      ],
+      "task_primary": "tool_call",
+      "rule_tags": [
+        "expense"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101"
+      ]
+    },
+    "family_clr_001": {
+      "family_id": "family_clr_001",
+      "scenario_ids": [
+        "scenario_gs_p0b_030"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 6,
+      "output_type": "clarification",
+      "intent_ids": [
+        "clarify_reference"
+      ],
+      "task_primary": "clarification",
+      "rule_tags": [
+        "clarification",
+        "entity_resolution"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101"
+      ]
+    },
+    "family_clr_002": {
+      "family_id": "family_clr_002",
+      "scenario_ids": [
+        "scenario_gs_p0b_031"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 6,
+      "output_type": "clarification",
+      "intent_ids": [
+        "unknown"
+      ],
+      "task_primary": "intent_classification",
+      "rule_tags": [
+        "clarification"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101"
+      ]
+    },
+    "family_clr_005": {
+      "family_id": "family_clr_005",
+      "scenario_ids": [
+        "scenario_gs_p0b_032"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 4,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 2,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 4,
+      "output_type": "clarification",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "task_primary": "clarification",
+      "rule_tags": [
+        "clarification",
+        "manual_split"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101"
+      ]
+    },
+    "family_conv_001": {
+      "family_id": "family_conv_001",
+      "scenario_ids": [
+        "scenario_gs_p0b_026"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 6,
+      "output_type": "proposal",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "task_primary": "conversation_context_reasoning",
+      "rule_tags": [
+        "conversation_context"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104",
+        "turn-1",
+        "turn-2"
+      ]
+    },
+    "family_conv_004": {
+      "family_id": "family_conv_004",
+      "scenario_ids": [
+        "scenario_gs_p0b_027"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 3,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 1,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 3,
+      "output_type": "answer",
+      "intent_ids": [
+        "create_expense",
+        "create_settlement_transfer",
+        "unsupported_request"
+      ],
+      "task_primary": "conversation_context_reasoning",
+      "rule_tags": [
+        "conversation_context",
+        "permission",
+        "unsupported"
+      ],
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "create_expense",
+        "proposal-dinner-pending",
+        "turn-1",
+        "turn-2"
+      ]
+    },
+    "family_conv_006": {
+      "family_id": "family_conv_006",
+      "scenario_ids": [
+        "scenario_gs_p0b_028"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 5,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 2,
+      "unique_surface_variant_count": 5,
+      "output_type": "tool_call",
+      "intent_ids": [
+        "query_debt"
+      ],
+      "task_primary": "conversation_context_reasoning",
+      "rule_tags": [
+        "conversation_context",
+        "interaction_context"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104",
+        "00000000-0000-4000-8000-000000000120",
+        "result-ictx-recent-success",
+        "turn-1"
+      ]
+    },
+    "family_conv_007": {
+      "family_id": "family_conv_007",
+      "scenario_ids": [
+        "scenario_gs_p0b_029"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 5,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 5,
+      "output_type": "answer",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "task_primary": "result_explanation",
+      "rule_tags": [
+        "conversation_context"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "create_expense",
+        "proposal-dinner-pending",
+        "turn-1",
+        "turn-2"
+      ]
+    },
+    "family_debt_001": {
+      "family_id": "family_debt_001",
+      "scenario_ids": [
+        "scenario_gs_p0a_014"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 6,
+      "output_type": "tool_call",
+      "intent_ids": [
+        "query_debt"
+      ],
+      "task_primary": "tool_call",
+      "rule_tags": [
+        "activity",
+        "bilateral_debt"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101"
+      ]
+    },
+    "family_debt_002": {
+      "family_id": "family_debt_002",
+      "scenario_ids": [
+        "scenario_gs_p0b_008"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 5,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 5,
+      "output_type": "tool_call",
+      "intent_ids": [
+        "query_bilateral_debt"
+      ],
+      "task_primary": "tool_call",
+      "rule_tags": [
+        "entity_resolution",
+        "multi_currency"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104"
+      ]
+    },
+    "family_debt_004": {
+      "family_id": "family_debt_004",
+      "scenario_ids": [
+        "scenario_gs_p0a_015"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 6,
+      "output_type": "answer",
+      "intent_ids": [
+        "explain_balance"
+      ],
+      "task_primary": "result_explanation",
+      "rule_tags": [
+        "participant_balance",
+        "prepayment",
+        "bilateral_debt",
+        "multi_currency"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104",
+        "00000000-0000-4000-8000-000000000115",
+        "result-p0a-balance-015",
+        "result-p0a-prepayment-015"
+      ]
+    },
+    "family_del_001": {
+      "family_id": "family_del_001",
+      "scenario_ids": [
+        "scenario_gs_p0a_012"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 4,
+      "gold_sample_count": 1,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 4,
+      "output_type": "proposal",
+      "intent_ids": [
+        "delete_expense"
+      ],
+      "task_primary": "proposal_generation",
+      "rule_tags": [
+        "expense",
+        "delete",
+        "ui_context",
+        "permission"
+      ],
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000102",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104",
+        "00000000-0000-4000-8000-000000000112",
+        "result-p0a-delete-012",
+        "screen-delete-12"
+      ]
+    },
+    "family_del_002": {
+      "family_id": "family_del_002",
+      "scenario_ids": [
+        "scenario_gs_p0b_016"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 4,
+      "gold_sample_count": 1,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 4,
+      "output_type": "answer",
+      "intent_ids": [
+        "delete_expense",
+        "explain_rule"
+      ],
+      "task_primary": "result_explanation",
+      "rule_tags": [
+        "expense"
+      ],
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000120",
+        "refund-001",
+        "result-del-002-verified"
+      ]
+    },
+    "family_ent_001": {
+      "family_id": "family_ent_001",
+      "scenario_ids": [
+        "scenario_gs_p0a_005"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 6,
+      "output_type": "clarification",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "task_primary": "clarification",
+      "rule_tags": [
+        "expense",
+        "clarification",
+        "entity_resolution"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000105",
+        "00000000-0000-4000-8000-000000000106"
+      ]
+    },
+    "family_ent_002": {
+      "family_id": "family_ent_002",
+      "scenario_ids": [
+        "scenario_gs_p0b_024"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 5,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 5,
+      "output_type": "clarification",
+      "intent_ids": [
+        "query_participant_balance",
+        "create_expense"
+      ],
+      "task_primary": "entity_resolution",
+      "rule_tags": [
+        "clarification",
+        "entity_resolution"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000102",
+        "00000000-0000-4000-8000-000000000103"
+      ]
+    },
+    "family_ent_003": {
+      "family_id": "family_ent_003",
+      "scenario_ids": [
+        "scenario_gs_p0b_025"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 4,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 2,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 4,
+      "output_type": "clarification",
+      "intent_ids": [
+        "query_bilateral_debt",
+        "query_participant"
+      ],
+      "task_primary": "entity_resolution",
+      "rule_tags": [
+        "clarification",
+        "entity_resolution"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104",
+        "result-ent-003-candidates"
+      ]
+    },
+    "family_exp_clarify_001": {
+      "family_id": "family_exp_clarify_001",
+      "scenario_ids": [
+        "scenario_gs_p0a_003"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 4,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 2,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 4,
+      "output_type": "clarification",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "task_primary": "clarification",
+      "rule_tags": [
+        "expense",
+        "clarification",
+        "entity_resolution"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000104"
+      ]
+    },
+    "family_exp_clarify_002": {
+      "family_id": "family_exp_clarify_002",
+      "scenario_ids": [
+        "scenario_gs_p0b_002"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 4,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 2,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 4,
+      "output_type": "clarification",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "task_primary": "clarification",
+      "rule_tags": [
+        "clarification"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101"
+      ]
+    },
+    "family_exp_clarify_003": {
+      "family_id": "family_exp_clarify_003",
+      "scenario_ids": [
+        "scenario_gs_p0a_004"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 5,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 5,
+      "output_type": "clarification",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "task_primary": "clarification",
+      "rule_tags": [
+        "expense",
+        "clarification",
+        "single_payer"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104"
+      ]
+    },
+    "family_exp_clarify_007": {
+      "family_id": "family_exp_clarify_007",
+      "scenario_ids": [
+        "scenario_gs_p0b_003"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 3,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 1,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 3,
+      "output_type": "clarification",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "task_primary": "parameter_extraction",
+      "rule_tags": [
+        "clarification"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101"
+      ]
+    },
+    "family_exp_create_001": {
+      "family_id": "family_exp_create_001",
+      "scenario_ids": [
+        "scenario_gs_p0a_001"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 4,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 2,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 4,
+      "output_type": "proposal",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "task_primary": "parameter_extraction",
+      "rule_tags": [
+        "activity",
+        "expense",
+        "single_payer",
+        "equal_split",
+        "entity_resolution"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104"
+      ]
+    },
+    "family_exp_create_002": {
+      "family_id": "family_exp_create_002",
+      "scenario_ids": [
+        "scenario_gs_p0a_002"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 5,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 5,
+      "output_type": "proposal",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "task_primary": "parameter_extraction",
+      "rule_tags": [
+        "activity",
+        "expense",
+        "single_payer",
+        "manual_split"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104"
+      ]
+    },
+    "family_exp_create_005": {
+      "family_id": "family_exp_create_005",
+      "scenario_ids": [
+        "scenario_gs_p0b_001"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 3,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 1,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 3,
+      "output_type": "proposal",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "task_primary": "proposal_generation",
+      "rule_tags": [
+        "expense"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103"
+      ]
+    },
+    "family_exp_edit_001": {
+      "family_id": "family_exp_edit_001",
+      "scenario_ids": [
+        "scenario_gs_p0a_009"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 5,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 5,
+      "output_type": "proposal",
+      "intent_ids": [
+        "update_expense"
+      ],
+      "task_primary": "proposal_generation",
+      "rule_tags": [
+        "expense",
+        "d4_preview_only",
+        "ui_context"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104",
+        "00000000-0000-4000-8000-000000000110",
+        "result-p0a-expense-009",
+        "screen-expense-09"
+      ]
+    },
+    "family_exp_edit_003": {
+      "family_id": "family_exp_edit_003",
+      "scenario_ids": [
+        "scenario_gs_p0b_004"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 5,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 5,
+      "output_type": "proposal",
+      "intent_ids": [
+        "update_expense",
+        "explain_error"
+      ],
+      "task_primary": "proposal_generation",
+      "rule_tags": [
+        "d4_preview_only"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104",
+        "00000000-0000-4000-8000-000000000120",
+        "result-exp-edit-003-read"
+      ]
+    },
+    "family_exp_edit_004": {
+      "family_id": "family_exp_edit_004",
+      "scenario_ids": [
+        "scenario_gs_p0b_005"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 4,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 2,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 4,
+      "output_type": "proposal",
+      "intent_ids": [
+        "update_expense_presentation"
+      ],
+      "task_primary": "proposal_generation",
+      "rule_tags": [
+        "ui_context"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000120"
+      ]
+    },
+    "family_exp_read_001": {
+      "family_id": "family_exp_read_001",
+      "scenario_ids": [
+        "scenario_gs_p0b_006"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 5,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 5,
+      "output_type": "tool_call",
+      "intent_ids": [
+        "find_expenses"
+      ],
+      "task_primary": "parameter_extraction",
+      "rule_tags": [
+        "expense"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103"
+      ]
+    },
+    "family_exp_read_002": {
+      "family_id": "family_exp_read_002",
+      "scenario_ids": [
+        "scenario_gs_p0a_006"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 4,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 2,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 4,
+      "output_type": "clarification",
+      "intent_ids": [
+        "find_expenses"
+      ],
+      "task_primary": "clarification",
+      "rule_tags": [
+        "expense",
+        "clarification",
+        "entity_resolution"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000107",
+        "00000000-0000-4000-8000-000000000108",
+        "188",
+        "2026-09-12T18:30:00+08:00",
+        "2026-09-12T19:00:00+08:00",
+        "220",
+        "CNY",
+        "火锅"
+      ]
+    },
+    "family_exp_read_003": {
+      "family_id": "family_exp_read_003",
+      "scenario_ids": [
+        "scenario_gs_p0a_007"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 5,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 5,
+      "output_type": "tool_call",
+      "intent_ids": [
+        "query_expense"
+      ],
+      "task_primary": "tool_call",
+      "rule_tags": [
+        "expense",
+        "ui_context"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000109",
+        "screen-expense-42"
+      ]
+    },
+    "family_fin_001": {
+      "family_id": "family_fin_001",
+      "scenario_ids": [
+        "scenario_gs_p0b_014"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 4,
+      "gold_sample_count": 1,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 4,
+      "output_type": "tool_call",
+      "intent_ids": [
+        "query_final_settlement",
+        "explain_final_settlement"
+      ],
+      "task_primary": "tool_call",
+      "rule_tags": [
+        "expense"
+      ],
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104",
+        "final-suggestion-activity-100-v7-01",
+        "result-trf-002-verified"
+      ]
+    },
+    "family_ictx_001": {
+      "family_id": "family_ictx_001",
+      "scenario_ids": [
+        "scenario_gs_p0b_020"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 5,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 2,
+      "unique_surface_variant_count": 5,
+      "output_type": "proposal",
+      "intent_ids": [
+        "update_expense"
+      ],
+      "task_primary": "entity_resolution",
+      "rule_tags": [
+        "d4_preview_only",
+        "entity_resolution",
+        "interaction_context"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104",
+        "00000000-0000-4000-8000-000000000120",
+        "result-ictx-001-read",
+        "result-ictx-recent-success"
+      ]
+    },
+    "family_ictx_002": {
+      "family_id": "family_ictx_002",
+      "scenario_ids": [
+        "scenario_gs_p0b_021"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 2,
+      "unique_surface_variant_count": 6,
+      "output_type": "clarification",
+      "intent_ids": [
+        "update_expense_presentation"
+      ],
+      "task_primary": "clarification",
+      "rule_tags": [
+        "clarification",
+        "entity_resolution",
+        "interaction_context"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000120",
+        "00000000-0000-4000-8000-000000000122",
+        "result-recent-parking-east",
+        "result-recent-parking-west"
+      ]
+    },
+    "family_ictx_003": {
+      "family_id": "family_ictx_003",
+      "scenario_ids": [
+        "scenario_gs_p0b_022"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 5,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 2,
+      "unique_surface_variant_count": 5,
+      "output_type": "answer",
+      "intent_ids": [
+        "find_expenses"
+      ],
+      "task_primary": "interaction_context_reasoning",
+      "rule_tags": [
+        "interaction_context"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "result-ictx-003-failure",
+        "result-ictx-003-verified"
+      ]
+    },
+    "family_ictx_006": {
+      "family_id": "family_ictx_006",
+      "scenario_ids": [
+        "scenario_gs_p0b_023"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 2,
+      "unique_surface_variant_count": 6,
+      "output_type": "clarification",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "task_primary": "interaction_context_reasoning",
+      "rule_tags": [
+        "clarification",
+        "pending_default_policy",
+        "ui_context"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "draft-ictx-006-1",
+        "screen-ictx-006"
+      ]
+    },
+    "family_ictx_008": {
+      "family_id": "family_ictx_008",
+      "scenario_ids": [
+        "scenario_gs_p0a_008"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 2,
+      "unique_surface_variant_count": 6,
+      "output_type": "clarification",
+      "intent_ids": [
+        "clarify_reference"
+      ],
+      "task_primary": "interaction_context_reasoning",
+      "rule_tags": [
+        "expense",
+        "clarification",
+        "interaction_context",
+        "ui_context"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "screen-new-18",
+        "screen-old-17"
+      ]
+    },
+    "family_pre_core_003": {
+      "family_id": "family_pre_core_003",
+      "scenario_ids": [
+        "scenario_gs_p0b_009"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 6,
+      "output_type": "answer",
+      "intent_ids": [
+        "explain_prepayment",
+        "explain_rule"
+      ],
+      "task_primary": "result_explanation",
+      "rule_tags": [
+        "multi_currency"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "result-pre-core-003-verified"
+      ]
+    },
+    "family_pre_gated_001": {
+      "family_id": "family_pre_gated_001",
+      "scenario_ids": [
+        "scenario_gs_p0a_010"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 3,
+      "gold_sample_count": 1,
+      "teacher_sample_count": 2,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 3,
+      "output_type": "proposal",
+      "intent_ids": [
+        "create_prepayment"
+      ],
+      "task_primary": "proposal_generation",
+      "rule_tags": [
+        "activity",
+        "prepayment"
+      ],
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104",
+        "result-p0a-prepayment-state-010"
+      ]
+    },
+    "family_pre_gated_004": {
+      "family_id": "family_pre_gated_004",
+      "scenario_ids": [
+        "scenario_gs_p0b_011"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 3,
+      "gold_sample_count": 1,
+      "teacher_sample_count": 2,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 3,
+      "output_type": "clarification",
+      "intent_ids": [
+        "create_prepayment"
+      ],
+      "task_primary": "clarification",
+      "rule_tags": [
+        "clarification",
+        "multi_currency",
+        "ui_context"
+      ],
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "missing"
+      ]
+    },
+    "family_ref_001": {
+      "family_id": "family_ref_001",
+      "scenario_ids": [
+        "scenario_gs_p0b_012"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 4,
+      "gold_sample_count": 1,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 4,
+      "output_type": "proposal",
+      "intent_ids": [
+        "create_refund"
+      ],
+      "task_primary": "proposal_generation",
+      "rule_tags": [
+        "refund"
+      ],
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104",
+        "00000000-0000-4000-8000-000000000120",
+        "result-ref-001-original"
+      ]
+    },
+    "family_ref_002": {
+      "family_id": "family_ref_002",
+      "scenario_ids": [
+        "scenario_gs_p0b_013"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 3,
+      "gold_sample_count": 1,
+      "teacher_sample_count": 2,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 3,
+      "output_type": "clarification",
+      "intent_ids": [
+        "create_refund",
+        "create_negative_adjustment"
+      ],
+      "task_primary": "clarification",
+      "rule_tags": [
+        "clarification",
+        "entity_resolution",
+        "refund",
+        "ui_context"
+      ],
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000120",
+        "00000000-0000-4000-8000-000000000122"
+      ]
+    },
+    "family_rule_001": {
+      "family_id": "family_rule_001",
+      "scenario_ids": [
+        "scenario_gs_p0b_033"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 4,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 2,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 4,
+      "output_type": "answer",
+      "intent_ids": [
+        "explain_rule"
+      ],
+      "task_primary": "rule_qa",
+      "rule_tags": [
+        "expense"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "result-rule-001-verified"
+      ]
+    },
+    "family_rule_003": {
+      "family_id": "family_rule_003",
+      "scenario_ids": [
+        "scenario_gs_p0b_034"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 6,
+      "output_type": "answer",
+      "intent_ids": [
+        "explain_rule"
+      ],
+      "task_primary": "rule_qa",
+      "rule_tags": [
+        "expense"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "result-rule-003-verified"
+      ]
+    },
+    "family_rule_004": {
+      "family_id": "family_rule_004",
+      "scenario_ids": [
+        "scenario_gs_p0b_035"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 6,
+      "output_type": "answer",
+      "intent_ids": [
+        "explain_rule"
+      ],
+      "task_primary": "rule_qa",
+      "rule_tags": [
+        "expense"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "result-rule-004-verified"
+      ]
+    },
+    "family_rule_005": {
+      "family_id": "family_rule_005",
+      "scenario_ids": [
+        "scenario_gs_p0b_036"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 5,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 5,
+      "output_type": "answer",
+      "intent_ids": [
+        "explain_rule"
+      ],
+      "task_primary": "rule_qa",
+      "rule_tags": [
+        "conversation_context"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "create_expense",
+        "proposal-dinner-pending",
+        "result-rule-005-verified",
+        "turn-1",
+        "turn-2"
+      ]
+    },
+    "family_rule_006": {
+      "family_id": "family_rule_006",
+      "scenario_ids": [
+        "scenario_gs_p0b_037"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 6,
+      "output_type": "answer",
+      "intent_ids": [
+        "explain_error"
+      ],
+      "task_primary": "error_handling",
+      "rule_tags": [
+        "expense"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "result-rule-006-verified"
+      ]
+    },
+    "family_rule_007": {
+      "family_id": "family_rule_007",
+      "scenario_ids": [
+        "scenario_gs_p0b_038"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 6,
+      "output_type": "answer",
+      "intent_ids": [
+        "explain_error"
+      ],
+      "task_primary": "error_handling",
+      "rule_tags": [
+        "expense"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "result-rule-007-verified"
+      ]
+    },
+    "family_rule_008": {
+      "family_id": "family_rule_008",
+      "scenario_ids": [
+        "scenario_gs_p0b_039"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 6,
+      "output_type": "answer",
+      "intent_ids": [
+        "explain_error"
+      ],
+      "task_primary": "error_handling",
+      "rule_tags": [
+        "expense"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "result-rule-008-verified"
+      ]
+    },
+    "family_trf_002": {
+      "family_id": "family_trf_002",
+      "scenario_ids": [
+        "scenario_gs_p0b_010"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 4,
+      "gold_sample_count": 1,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 4,
+      "output_type": "answer",
+      "intent_ids": [
+        "create_settlement_transfer",
+        "explain_error"
+      ],
+      "task_primary": "result_explanation",
+      "rule_tags": [
+        "expense"
+      ],
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104",
+        "result-trf-002-verified"
+      ]
+    },
+    "family_trf_007": {
+      "family_id": "family_trf_007",
+      "scenario_ids": [
+        "scenario_gs_p0a_011"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 3,
+      "gold_sample_count": 1,
+      "teacher_sample_count": 2,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 3,
+      "output_type": "proposal",
+      "intent_ids": [
+        "void_transfer"
+      ],
+      "task_primary": "proposal_generation",
+      "rule_tags": [
+        "activity",
+        "transfer",
+        "void"
+      ],
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000111",
+        "result-p0a-transfer-011",
+        "金额登记错误"
+      ]
+    },
+    "family_ui_001": {
+      "family_id": "family_ui_001",
+      "scenario_ids": [
+        "scenario_gs_p0b_017"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 5,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 5,
+      "output_type": "answer",
+      "intent_ids": [
+        "explain_expense"
+      ],
+      "task_primary": "ui_context_reasoning",
+      "rule_tags": [
+        "entity_resolution",
+        "ui_context"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104",
+        "00000000-0000-4000-8000-000000000120",
+        "result-ui-001-verified"
+      ]
+    },
+    "family_ui_002": {
+      "family_id": "family_ui_002",
+      "scenario_ids": [
+        "scenario_gs_p0b_018"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 5,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 5,
+      "output_type": "proposal",
+      "intent_ids": [
+        "update_expense"
+      ],
+      "task_primary": "ui_context_reasoning",
+      "rule_tags": [
+        "d4_preview_only",
+        "ui_context"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000103",
+        "00000000-0000-4000-8000-000000000104",
+        "00000000-0000-4000-8000-000000000120",
+        "result-ui-002-read"
+      ]
+    },
+    "family_ui_003": {
+      "family_id": "family_ui_003",
+      "scenario_ids": [
+        "scenario_gs_p0b_019"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 4,
+      "gold_sample_count": 1,
+      "teacher_sample_count": 3,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 4,
+      "output_type": "proposal",
+      "intent_ids": [
+        "delete_expense"
+      ],
+      "task_primary": "ui_context_reasoning",
+      "rule_tags": [
+        "ui_context"
+      ],
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101",
+        "00000000-0000-4000-8000-000000000120",
+        "result-ui-003-selected-expense"
+      ]
+    },
+    "family_uns_001": {
+      "family_id": "family_uns_001",
+      "scenario_ids": [
+        "scenario_gs_p0a_013"
+      ],
+      "canonical_scenario_count": 1,
+      "sample_count": 6,
+      "gold_sample_count": 2,
+      "teacher_sample_count": 4,
+      "unique_exact_ground_truth_count": 1,
+      "unique_decision_signature_count": 1,
+      "unique_business_state_count": 1,
+      "unique_runtime_context_state_count": 1,
+      "unique_surface_variant_count": 6,
+      "output_type": "unsupported",
+      "intent_ids": [
+        "unsupported_request"
+      ],
+      "task_primary": "unsupported_detection",
+      "rule_tags": [
+        "unsupported",
+        "permission"
+      ],
+      "ai_scope": "CORE",
+      "business_state_ids": [
+        "00000000-0000-4000-8000-000000000100",
+        "00000000-0000-4000-8000-000000000101"
+      ]
+    }
+  }
+}
