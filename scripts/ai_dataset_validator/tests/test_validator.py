@@ -20,6 +20,7 @@ class OfflineValidatorTests(unittest.TestCase):
         cls.samples = json.loads((ROOT / "docs/ai/dataset/examples/samples.json").read_text(encoding="utf-8"))
         cls.canonical_scenarios = json.loads((ROOT / "docs/ai/dataset/gold_seed/v0.1/p0a/scenarios.json").read_text(encoding="utf-8"))
         cls.p0b_scenarios = json.loads((ROOT / "docs/ai/dataset/gold_seed/v0.1/p0b/scenarios.json").read_text(encoding="utf-8"))
+        cls.gold_seed_samples = json.loads((ROOT / "docs/ai/dataset/gold_seed/v0.1/p0/samples.json").read_text(encoding="utf-8"))
 
     def sample(self, sample_id):
         return copy.deepcopy(next(item for item in self.samples if item["sample_id"] == sample_id))
@@ -143,6 +144,46 @@ class OfflineValidatorTests(unittest.TestCase):
         sample["source"]["surface_form_type"] = "teacher_generated"
         sample["source"]["teacher"] = None
         self.assertIn("TEACHER_PROVENANCE_MISSING", self.codes(self.validator.validate_sample(sample)))
+
+    def test_approved_sample_requires_review_evidence_and_audit_notes(self):
+        sample = self.sample("sample_001")
+        sample["dataset_metadata"]["lifecycle_status"] = "approved"
+        sample["trust"]["surface_form_reviewed"] = True
+        sample["trust"]["validation_evidence"] = ["independent review report"]
+        sample["dataset_metadata"]["review_notes"] = "Reviewer identity recorded; approved 2026-09-29."
+        self.assertTrue(self.validator.validate_sample(sample).valid)
+
+        sample["trust"]["surface_form_reviewed"] = False
+        sample["trust"]["validation_evidence"] = []
+        sample["dataset_metadata"]["review_notes"] = None
+        codes = self.codes(self.validator.validate_sample(sample))
+        self.assertTrue({"SAMPLE_APPROVAL_SURFACE_REVIEW", "SAMPLE_APPROVAL_EVIDENCE", "SAMPLE_APPROVAL_AUDIT"} <= codes)
+
+    def test_mock_teacher_candidate_must_remain_nontraining_silver(self):
+        sample = self.sample("sample_001")
+        sample["example_only"] = True
+        sample["source"]["surface_form_type"] = "teacher_generated"
+        sample["source"]["generator"] = "ai_teacher_generator/0.1.0"
+        sample["source"]["teacher"] = {
+            "provider": "mock", "model": "mock-v1", "generation_run_id": "mock-run-001",
+            "prompt_version": "surface-variant-v1.0.0", "generated_at": "2026-09-29T00:00:00Z",
+            "temperature": 0, "seed": 7,
+        }
+        sample["trust"].update({"level": "SILVER", "surface_form_reviewed": False})
+        sample["dataset_metadata"]["lifecycle_status"] = "generated"
+        self.assertTrue(self.validator.validate_sample(sample).valid)
+
+        sample["trust"]["level"] = "GOLD"
+        sample["dataset_metadata"]["lifecycle_status"] = "approved"
+        self.assertIn("MOCK_CANDIDATE_GOVERNANCE", self.codes(self.validator.validate_sample(sample)))
+
+    def test_model_visible_input_rejects_production_metadata(self):
+        sample = self.sample("sample_001")
+        sample["input"]["conversation_context"]["conversation_id"] = "scenario_gs_p0a_001"
+        self.assertIn("INPUT_PRODUCTION_METADATA", self.codes(self.validator.validate_sample(sample)))
+        sample = self.sample("sample_001")
+        sample["input"]["user_message"] = "EXP-CREATE-001"
+        self.assertIn("INPUT_PRODUCTION_METADATA", self.codes(self.validator.validate_sample(sample)))
 
     def test_16_manifest_count_mismatch_is_rejected(self):
         manifest = json.loads((ROOT / "docs/ai/dataset/examples/dataset_manifest.json").read_text(encoding="utf-8"))
@@ -307,6 +348,147 @@ class OfflineValidatorTests(unittest.TestCase):
         self.validator._issues = []
         self.validator._validate_scenario_batch_authenticity([scenario], "scenarios.json")
         self.assertIn("SCENARIO_ASSERTION_BOILERPLATE", self.codes(self.validator._report({})))
+
+    def test_sample_must_preserve_complete_canonical_output(self):
+        self.validator._issues = []
+        truth = {"type": "answer", "content": "依据服务端结果", "evidence_result_ids": ["result-1"]}
+        changed = copy.deepcopy(truth)
+        changed["content"] = "编造的另一结果"
+        self.validator._compare_business_truth(truth, changed, "samples.json", "sample_test")
+        self.assertIn("GROUND_TRUTH_CONFLICT", self.codes(self.validator._report({})))
+
+    def test_complete_p0_batch_enforces_matrix_quotas_and_synthetic_exclusion(self):
+        scenarios = self.canonical_scenarios + self.p0b_scenarios
+        report = self.validator.validate_dataset(scenarios, [])
+        self.assertIn("P0_SAMPLE_QUOTA", self.codes(report))
+        self.validator._issues = []
+        self.validator._validate_p0_sample_quotas(
+            scenarios,
+            [{
+                "sample_id": "sample_synthetic",
+                "scenario_id": "scenario_gs_p0b_015",
+                "source": {"surface_form_type": "human_authored"},
+                "trust": {"level": "GOLD"},
+                "dataset_metadata": {"lifecycle_status": "approved"},
+            }],
+            "samples.json",
+        )
+        codes = self.codes(self.validator._report({}))
+        self.assertIn("P0_SYNTHETIC_SAMPLE_EXCLUDED", codes)
+
+    def test_gold_seed_under_or_over_quota_remains_an_error(self):
+        scenarios = self.canonical_scenarios + self.p0b_scenarios
+        self.validator._issues = []
+        self.validator._validate_p0_sample_quotas(scenarios, self.gold_seed_samples[:-1], "samples.json")
+        self.assertIn("P0_SAMPLE_QUOTA", self.codes(self.validator._report({})))
+
+        self.validator._issues = []
+        over_quota = copy.deepcopy(self.gold_seed_samples)
+        extra = copy.deepcopy(over_quota[0])
+        extra["sample_id"] = "sample_gold_quota_extra"
+        over_quota.append(extra)
+        self.validator._validate_p0_sample_quotas(scenarios, over_quota, "samples.json")
+        self.assertIn("P0_SAMPLE_QUOTA", self.codes(self.validator._report({})))
+
+    def test_teacher_only_pool_does_not_trigger_gold_seed_quotas(self):
+        scenarios = self.canonical_scenarios + self.p0b_scenarios
+        teacher_pool = []
+        for index, scenario in enumerate(scenarios):
+            teacher_pool.append({
+                "sample_id": f"sample_teacher_quota_{index}",
+                "scenario_id": scenario["scenario_id"],
+                "source": {"surface_form_type": "teacher_generated"},
+                "trust": {"level": "SILVER"},
+                "dataset_metadata": {"lifecycle_status": "reviewed"},
+            })
+        self.validator._issues = []
+        self.validator._validate_p0_sample_quotas(scenarios, teacher_pool, "teacher-candidates.json")
+        self.assertNotIn("P0_SAMPLE_QUOTA", self.codes(self.validator._report({})))
+        self.assertNotIn("P0_SYNTHETIC_SAMPLE_EXCLUDED", self.codes(self.validator._report({})))
+
+    def test_mixed_gold_and_teacher_pool_counts_only_approved_gold_for_quotas(self):
+        scenarios = self.canonical_scenarios + self.p0b_scenarios
+        teacher_pool = []
+        for index, scenario in enumerate(scenarios):
+            teacher_pool.append({
+                "sample_id": f"sample_teacher_mixed_quota_{index}",
+                "scenario_id": scenario["scenario_id"],
+                "source": {"surface_form_type": "teacher_generated"},
+                "trust": {"level": "SILVER"},
+                "dataset_metadata": {"lifecycle_status": "reviewed"},
+            })
+        self.validator._issues = []
+        self.validator._validate_p0_sample_quotas(
+            scenarios,
+            [*self.gold_seed_samples, *teacher_pool],
+            "mixed-samples.json",
+        )
+        self.assertNotIn("P0_SAMPLE_QUOTA", self.codes(self.validator._report({})))
+
+    def test_frozen_teacher_dataset_requires_silver_approved_reviewed_training_governance(self):
+        sample = self.sample("sample_001")
+        sample["example_only"] = False
+        sample["source"]["surface_form_type"] = "teacher_generated"
+        sample["source"]["generator"] = "ai_teacher_generator/0.1.0"
+        sample["source"]["teacher"] = {
+            "provider": "opencode", "model": "deepseek-v4.1-flash", "generation_run_id": "fullgen-test-run",
+            "prompt_version": "surface-variant-v1.0.0", "generated_at": "2026-09-29T00:00:00Z",
+            "temperature": 0.0, "seed": 19,
+        }
+        sample["trust"].update({
+            "level": "SILVER", "surface_form_reviewed": True,
+            "validation_evidence": ["Source Ground Truth locked", "Human surface review recorded"],
+        })
+        sample["dataset_metadata"].update({
+            "lifecycle_status": "approved",
+            "review_notes": "Reviewed, approved for Teacher Dataset v0.1; training_eligible=true.",
+        })
+        manifest = {"status": "frozen", "notes": "Teacher Dataset v0.1; training_eligible=true."}
+
+        self.validator._issues = []
+        self.validator._validate_frozen_teacher_governance(manifest, [sample], "dataset_manifest.json")
+        self.assertEqual(set(), self.codes(self.validator._report({})))
+
+        sample["trust"]["level"] = "GOLD"
+        sample["trust"]["surface_form_reviewed"] = False
+        sample["dataset_metadata"]["lifecycle_status"] = "reviewed"
+        sample["example_only"] = True
+        sample["split"] = "train"
+        self.validator._issues = []
+        self.validator._validate_frozen_teacher_governance(manifest, [sample], "dataset_manifest.json")
+        self.assertIn("TEACHER_FROZEN_GOVERNANCE", self.codes(self.validator._report({})))
+
+    def test_teacher_generated_sample_cannot_be_promoted_to_gold(self):
+        sample = self.sample("sample_001")
+        sample["source"]["surface_form_type"] = "teacher_generated"
+        sample["source"]["generator"] = "ai_teacher_generator/0.1.0"
+        sample["source"]["teacher"] = {
+            "provider": "opencode", "model": "deepseek-v4.1-flash", "generation_run_id": "teacher-gold-test",
+            "prompt_version": "surface-variant-v1.0.0", "generated_at": "2026-09-29T00:00:00Z",
+            "temperature": 0.0, "seed": 7,
+        }
+        sample["trust"]["level"] = "GOLD"
+        self.assertIn("TEACHER_GOLD_FORBIDDEN", self.codes(self.validator.validate_sample(sample)))
+
+    def test_canonical_training_assembly_preserves_source_trace_and_family_splits(self):
+        path = ROOT / "docs/ai/dataset/canonical_training/v0.1"
+        report = self.validator.load_dataset(path)
+        self.assertEqual([], report.errors)
+        samples = json.loads((path / "samples.json").read_text(encoding="utf-8"))
+        by_family = {}
+        for sample in samples:
+            self.assertTrue(sample["source"]["source_reference"].startswith("assembly:canonical_training/v0.1|"))
+            by_family.setdefault(sample["scenario_family_id"], set()).add(sample["split"])
+        self.assertTrue(all(len(splits) == 1 for splits in by_family.values()))
+        self.assertEqual(250, len(samples))
+
+    def test_canonical_training_assembly_rejects_cross_split_semantic_near_duplicate(self):
+        self.validator._issues = []
+        self.validator._semantic_similarity_split_leakage([
+            {"sample_id": "sample_near_train", "split": "train", "surface_form": {"user_message": "帮我记一笔午饭"}},
+            {"sample_id": "sample_near_test", "split": "test", "surface_form": {"user_message": "帮我记一笔午饭吧"}},
+        ], "samples.json")
+        self.assertIn("SEMANTIC_NEAR_DUPLICATE_CROSS_SPLIT", self.codes(self.validator._report({})))
 
 
 if __name__ == "__main__":

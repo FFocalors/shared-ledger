@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import difflib
 import hashlib
 import json
 import re
@@ -12,7 +13,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterable
-from urllib.parse import unquote
+from urllib.parse import quote, unquote
 import uuid
 
 
@@ -67,6 +68,7 @@ class DatasetValidator:
         }
         self.schemas = {key: self._read_json(path) for key, path in self.schema_paths.items()}
         self.family_titles = self._read_family_titles(ai / "dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md")
+        self.family_matrix = self._read_family_matrix(ai / "dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md")
         self.intents = {item["intent_id"]: item for item in self.schemas["intent_catalog"]["intents"]}
         self.tools = {item["tool_name"]: item for item in self.schemas["tool_catalog"]["tools"]}
         self.external = {
@@ -114,6 +116,32 @@ class DatasetValidator:
             if match:
                 titles[match.group(1)] = match.group(2).strip().strip("`")
         return titles
+
+    @staticmethod
+    def _read_family_matrix(path: Path) -> dict[str, dict[str, Any]]:
+        rows: dict[str, dict[str, Any]] = {}
+        if not path.is_file():
+            return rows
+        for line in path.read_text(encoding="utf-8-sig").splitlines():
+            if not line.startswith("| `"):
+                continue
+            cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+            if len(cells) < 12:
+                continue
+            family_id = cells[0].strip("`")
+            if not re.fullmatch(r"[A-Z][A-Z0-9-]+", family_id):
+                continue
+            try:
+                sample_target = int(cells[10])
+            except ValueError:
+                continue
+            rows[family_id] = {
+                "title": cells[1].strip("`"),
+                "primary_task": cells[3].strip("`").strip(),
+                "sample_target": sample_target,
+                "priority": cells[11].strip("`"),
+            }
+        return rows
 
     def _add(self, severity: str, code: str, file: str, record_id: str | None, path: str, message: str) -> None:
         self._issues.append(Issue(severity, code, file, record_id, path or "$", message))
@@ -226,8 +254,18 @@ class DatasetValidator:
             meta = obj.get("dataset_metadata", {})
             if meta.get("deprecated_by_version") and lifecycle == "approved":
                 self._add("ERROR", "DEPRECATED_APPROVED", file, rid, "/dataset_metadata/lifecycle_status", "Deprecated sample cannot remain approved.")
-            if obj.get("source", {}).get("surface_form_type") == "teacher_generated":
+            if lifecycle == "approved":
+                if obj.get("trust", {}).get("surface_form_reviewed") is not True:
+                    self._add("ERROR", "SAMPLE_APPROVAL_SURFACE_REVIEW", file, rid, "/trust/surface_form_reviewed", "Approved samples require explicit human Surface Form review.")
+                if not obj.get("trust", {}).get("validation_evidence"):
+                    self._add("ERROR", "SAMPLE_APPROVAL_EVIDENCE", file, rid, "/trust/validation_evidence", "Approved samples require review or validation evidence.")
+                if not meta.get("review_notes"):
+                    self._add("ERROR", "SAMPLE_APPROVAL_AUDIT", file, rid, "/dataset_metadata/review_notes", "Approved samples require reviewer, date, and approval-basis notes.")
+            source = obj.get("source", {})
+            if source.get("surface_form_type") == "teacher_generated":
                 teacher = obj.get("source", {}).get("teacher")
+                if obj.get("trust", {}).get("level") == "GOLD":
+                    self._add("ERROR", "TEACHER_GOLD_FORBIDDEN", file, rid, "/trust/level", "Teacher-generated Samples must not be labeled GOLD.")
                 required = ("provider", "model", "generation_run_id", "prompt_version", "generated_at", "temperature")
                 if not isinstance(teacher, dict) or any(k not in teacher or teacher[k] is None for k in required):
                     self._add("ERROR", "TEACHER_PROVENANCE_MISSING", file, rid, "/source/teacher", "Teacher source requires provider, model, generation_run_id, prompt_version, generated_at, and temperature.")
@@ -238,8 +276,50 @@ class DatasetValidator:
                     or not obj.get("trust", {}).get("validation_evidence")
                 ):
                     self._add("ERROR", "TEACHER_APPROVAL_EVIDENCE", file, rid, "/dataset_metadata/lifecycle_status", "Teacher data requires validation evidence and human surface review before approval.")
+                elif lifecycle in {"generated", "validated"} and (
+                    obj.get("trust", {}).get("level") != "SILVER"
+                    or obj.get("trust", {}).get("surface_form_reviewed") is not False
+                ):
+                    self._add("ERROR", "TEACHER_CANDIDATE_GOVERNANCE", file, rid, "/trust", "Unreviewed Teacher candidates must remain SILVER with surface_form_reviewed=false.")
+                if isinstance(teacher, dict) and teacher.get("provider", "").casefold() == "mock" and (
+                    obj.get("trust", {}).get("level") == "GOLD"
+                    or lifecycle == "approved"
+                    or obj.get("example_only") is not True
+                    or obj.get("split") != "unassigned"
+                ):
+                    self._add("ERROR", "MOCK_CANDIDATE_GOVERNANCE", file, rid, "/source/teacher/provider", "Mock candidates must be example-only, unassigned, non-Gold, and not approved.")
             elif obj.get("source", {}).get("teacher") is not None:
                 self._add("ERROR", "TEACHER_PROVENANCE_SPOOFED", file, rid, "/source/teacher", "Non-teacher sources must not include Teacher provenance.")
+            if isinstance(obj.get("input"), dict):
+                visible_parts: list[str] = []
+                metadata_keys = {"scenario_id", "family_id", "sample_id", "dataset_id", "dataset_version", "training_metadata"}
+
+                def collect_visible(value: Any) -> None:
+                    if isinstance(value, dict):
+                        for key, child in value.items():
+                            if key in metadata_keys:
+                                visible_parts.append(key)
+                            elif key not in {"result_id", "result_ids", "verified_result_ids", "action_id"}:
+                                collect_visible(child)
+                    elif isinstance(value, list):
+                        for child in value:
+                            collect_visible(child)
+                    elif isinstance(value, str):
+                        visible_parts.append(value)
+
+                collect_visible(obj["input"])
+                visible_input = "\n".join(visible_parts)
+                metadata_patterns = (
+                    r"\bscenario_[a-z0-9][a-z0-9_-]*\b",
+                    r"\bfamily_[a-z0-9_-]+\b",
+                    r"\bsample_[a-z0-9][a-z0-9_-]*\b",
+                    r"\b[A-Z]{2,6}(?:-[A-Z0-9]+){1,3}-[0-9]{3}\b",
+                    r"\bgold[_ -]?seed\b",
+                    r"\btraining[_ -]?(?:sample|dataset|metadata)\b",
+                    r"\bdataset[_ -]?(?:version|id|metadata)\b",
+                )
+                if any(re.search(pattern, visible_input, flags=re.IGNORECASE) for pattern in metadata_patterns):
+                    self._add("ERROR", "INPUT_PRODUCTION_METADATA", file, rid, "/input", "Model-visible input must not contain Dataset, Family, Scenario, Sample, or training metadata.")
         privacy = obj.get("privacy", {}) if not is_sample else obj.get("dataset_metadata", {})
         for flag in ("contains_production_data", "contains_real_personal_data"):
             if privacy.get(flag) is not False:
@@ -470,12 +550,14 @@ class DatasetValidator:
                 result.add(entity["id"])
         return result
 
-    def _cross_record(self, sample: dict[str, Any], scenarios: dict[str, dict[str, Any]], file: str, rid: str | None) -> None:
+    def _cross_record(self, sample: dict[str, Any], scenarios: dict[str, dict[str, Any]], file: str, rid: str | None, scenario_split_reference_only: bool = False) -> None:
         scenario = scenarios.get(sample.get("scenario_id"))
         if scenario is None:
             self._add("ERROR", "SCENARIO_MISSING", file, rid, "/scenario_id", f"Scenario {sample.get('scenario_id')} does not exist.")
             return
         for field in ("scenario_family_id", "split_group_id", "split"):
+            if field == "split" and scenario_split_reference_only and scenario.get("split") == "unassigned":
+                continue
             if sample.get(field) != scenario.get(field):
                 self._add("ERROR", "SCENARIO_SAMPLE_MISMATCH", file, rid, f"/{field}", f"Sample {field} must match its Scenario.")
         if sample.get("scope") != scenario.get("scope"):
@@ -500,6 +582,8 @@ class DatasetValidator:
     def _compare_business_truth(self, truth: dict[str, Any], sample: dict[str, Any], file: str, rid: str | None) -> None:
         if not truth or not sample:
             return
+        if truth != sample:
+            self._add("ERROR", "GROUND_TRUTH_CONFLICT", file, rid, "/expected/model_output", "Sample Model Output must preserve the complete Canonical Scenario Model Output.")
         fields = ["type", "intent_id"]
         for key in fields:
             if truth.get(key) != sample.get(key):
@@ -518,6 +602,9 @@ class DatasetValidator:
     def validate_dataset(self, scenarios: list[dict[str, Any]], samples: list[dict[str, Any]], manifest: dict[str, Any] | None = None, dataset_root: str | Path | None = None, files: dict[str, str] | None = None) -> ValidationReport:
         self._issues = []
         files = files or {}
+        canonical_training_assembly = bool(
+            manifest and "assembly_mode=canonical_training_v0.1" in manifest.get("notes", "")
+        )
         authenticity_scenarios = [scenario for scenario in scenarios if scenario.get("source", {}).get("type") == "business_logic"]
         self._validate_scenario_batch_authenticity(authenticity_scenarios, files.get("scenarios", "scenarios.json"))
         scenario_ids: dict[str, dict[str, Any]] = {}
@@ -548,16 +635,63 @@ class DatasetValidator:
                 self._add("ERROR", "OUTPUT_TYPE_MISMATCH", file, rid, f"$[{index}]/expected/output_type", "expected.output_type must equal model_output.type.")
             self._clarification_and_entities(sample, file, rid)
             self._proposal_success_language(output, file, rid)
-            self._cross_record(sample, scenario_ids, file, rid)
+            self._cross_record(sample, scenario_ids, file, rid, scenario_split_reference_only=canonical_training_assembly)
             if rid in sample_ids:
                 self._add("ERROR", "DUPLICATE_SAMPLE_ID", file, rid, f"$[{index}]/sample_id", "Sample ID is duplicated.")
             sample_ids[rid] = sample
-        self._leakage(scenarios, samples)
+        self._leakage(scenarios, samples, reference_scenarios_unassigned=canonical_training_assembly)
         self._deduplicate(samples)
+        if canonical_training_assembly:
+            self._semantic_similarity_split_leakage(samples, files.get("samples", "samples.json"))
+        self._validate_p0_sample_quotas(scenarios, samples, files.get("samples", "samples.json"))
         if manifest:
             self._validate_manifest(manifest, scenarios, samples, dataset_root, files.get("manifest", "dataset_manifest.json"))
         stats = self._statistics(scenarios, samples)
         return self._report(stats)
+
+    def _validate_p0_sample_quotas(self, scenarios: list[dict[str, Any]], samples: list[dict[str, Any]], file: str) -> None:
+        p0_targets = {family: data["sample_target"] for family, data in self.family_matrix.items() if data["priority"] == "P0"}
+        if not p0_targets:
+            return
+        scenario_by_id = {row.get("scenario_id"): row for row in scenarios}
+        scenario_family_by_id = {
+            row.get("scenario_id"): row.get("source", {}).get("source_id")
+            for row in scenarios
+        }
+        represented = set(scenario_family_by_id.values())
+        # Enforce Matrix quotas only for a complete P0 scenario batch. Partial datasets,
+        # such as Examples or focused tests, are validated by the ordinary per-record rules.
+        if not set(p0_targets).issubset(represented):
+            return
+        official_gold_samples = [
+            sample for sample in samples
+            if sample.get("source", {}).get("surface_form_type") == "human_authored"
+            and sample.get("trust", {}).get("level") == "GOLD"
+            and sample.get("dataset_metadata", {}).get("lifecycle_status") == "approved"
+        ]
+        # The Matrix quota is specifically the human-authored Gold Seed target.
+        # Teacher-generated candidates remain outside that quota even if their
+        # records are present in the same validation batch.
+        # A nonempty all-Teacher SILVER batch is a candidate pool, not a Gold
+        # Seed Dataset. An empty sample list still represents a missing Gold
+        # Seed batch and is checked against the Matrix below.
+        if samples and not official_gold_samples:
+            return
+        counts: Counter[str] = Counter()
+        for sample in official_gold_samples:
+            scenario_id = sample.get("scenario_id")
+            scenario = scenario_by_id.get(scenario_id)
+            family = scenario_family_by_id.get(scenario_id)
+            if family not in p0_targets:
+                continue
+            counts[family] += 1
+            if scenario and scenario.get("trust", {}).get("level") == "SYNTHETIC_UNVERIFIED":
+                self._add("ERROR", "P0_SYNTHETIC_SAMPLE_EXCLUDED", file, sample.get("sample_id"), "/scenario_id", "SYNTHETIC_UNVERIFIED Scenarios are excluded from Gold Sample production.")
+        for family, quota in p0_targets.items():
+            scenario = next((row for row in scenarios if row.get("source", {}).get("source_id") == family), None)
+            expected = 0 if scenario and scenario.get("trust", {}).get("level") == "SYNTHETIC_UNVERIFIED" else quota
+            if counts[family] != expected:
+                self._add("ERROR", "P0_SAMPLE_QUOTA", file, None, "/", f"Matrix P0 family {family} requires {expected} samples for its scenario trust status; found {counts[family]}.")
 
     def _validate_scenario_output(self, scenario: dict[str, Any], file: str) -> None:
         rid = scenario.get("scenario_id")
@@ -834,19 +968,40 @@ class DatasetValidator:
                     seen[key] = rid
                 if re.search(r"本轮用户原话为[“\"「『].+?[”\"」』].{0,12}(?:回答|输出)不得增加这句话未提供的", value):
                     self._add("ERROR", "SCENARIO_ASSERTION_BOILERPLATE", file, rid, f"/ground_truth/deterministic_assertions/{index}", "Replace the generic user-quote guardrail with a scenario-specific, checkable business assertion.")
-    def _leakage(self, scenarios: list[dict[str, Any]], samples: list[dict[str, Any]]) -> None:
+    def _leakage(self, scenarios: list[dict[str, Any]], samples: list[dict[str, Any]], reference_scenarios_unassigned: bool = False) -> None:
         family: dict[str, str] = {}
         group: dict[str, str] = {}
-        locations: dict[str, str] = {}
         rows = [(x, "scenario", x.get("scenario_id")) for x in scenarios] + [(x, "sample", x.get("sample_id")) for x in samples]
         for obj, kind, rid in rows:
             split = obj.get("split", "unassigned")
             for keyname, seen in (("scenario_family_id", family), ("split_group_id", group)):
                 key = obj.get(keyname)
+                # A canonical-training assembly keeps its byte-identical frozen
+                # Scenario snapshot at source split=unassigned. In that explicit
+                # mode, assigned Samples are authoritative, while any Scenario
+                # already carrying a real split must still match them.
+                if kind == "scenario" and reference_scenarios_unassigned and split == "unassigned":
+                    continue
                 if key in seen and seen[key] != split:
                     self._add("ERROR", "SPLIT_LEAKAGE", kind + "s.json", rid, f"/{keyname}", f"{keyname} {key} occurs in split {seen[key]} and {split}.")
                 else:
                     seen[key] = split
+
+    def _semantic_similarity_split_leakage(self, samples: list[dict[str, Any]], file: str) -> None:
+        """Reject high-similarity surfaces assigned to different training splits."""
+        rows = []
+        for sample in samples:
+            message = sample.get("surface_form", {}).get("user_message", "")
+            normalized = "".join(ch for ch in unicodedata.normalize("NFKC", message).casefold() if not ch.isspace())
+            rows.append((sample, normalized))
+        for index, (sample, text) in enumerate(rows):
+            if not text:
+                continue
+            for other, other_text in rows[:index]:
+                if sample.get("split") == other.get("split") or not other_text:
+                    continue
+                if difflib.SequenceMatcher(None, text, other_text).ratio() >= 0.90:
+                    self._add("ERROR", "SEMANTIC_NEAR_DUPLICATE_CROSS_SPLIT", file, sample.get("sample_id"), "/surface_form/user_message", f"Surface is at least 0.90 similar to {other.get('sample_id')} in another split.")
 
     def _deduplicate(self, samples: list[dict[str, Any]]) -> None:
         exact: dict[str, str] = {}
@@ -921,12 +1076,15 @@ class DatasetValidator:
         expected_values = {
             "scenario_count": len(scenarios), "scenario_family_count": stats["families"], "sample_count": len(samples),
             "split_statistics": {key: stats["splits"].get(key, 0) for key in ["train", "validation", "test", "hard_test", "unassigned"]},
-            "task_statistics": stats["tasks"], "scope_statistics": stats["scopes"], "source_statistics": stats["sources"],
+            "task_statistics": stats["tasks"], "scope_statistics": {key: stats["scopes"].get(key, 0) for key in ["CORE", "SUPPORTED_BUT_GATED", "DEFERRED"]}, "source_statistics": stats["sources"],
             "trust_statistics": stats["trust"], "difficulty_statistics": stats["difficulty"], "lifecycle_statistics": stats["lifecycle"],
         }
         for key, expected in expected_values.items():
             if manifest.get(key) != expected:
                 self._add("ERROR", "MANIFEST_STATISTICS", file, rid, f"/{key}", f"Manifest declaration differs from recomputed value {expected!r}.")
+        self._validate_frozen_teacher_governance(manifest, samples, file)
+        if "assembly_mode=canonical_training_v0.1" in manifest.get("notes", ""):
+            self._validate_canonical_training_assembly(manifest, scenarios, samples, dataset_root, file)
         policy = manifest.get("split_policy", {})
         if policy.get("assignment_unit") != "scenario_family":
             self._add("ERROR", "MANIFEST_SPLIT_POLICY", file, rid, "/split_policy/assignment_unit", "Split assignment unit must be scenario_family.")
@@ -950,6 +1108,210 @@ class DatasetValidator:
         actual_errors = sum(issue.severity == "ERROR" for issue in self._issues)
         if declared_errors != actual_errors:
             self._add("ERROR", "MANIFEST_VALIDATION_COUNT", file, rid, "/validation_summary/error_count", f"Manifest error_count must reflect the {actual_errors} errors found before Manifest summary validation.")
+
+    def _validate_frozen_teacher_governance(self, manifest: dict[str, Any], samples: list[dict[str, Any]], file: str) -> None:
+        """Enforce existing Sample governance when a Teacher dataset is frozen.
+
+        The v0.1 Manifest Schema intentionally has no training_eligible property;
+        frozen Teacher datasets declare that policy in the required Manifest
+        notes field and README, without extending the frozen Schema.
+        """
+        teacher_samples = [
+            sample for sample in samples
+            if sample.get("source", {}).get("surface_form_type") == "teacher_generated"
+        ]
+        if manifest.get("status") != "frozen" or not teacher_samples:
+            return
+        notes = manifest.get("notes", "")
+        if not re.search(r"\btraining_eligible\s*=\s*true\b", notes, flags=re.IGNORECASE):
+            self._add("ERROR", "TEACHER_TRAINING_ELIGIBILITY_UNDECLARED", file, "manifest", "/notes", "A frozen Teacher Dataset must explicitly declare training_eligible=true in its governance notes.")
+        training_assembly = "assembly_mode=canonical_training_v0.1" in notes
+        for sample in teacher_samples:
+            rid = sample.get("sample_id")
+            requirements = (
+                (sample.get("trust", {}).get("level") == "SILVER", "/trust/level", "Teacher Dataset Samples must remain SILVER."),
+                (sample.get("dataset_metadata", {}).get("lifecycle_status") == "approved", "/dataset_metadata/lifecycle_status", "Frozen Teacher Dataset Samples must be approved after review."),
+                (sample.get("trust", {}).get("surface_form_reviewed") is True, "/trust/surface_form_reviewed", "Frozen Teacher Dataset Samples require reviewed Surface Forms."),
+                (sample.get("example_only") is False, "/example_only", "Frozen Teacher Dataset Samples cannot remain example_only."),
+            )
+            for condition, path, message in requirements:
+                if not condition:
+                    self._add("ERROR", "TEACHER_FROZEN_GOVERNANCE", file, rid, path, message)
+            if not training_assembly and sample.get("split") != "unassigned":
+                self._add("ERROR", "TEACHER_FROZEN_GOVERNANCE", file, rid, "/split", "A standalone frozen Teacher Dataset preserves unassigned splits.")
+
+    def _validate_canonical_training_assembly(
+        self,
+        manifest: dict[str, Any],
+        scenarios: list[dict[str, Any]],
+        samples: list[dict[str, Any]],
+        dataset_root: str | Path | None,
+        file: str,
+    ) -> None:
+        """Verify split assignment and source traceability for a frozen assembly."""
+        rid = "manifest"
+        if manifest.get("status") != "frozen" or not re.search(r"\btraining_eligible\s*=\s*true\b", manifest.get("notes", ""), re.I):
+            self._add("ERROR", "ASSEMBLY_GOVERNANCE", file, rid, "/status", "Canonical training assembly must be frozen and declare training_eligible=true.")
+        policy = manifest.get("split_policy", {})
+        if not isinstance(policy, dict):
+            policy = {}
+        percentages = policy.get("target_percentages", {})
+        canonical_percentages = {"train": 70, "validation": 10, "test": 15, "hard_test": 5}
+        if policy.get("final_split_assigned") is not True or percentages != canonical_percentages:
+            self._add("ERROR", "ASSEMBLY_SPLIT_POLICY", file, rid, "/split_policy", "Canonical training assignment must use the frozen 70/10/15/5 policy and be final.")
+        if not dataset_root:
+            self._add("ERROR", "ASSEMBLY_SOURCE_UNVERIFIED", file, rid, "/artifacts", "Assembly validation requires a local dataset root.")
+            return
+        root = Path(dataset_root).resolve()
+        assignment_artifact = next((item for item in manifest.get("artifacts", []) if Path(item.get("path", "")).name == "split_assignment.json"), None)
+        if not assignment_artifact:
+            self._add("ERROR", "ASSEMBLY_ASSIGNMENT_MISSING", file, rid, "/artifacts", "Canonical training assembly requires split_assignment.json.")
+            return
+        assignment_path = (root / assignment_artifact.get("path", "")).resolve()
+        if not assignment_path.is_relative_to(root) or not assignment_path.is_file():
+            self._add("ERROR", "ASSEMBLY_ASSIGNMENT_MISSING", file, rid, "/artifacts", "split_assignment.json is missing or escapes the dataset directory.")
+            return
+        try:
+            assignments = self._read_json(assignment_path)
+        except (OSError, ValueError, json.JSONDecodeError):
+            self._add("ERROR", "ASSEMBLY_ASSIGNMENT_INVALID", file, rid, "/artifacts", "split_assignment.json could not be parsed.")
+            return
+        if not isinstance(assignments, list):
+            self._add("ERROR", "ASSEMBLY_ASSIGNMENT_INVALID", file, rid, "/artifacts", "split_assignment.json must be an array of trace records.")
+            return
+        if len(assignments) != len(samples):
+            self._add("ERROR", "ASSEMBLY_ASSIGNMENT_COUNT", file, rid, "/artifacts", "Assignment rows must cover every assembled Sample exactly once.")
+
+        samples_by_id = {sample.get("sample_id"): sample for sample in samples}
+        scenarios_by_id = {scenario.get("scenario_id"): scenario for scenario in scenarios}
+        records_by_id: dict[str, dict[str, Any]] = {}
+        source_cache: dict[str, tuple[str, str, str, dict[str, dict[str, Any]]]] = {}
+        seen_sources: set[tuple[str, str]] = set()
+        family_splits: dict[str, str] = {}
+        family_policies: dict[str, set[str]] = defaultdict(set)
+        active_sample_counts: Counter[str] = Counter()
+        for index, record in enumerate(assignments):
+            if not isinstance(record, dict):
+                self._add("ERROR", "ASSEMBLY_ASSIGNMENT_INVALID", file, rid, f"/artifacts/{index}", "Assignment entry must be an object.")
+                continue
+            sample_id = record.get("sample_id")
+            sample = samples_by_id.get(sample_id)
+            path = f"/artifacts/{index}"
+            if not sample:
+                self._add("ERROR", "ASSEMBLY_SAMPLE_TRACE", file, sample_id, path + "/sample_id", "Assignment refers to no assembled Sample.")
+                continue
+            if sample_id in records_by_id:
+                self._add("ERROR", "ASSEMBLY_ASSIGNMENT_DUPLICATE", file, sample_id, path + "/sample_id", "Sample assignment appears more than once.")
+            records_by_id[sample_id] = record
+            family = sample.get("scenario_family_id")
+            previous_split = family_splits.setdefault(family, sample.get("split", "unassigned"))
+            if previous_split != sample.get("split"):
+                self._add("ERROR", "ASSEMBLY_FAMILY_SPLIT", file, sample_id, path + "/split", "All samples for one Scenario Family and split group must share a single split.")
+            family_policies[family].add(sample.get("policy_status", ""))
+            if sample.get("policy_status") == "active":
+                active_sample_counts[sample.get("split", "unassigned")] += 1
+            for field in ("scenario_id", "scenario_family_id", "split_group_id", "split"):
+                if record.get(field) != sample.get(field):
+                    self._add("ERROR", "ASSEMBLY_ASSIGNMENT_MISMATCH", file, sample_id, path + "/" + field, f"Assignment {field} must match the assembled Sample.")
+            source_dataset = record.get("source_dataset")
+            source_sample_id = record.get("source_sample_id")
+            source_hash = record.get("source_samples_sha256")
+            source_key = (str(source_dataset), str(source_sample_id))
+            if source_key in seen_sources:
+                self._add("ERROR", "ASSEMBLY_SOURCE_TRACE_DUPLICATE", file, sample_id, path + "/source_sample_id", "A source Sample may be assembled only once.")
+            seen_sources.add(source_key)
+            source_prefix = (
+                f"assembly:canonical_training/v0.1|source_dataset={source_dataset}|"
+                f"source_samples_sha256={source_hash}|source_sample_id={source_sample_id}|source_reference_original="
+            )
+            if not isinstance(sample.get("source", {}).get("source_reference"), str) or not sample["source"]["source_reference"].startswith(source_prefix):
+                self._add("ERROR", "ASSEMBLY_SAMPLE_TRACE", file, sample_id, "/source/source_reference", "Sample source_reference must preserve the source record and identify the source dataset/sample.")
+            if not isinstance(source_dataset, str) or not isinstance(source_sample_id, str) or not isinstance(source_hash, str):
+                self._add("ERROR", "ASSEMBLY_SOURCE_TRACE", file, sample_id, path, "Assignment needs source dataset, sample ID and source sample hash.")
+                continue
+            if source_dataset not in source_cache:
+                source_dir = (self.root / source_dataset).resolve()
+                if not source_dir.is_relative_to(self.root) or not source_dir.is_dir():
+                    self._add("ERROR", "ASSEMBLY_SOURCE_UNVERIFIED", file, sample_id, path + "/source_dataset", "Source Dataset path is missing or escapes the repository.")
+                    source_cache[source_dataset] = ("", "", "", {})
+                else:
+                    source_manifest_path = source_dir / "dataset_manifest.json"
+                    try:
+                        source_manifest = self._read_json(source_manifest_path)
+                        source_manifest_hash = hashlib.sha256(source_manifest_path.read_bytes()).hexdigest()
+                        sample_artifact = next(a for a in source_manifest.get("artifacts", []) if a.get("kind") == "sample")
+                        scenario_artifact = next(a for a in source_manifest.get("artifacts", []) if a.get("kind") == "scenario")
+                        sample_path = source_dir / sample_artifact["path"]
+                        actual_hash = hashlib.sha256(sample_path.read_bytes()).hexdigest()
+                        if source_manifest.get("status") != "frozen" or source_hash != sample_artifact.get("sha256") or actual_hash != source_hash:
+                            self._add("ERROR", "ASSEMBLY_SOURCE_HASH", file, sample_id, path + "/source_samples_sha256", "Source Dataset must be frozen and match its declared sample SHA-256.")
+                        scenario_path = source_dir / scenario_artifact["path"]
+                        scenario_hash = hashlib.sha256(scenario_path.read_bytes()).hexdigest()
+                        if scenario_hash != scenario_artifact.get("sha256"):
+                            self._add("ERROR", "ASSEMBLY_SOURCE_HASH", file, sample_id, path + "/source_dataset", "Source Scenario artifact hash does not match its frozen manifest.")
+                        source_rows = self._read_json(sample_path)
+                        source_cache[source_dataset] = (actual_hash, source_manifest_hash, scenario_hash, {row.get("sample_id"): row for row in source_rows})
+                    except (OSError, StopIteration, KeyError, ValueError, json.JSONDecodeError) as exc:
+                        self._add("ERROR", "ASSEMBLY_SOURCE_UNVERIFIED", file, sample_id, path + "/source_dataset", f"Could not validate frozen source Dataset ({type(exc).__name__}).")
+                        source_cache[source_dataset] = ("", "", "", {})
+            cached_hash, cached_manifest_hash, cached_scenario_hash, source_records = source_cache[source_dataset]
+            if record.get("source_dataset_manifest_sha256") != cached_manifest_hash or record.get("source_scenarios_sha256") != cached_scenario_hash:
+                self._add("ERROR", "ASSEMBLY_SOURCE_HASH", file, sample_id, path, "Assignment source manifest/Scenario hashes must match the frozen source artifacts.")
+            source_sample = source_records.get(source_sample_id)
+            if cached_hash != source_hash or not source_sample:
+                self._add("ERROR", "ASSEMBLY_SOURCE_TRACE", file, sample_id, path + "/source_sample_id", "Source Sample ID must exist in the hash-verified source Dataset.")
+                continue
+            assembled_reference = sample.get("source", {}).get("source_reference", "")
+            original_reference = unquote(assembled_reference[len(source_prefix):]) if assembled_reference.startswith(source_prefix) else None
+            if original_reference != source_sample.get("source", {}).get("source_reference"):
+                self._add("ERROR", "ASSEMBLY_SOURCE_TRACE", file, sample_id, "/source/source_reference", "Assembly must preserve the source Sample's original source_reference.")
+            expected_sample = copy.deepcopy(source_sample)
+            expected_sample["split"] = record.get("split")
+            expected_sample["source"]["source_reference"] = assembled_reference
+            if expected_sample != sample:
+                self._add("ERROR", "ASSEMBLY_CONTENT_DRIFT", file, sample_id, "/", "Assembly may change only split and traceable source_reference; all other Sample content must match its frozen source.")
+            if sample.get("scenario_id") != source_sample.get("scenario_id") or sample.get("scenario_family_id") != source_sample.get("scenario_family_id") or sample.get("split_group_id") != source_sample.get("split_group_id"):
+                self._add("ERROR", "ASSEMBLY_SOURCE_TRACE", file, sample_id, path, "Assembly must preserve canonical Scenario, Family and split group.")
+            scenario = scenarios_by_id.get(sample.get("scenario_id"))
+            if not scenario or scenario.get("trust", {}).get("level") == "SYNTHETIC_UNVERIFIED":
+                self._add("ERROR", "ASSEMBLY_SYNTHETIC_EXCLUDED", file, sample_id, "/scenario_id", "Training assembly cannot include samples for synthetic/unverified scenarios.")
+            if sample.get("policy_status") in {"pending", "excluded_pending_policy"}:
+                if sample.get("split") != "unassigned":
+                    self._add("ERROR", "ASSEMBLY_PENDING_ASSIGNED", file, sample_id, "/split", "Pending-policy samples must remain unassigned.")
+            elif sample.get("split") not in {"train", "validation", "test", "hard_test"}:
+                self._add("ERROR", "ASSEMBLY_ACTIVE_UNASSIGNED", file, sample_id, "/split", "Active eligible samples must receive an allowed split.")
+            for condition, field, expected in (
+                (sample.get("trust", {}).get("level") in {"GOLD", "SILVER"}, "/trust/level", "GOLD or SILVER"),
+                (sample.get("trust", {}).get("ground_truth_locked") is True, "/trust/ground_truth_locked", "true"),
+                (sample.get("trust", {}).get("surface_form_reviewed") is True, "/trust/surface_form_reviewed", "true"),
+                (sample.get("dataset_metadata", {}).get("lifecycle_status") == "approved", "/dataset_metadata/lifecycle_status", "approved"),
+                (sample.get("example_only") is False, "/example_only", "false"),
+            ):
+                if not condition:
+                    self._add("ERROR", "ASSEMBLY_SAMPLE_GOVERNANCE", file, sample_id, field, f"Training assembly Samples require {expected}.")
+        if any(len(policies) > 1 for policies in family_policies.values()):
+            self._add("ERROR", "ASSEMBLY_FAMILY_POLICY_MIX", file, rid, "/artifacts", "A Family cannot mix pending-policy and active Samples in one split assignment.")
+        family_counts = Counter(family_splits.values())
+        active_families = sum(split != "unassigned" for split in family_splits.values())
+        active_samples = sum(active_sample_counts.values())
+
+        def largest_remainder(total: int, percentages: dict[str, int]) -> dict[str, int]:
+            names = ("train", "validation", "test", "hard_test")
+            raw = {name: total * percentages[name] / 100 for name in names}
+            expected = {name: int(raw[name]) for name in names}
+            order = sorted(names, key=lambda name: (-(raw[name] - expected[name]), names.index(name)))
+            for name in order[:total - sum(expected.values())]:
+                expected[name] += 1
+            return expected
+
+        family_targets = largest_remainder(active_families, canonical_percentages) if active_families else {}
+        sample_targets = largest_remainder(active_samples, canonical_percentages) if active_samples else {}
+        actual_family_counts = {name: family_counts.get(name, 0) for name in ("train", "validation", "test", "hard_test")}
+        actual_active_samples = {name: active_sample_counts.get(name, 0) for name in ("train", "validation", "test", "hard_test")}
+        if family_targets and actual_family_counts != family_targets:
+            self._add("ERROR", "ASSEMBLY_SPLIT_TARGETS", file, rid, "/artifacts", f"Family split counts differ from largest-remainder policy targets {family_targets}.")
+        if sample_targets and actual_active_samples != sample_targets:
+            self._add("ERROR", "ASSEMBLY_SPLIT_TARGETS", file, rid, "/artifacts", f"Active Sample split counts differ from largest-remainder policy targets {sample_targets}.")
 
     def _report(self, statistics: dict[str, Any]) -> ValidationReport:
         errors = [x for x in self._issues if x.severity == "ERROR"]
