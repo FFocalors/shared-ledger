@@ -1,0 +1,314 @@
+[
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"new-expense/00000000-0000-4000-8000-000000000100\",\"page_type\":\"expense_form\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":\"create\",\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "昨晚桌游六十块，我先记一下。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"clarification\",\"intent_id\":\"create_expense\",\"reason\":\"missing_fields\",\"missing_fields\":[\"payer\"],\"question\":\"我听到的是桌游费用60元，但还不知道是谁付款。请告诉我付款人；如果“桌游”或金额识别有误，也请更正。\",\"candidates\":[]}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"new-expense/00000000-0000-4000-8000-000000000100\",\"page_type\":\"expense_form\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":\"create\",\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "昨晚桌油六十块，先记一下，付款人我还没说；如果识别错了我再更正。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"clarification\",\"intent_id\":\"create_expense\",\"reason\":\"missing_fields\",\"missing_fields\":[\"payer\"],\"question\":\"我听到的是桌游费用60元，但还不知道是谁付款。请告诉我付款人；如果“桌游”或金额识别有误，也请更正。\",\"candidates\":[]}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"get_debt\"],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "查一下这个活动里的债务总览。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"tool_call\",\"intent_id\":\"query_debt\",\"tool\":\"get_debt\",\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\"}}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"get_debt\"],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "把这个活动里大家互相欠款的总览查给我。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"tool_call\",\"intent_id\":\"query_debt\",\"tool\":\"get_debt\",\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\"}}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":\"00000000-0000-4000-8000-000000000103\",\"role_hint\":\"member\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"get_participant_balance\",\"get_prepayment_accounts\"],\"verified_result_ids\":[\"result-p0a-balance-015\",\"result-p0a-prepayment-015\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "解释我这边的应付余额和预存账户余额。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"answer\",\"content\":\"当前净余额不能合并成一个跨币种金额：服务端仍返回 0.01 JPY 原币债务；另有 20 CNY 预存账户余额，预存不等同于普通债务抵扣。\",\"evidence_result_ids\":[\"result-p0a-balance-015\",\"result-p0a-prepayment-015\"]}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":\"00000000-0000-4000-8000-000000000103\",\"role_hint\":\"member\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"get_participant_balance\",\"get_prepayment_accounts\"],\"verified_result_ids\":[\"result-p0a-balance-015\",\"result-p0a-prepayment-015\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "我的应付余额和预存账户余额分别是多少？麻烦按币种分开说。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"answer\",\"content\":\"当前净余额不能合并成一个跨币种金额：服务端仍返回 0.01 JPY 原币债务；另有 20 CNY 预存账户余额，预存不等同于普通债务抵扣。\",\"evidence_result_ids\":[\"result-p0a-balance-015\",\"result-p0a-prepayment-015\"]}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"get_transfer\",\"void_transfer\"],\"verified_result_ids\":[\"result-p0a-transfer-011\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "这笔转账记错了，请作废，原因是金额登记错误。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"proposal\",\"intent_id\":\"void_transfer\",\"operation\":{\"tool\":\"void_transfer\",\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"transfer_id\":\"00000000-0000-4000-8000-000000000111\",\"void_reason\":\"金额登记错误\"}},\"preview\":{\"kind\":\"financial\",\"summary\":\"拟作废这笔金额录错的转账；作废不可逆，等待可信 UI 确认。\",\"diff\":[{\"field\":\"is_voided\",\"before\":false,\"after\":true},{\"field\":\"void_reason\",\"after\":\"金额登记错误\"}]},\"confirmation\":{\"level\":2,\"required\":true},\"execution_policy\":{\"execution_allowed\":true,\"reason\":\"confirmation_required\"}}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-rule-003-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "活动里有未结债务时，我存入的余额会怎样抵扣？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"answer\",\"content\":\"服务端先用预存抵销同币种的反向债务；只有剩余可用金额才形成预存 Usage。当前是否产生 Usage 要看最新账户和债务读取。\",\"evidence_result_ids\":[\"result-rule-003-verified\"]}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-rule-003-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "刚存进活动的钱遇到未结债务时，系统按什么顺序抵扣？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"answer\",\"content\":\"服务端先用预存抵销同币种的反向债务；只有剩余可用金额才形成预存 Usage。当前是否产生 Usage 要看最新账户和债务读取。\",\"evidence_result_ids\":[\"result-rule-003-verified\"]}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"get_transfer\",\"void_transfer\"],\"verified_result_ids\":[\"result-p0a-transfer-011\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "哎，这笔转账记错了，帮我作废掉吧，原因就写金额登记错误。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"confirmation\":{\"level\":2,\"required\":true},\"execution_policy\":{\"execution_allowed\":true,\"reason\":\"confirmation_required\"},\"intent_id\":\"void_transfer\",\"operation\":{\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"transfer_id\":\"00000000-0000-4000-8000-000000000111\",\"void_reason\":\"金额登记错误\"},\"tool\":\"void_transfer\"},\"preview\":{\"diff\":[{\"after\":true,\"before\":false,\"field\":\"is_voided\"},{\"after\":\"金额登记错误\",\"field\":\"void_reason\"}],\"kind\":\"financial\",\"summary\":\"拟作废这笔金额录错的转账；作废不可逆，等待可信 UI 确认。\"},\"type\":\"proposal\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"get_transfer\",\"void_transfer\"],\"verified_result_ids\":[\"result-p0a-transfer-011\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "这笔转账记错了，帮忙作废，金额登记错误。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"confirmation\":{\"level\":2,\"required\":true},\"execution_policy\":{\"execution_allowed\":true,\"reason\":\"confirmation_required\"},\"intent_id\":\"void_transfer\",\"operation\":{\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"transfer_id\":\"00000000-0000-4000-8000-000000000111\",\"void_reason\":\"金额登记错误\"},\"tool\":\"void_transfer\"},\"preview\":{\"diff\":[{\"after\":true,\"before\":false,\"field\":\"is_voided\"},{\"after\":\"金额登记错误\",\"field\":\"void_reason\"}],\"kind\":\"financial\",\"summary\":\"拟作废这笔金额录错的转账；作废不可逆，等待可信 UI 确认。\"},\"type\":\"proposal\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"get_debt\"],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "这个活动的债务总览，帮我查一下。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\"},\"intent_id\":\"query_debt\",\"tool\":\"get_debt\",\"type\":\"tool_call\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"get_debt\"],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "呃…帮我查一下啊，这个活动里的那个债务总览。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\"},\"intent_id\":\"query_debt\",\"tool\":\"get_debt\",\"type\":\"tool_call\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"get_debt\"],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "查一下它这儿的债务总览。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\"},\"intent_id\":\"query_debt\",\"tool\":\"get_debt\",\"type\":\"tool_call\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"get_debt\"],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "帮我把这个活动的债务概况调出来瞧瞧。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\"},\"intent_id\":\"query_debt\",\"tool\":\"get_debt\",\"type\":\"tool_call\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":\"00000000-0000-4000-8000-000000000103\",\"role_hint\":\"member\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"get_participant_balance\",\"get_prepayment_accounts\"],\"verified_result_ids\":[\"result-p0a-balance-015\",\"result-p0a-prepayment-015\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "帮我讲讲我这边的应付余额，还有预存账户的余额，是咋回事儿啊？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"当前净余额不能合并成一个跨币种金额：服务端仍返回 0.01 JPY 原币债务；另有 20 CNY 预存账户余额，预存不等同于普通债务抵扣。\",\"evidence_result_ids\":[\"result-p0a-balance-015\",\"result-p0a-prepayment-015\"],\"type\":\"answer\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":\"00000000-0000-4000-8000-000000000103\",\"role_hint\":\"member\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"get_participant_balance\",\"get_prepayment_accounts\"],\"verified_result_ids\":[\"result-p0a-balance-015\",\"result-p0a-prepayment-015\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "呃……帮我解释一下，我这边那个应付余额，还有预存账户的余额，是咋回事啊？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"当前净余额不能合并成一个跨币种金额：服务端仍返回 0.01 JPY 原币债务；另有 20 CNY 预存账户余额，预存不等同于普通债务抵扣。\",\"evidence_result_ids\":[\"result-p0a-balance-015\",\"result-p0a-prepayment-015\"],\"type\":\"answer\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":\"00000000-0000-4000-8000-000000000103\",\"role_hint\":\"member\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"get_participant_balance\",\"get_prepayment_accounts\"],\"verified_result_ids\":[\"result-p0a-balance-015\",\"result-p0a-prepayment-015\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "帮我解释下我这边的应付余额，还有预存账户那个余额。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"当前净余额不能合并成一个跨币种金额：服务端仍返回 0.01 JPY 原币债务；另有 20 CNY 预存账户余额，预存不等同于普通债务抵扣。\",\"evidence_result_ids\":[\"result-p0a-balance-015\",\"result-p0a-prepayment-015\"],\"type\":\"answer\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":\"00000000-0000-4000-8000-000000000103\",\"role_hint\":\"member\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"get_participant_balance\",\"get_prepayment_accounts\"],\"verified_result_ids\":[\"result-p0a-balance-015\",\"result-p0a-prepayment-015\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "帮我说说看，我这边的应付余额还有预存账户里那笔钱各是多少？币种不一样的话就分开讲。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"当前净余额不能合并成一个跨币种金额：服务端仍返回 0.01 JPY 原币债务；另有 20 CNY 预存账户余额，预存不等同于普通债务抵扣。\",\"evidence_result_ids\":[\"result-p0a-balance-015\",\"result-p0a-prepayment-015\"],\"type\":\"answer\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"new-expense/00000000-0000-4000-8000-000000000100\",\"page_type\":\"expense_form\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":\"create\",\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "昨晚那场桌游六十块，先帮我记上。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"candidates\":[],\"intent_id\":\"create_expense\",\"missing_fields\":[\"payer\"],\"question\":\"我听到的是桌游费用60元，但还不知道是谁付款。请告诉我付款人；如果“桌游”或金额识别有误，也请更正。\",\"reason\":\"missing_fields\",\"type\":\"clarification\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-rule-003-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "活动里要是还有没结清的债务，我充进去的余额会怎么抵扣啊？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"服务端先用预存抵销同币种的反向债务；只有剩余可用金额才形成预存 Usage。当前是否产生 Usage 要看最新账户和债务读取。\",\"evidence_result_ids\":[\"result-rule-003-verified\"],\"type\":\"answer\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-rule-003-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "呃，就是活动里面……有未结债务的时候，我存进去的那个余额，它是会咋抵扣来着？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"服务端先用预存抵销同币种的反向债务；只有剩余可用金额才形成预存 Usage。当前是否产生 Usage 要看最新账户和债务读取。\",\"evidence_result_ids\":[\"result-rule-003-verified\"],\"type\":\"answer\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-rule-003-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "活动里还有未结债务的话，存进去的余额会怎么抵扣？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"服务端先用预存抵销同币种的反向债务；只有剩余可用金额才形成预存 Usage。当前是否产生 Usage 要看最新账户和债务读取。\",\"evidence_result_ids\":[\"result-rule-003-verified\"],\"type\":\"answer\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-rule-003-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "刚存进活动的钱，要是活动里还有没结清的债务，系统会按啥顺序抵扣啊？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"服务端先用预存抵销同币种的反向债务；只有剩余可用金额才形成预存 Usage。当前是否产生 Usage 要看最新账户和债务读取。\",\"evidence_result_ids\":[\"result-rule-003-verified\"],\"type\":\"answer\"}"
+      }
+    ]
+  }
+]

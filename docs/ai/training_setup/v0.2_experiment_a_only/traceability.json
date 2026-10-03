@@ -1,0 +1,5084 @@
+[
+  {
+    "sample_id": "sample_gs_p0_001",
+    "scenario_id": "scenario_gs_p0a_001",
+    "scenario_family_id": "family_exp_create_001",
+    "split_group_id": "split_exp_create_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "15304ad18d6cf866002f7198577532e2330645d1063d6539545da54803d16ff3",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_002",
+    "scenario_id": "scenario_gs_p0a_001",
+    "scenario_family_id": "family_exp_create_001",
+    "split_group_id": "split_exp_create_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "15304ad18d6cf866002f7198577532e2330645d1063d6539545da54803d16ff3",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_003",
+    "scenario_id": "scenario_gs_p0a_002",
+    "scenario_family_id": "family_exp_create_002",
+    "split_group_id": "split_exp_create_002",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "f1fe32ec9a728b0a4b17cafd863f6642b43ebde6ccf69806e770307c4dd6f782",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_004",
+    "scenario_id": "scenario_gs_p0a_002",
+    "scenario_family_id": "family_exp_create_002",
+    "split_group_id": "split_exp_create_002",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "f1fe32ec9a728b0a4b17cafd863f6642b43ebde6ccf69806e770307c4dd6f782",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_007",
+    "scenario_id": "scenario_gs_p0a_003",
+    "scenario_family_id": "family_exp_clarify_001",
+    "split_group_id": "split_exp_clarify_001",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "30953f22f8840d2f1ef067fc6191118c9d43ae56d864559b30463ce48b2b0c3f",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_008",
+    "scenario_id": "scenario_gs_p0a_003",
+    "scenario_family_id": "family_exp_clarify_001",
+    "split_group_id": "split_exp_clarify_001",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "30953f22f8840d2f1ef067fc6191118c9d43ae56d864559b30463ce48b2b0c3f",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_009",
+    "scenario_id": "scenario_gs_p0b_002",
+    "scenario_family_id": "family_exp_clarify_002",
+    "split_group_id": "split_exp_clarify_002",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "074bccd687831bd6c9aca9694c487b1225c9878c2f9a1193121248aa6372f4be",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_010",
+    "scenario_id": "scenario_gs_p0b_002",
+    "scenario_family_id": "family_exp_clarify_002",
+    "split_group_id": "split_exp_clarify_002",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "074bccd687831bd6c9aca9694c487b1225c9878c2f9a1193121248aa6372f4be",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_011",
+    "scenario_id": "scenario_gs_p0a_004",
+    "scenario_family_id": "family_exp_clarify_003",
+    "split_group_id": "split_exp_clarify_003",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "7e97f975069de3be6bc455b99369382a5393943878f9e24a212e00dc375df4df",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_012",
+    "scenario_id": "scenario_gs_p0a_004",
+    "scenario_family_id": "family_exp_clarify_003",
+    "split_group_id": "split_exp_clarify_003",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "7e97f975069de3be6bc455b99369382a5393943878f9e24a212e00dc375df4df",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_015",
+    "scenario_id": "scenario_gs_p0a_009",
+    "scenario_family_id": "family_exp_edit_001",
+    "split_group_id": "split_exp_edit_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "8c69efb21d7c4543098b630ffb9c5518960cd28b63bc3c75b9dc8b17805cb761",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_016",
+    "scenario_id": "scenario_gs_p0a_009",
+    "scenario_family_id": "family_exp_edit_001",
+    "split_group_id": "split_exp_edit_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "8c69efb21d7c4543098b630ffb9c5518960cd28b63bc3c75b9dc8b17805cb761",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_017",
+    "scenario_id": "scenario_gs_p0b_004",
+    "scenario_family_id": "family_exp_edit_003",
+    "split_group_id": "split_exp_edit_003",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "c702cef92b414db8d9d5e1dfde5b0de08bb1bd0ed76345352b3e9e64bcbc803f",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_018",
+    "scenario_id": "scenario_gs_p0b_004",
+    "scenario_family_id": "family_exp_edit_003",
+    "split_group_id": "split_exp_edit_003",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "c702cef92b414db8d9d5e1dfde5b0de08bb1bd0ed76345352b3e9e64bcbc803f",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_019",
+    "scenario_id": "scenario_gs_p0b_005",
+    "scenario_family_id": "family_exp_edit_004",
+    "split_group_id": "split_exp_edit_004",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "a30eff598f8519e465f223118c16ee881fe2fea7fda1dfea6a377d24147d5ca6",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_020",
+    "scenario_id": "scenario_gs_p0b_005",
+    "scenario_family_id": "family_exp_edit_004",
+    "split_group_id": "split_exp_edit_004",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "a30eff598f8519e465f223118c16ee881fe2fea7fda1dfea6a377d24147d5ca6",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_021",
+    "scenario_id": "scenario_gs_p0b_006",
+    "scenario_family_id": "family_exp_read_001",
+    "split_group_id": "split_exp_read_001",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "8debf7c6fe5a674f45389a46f68facf9b55cdf79abce6ccf3d0c5664b7919f82",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_022",
+    "scenario_id": "scenario_gs_p0b_006",
+    "scenario_family_id": "family_exp_read_001",
+    "split_group_id": "split_exp_read_001",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "8debf7c6fe5a674f45389a46f68facf9b55cdf79abce6ccf3d0c5664b7919f82",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_023",
+    "scenario_id": "scenario_gs_p0a_006",
+    "scenario_family_id": "family_exp_read_002",
+    "split_group_id": "split_exp_read_002",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "bf07bd8a83b2690a717f04d2fb8a6961ec8123124b2adb4c41f754d0cf73c1e3",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_024",
+    "scenario_id": "scenario_gs_p0a_006",
+    "scenario_family_id": "family_exp_read_002",
+    "split_group_id": "split_exp_read_002",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "bf07bd8a83b2690a717f04d2fb8a6961ec8123124b2adb4c41f754d0cf73c1e3",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_025",
+    "scenario_id": "scenario_gs_p0a_007",
+    "scenario_family_id": "family_exp_read_003",
+    "split_group_id": "split_exp_read_003",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "81faa27173a69d2db2f0eaa8f2544e276271375b1f37be210a9e426305766c3e",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_026",
+    "scenario_id": "scenario_gs_p0a_007",
+    "scenario_family_id": "family_exp_read_003",
+    "split_group_id": "split_exp_read_003",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "81faa27173a69d2db2f0eaa8f2544e276271375b1f37be210a9e426305766c3e",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_030",
+    "scenario_id": "scenario_gs_p0b_008",
+    "scenario_family_id": "family_debt_002",
+    "split_group_id": "split_debt_002",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "a8e905be307f4a5bb989713fcfc6425c8a36ff3b0c87de42afeff37d550b3246",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_031",
+    "scenario_id": "scenario_gs_p0b_008",
+    "scenario_family_id": "family_debt_002",
+    "split_group_id": "split_debt_002",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "a8e905be307f4a5bb989713fcfc6425c8a36ff3b0c87de42afeff37d550b3246",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_036",
+    "scenario_id": "scenario_gs_p0b_010",
+    "scenario_family_id": "family_trf_002",
+    "split_group_id": "split_trf_002",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "de88604863ae6248a5b5f935e7306735f1800884dd9a741ca9f4fd85d1e79bac",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_039",
+    "scenario_id": "scenario_gs_p0b_011",
+    "scenario_family_id": "family_pre_gated_004",
+    "split_group_id": "split_pre_gated_004",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "b7289b8e8ffa53871722ea717bd14b5a5c5a74358b89a21a1699ac1bfc95d0d3",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_040",
+    "scenario_id": "scenario_gs_p0b_012",
+    "scenario_family_id": "family_ref_001",
+    "split_group_id": "split_ref_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "a55cd5a30e14bae292fa63680e481e2b527b85dd731dcd377f8e4b89b24d7eae",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_042",
+    "scenario_id": "scenario_gs_p0b_014",
+    "scenario_family_id": "family_fin_001",
+    "split_group_id": "split_fin_001",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "6de7e6f9903d01c26af1aa507519dca3b7ea52608505cabd7ed0a42a45eaff3f",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_043",
+    "scenario_id": "scenario_gs_p0a_012",
+    "scenario_family_id": "family_del_001",
+    "split_group_id": "split_del_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "d4576f71206d07c636308bb00de272af13ea911c88987b80d60cb1ef8858823b",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_044",
+    "scenario_id": "scenario_gs_p0b_016",
+    "scenario_family_id": "family_del_002",
+    "split_group_id": "split_del_002",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "66af29ac0070ba6ddd32069e2a9df30234573424e1434866d7b9e0be820ccc19",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_045",
+    "scenario_id": "scenario_gs_p0b_017",
+    "scenario_family_id": "family_ui_001",
+    "split_group_id": "split_ui_001",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "01194364433888bbe29236b808f1c6cc4140b794ba6e3a7ffa6621dad82c2533",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_046",
+    "scenario_id": "scenario_gs_p0b_017",
+    "scenario_family_id": "family_ui_001",
+    "split_group_id": "split_ui_001",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "01194364433888bbe29236b808f1c6cc4140b794ba6e3a7ffa6621dad82c2533",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_049",
+    "scenario_id": "scenario_gs_p0b_019",
+    "scenario_family_id": "family_ui_003",
+    "split_group_id": "split_ui_003",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "1604676d94827210f86b3e0e279dabc5a11e36ca99a5fde53576acbb3d1ac755",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_050",
+    "scenario_id": "scenario_gs_p0b_020",
+    "scenario_family_id": "family_ictx_001",
+    "split_group_id": "split_ictx_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "3955e6af7dee54333e65d9b31b5bca311a65faf651d3d35a5916b4cff8ee9cbe",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_051",
+    "scenario_id": "scenario_gs_p0b_020",
+    "scenario_family_id": "family_ictx_001",
+    "split_group_id": "split_ictx_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "3955e6af7dee54333e65d9b31b5bca311a65faf651d3d35a5916b4cff8ee9cbe",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_054",
+    "scenario_id": "scenario_gs_p0b_022",
+    "scenario_family_id": "family_ictx_003",
+    "split_group_id": "split_ictx_003",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "8c3a49eb2c7280e4c6d0c4f17d438a92fdeb4349cb5b253c5a3cc35c8fee27bf",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_055",
+    "scenario_id": "scenario_gs_p0b_022",
+    "scenario_family_id": "family_ictx_003",
+    "split_group_id": "split_ictx_003",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "8c3a49eb2c7280e4c6d0c4f17d438a92fdeb4349cb5b253c5a3cc35c8fee27bf",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_058",
+    "scenario_id": "scenario_gs_p0a_008",
+    "scenario_family_id": "family_ictx_008",
+    "split_group_id": "split_ictx_008",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "f415f69961b951250113b801beff8ae7e8f69dae91c71247799907df75798712",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_059",
+    "scenario_id": "scenario_gs_p0a_008",
+    "scenario_family_id": "family_ictx_008",
+    "split_group_id": "split_ictx_008",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "f415f69961b951250113b801beff8ae7e8f69dae91c71247799907df75798712",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_060",
+    "scenario_id": "scenario_gs_p0a_005",
+    "scenario_family_id": "family_ent_001",
+    "split_group_id": "split_ent_001",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "fef2a7bf03b30d3a990d9f0887dc275d250784e121378f2881a9da9e45b2e1ba",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_061",
+    "scenario_id": "scenario_gs_p0a_005",
+    "scenario_family_id": "family_ent_001",
+    "split_group_id": "split_ent_001",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "fef2a7bf03b30d3a990d9f0887dc275d250784e121378f2881a9da9e45b2e1ba",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_062",
+    "scenario_id": "scenario_gs_p0b_024",
+    "scenario_family_id": "family_ent_002",
+    "split_group_id": "split_ent_002",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "26dda8cbc332f4e313b257c14984b5e29f8ac14cf30806fda274efb6f11e7813",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_063",
+    "scenario_id": "scenario_gs_p0b_024",
+    "scenario_family_id": "family_ent_002",
+    "split_group_id": "split_ent_002",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "26dda8cbc332f4e313b257c14984b5e29f8ac14cf30806fda274efb6f11e7813",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_064",
+    "scenario_id": "scenario_gs_p0b_025",
+    "scenario_family_id": "family_ent_003",
+    "split_group_id": "split_ent_003",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "b823feb253273599006302ce96852f9799c790259453371811ae76eb60060261",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_065",
+    "scenario_id": "scenario_gs_p0b_025",
+    "scenario_family_id": "family_ent_003",
+    "split_group_id": "split_ent_003",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "b823feb253273599006302ce96852f9799c790259453371811ae76eb60060261",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_066",
+    "scenario_id": "scenario_gs_p0b_026",
+    "scenario_family_id": "family_conv_001",
+    "split_group_id": "split_conv_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "38ac80eb18ff58c549665d317ddf8832c66d2ed73d711af83d16e61babedb596",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 3,
+        "source_roles": [
+          "user",
+          "user",
+          "user"
+        ],
+        "reversible_block": true
+      }
+    ],
+    "source_turn_count": 3,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_067",
+    "scenario_id": "scenario_gs_p0b_026",
+    "scenario_family_id": "family_conv_001",
+    "split_group_id": "split_conv_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "38ac80eb18ff58c549665d317ddf8832c66d2ed73d711af83d16e61babedb596",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 3,
+        "source_roles": [
+          "user",
+          "user",
+          "user"
+        ],
+        "reversible_block": true
+      }
+    ],
+    "source_turn_count": 3,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_070",
+    "scenario_id": "scenario_gs_p0b_028",
+    "scenario_family_id": "family_conv_006",
+    "split_group_id": "split_conv_006",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "8c935315ab4439a7a4288b46fca0e0155f3a39be8e6388cc36fb2717e77ba599",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 2,
+        "source_roles": [
+          "user",
+          "user"
+        ],
+        "reversible_block": true
+      }
+    ],
+    "source_turn_count": 2,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_071",
+    "scenario_id": "scenario_gs_p0b_028",
+    "scenario_family_id": "family_conv_006",
+    "split_group_id": "split_conv_006",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "8c935315ab4439a7a4288b46fca0e0155f3a39be8e6388cc36fb2717e77ba599",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 2,
+        "source_roles": [
+          "user",
+          "user"
+        ],
+        "reversible_block": true
+      }
+    ],
+    "source_turn_count": 2,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_072",
+    "scenario_id": "scenario_gs_p0b_029",
+    "scenario_family_id": "family_conv_007",
+    "split_group_id": "split_conv_007",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "0d2f694e813f284e03e6dcc12bf8ba28f5431e2f274ed0229e7e388c30252f11",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 1,
+        "source_turn_start": 1,
+        "source_turn_end_exclusive": 2,
+        "source_roles": [
+          "assistant"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 2,
+        "source_turn_start": 2,
+        "source_turn_end_exclusive": 3,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 3,
+    "packed_message_count": 3,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_073",
+    "scenario_id": "scenario_gs_p0b_029",
+    "scenario_family_id": "family_conv_007",
+    "split_group_id": "split_conv_007",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "0d2f694e813f284e03e6dcc12bf8ba28f5431e2f274ed0229e7e388c30252f11",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 1,
+        "source_turn_start": 1,
+        "source_turn_end_exclusive": 2,
+        "source_roles": [
+          "assistant"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 2,
+        "source_turn_start": 2,
+        "source_turn_end_exclusive": 3,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 3,
+    "packed_message_count": 3,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_076",
+    "scenario_id": "scenario_gs_p0b_031",
+    "scenario_family_id": "family_clr_002",
+    "split_group_id": "split_clr_002",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "032fedb1752986d745fbe59ece42bcfaf67adca3528e48df0348e77c39c04f53",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_077",
+    "scenario_id": "scenario_gs_p0b_031",
+    "scenario_family_id": "family_clr_002",
+    "split_group_id": "split_clr_002",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "032fedb1752986d745fbe59ece42bcfaf67adca3528e48df0348e77c39c04f53",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_078",
+    "scenario_id": "scenario_gs_p0b_032",
+    "scenario_family_id": "family_clr_005",
+    "split_group_id": "split_clr_005",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "07b99788eccb81f111517ddeddf2733c1a16a50f1d81e1bebcebc00758c1b1ee",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_079",
+    "scenario_id": "scenario_gs_p0b_032",
+    "scenario_family_id": "family_clr_005",
+    "split_group_id": "split_clr_005",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "07b99788eccb81f111517ddeddf2733c1a16a50f1d81e1bebcebc00758c1b1ee",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_080",
+    "scenario_id": "scenario_gs_p0b_033",
+    "scenario_family_id": "family_rule_001",
+    "split_group_id": "split_rule_001",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "645bac02f03ca12076948d840480d048677da7e2991c3f36749e7c4db60b2277",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_081",
+    "scenario_id": "scenario_gs_p0b_033",
+    "scenario_family_id": "family_rule_001",
+    "split_group_id": "split_rule_001",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "645bac02f03ca12076948d840480d048677da7e2991c3f36749e7c4db60b2277",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_086",
+    "scenario_id": "scenario_gs_p0b_036",
+    "scenario_family_id": "family_rule_005",
+    "split_group_id": "split_rule_005",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "d3b6e170d57feb04610c3f467d54cfc6d4f17f390dd175c9eaf58db39a2967b1",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 1,
+        "source_turn_start": 1,
+        "source_turn_end_exclusive": 2,
+        "source_roles": [
+          "assistant"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 2,
+        "source_turn_start": 2,
+        "source_turn_end_exclusive": 3,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 3,
+    "packed_message_count": 3,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_087",
+    "scenario_id": "scenario_gs_p0b_036",
+    "scenario_family_id": "family_rule_005",
+    "split_group_id": "split_rule_005",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "d3b6e170d57feb04610c3f467d54cfc6d4f17f390dd175c9eaf58db39a2967b1",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 1,
+        "source_turn_start": 1,
+        "source_turn_end_exclusive": 2,
+        "source_roles": [
+          "assistant"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 2,
+        "source_turn_start": 2,
+        "source_turn_end_exclusive": 3,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 3,
+    "packed_message_count": 3,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_088",
+    "scenario_id": "scenario_gs_p0b_037",
+    "scenario_family_id": "family_rule_006",
+    "split_group_id": "split_rule_006",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "27aa04230fca7ef2c04ec0660665c2e0186eb5f6e87d375be7bf846db401b58f",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_089",
+    "scenario_id": "scenario_gs_p0b_037",
+    "scenario_family_id": "family_rule_006",
+    "split_group_id": "split_rule_006",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "27aa04230fca7ef2c04ec0660665c2e0186eb5f6e87d375be7bf846db401b58f",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_090",
+    "scenario_id": "scenario_gs_p0b_038",
+    "scenario_family_id": "family_rule_007",
+    "split_group_id": "split_rule_007",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "bb569b27998a58fc7f7e352beae7f2344c11546466c4e491a6e686e7f89c5c81",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_091",
+    "scenario_id": "scenario_gs_p0b_038",
+    "scenario_family_id": "family_rule_007",
+    "split_group_id": "split_rule_007",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "bb569b27998a58fc7f7e352beae7f2344c11546466c4e491a6e686e7f89c5c81",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_094",
+    "scenario_id": "scenario_gs_p0a_013",
+    "scenario_family_id": "family_uns_001",
+    "split_group_id": "split_uns_001",
+    "split": "train",
+    "output_type": "unsupported",
+    "canonical_expected_sha256": "47785c20405a9fa037ba7abb77255ff97c35ba53240d3b65fa50a0c156a3b544",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_095",
+    "scenario_id": "scenario_gs_p0a_013",
+    "scenario_family_id": "family_uns_001",
+    "split_group_id": "split_uns_001",
+    "split": "train",
+    "output_type": "unsupported",
+    "canonical_expected_sha256": "47785c20405a9fa037ba7abb77255ff97c35ba53240d3b65fa50a0c156a3b544",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_0e69b6cdf402",
+    "scenario_id": "scenario_gs_p0a_001",
+    "scenario_family_id": "family_exp_create_001",
+    "split_group_id": "split_exp_create_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "48db817acb902534f995060c320171019eb88acb055bcd2b071c66f144f06dc8",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_0cf7d81d873a",
+    "scenario_id": "scenario_gs_p0a_001",
+    "scenario_family_id": "family_exp_create_001",
+    "split_group_id": "split_exp_create_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "48db817acb902534f995060c320171019eb88acb055bcd2b071c66f144f06dc8",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_ea6c29cb2a39",
+    "scenario_id": "scenario_gs_p0a_003",
+    "scenario_family_id": "family_exp_clarify_001",
+    "split_group_id": "split_exp_clarify_001",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "c1705aa5e1341b651b2e2514483f354416a5b941d364cae58c2736780f5d6e3a",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_a97ec8d7e826",
+    "scenario_id": "scenario_gs_p0a_003",
+    "scenario_family_id": "family_exp_clarify_001",
+    "split_group_id": "split_exp_clarify_001",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "c1705aa5e1341b651b2e2514483f354416a5b941d364cae58c2736780f5d6e3a",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_9eb37c32ad23",
+    "scenario_id": "scenario_gs_p0b_006",
+    "scenario_family_id": "family_exp_read_001",
+    "split_group_id": "split_exp_read_001",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "0b13f0d41ef66a098c59822d5085a7303f3ed73b22580fa6fd2d205ff1b635bd",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_848d9a926256",
+    "scenario_id": "scenario_gs_p0b_006",
+    "scenario_family_id": "family_exp_read_001",
+    "split_group_id": "split_exp_read_001",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "0b13f0d41ef66a098c59822d5085a7303f3ed73b22580fa6fd2d205ff1b635bd",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_fc17b2a875e6",
+    "scenario_id": "scenario_gs_p0b_006",
+    "scenario_family_id": "family_exp_read_001",
+    "split_group_id": "split_exp_read_001",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "0b13f0d41ef66a098c59822d5085a7303f3ed73b22580fa6fd2d205ff1b635bd",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_636b5cba0e9b",
+    "scenario_id": "scenario_gs_p0a_006",
+    "scenario_family_id": "family_exp_read_002",
+    "split_group_id": "split_exp_read_002",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "bcb9b30049d1c0a05eb19853e423103e7dd8fcaa1897692b7468db289519d45f",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_edd7a5ace59b",
+    "scenario_id": "scenario_gs_p0a_006",
+    "scenario_family_id": "family_exp_read_002",
+    "split_group_id": "split_exp_read_002",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "bcb9b30049d1c0a05eb19853e423103e7dd8fcaa1897692b7468db289519d45f",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_b3279e26f67e",
+    "scenario_id": "scenario_gs_p0b_004",
+    "scenario_family_id": "family_exp_edit_003",
+    "split_group_id": "split_exp_edit_003",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "41a8688689e90a28584dc526458a09bd1194b7841987eb64dc0512076be0e1fe",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_480045ee9494",
+    "scenario_id": "scenario_gs_p0b_004",
+    "scenario_family_id": "family_exp_edit_003",
+    "split_group_id": "split_exp_edit_003",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "41a8688689e90a28584dc526458a09bd1194b7841987eb64dc0512076be0e1fe",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_161678d4c59a",
+    "scenario_id": "scenario_gs_p0b_004",
+    "scenario_family_id": "family_exp_edit_003",
+    "split_group_id": "split_exp_edit_003",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "41a8688689e90a28584dc526458a09bd1194b7841987eb64dc0512076be0e1fe",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_2e8431d0b6ac",
+    "scenario_id": "scenario_gs_p0b_020",
+    "scenario_family_id": "family_ictx_001",
+    "split_group_id": "split_ictx_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "02b34bb6b3a9e8b544fe6fe0eda6f567c209b6e304fda4642e3948a15f3d9763",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_faac476ad63b",
+    "scenario_id": "scenario_gs_p0b_020",
+    "scenario_family_id": "family_ictx_001",
+    "split_group_id": "split_ictx_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "02b34bb6b3a9e8b544fe6fe0eda6f567c209b6e304fda4642e3948a15f3d9763",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_574eac0ec13a",
+    "scenario_id": "scenario_gs_p0b_020",
+    "scenario_family_id": "family_ictx_001",
+    "split_group_id": "split_ictx_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "02b34bb6b3a9e8b544fe6fe0eda6f567c209b6e304fda4642e3948a15f3d9763",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_90e9a7631200",
+    "scenario_id": "scenario_gs_p0b_028",
+    "scenario_family_id": "family_conv_006",
+    "split_group_id": "split_conv_006",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "b2dd22fa180607712da84b82a0241c2e050adebde1d1fb4c0db912b09d559be9",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 2,
+        "source_roles": [
+          "user",
+          "user"
+        ],
+        "reversible_block": true
+      }
+    ],
+    "source_turn_count": 2,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_a7f51daa36fa",
+    "scenario_id": "scenario_gs_p0b_028",
+    "scenario_family_id": "family_conv_006",
+    "split_group_id": "split_conv_006",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "b2dd22fa180607712da84b82a0241c2e050adebde1d1fb4c0db912b09d559be9",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 2,
+        "source_roles": [
+          "user",
+          "user"
+        ],
+        "reversible_block": true
+      }
+    ],
+    "source_turn_count": 2,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_276dad2a82ed",
+    "scenario_id": "scenario_gs_p0b_028",
+    "scenario_family_id": "family_conv_006",
+    "split_group_id": "split_conv_006",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "b2dd22fa180607712da84b82a0241c2e050adebde1d1fb4c0db912b09d559be9",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 2,
+        "source_roles": [
+          "user",
+          "user"
+        ],
+        "reversible_block": true
+      }
+    ],
+    "source_turn_count": 2,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_268abd436036",
+    "scenario_id": "scenario_gs_p0b_017",
+    "scenario_family_id": "family_ui_001",
+    "split_group_id": "split_ui_001",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "73963a9991faea14dcae92a25b13732dbba97f8ca92823a1806403ae999f9905",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_69c813a549e0",
+    "scenario_id": "scenario_gs_p0b_017",
+    "scenario_family_id": "family_ui_001",
+    "split_group_id": "split_ui_001",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "73963a9991faea14dcae92a25b13732dbba97f8ca92823a1806403ae999f9905",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_25ac41485e33",
+    "scenario_id": "scenario_gs_p0b_017",
+    "scenario_family_id": "family_ui_001",
+    "split_group_id": "split_ui_001",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "73963a9991faea14dcae92a25b13732dbba97f8ca92823a1806403ae999f9905",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_58f01b6ed68e",
+    "scenario_id": "scenario_gs_p0a_002",
+    "scenario_family_id": "family_exp_create_002",
+    "split_group_id": "split_exp_create_002",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "f5e166ef0728d1540c61b74a32582f73c922c8f04255d828ed1c59333a1c0b5e",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_c128c76ca78f",
+    "scenario_id": "scenario_gs_p0a_002",
+    "scenario_family_id": "family_exp_create_002",
+    "split_group_id": "split_exp_create_002",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "f5e166ef0728d1540c61b74a32582f73c922c8f04255d828ed1c59333a1c0b5e",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_985eb5e70c3a",
+    "scenario_id": "scenario_gs_p0a_002",
+    "scenario_family_id": "family_exp_create_002",
+    "split_group_id": "split_exp_create_002",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "f5e166ef0728d1540c61b74a32582f73c922c8f04255d828ed1c59333a1c0b5e",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_e5e76c768727",
+    "scenario_id": "scenario_gs_p0a_004",
+    "scenario_family_id": "family_exp_clarify_003",
+    "split_group_id": "split_exp_clarify_003",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "6eb2a40245d3188d03cad0f4007a37e89d95bd502b21249840f9344945609104",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_e421ad41522e",
+    "scenario_id": "scenario_gs_p0a_004",
+    "scenario_family_id": "family_exp_clarify_003",
+    "split_group_id": "split_exp_clarify_003",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "6eb2a40245d3188d03cad0f4007a37e89d95bd502b21249840f9344945609104",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_a238839a2fa3",
+    "scenario_id": "scenario_gs_p0a_004",
+    "scenario_family_id": "family_exp_clarify_003",
+    "split_group_id": "split_exp_clarify_003",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "6eb2a40245d3188d03cad0f4007a37e89d95bd502b21249840f9344945609104",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_c5701eeab491",
+    "scenario_id": "scenario_gs_p0a_005",
+    "scenario_family_id": "family_ent_001",
+    "split_group_id": "split_ent_001",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "f801bd7fa3361fe9f7584991c1acc4478dfdf1f9bacf3f5e5901136321743a61",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_9f49b9503b27",
+    "scenario_id": "scenario_gs_p0a_005",
+    "scenario_family_id": "family_ent_001",
+    "split_group_id": "split_ent_001",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "f801bd7fa3361fe9f7584991c1acc4478dfdf1f9bacf3f5e5901136321743a61",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_715e102130e3",
+    "scenario_id": "scenario_gs_p0a_005",
+    "scenario_family_id": "family_ent_001",
+    "split_group_id": "split_ent_001",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "f801bd7fa3361fe9f7584991c1acc4478dfdf1f9bacf3f5e5901136321743a61",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_dff5dd3357fa",
+    "scenario_id": "scenario_gs_p0a_005",
+    "scenario_family_id": "family_ent_001",
+    "split_group_id": "split_ent_001",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "f801bd7fa3361fe9f7584991c1acc4478dfdf1f9bacf3f5e5901136321743a61",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_0c08d19b8851",
+    "scenario_id": "scenario_gs_p0a_007",
+    "scenario_family_id": "family_exp_read_003",
+    "split_group_id": "split_exp_read_003",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "23059e64da4bfffe280866b2347cf379dbb9682813ff9387686cb55fbb9f2674",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_8ac8867f26ac",
+    "scenario_id": "scenario_gs_p0a_007",
+    "scenario_family_id": "family_exp_read_003",
+    "split_group_id": "split_exp_read_003",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "23059e64da4bfffe280866b2347cf379dbb9682813ff9387686cb55fbb9f2674",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_08cd09d8cba0",
+    "scenario_id": "scenario_gs_p0a_007",
+    "scenario_family_id": "family_exp_read_003",
+    "split_group_id": "split_exp_read_003",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "23059e64da4bfffe280866b2347cf379dbb9682813ff9387686cb55fbb9f2674",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_7412d419fb81",
+    "scenario_id": "scenario_gs_p0a_008",
+    "scenario_family_id": "family_ictx_008",
+    "split_group_id": "split_ictx_008",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "cd93063308f94f799a49c545c7860680738019956f0e3b9e531f89d98075e3ab",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_f5b087b3a945",
+    "scenario_id": "scenario_gs_p0a_008",
+    "scenario_family_id": "family_ictx_008",
+    "split_group_id": "split_ictx_008",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "cd93063308f94f799a49c545c7860680738019956f0e3b9e531f89d98075e3ab",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_2dbf589d2030",
+    "scenario_id": "scenario_gs_p0a_008",
+    "scenario_family_id": "family_ictx_008",
+    "split_group_id": "split_ictx_008",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "cd93063308f94f799a49c545c7860680738019956f0e3b9e531f89d98075e3ab",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_1da644e38dbe",
+    "scenario_id": "scenario_gs_p0a_008",
+    "scenario_family_id": "family_ictx_008",
+    "split_group_id": "split_ictx_008",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "cd93063308f94f799a49c545c7860680738019956f0e3b9e531f89d98075e3ab",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_6b8c91b2ae67",
+    "scenario_id": "scenario_gs_p0a_009",
+    "scenario_family_id": "family_exp_edit_001",
+    "split_group_id": "split_exp_edit_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "3597b5d9c06f6f9e644f9c4190680a2b3fa1f77843d1f81280124a50e4fcf4de",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_d32231ae891a",
+    "scenario_id": "scenario_gs_p0a_009",
+    "scenario_family_id": "family_exp_edit_001",
+    "split_group_id": "split_exp_edit_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "3597b5d9c06f6f9e644f9c4190680a2b3fa1f77843d1f81280124a50e4fcf4de",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_e2d3fdbd7509",
+    "scenario_id": "scenario_gs_p0a_009",
+    "scenario_family_id": "family_exp_edit_001",
+    "split_group_id": "split_exp_edit_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "3597b5d9c06f6f9e644f9c4190680a2b3fa1f77843d1f81280124a50e4fcf4de",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_b761d7e46729",
+    "scenario_id": "scenario_gs_p0a_012",
+    "scenario_family_id": "family_del_001",
+    "split_group_id": "split_del_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "cd9b2a7caddd423e6a90264963f14f786209be6269cb570382174391e6f30e87",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_ad6ed8c40b36",
+    "scenario_id": "scenario_gs_p0a_012",
+    "scenario_family_id": "family_del_001",
+    "split_group_id": "split_del_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "cd9b2a7caddd423e6a90264963f14f786209be6269cb570382174391e6f30e87",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_e99928bfd34e",
+    "scenario_id": "scenario_gs_p0a_012",
+    "scenario_family_id": "family_del_001",
+    "split_group_id": "split_del_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "cd9b2a7caddd423e6a90264963f14f786209be6269cb570382174391e6f30e87",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_4d0c6a3c830d",
+    "scenario_id": "scenario_gs_p0a_013",
+    "scenario_family_id": "family_uns_001",
+    "split_group_id": "split_uns_001",
+    "split": "train",
+    "output_type": "unsupported",
+    "canonical_expected_sha256": "0fb8ca8a56489d5f6e3ba02e354605e6d21a779e5fd5353827bfe8e09a5dfdc1",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_48b075e13229",
+    "scenario_id": "scenario_gs_p0a_013",
+    "scenario_family_id": "family_uns_001",
+    "split_group_id": "split_uns_001",
+    "split": "train",
+    "output_type": "unsupported",
+    "canonical_expected_sha256": "0fb8ca8a56489d5f6e3ba02e354605e6d21a779e5fd5353827bfe8e09a5dfdc1",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_c40771581c3f",
+    "scenario_id": "scenario_gs_p0a_013",
+    "scenario_family_id": "family_uns_001",
+    "split_group_id": "split_uns_001",
+    "split": "train",
+    "output_type": "unsupported",
+    "canonical_expected_sha256": "0fb8ca8a56489d5f6e3ba02e354605e6d21a779e5fd5353827bfe8e09a5dfdc1",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_9cfc5f620246",
+    "scenario_id": "scenario_gs_p0a_013",
+    "scenario_family_id": "family_uns_001",
+    "split_group_id": "split_uns_001",
+    "split": "train",
+    "output_type": "unsupported",
+    "canonical_expected_sha256": "0fb8ca8a56489d5f6e3ba02e354605e6d21a779e5fd5353827bfe8e09a5dfdc1",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_9f7abf0f5427",
+    "scenario_id": "scenario_gs_p0b_002",
+    "scenario_family_id": "family_exp_clarify_002",
+    "split_group_id": "split_exp_clarify_002",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "282fd7294e22dc614bbb61cc3eb8cb4457b505acba6c414f1fa6a44b6fc67550",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_2d5820e72855",
+    "scenario_id": "scenario_gs_p0b_002",
+    "scenario_family_id": "family_exp_clarify_002",
+    "split_group_id": "split_exp_clarify_002",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "282fd7294e22dc614bbb61cc3eb8cb4457b505acba6c414f1fa6a44b6fc67550",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_32ad1381953c",
+    "scenario_id": "scenario_gs_p0b_005",
+    "scenario_family_id": "family_exp_edit_004",
+    "split_group_id": "split_exp_edit_004",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "0c74f5129172988323318d33118980c70a0af5f40ea9f85930fea0df70294868",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_fd2553095750",
+    "scenario_id": "scenario_gs_p0b_005",
+    "scenario_family_id": "family_exp_edit_004",
+    "split_group_id": "split_exp_edit_004",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "0c74f5129172988323318d33118980c70a0af5f40ea9f85930fea0df70294868",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_fa433647504b",
+    "scenario_id": "scenario_gs_p0b_008",
+    "scenario_family_id": "family_debt_002",
+    "split_group_id": "split_debt_002",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "495d9fc7a7e05644713588f1f3eb5d312739c1b2e2d6b58d1dcc9cf54280b48a",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_af9233e650ce",
+    "scenario_id": "scenario_gs_p0b_008",
+    "scenario_family_id": "family_debt_002",
+    "split_group_id": "split_debt_002",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "495d9fc7a7e05644713588f1f3eb5d312739c1b2e2d6b58d1dcc9cf54280b48a",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_a81e575e0d2c",
+    "scenario_id": "scenario_gs_p0b_008",
+    "scenario_family_id": "family_debt_002",
+    "split_group_id": "split_debt_002",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "495d9fc7a7e05644713588f1f3eb5d312739c1b2e2d6b58d1dcc9cf54280b48a",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_08eb5acd22fa",
+    "scenario_id": "scenario_gs_p0b_010",
+    "scenario_family_id": "family_trf_002",
+    "split_group_id": "split_trf_002",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "6dad2b29d60b4662996f2243a969080f4b0c1a9ad5eee306033a008f6cffc127",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_cfc2011e329b",
+    "scenario_id": "scenario_gs_p0b_010",
+    "scenario_family_id": "family_trf_002",
+    "split_group_id": "split_trf_002",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "6dad2b29d60b4662996f2243a969080f4b0c1a9ad5eee306033a008f6cffc127",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_bf0e46c9db68",
+    "scenario_id": "scenario_gs_p0b_010",
+    "scenario_family_id": "family_trf_002",
+    "split_group_id": "split_trf_002",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "6dad2b29d60b4662996f2243a969080f4b0c1a9ad5eee306033a008f6cffc127",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_790c8dd3aa13",
+    "scenario_id": "scenario_gs_p0b_011",
+    "scenario_family_id": "family_pre_gated_004",
+    "split_group_id": "split_pre_gated_004",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "0d1cf192aa456f615f8df3f20a76bf6f8a7fb8ef905af553c8c98b70ed88b481",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_73ea3f65bb09",
+    "scenario_id": "scenario_gs_p0b_011",
+    "scenario_family_id": "family_pre_gated_004",
+    "split_group_id": "split_pre_gated_004",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "0d1cf192aa456f615f8df3f20a76bf6f8a7fb8ef905af553c8c98b70ed88b481",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_dd191fa70f40",
+    "scenario_id": "scenario_gs_p0b_012",
+    "scenario_family_id": "family_ref_001",
+    "split_group_id": "split_ref_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "b99f7e4c2c81fc6430bd6f7ebaed2cb9f18797b8de372e2d6acd3c90ad3ee30e",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_58846afd6083",
+    "scenario_id": "scenario_gs_p0b_012",
+    "scenario_family_id": "family_ref_001",
+    "split_group_id": "split_ref_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "b99f7e4c2c81fc6430bd6f7ebaed2cb9f18797b8de372e2d6acd3c90ad3ee30e",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_b65cc1030027",
+    "scenario_id": "scenario_gs_p0b_012",
+    "scenario_family_id": "family_ref_001",
+    "split_group_id": "split_ref_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "b99f7e4c2c81fc6430bd6f7ebaed2cb9f18797b8de372e2d6acd3c90ad3ee30e",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_c58d3d09d02e",
+    "scenario_id": "scenario_gs_p0b_014",
+    "scenario_family_id": "family_fin_001",
+    "split_group_id": "split_fin_001",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "06db42ba8693a3d6fe2cccaa3f06608626d2577dcc2e9d6113f2c4a0261f4912",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_ae32df1af28a",
+    "scenario_id": "scenario_gs_p0b_014",
+    "scenario_family_id": "family_fin_001",
+    "split_group_id": "split_fin_001",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "06db42ba8693a3d6fe2cccaa3f06608626d2577dcc2e9d6113f2c4a0261f4912",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_1c4303e0c9ce",
+    "scenario_id": "scenario_gs_p0b_014",
+    "scenario_family_id": "family_fin_001",
+    "split_group_id": "split_fin_001",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "06db42ba8693a3d6fe2cccaa3f06608626d2577dcc2e9d6113f2c4a0261f4912",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_b2b4896fa618",
+    "scenario_id": "scenario_gs_p0b_016",
+    "scenario_family_id": "family_del_002",
+    "split_group_id": "split_del_002",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "ca299691c301cc3c2e2a01a145f37f1801732af145de14b093d158e9ea90a416",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_232051cb0b25",
+    "scenario_id": "scenario_gs_p0b_016",
+    "scenario_family_id": "family_del_002",
+    "split_group_id": "split_del_002",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "ca299691c301cc3c2e2a01a145f37f1801732af145de14b093d158e9ea90a416",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_5f35c662e1c7",
+    "scenario_id": "scenario_gs_p0b_016",
+    "scenario_family_id": "family_del_002",
+    "split_group_id": "split_del_002",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "ca299691c301cc3c2e2a01a145f37f1801732af145de14b093d158e9ea90a416",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_3ce6c734d9fa",
+    "scenario_id": "scenario_gs_p0b_019",
+    "scenario_family_id": "family_ui_003",
+    "split_group_id": "split_ui_003",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "7f3803b2ab8999c62e15bc70628980bb5ae7b3fa018b0d2dfb858e0cef3b7bd0",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_e68f9f6780d6",
+    "scenario_id": "scenario_gs_p0b_019",
+    "scenario_family_id": "family_ui_003",
+    "split_group_id": "split_ui_003",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "7f3803b2ab8999c62e15bc70628980bb5ae7b3fa018b0d2dfb858e0cef3b7bd0",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_3223b7f9ba5c",
+    "scenario_id": "scenario_gs_p0b_019",
+    "scenario_family_id": "family_ui_003",
+    "split_group_id": "split_ui_003",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "7f3803b2ab8999c62e15bc70628980bb5ae7b3fa018b0d2dfb858e0cef3b7bd0",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_82a3262d2963",
+    "scenario_id": "scenario_gs_p0b_022",
+    "scenario_family_id": "family_ictx_003",
+    "split_group_id": "split_ictx_003",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "caf84a36b45a7986a91c0b665131bd3e6b761bc9a176239710017320bdc19277",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_5a804c54604a",
+    "scenario_id": "scenario_gs_p0b_022",
+    "scenario_family_id": "family_ictx_003",
+    "split_group_id": "split_ictx_003",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "caf84a36b45a7986a91c0b665131bd3e6b761bc9a176239710017320bdc19277",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_2027990b9be5",
+    "scenario_id": "scenario_gs_p0b_022",
+    "scenario_family_id": "family_ictx_003",
+    "split_group_id": "split_ictx_003",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "caf84a36b45a7986a91c0b665131bd3e6b761bc9a176239710017320bdc19277",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_4ce07990954a",
+    "scenario_id": "scenario_gs_p0b_024",
+    "scenario_family_id": "family_ent_002",
+    "split_group_id": "split_ent_002",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "71608f2de66447bfcf907df2e7dbeddffd508c4eceeafed74f562a16e40d7f90",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_f0ceafd58e74",
+    "scenario_id": "scenario_gs_p0b_024",
+    "scenario_family_id": "family_ent_002",
+    "split_group_id": "split_ent_002",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "71608f2de66447bfcf907df2e7dbeddffd508c4eceeafed74f562a16e40d7f90",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_40d57e97fbcb",
+    "scenario_id": "scenario_gs_p0b_024",
+    "scenario_family_id": "family_ent_002",
+    "split_group_id": "split_ent_002",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "71608f2de66447bfcf907df2e7dbeddffd508c4eceeafed74f562a16e40d7f90",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_d0f385cf37da",
+    "scenario_id": "scenario_gs_p0b_025",
+    "scenario_family_id": "family_ent_003",
+    "split_group_id": "split_ent_003",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "213c074d3c8f071bd1f1fb7a8ae39771347b1cf17270d54a5135dff136981d91",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_2a9ac77d78c2",
+    "scenario_id": "scenario_gs_p0b_025",
+    "scenario_family_id": "family_ent_003",
+    "split_group_id": "split_ent_003",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "213c074d3c8f071bd1f1fb7a8ae39771347b1cf17270d54a5135dff136981d91",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_2b9aff7e9226",
+    "scenario_id": "scenario_gs_p0b_026",
+    "scenario_family_id": "family_conv_001",
+    "split_group_id": "split_conv_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "08ead35852989ce4a2e5a86458551b2cf8c880ad62adafe649e820d7c3faaa06",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 3,
+        "source_roles": [
+          "user",
+          "user",
+          "user"
+        ],
+        "reversible_block": true
+      }
+    ],
+    "source_turn_count": 3,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_a5d6cc2321ba",
+    "scenario_id": "scenario_gs_p0b_026",
+    "scenario_family_id": "family_conv_001",
+    "split_group_id": "split_conv_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "08ead35852989ce4a2e5a86458551b2cf8c880ad62adafe649e820d7c3faaa06",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 3,
+        "source_roles": [
+          "user",
+          "user",
+          "user"
+        ],
+        "reversible_block": true
+      }
+    ],
+    "source_turn_count": 3,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_978dfdef0483",
+    "scenario_id": "scenario_gs_p0b_026",
+    "scenario_family_id": "family_conv_001",
+    "split_group_id": "split_conv_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "08ead35852989ce4a2e5a86458551b2cf8c880ad62adafe649e820d7c3faaa06",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 3,
+        "source_roles": [
+          "user",
+          "user",
+          "user"
+        ],
+        "reversible_block": true
+      }
+    ],
+    "source_turn_count": 3,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_6083ac87afca",
+    "scenario_id": "scenario_gs_p0b_026",
+    "scenario_family_id": "family_conv_001",
+    "split_group_id": "split_conv_001",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "08ead35852989ce4a2e5a86458551b2cf8c880ad62adafe649e820d7c3faaa06",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 3,
+        "source_roles": [
+          "user",
+          "user",
+          "user"
+        ],
+        "reversible_block": true
+      }
+    ],
+    "source_turn_count": 3,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_11c37bf16b8f",
+    "scenario_id": "scenario_gs_p0b_029",
+    "scenario_family_id": "family_conv_007",
+    "split_group_id": "split_conv_007",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "63b1df3b1db3cfab594a9da3c2bf9e1f197ac12e687fc0816bf4b0b2f7dfa18d",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 1,
+        "source_turn_start": 1,
+        "source_turn_end_exclusive": 2,
+        "source_roles": [
+          "assistant"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 2,
+        "source_turn_start": 2,
+        "source_turn_end_exclusive": 3,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 3,
+    "packed_message_count": 3,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_c2ddfe3d9b8c",
+    "scenario_id": "scenario_gs_p0b_029",
+    "scenario_family_id": "family_conv_007",
+    "split_group_id": "split_conv_007",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "63b1df3b1db3cfab594a9da3c2bf9e1f197ac12e687fc0816bf4b0b2f7dfa18d",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 1,
+        "source_turn_start": 1,
+        "source_turn_end_exclusive": 2,
+        "source_roles": [
+          "assistant"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 2,
+        "source_turn_start": 2,
+        "source_turn_end_exclusive": 3,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 3,
+    "packed_message_count": 3,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_4e0e97563296",
+    "scenario_id": "scenario_gs_p0b_029",
+    "scenario_family_id": "family_conv_007",
+    "split_group_id": "split_conv_007",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "63b1df3b1db3cfab594a9da3c2bf9e1f197ac12e687fc0816bf4b0b2f7dfa18d",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 1,
+        "source_turn_start": 1,
+        "source_turn_end_exclusive": 2,
+        "source_roles": [
+          "assistant"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 2,
+        "source_turn_start": 2,
+        "source_turn_end_exclusive": 3,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 3,
+    "packed_message_count": 3,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_201ba093c3ba",
+    "scenario_id": "scenario_gs_p0b_031",
+    "scenario_family_id": "family_clr_002",
+    "split_group_id": "split_clr_002",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "70ab55130f0a8e3678017dbb090efb1757ac1b4ee1ec42c81c44f3206eb6a5f3",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_4ac11b83bee9",
+    "scenario_id": "scenario_gs_p0b_031",
+    "scenario_family_id": "family_clr_002",
+    "split_group_id": "split_clr_002",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "70ab55130f0a8e3678017dbb090efb1757ac1b4ee1ec42c81c44f3206eb6a5f3",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_e9828ad60251",
+    "scenario_id": "scenario_gs_p0b_031",
+    "scenario_family_id": "family_clr_002",
+    "split_group_id": "split_clr_002",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "70ab55130f0a8e3678017dbb090efb1757ac1b4ee1ec42c81c44f3206eb6a5f3",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_bd17f48c54fa",
+    "scenario_id": "scenario_gs_p0b_031",
+    "scenario_family_id": "family_clr_002",
+    "split_group_id": "split_clr_002",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "70ab55130f0a8e3678017dbb090efb1757ac1b4ee1ec42c81c44f3206eb6a5f3",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_4a97ceae6344",
+    "scenario_id": "scenario_gs_p0b_032",
+    "scenario_family_id": "family_clr_005",
+    "split_group_id": "split_clr_005",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "9d8b3d182796c85759cb45680e3f70afbd91497af60ac30c1b8b671631bf788a",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_2de8b1ddfe0a",
+    "scenario_id": "scenario_gs_p0b_032",
+    "scenario_family_id": "family_clr_005",
+    "split_group_id": "split_clr_005",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "9d8b3d182796c85759cb45680e3f70afbd91497af60ac30c1b8b671631bf788a",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_b6a3bfa9da68",
+    "scenario_id": "scenario_gs_p0b_033",
+    "scenario_family_id": "family_rule_001",
+    "split_group_id": "split_rule_001",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "26dc9084c6da37cdcee51783f7b8c81e3cdaa558ca66cbb7886a28b0b23ae062",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_d128b17c1db8",
+    "scenario_id": "scenario_gs_p0b_033",
+    "scenario_family_id": "family_rule_001",
+    "split_group_id": "split_rule_001",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "26dc9084c6da37cdcee51783f7b8c81e3cdaa558ca66cbb7886a28b0b23ae062",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_0847b1b27f7f",
+    "scenario_id": "scenario_gs_p0b_036",
+    "scenario_family_id": "family_rule_005",
+    "split_group_id": "split_rule_005",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "aac4d092e75050bf07616b496782000dc393dd91a6003433e12b4ae827c82b8b",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 1,
+        "source_turn_start": 1,
+        "source_turn_end_exclusive": 2,
+        "source_roles": [
+          "assistant"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 2,
+        "source_turn_start": 2,
+        "source_turn_end_exclusive": 3,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 3,
+    "packed_message_count": 3,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_538a5e7bdb1e",
+    "scenario_id": "scenario_gs_p0b_036",
+    "scenario_family_id": "family_rule_005",
+    "split_group_id": "split_rule_005",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "aac4d092e75050bf07616b496782000dc393dd91a6003433e12b4ae827c82b8b",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 1,
+        "source_turn_start": 1,
+        "source_turn_end_exclusive": 2,
+        "source_roles": [
+          "assistant"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 2,
+        "source_turn_start": 2,
+        "source_turn_end_exclusive": 3,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 3,
+    "packed_message_count": 3,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_720594c4fe1e",
+    "scenario_id": "scenario_gs_p0b_036",
+    "scenario_family_id": "family_rule_005",
+    "split_group_id": "split_rule_005",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "aac4d092e75050bf07616b496782000dc393dd91a6003433e12b4ae827c82b8b",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 1,
+        "source_turn_start": 1,
+        "source_turn_end_exclusive": 2,
+        "source_roles": [
+          "assistant"
+        ],
+        "reversible_block": false
+      },
+      {
+        "packed_message_index": 2,
+        "source_turn_start": 2,
+        "source_turn_end_exclusive": 3,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 3,
+    "packed_message_count": 3,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_c892f4546f1b",
+    "scenario_id": "scenario_gs_p0b_037",
+    "scenario_family_id": "family_rule_006",
+    "split_group_id": "split_rule_006",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "ba8bb686ad8655f9258a52fba472b85a3475ab0792024a3b695b4d7fa27717c4",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_e6b11034f4f2",
+    "scenario_id": "scenario_gs_p0b_037",
+    "scenario_family_id": "family_rule_006",
+    "split_group_id": "split_rule_006",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "ba8bb686ad8655f9258a52fba472b85a3475ab0792024a3b695b4d7fa27717c4",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_817840633b17",
+    "scenario_id": "scenario_gs_p0b_037",
+    "scenario_family_id": "family_rule_006",
+    "split_group_id": "split_rule_006",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "ba8bb686ad8655f9258a52fba472b85a3475ab0792024a3b695b4d7fa27717c4",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_32cdd4729633",
+    "scenario_id": "scenario_gs_p0b_037",
+    "scenario_family_id": "family_rule_006",
+    "split_group_id": "split_rule_006",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "ba8bb686ad8655f9258a52fba472b85a3475ab0792024a3b695b4d7fa27717c4",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_c2e46813f818",
+    "scenario_id": "scenario_gs_p0b_038",
+    "scenario_family_id": "family_rule_007",
+    "split_group_id": "split_rule_007",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "269311d02e9f6491a09a6659582cd00be941f56d96a0f7fdec93ad740d07e6c0",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_0c10938359b3",
+    "scenario_id": "scenario_gs_p0b_038",
+    "scenario_family_id": "family_rule_007",
+    "split_group_id": "split_rule_007",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "269311d02e9f6491a09a6659582cd00be941f56d96a0f7fdec93ad740d07e6c0",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_95b271a2d3c6",
+    "scenario_id": "scenario_gs_p0b_038",
+    "scenario_family_id": "family_rule_007",
+    "split_group_id": "split_rule_007",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "269311d02e9f6491a09a6659582cd00be941f56d96a0f7fdec93ad740d07e6c0",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_a75531445264",
+    "scenario_id": "scenario_gs_p0b_038",
+    "scenario_family_id": "family_rule_007",
+    "split_group_id": "split_rule_007",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "269311d02e9f6491a09a6659582cd00be941f56d96a0f7fdec93ad740d07e6c0",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_013",
+    "scenario_id": "scenario_gs_p0b_003",
+    "scenario_family_id": "family_exp_clarify_007",
+    "split_group_id": "split_exp_clarify_007",
+    "split": "validation",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "774e5cf488b25198f1f4927616eeee64d0249152652ac4daf3553b6b64f64340",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_014",
+    "scenario_id": "scenario_gs_p0b_003",
+    "scenario_family_id": "family_exp_clarify_007",
+    "split_group_id": "split_exp_clarify_007",
+    "split": "validation",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "774e5cf488b25198f1f4927616eeee64d0249152652ac4daf3553b6b64f64340",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_028",
+    "scenario_id": "scenario_gs_p0a_014",
+    "scenario_family_id": "family_debt_001",
+    "split_group_id": "split_debt_001",
+    "split": "validation",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "1236ca1d23c9f1bde8a14bf35b6a77931c0a09d4f8e3c265705a9514097738ce",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_029",
+    "scenario_id": "scenario_gs_p0a_014",
+    "scenario_family_id": "family_debt_001",
+    "split_group_id": "split_debt_001",
+    "split": "validation",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "1236ca1d23c9f1bde8a14bf35b6a77931c0a09d4f8e3c265705a9514097738ce",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_032",
+    "scenario_id": "scenario_gs_p0a_015",
+    "scenario_family_id": "family_debt_004",
+    "split_group_id": "split_debt_004",
+    "split": "validation",
+    "output_type": "answer",
+    "canonical_expected_sha256": "7917ef506550188c9535f6d3896b4097ec92c5c9f57cf8450336e4e57c730fa8",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_033",
+    "scenario_id": "scenario_gs_p0a_015",
+    "scenario_family_id": "family_debt_004",
+    "split_group_id": "split_debt_004",
+    "split": "validation",
+    "output_type": "answer",
+    "canonical_expected_sha256": "7917ef506550188c9535f6d3896b4097ec92c5c9f57cf8450336e4e57c730fa8",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_037",
+    "scenario_id": "scenario_gs_p0a_011",
+    "scenario_family_id": "family_trf_007",
+    "split_group_id": "split_trf_007",
+    "split": "validation",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "061f7f1605568012d1a5970bc4492956e7816949d2e0e0ab281fa1076b6ae979",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_082",
+    "scenario_id": "scenario_gs_p0b_034",
+    "scenario_family_id": "family_rule_003",
+    "split_group_id": "split_rule_003",
+    "split": "validation",
+    "output_type": "answer",
+    "canonical_expected_sha256": "d291c490b5204d20a06e0c3211b66005a864578b2ef54613845da6e0fea75f29",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_gs_p0_083",
+    "scenario_id": "scenario_gs_p0b_034",
+    "scenario_family_id": "family_rule_003",
+    "split_group_id": "split_rule_003",
+    "split": "validation",
+    "output_type": "answer",
+    "canonical_expected_sha256": "d291c490b5204d20a06e0c3211b66005a864578b2ef54613845da6e0fea75f29",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_5493b48346db",
+    "scenario_id": "scenario_gs_p0a_011",
+    "scenario_family_id": "family_trf_007",
+    "split_group_id": "split_trf_007",
+    "split": "validation",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "40d19817a20f9b938a34fb85ea02ad6b212db3edef69f00ba0d4681817c54f55",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_4053b71f5faa",
+    "scenario_id": "scenario_gs_p0a_011",
+    "scenario_family_id": "family_trf_007",
+    "split_group_id": "split_trf_007",
+    "split": "validation",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "40d19817a20f9b938a34fb85ea02ad6b212db3edef69f00ba0d4681817c54f55",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_f38285d92ed9",
+    "scenario_id": "scenario_gs_p0a_014",
+    "scenario_family_id": "family_debt_001",
+    "split_group_id": "split_debt_001",
+    "split": "validation",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "da1cd8ce5ce845dd52bea51f243c5c78666f72c3be086ee6ffa5609fb27e2f71",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_ff44a7eae6d8",
+    "scenario_id": "scenario_gs_p0a_014",
+    "scenario_family_id": "family_debt_001",
+    "split_group_id": "split_debt_001",
+    "split": "validation",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "da1cd8ce5ce845dd52bea51f243c5c78666f72c3be086ee6ffa5609fb27e2f71",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_ac08c6c5d7f6",
+    "scenario_id": "scenario_gs_p0a_014",
+    "scenario_family_id": "family_debt_001",
+    "split_group_id": "split_debt_001",
+    "split": "validation",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "da1cd8ce5ce845dd52bea51f243c5c78666f72c3be086ee6ffa5609fb27e2f71",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_0e4d53c72cc9",
+    "scenario_id": "scenario_gs_p0a_014",
+    "scenario_family_id": "family_debt_001",
+    "split_group_id": "split_debt_001",
+    "split": "validation",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "da1cd8ce5ce845dd52bea51f243c5c78666f72c3be086ee6ffa5609fb27e2f71",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_36f4d8abe578",
+    "scenario_id": "scenario_gs_p0a_015",
+    "scenario_family_id": "family_debt_004",
+    "split_group_id": "split_debt_004",
+    "split": "validation",
+    "output_type": "answer",
+    "canonical_expected_sha256": "8c758e115eddd8b09e935b4d3fbd1f3e5407c5d43dea8cd5c968f862da7d5945",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_50f39996a01a",
+    "scenario_id": "scenario_gs_p0a_015",
+    "scenario_family_id": "family_debt_004",
+    "split_group_id": "split_debt_004",
+    "split": "validation",
+    "output_type": "answer",
+    "canonical_expected_sha256": "8c758e115eddd8b09e935b4d3fbd1f3e5407c5d43dea8cd5c968f862da7d5945",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_f5bc42a7c74f",
+    "scenario_id": "scenario_gs_p0a_015",
+    "scenario_family_id": "family_debt_004",
+    "split_group_id": "split_debt_004",
+    "split": "validation",
+    "output_type": "answer",
+    "canonical_expected_sha256": "8c758e115eddd8b09e935b4d3fbd1f3e5407c5d43dea8cd5c968f862da7d5945",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_23cc3cf0f1ff",
+    "scenario_id": "scenario_gs_p0a_015",
+    "scenario_family_id": "family_debt_004",
+    "split_group_id": "split_debt_004",
+    "split": "validation",
+    "output_type": "answer",
+    "canonical_expected_sha256": "8c758e115eddd8b09e935b4d3fbd1f3e5407c5d43dea8cd5c968f862da7d5945",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_7d0f32240c99",
+    "scenario_id": "scenario_gs_p0b_003",
+    "scenario_family_id": "family_exp_clarify_007",
+    "split_group_id": "split_exp_clarify_007",
+    "split": "validation",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "61b61610e5107a409be7732b1842e980b9c79d7600c2bd5cfa2eaf6c175f17df",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_401a2f5ad127",
+    "scenario_id": "scenario_gs_p0b_034",
+    "scenario_family_id": "family_rule_003",
+    "split_group_id": "split_rule_003",
+    "split": "validation",
+    "output_type": "answer",
+    "canonical_expected_sha256": "b1a6655c72f2d7e01e75c26162ce7bc5200443736710a52c24eb274d96b1656a",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_f3941370d729",
+    "scenario_id": "scenario_gs_p0b_034",
+    "scenario_family_id": "family_rule_003",
+    "split_group_id": "split_rule_003",
+    "split": "validation",
+    "output_type": "answer",
+    "canonical_expected_sha256": "b1a6655c72f2d7e01e75c26162ce7bc5200443736710a52c24eb274d96b1656a",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_191d11c1745f",
+    "scenario_id": "scenario_gs_p0b_034",
+    "scenario_family_id": "family_rule_003",
+    "split_group_id": "split_rule_003",
+    "split": "validation",
+    "output_type": "answer",
+    "canonical_expected_sha256": "b1a6655c72f2d7e01e75c26162ce7bc5200443736710a52c24eb274d96b1656a",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_teacher_6c16bbf26c83",
+    "scenario_id": "scenario_gs_p0b_034",
+    "scenario_family_id": "family_rule_003",
+    "split_group_id": "split_rule_003",
+    "split": "validation",
+    "output_type": "answer",
+    "canonical_expected_sha256": "b1a6655c72f2d7e01e75c26162ce7bc5200443736710a52c24eb274d96b1656a",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true
+  },
+  {
+    "sample_id": "sample_v02_a_currency_missing",
+    "scenario_id": "scenario_v02_a_currency_missing",
+    "scenario_family_id": "family_v02_currency_sufficiency",
+    "split_group_id": "split_v02_currency_sufficiency",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "9c93235b8de54c44ada53e92fa1f85b3f284f999185821dea5a997551f52e431",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true,
+    "source_dataset": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a",
+    "source_samples_sha256": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f"
+  },
+  {
+    "sample_id": "sample_v02_a_currency_supplied",
+    "scenario_id": "scenario_v02_a_currency_supplied",
+    "scenario_family_id": "family_v02_currency_sufficiency",
+    "split_group_id": "split_v02_currency_sufficiency",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "07a025c1a299c03d1dee982157a117331558acd7414335575ad61f382a1fe0f6",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true,
+    "source_dataset": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a",
+    "source_samples_sha256": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f"
+  },
+  {
+    "sample_id": "sample_v02_b_lookup_not_run",
+    "scenario_id": "scenario_v02_b_lookup_not_run",
+    "scenario_family_id": "family_v02_participant_lookup",
+    "split_group_id": "split_v02_participant_lookup",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "5da77dc43dad5674869b5a3563cd62e8fbc7e140c4fa72117a37c3ee0a31a507",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true,
+    "source_dataset": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a",
+    "source_samples_sha256": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f"
+  },
+  {
+    "sample_id": "sample_v02_b_lookup_multiple",
+    "scenario_id": "scenario_v02_b_lookup_multiple",
+    "scenario_family_id": "family_v02_participant_lookup",
+    "split_group_id": "split_v02_participant_lookup",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "9816252e1ea2d443b50567a3de4dc5f31e7ac03b699a708d5c494258904ff2d7",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true,
+    "source_dataset": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a",
+    "source_samples_sha256": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f"
+  },
+  {
+    "sample_id": "sample_v02_b_lookup_zero",
+    "scenario_id": "scenario_v02_b_lookup_zero",
+    "scenario_family_id": "family_v02_participant_lookup",
+    "split_group_id": "split_v02_participant_lookup",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "8ac1cd0302b31eefc56c3630f71cf2f41783777c7859e721df857ce06ba02021",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true,
+    "source_dataset": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a",
+    "source_samples_sha256": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f"
+  },
+  {
+    "sample_id": "sample_v02_b_lookup_unique",
+    "scenario_id": "scenario_v02_b_lookup_unique",
+    "scenario_family_id": "family_v02_participant_lookup",
+    "split_group_id": "split_v02_participant_lookup",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "5c221b2a8727023142714f8d67ef2a12ee72ef45794122c7a592751f023e8449",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true,
+    "source_dataset": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a",
+    "source_samples_sha256": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f"
+  },
+  {
+    "sample_id": "sample_v02_c_payer_unbound",
+    "scenario_id": "scenario_v02_c_payer_unbound",
+    "scenario_family_id": "family_v02_payer_binding",
+    "split_group_id": "split_v02_payer_binding",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "c33e012fdfe6c0e99ef448d821cff1a5757941a7c43ec3b612226200a2112972",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true,
+    "source_dataset": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a",
+    "source_samples_sha256": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f"
+  },
+  {
+    "sample_id": "sample_v02_c_payer_bound",
+    "scenario_id": "scenario_v02_c_payer_bound",
+    "scenario_family_id": "family_v02_payer_binding",
+    "split_group_id": "split_v02_payer_binding",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "f4d74a689c80506daaa1d7c7b50c12a94dac9f2e599914d5942c43618ac42463",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true,
+    "source_dataset": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a",
+    "source_samples_sha256": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f"
+  },
+  {
+    "sample_id": "sample_v02_d_activity_ambiguous",
+    "scenario_id": "scenario_v02_d_activity_ambiguous",
+    "scenario_family_id": "family_v02_activity_ui_target",
+    "split_group_id": "split_v02_activity_ui_target",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "eadfe248bece1300ed24bba08e4776aa96bcc9a9a916755e520ab47e8db744c2",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true,
+    "source_dataset": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a",
+    "source_samples_sha256": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f"
+  },
+  {
+    "sample_id": "sample_v02_d_activity_selected",
+    "scenario_id": "scenario_v02_d_activity_selected",
+    "scenario_family_id": "family_v02_activity_ui_target",
+    "split_group_id": "split_v02_activity_ui_target",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "392d48b4142a5463fa43299dbb1e13abef70f3cc6524ffb0b5a8ac20e1cc122f",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true,
+    "source_dataset": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a",
+    "source_samples_sha256": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f"
+  },
+  {
+    "sample_id": "sample_v02_e_recent_failed",
+    "scenario_id": "scenario_v02_e_recent_failed",
+    "scenario_family_id": "family_v02_recent_action_reference",
+    "split_group_id": "split_v02_recent_action_reference",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "008bf567d0174a9c694d2d8ab4309dd1ce64d083c58f3282823e171a3a059e50",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true,
+    "source_dataset": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a",
+    "source_samples_sha256": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f"
+  },
+  {
+    "sample_id": "sample_v02_e_recent_succeeded",
+    "scenario_id": "scenario_v02_e_recent_succeeded",
+    "scenario_family_id": "family_v02_recent_action_reference",
+    "split_group_id": "split_v02_recent_action_reference",
+    "split": "train",
+    "output_type": "tool_call",
+    "canonical_expected_sha256": "96ba005b1b66c43198c20a12ddd7b7ac30cc5dfebde233aac0bd1cad1501878c",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true,
+    "source_dataset": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a",
+    "source_samples_sha256": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f"
+  },
+  {
+    "sample_id": "sample_v02_f_verified_expense_answer",
+    "scenario_id": "scenario_v02_f_verified_expense_answer",
+    "scenario_family_id": "family_v02_verified_expense_answer",
+    "split_group_id": "split_v02_verified_expense_answer",
+    "split": "train",
+    "output_type": "answer",
+    "canonical_expected_sha256": "d90b907d665f5e0c3d61f6019ef2d916d846b5984a8029eee92b235e20c1ac6f",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true,
+    "source_dataset": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a",
+    "source_samples_sha256": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f"
+  },
+  {
+    "sample_id": "sample_v02_g_presentation_l1",
+    "scenario_id": "scenario_v02_g_presentation_l1",
+    "scenario_family_id": "family_v02_expense_update_boundary",
+    "split_group_id": "split_v02_expense_update_boundary",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "f6ca79948783745320eb0cf2fa31afb806869c9e3c36384ff5c1cf9cfb1bb9d8",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true,
+    "source_dataset": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a",
+    "source_samples_sha256": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f"
+  },
+  {
+    "sample_id": "sample_v02_g_financial_d4",
+    "scenario_id": "scenario_v02_g_financial_d4",
+    "scenario_family_id": "family_v02_expense_update_boundary",
+    "split_group_id": "split_v02_expense_update_boundary",
+    "split": "train",
+    "output_type": "proposal",
+    "canonical_expected_sha256": "921f6329d2d5634a6a45d2ac92fe8fd99ca9d9dab091e49b4b9d722a16d5e573",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true,
+    "source_dataset": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a",
+    "source_samples_sha256": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f"
+  },
+  {
+    "sample_id": "sample_v02_h_gated_delete_l2",
+    "scenario_id": "scenario_v02_h_gated_delete_l2",
+    "scenario_family_id": "family_v02_gated_delete",
+    "split_group_id": "split_v02_gated_delete",
+    "split": "train",
+    "output_type": "clarification",
+    "canonical_expected_sha256": "fcbddd37c6d887132db83bed24fa7ab9965bae14abcc6b10c78cacf811c6d96a",
+    "packed_turns": [
+      {
+        "packed_message_index": 0,
+        "source_turn_start": 0,
+        "source_turn_end_exclusive": 1,
+        "source_roles": [
+          "user"
+        ],
+        "reversible_block": false
+      }
+    ],
+    "source_turn_count": 1,
+    "packed_message_count": 1,
+    "history_roundtrip_verified": true,
+    "source_dataset": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a",
+    "source_samples_sha256": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f"
+  }
+]

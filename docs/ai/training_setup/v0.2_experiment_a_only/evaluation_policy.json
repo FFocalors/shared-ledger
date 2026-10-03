@@ -1,0 +1,19 @@
+{
+  "validation": {
+    "use": "model selection",
+    "source": "Frozen v0.1 validation",
+    "count": 24
+  },
+  "historical_v0_1_test": {
+    "count": 37,
+    "use": "historical regression/diagnostic only",
+    "sealed_for_selection": true
+  },
+  "historical_v0_1_hard_test": {
+    "count": 12,
+    "use": "historical regression/diagnostic only",
+    "sealed_for_selection": true
+  },
+  "fresh_generalization_evidence": "not provided by historical v0.1 test/hard_test; no new holdout assignment in this assembly",
+  "future_split": "Experiment A's 8 Families, 6 contrast groups and semantic-state closure are assigned train in this version"
+}

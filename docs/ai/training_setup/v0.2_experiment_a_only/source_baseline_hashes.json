@@ -1,0 +1,48 @@
+{
+  "canonical_v1": {
+    "samples.json": "768916c8781dc2608ac8220588a0e85ffc043d8f16a45e9bd3497b87a214e562",
+    "scenarios.json": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+    "split_assignment.json": "e3e1599673b3227edeaad3bc62f04e0f3249dd886946f502664428939d8d3765",
+    "dataset_manifest.json": "7f8cc2ef70d1abedd49ea040826d93f4c3708a8cb5893e7e1fedcc488e2c2252"
+  },
+  "gold_teacher_sources": {
+    "gold": {
+      "path": "docs/ai/dataset/gold_seed/v0.1/p0",
+      "manifest_sha256": "cb0bc5918534aba996383574e1715327730d83bcc64ed57df57a2fb4ddc4e6eb",
+      "samples_sha256": "34ffd94d9c5ccbb17e6632b8689194c4be53f7275db828e983f6d6540b406dee",
+      "scenarios_sha256": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+      "expected_manifest_sha256": "cb0bc5918534aba996383574e1715327730d83bcc64ed57df57a2fb4ddc4e6eb",
+      "expected_samples_sha256": "34ffd94d9c5ccbb17e6632b8689194c4be53f7275db828e983f6d6540b406dee",
+      "expected_scenarios_sha256": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815"
+    },
+    "teacher": {
+      "path": "docs/ai/dataset/teacher/v0.1",
+      "manifest_sha256": "2add79d8111feff4aca4453480cc3380fe0cf81d1ef32f090aee0246bbdf5895",
+      "samples_sha256": "5d2ca222d8ee4a87ae9e17cdaa0dd22dbfa8bf6835458e34e3be6c9292e4c4d9",
+      "scenarios_sha256": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+      "expected_manifest_sha256": "2add79d8111feff4aca4453480cc3380fe0cf81d1ef32f090aee0246bbdf5895",
+      "expected_samples_sha256": "5d2ca222d8ee4a87ae9e17cdaa0dd22dbfa8bf6835458e34e3be6c9292e4c4d9",
+      "expected_scenarios_sha256": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815"
+    }
+  },
+  "pipeline_definitions": {
+    "scripts/ai_training_setup/export_dataset.py": "eaab37ce9d9b81a17c4c62bfaa575bed4aac2f2ecdb4072fac455d7c767b7350",
+    "scripts/ai_training_setup/validate_setup.py": "624f3c65ecacfc460625077ffd640acb71f62d74dd803f871808b7c4894ed8e3",
+    "scripts/ai_training_evaluation/evaluate_generation.py": "30c021a3e4fadbfbe03a079f8c59ad9180a7e7a2662e094c154b147f0f42d9fe",
+    "scripts/ai_training_evaluation/validate_expected.py": "ee8347582563c545f519eb4cafc29b341cd08a8448ccd7f18e180681237e6a46"
+  },
+  "setup_v1": {
+    "manifest.json": "0ea288d01fc33389996473f795c0632999e12b568f7541de12e29ba4fea2d67c",
+    "qlora.yaml": "b621a212b42169a2852e1db81cc7ba2da6c486e42eaeb3ece6b405e08e214561",
+    "validation.json": "9db71eb05e10596cfe106b3da03e46ec7ceed77bafbf066f4385abe41404413d"
+  },
+  "experiment_a": {
+    "samples.json": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f",
+    "scenarios.json": "09317331b1d1da3683847e804b0d96529e4ede203a7886dba74561ac4a73c523",
+    "dataset_manifest.json": "aff646574e69d55313ea6979ced593ed15738efb4e95a1062227e43b29c3d034",
+    "freeze_hashes.json": "afe5e81d32c5cabe2d4eb3c9e11e7e4ae01c98768af1e45a8bca92a1817682a3",
+    "source_hashes.json": "f6bb6b16b4648a4ee8aec391e741f792dc1004df120510e5d7d2f4892add9921"
+  },
+  "freeze_source_file_count": 30,
+  "freeze_sources_match": true
+}

@@ -1,0 +1,130 @@
+{
+  "manifest_schema_version": "0.1",
+  "dataset_version": "0.1",
+  "business_logic_version": "1.2",
+  "ai_contract_version": "0.1.2",
+  "ai_scope_version": "0.1",
+  "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+  "created_at": "2026-09-29T22:51:12+08:00",
+  "status": "validated",
+  "example_only": false,
+  "scenario_count": 70,
+  "scenario_family_count": 62,
+  "sample_count": 266,
+  "split_policy": {
+    "assignment_unit": "scenario_family",
+    "target_percentages": {
+      "train": 70,
+      "validation": 10,
+      "test": 15,
+      "hard_test": 5
+    },
+    "final_split_assigned": true
+  },
+  "split_statistics": {
+    "train": 187,
+    "validation": 24,
+    "test": 37,
+    "hard_test": 12,
+    "unassigned": 6
+  },
+  "task_statistics": {
+    "parameter_extraction": 23,
+    "proposal_generation": 34,
+    "clarification": 49,
+    "tool_call": 23,
+    "result_explanation": 25,
+    "ui_context_reasoning": 15,
+    "entity_resolution": 14,
+    "interaction_context_reasoning": 18,
+    "conversation_context_reasoning": 14,
+    "intent_classification": 6,
+    "rule_qa": 21,
+    "error_handling": 18,
+    "unsupported_detection": 6
+  },
+  "scope_statistics": {
+    "CORE": 226,
+    "SUPPORTED_BUT_GATED": 40,
+    "DEFERRED": 0
+  },
+  "source_statistics": {
+    "manual": 111,
+    "teacher_generated": 155
+  },
+  "trust_statistics": {
+    "GOLD": 95,
+    "SILVER": 171,
+    "SYNTHETIC_UNVERIFIED": 0
+  },
+  "difficulty_statistics": {
+    "easy": 33,
+    "normal": 146,
+    "hard": 81,
+    "ood": 6
+  },
+  "lifecycle_statistics": {
+    "draft": 0,
+    "generated": 0,
+    "validated": 0,
+    "reviewed": 0,
+    "approved": 266,
+    "rejected": 0,
+    "deprecated": 0
+  },
+  "artifacts": [
+    {
+      "kind": "scenario",
+      "path": "scenarios.json",
+      "record_count": 70,
+      "sha256": "d2873631b1bfd9ac6a025eef6957055c171efc35872eb49f0178b44f323d2c82"
+    },
+    {
+      "kind": "sample",
+      "path": "samples.json",
+      "record_count": 266,
+      "sha256": "12529f50accd452bad5153dbe36efa123e468408259ad3263adf8a457a1afe13"
+    },
+    {
+      "kind": "validation_report",
+      "path": "split_assignment.json",
+      "record_count": 266,
+      "sha256": "4b2ba8d1d07345cd3eee51d3ac0e37295002ca446b3379d820ada347d785d6ff"
+    },
+    {
+      "kind": "validation_report",
+      "path": "source_reconciliation.json",
+      "record_count": 266,
+      "sha256": "6bbd64228131785f54cd44a477f85d7373c14b84800d6ec0957047359f1ecbe2"
+    },
+    {
+      "kind": "validation_report",
+      "path": "validation_report.json",
+      "record_count": 5,
+      "sha256": "08a6337954da9bcd5a2b9ccd89b5f57a28d2757c3f06c0aa36c1e5e6d3791d04"
+    },
+    {
+      "kind": "validation_report",
+      "path": "README.md",
+      "record_count": 1,
+      "sha256": "384bbba8cf7fa825c4467ed59aebc74258281b8cbf2453e928b72002758fd925"
+    }
+  ],
+  "validation_summary": {
+    "schema_valid": true,
+    "contract_valid": true,
+    "scope_valid": true,
+    "leakage_valid": true,
+    "policy_valid": true,
+    "privacy_valid": true,
+    "error_count": 0,
+    "warning_count": 161,
+    "report_reference": "docs/ai/dataset/canonical_training/v0.2_experiment_a_only/validation_report.json"
+  },
+  "privacy": {
+    "synthetic_identifiers_required": true,
+    "production_data_allowed": false,
+    "real_personal_data_allowed": false
+  },
+  "notes": "Training v0.2 Experiment A-only additive assembly. Frozen Canonical Training v0.1 records and split assignments are copied; approved frozen Experiment A Samples are assigned to train only in this new version. No resplitting. All validation/test/hard_test samples remain historical v0.1 diagnostic-only and are excluded from this training setup. Six original unassigned samples remain excluded; FIN-002 has no Samples. A-only families/split groups/semantic states are train-only. Dataset schema_version and dataset_version remain 0.1 under frozen schema constraints. training_eligible=true means static dataset readiness only; no training has been performed. Source snapshot provenance is in source_reconciliation.json."
+}

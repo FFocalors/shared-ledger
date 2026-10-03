@@ -1,0 +1,106 @@
+{
+  "training_setup_version": "0.2-experiment-a-only",
+  "canonical_dataset_version": "0.2-experiment-a-only",
+  "source": {
+    "canonical_v1": {
+      "path": "docs/ai/dataset/canonical_training/v0.1",
+      "manifest_sha256": "7f8cc2ef70d1abedd49ea040826d93f4c3708a8cb5893e7e1fedcc488e2c2252",
+      "samples_sha256": "768916c8781dc2608ac8220588a0e85ffc043d8f16a45e9bd3497b87a214e562",
+      "scenarios_sha256": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+      "split_assignment_sha256": "e3e1599673b3227edeaad3bc62f04e0f3249dd886946f502664428939d8d3765"
+    },
+    "experiment_a": {
+      "path": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a",
+      "manifest_sha256": "aff646574e69d55313ea6979ced593ed15738efb4e95a1062227e43b29c3d034",
+      "samples_sha256": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f",
+      "scenarios_sha256": "09317331b1d1da3683847e804b0d96529e4ede203a7886dba74561ac4a73c523",
+      "freeze_hashes_sha256": "afe5e81d32c5cabe2d4eb3c9e11e7e4ae01c98768af1e45a8bca92a1817682a3"
+    }
+  },
+  "export": {
+    "format": "LLaMA-Factory ShareGPT JSON",
+    "record_count": 211,
+    "split_counts": {
+      "train": 187,
+      "validation": 24
+    },
+    "historical_diagnostic_only_not_exported": {
+      "test": 37,
+      "hard_test": 12
+    },
+    "excluded_unassigned_count": 6,
+    "added_experiment_a_samples": 16,
+    "output_types": {
+      "proposal": 54,
+      "clarification": 61,
+      "tool_call": 33,
+      "answer": 57,
+      "unsupported": 6
+    },
+    "family_counts": {
+      "scenario_families_in_snapshot": 62,
+      "families_with_samples": 61,
+      "train_families_with_samples": 44,
+      "added_experiment_a_families": 8,
+      "scenario_only_fin002_families": 1
+    }
+  },
+  "serialization": {
+    "template": "qwen3_5_nothink",
+    "system_context": "allowlisted runtime context only",
+    "history_group_marker": "<|shared_ledger_turn_block_v1|>",
+    "history_roundtrip_verified": true,
+    "assistant_target": "compact JSON serialization of expected.model_output; parsed equality checked",
+    "loss_mask": {
+      "train_on_prompt": false,
+      "mask_history": true
+    }
+  },
+  "llamafactory_source_version": "0.9.6.dev0",
+  "static_validation": {
+    "status": "passed",
+    "training_performed": false,
+    "llamafactory_loader_rows": 211,
+    "ground_truth_equal": 211,
+    "source_trace_unique": 211,
+    "metadata_leaks": 0,
+    "loss_masks_verified": 211,
+    "cutoff_len": 2048,
+    "max_total_tokens": 1371,
+    "truncations": 0,
+    "validation_source": "Frozen v0.1 validation export, byte-identical"
+  },
+  "artifacts": {},
+  "artifact_hashes": {
+    "llamafactory/train.json": "3566800c8613e2185fb8471eb633aef6ef1535400fd63a4149bfb3c87bb58833",
+    "llamafactory/validation.json": "9db71eb05e10596cfe106b3da03e46ec7ceed77bafbf066f4385abe41404413d",
+    "llamafactory/dataset_info.json": "3701aee153336a9c52b3de4fbd97447b2ab99b9d6aab94ec13a6f32978134301",
+    "traceability.json": "8ed9421bc7dec11850cdfc11d52a368a46995c1f3aa20dc594bd04e8037708e0",
+    "qlora.yaml": "286a2d4051e9dc65514fc284c10ebdd74d696eb5436044bd90e550d79695479a",
+    "evaluation_policy.json": "c286ff565fb4eb357b6be628444fa82240d40b4b14f0667032d686e1dbef870b",
+    "validation_report.json": "b6b32ebbc885aba79f1350d9dc3f6eec5649ee8dd55417d4f68cc7ed4a572ad2",
+    "README.md": "c4b9a253cf31bc5fba1636f2376e11e60e215798b8c0b9b93bdb991328066728",
+    "source_baseline_hashes.json": "76022650b1dde027800a8e66ad998ebb503e8b76e4fc662972d6aa45ef54cb35"
+  },
+  "canonical_artifacts": {
+    "samples.json": "12529f50accd452bad5153dbe36efa123e468408259ad3263adf8a457a1afe13",
+    "scenarios.json": "d2873631b1bfd9ac6a025eef6957055c171efc35872eb49f0178b44f323d2c82",
+    "split_assignment.json": "4b2ba8d1d07345cd3eee51d3ac0e37295002ca446b3379d820ada347d785d6ff",
+    "source_reconciliation.json": "6bbd64228131785f54cd44a477f85d7373c14b84800d6ec0957047359f1ecbe2",
+    "validation_report.json": "08a6337954da9bcd5a2b9ccd89b5f57a28d2757c3f06c0aa36c1e5e6d3791d04",
+    "dataset_manifest.json": "1aec43b9fa72f028326833ad317031e87bf19f9d92dacd8dcde2b2d8a4e3dabc",
+    "README.md": "384bbba8cf7fa825c4467ed59aebc74258281b8cbf2453e928b72002758fd925"
+  },
+  "configuration_comparison": {
+    "baseline": "docs/ai/training_setup/v0.1/qlora.yaml",
+    "baseline_sha256": "b621a212b42169a2852e1db81cc7ba2da6c486e42eaeb3ece6b405e08e214561",
+    "changed_fields": [
+      "dataset",
+      "dataset_dir",
+      "eval_dataset",
+      "output_dir"
+    ],
+    "unchanged_fields": 37,
+    "training_hyperparameters_unchanged": true
+  }
+}

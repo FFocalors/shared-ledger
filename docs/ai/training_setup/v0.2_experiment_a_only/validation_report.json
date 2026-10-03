@@ -1,0 +1,109 @@
+{
+  "status": "passed",
+  "scope": "static local data validation only",
+  "training_performed": false,
+  "api_teacher_inference_optimizer_or_model_load": false,
+  "python": "3.11.15",
+  "transformers": "5.8.0",
+  "llamafactory": "0.9.6.dev0",
+  "model_tokenizer_path": "D:\\AI\\models\\Qwen3.5-4B",
+  "tokenizer_loaded_local_only": true,
+  "template": "qwen3_5_nothink",
+  "cutoff_len": 2048,
+  "registered_datasets": [
+    "train.json",
+    "validation.json"
+  ],
+  "counts": {
+    "train": 187,
+    "validation": 24
+  },
+  "rows_loaded": 211,
+  "ground_truth_equal": 211,
+  "source_trace_unique": 211,
+  "metadata_leaks": 0,
+  "loss_masks_verified": 211,
+  "mask_config": {
+    "train_on_prompt": false,
+    "mask_history": true
+  },
+  "history_rows": 21,
+  "token_lengths_by_split": {
+    "train": {
+      "count": 187,
+      "p50": 496,
+      "p90": 1063,
+      "p95": 1125,
+      "p99": 1204,
+      "max": 1371
+    },
+    "validation": {
+      "count": 24,
+      "p50": 407,
+      "p90": 519,
+      "p95": 534,
+      "p99": 537,
+      "max": 538
+    }
+  },
+  "input_tokens_by_split": {
+    "train": {
+      "count": 187,
+      "p50": 379,
+      "p90": 545,
+      "p95": 603,
+      "p99": 802,
+      "max": 1033
+    },
+    "validation": {
+      "count": 24,
+      "p50": 345,
+      "p90": 402,
+      "p95": 406,
+      "p99": 409,
+      "max": 410
+    }
+  },
+  "target_tokens_by_split": {
+    "train": {
+      "count": 187,
+      "p50": 67,
+      "p90": 611,
+      "p95": 624,
+      "p99": 664,
+      "max": 665
+    },
+    "validation": {
+      "count": 24,
+      "p50": 64,
+      "p90": 155,
+      "p95": 187,
+      "p99": 189,
+      "max": 189
+    }
+  },
+  "max_total_tokens": 1371,
+  "truncations": 0,
+  "v1_train_serialization_equal": 171,
+  "v1_validation_byte_sha256": "9db71eb05e10596cfe106b3da03e46ec7ceed77bafbf066f4385abe41404413d",
+  "experiment_a_serialization_equal": 16,
+  "qlora_changed_fields": [
+    "dataset",
+    "dataset_dir",
+    "eval_dataset",
+    "output_dir"
+  ],
+  "qlora_unchanged_parameter_count": 37,
+  "source_hashes": {
+    "v1_samples": "768916c8781dc2608ac8220588a0e85ffc043d8f16a45e9bd3497b87a214e562",
+    "v1_scenarios": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+    "v1_split_assignment": "e3e1599673b3227edeaad3bc62f04e0f3249dd886946f502664428939d8d3765",
+    "v1_canonical_manifest": "7f8cc2ef70d1abedd49ea040826d93f4c3708a8cb5893e7e1fedcc488e2c2252",
+    "v1_setup_manifest": "0ea288d01fc33389996473f795c0632999e12b568f7541de12e29ba4fea2d67c",
+    "v1_setup_qlora": "b621a212b42169a2852e1db81cc7ba2da6c486e42eaeb3ece6b405e08e214561",
+    "experiment_a_samples": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f",
+    "experiment_a_scenarios": "09317331b1d1da3683847e804b0d96529e4ede203a7886dba74561ac4a73c523",
+    "experiment_a_manifest": "aff646574e69d55313ea6979ced593ed15738efb4e95a1062227e43b29c3d034",
+    "experiment_a_freeze_hashes": "afe5e81d32c5cabe2d4eb3c9e11e7e4ae01c98768af1e45a8bca92a1817682a3"
+  }
+}
