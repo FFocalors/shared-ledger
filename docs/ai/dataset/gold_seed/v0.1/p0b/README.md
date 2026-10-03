@@ -1,6 +1,6 @@
 # P0-B Canonical Scenario Batch (v0.1)
 
-This batch contains 39 synthetic Canonical Scenarios mapped one-to-one to the 39 P0 families not selected for P0-A. It contains no `samples.json`, manifest, Teacher content, or generated language variants. Every record uses business logic 1.2, AI Contract 0.1.2, AI Scope 0.1, Dataset 0.1, `split=unassigned`, and `lifecycle.status=draft`. Thirty-eight records remain `SILVER` with `business_validated=false` pending independent business review. FIN-002 is explicitly `SYNTHETIC_UNVERIFIED` because no genuine Gateway-bound final-settlement suggestion is available.
+本目录包含 39 条合成 Canonical Scenario。依据独立终审报告 [P0_FINAL_REVIEW.md](../P0_FINAL_REVIEW.md)，38 条已治理为 `GOLD`、`business_validated=true`、`reviewed`；FIN-002 保持 `SYNTHETIC_UNVERIFIED / false / draft / unassigned`。95 条 Gold Sample 保存在同级 `p0/`，其中 P0-B Family 贡献 38 条 Sample；FIN-002 配额排除。Canonical Scenario 仍是唯一 Ground Truth。
 
 ## Production method and checks
 
@@ -66,7 +66,7 @@ Before acceptance, the batch was checked for Family traceability, version baseli
 - Recorded context: 8 UI-tagged, 4 interaction-tagged (each with recent action state), and 5 conversation-tagged scenarios; one scenario has both conversation and interaction tags. Pending proposal and confirmed binding fields are populated only in the corresponding recorded turn state.
 - `ICTX-003` is a genuine zero-result path: the recent Expense write is recorded as failed, then `find_expenses` finds no matching 78 CNY metro-ticket Expense; the answer does not claim it was saved.
 - REF-001 uses a negative Expense and `original_expense_id` sourced from a `get_expense` result for the positive original record. FIN-002 does not invent a suggestion ID: it asks for the current server suggestion to be loaded and keeps the record `SYNTHETIC_UNVERIFIED`.
-- All remaining production candidates are SILVER, `business_validated=false`, split `unassigned`, lifecycle `draft`; no record is eligible for Sample generation or export.
+- 38 条已通过独立终审并治理为 GOLD/reviewed；FIN-002 是唯一保留的合成未验证澄清场景，未生成 Sample、不导出、不训练。
 
 ## GOLD_SEED_BLOCKER
 
@@ -74,4 +74,4 @@ Before acceptance, the batch was checked for Family traceability, version baseli
 
 ## Validation
 
-All 39 P0-B Scenarios pass the offline Scenario Validator with zero errors and zero warnings. P0-A (15 records) and the combined P0-A + P0-B batch (54 records) also pass with zero errors and zero warnings. The 43-case Validator suite passes. Bundled Examples pass with zero errors and three existing duplicate/semantic-group review warnings; `git diff --check` passes. This is a handoff for one final independent business review; no record was promoted to GOLD. FIN-002 remains excluded from Gold eligibility under its explicit blocker.
+All 39 P0-B Scenarios pass the offline Scenario Validator with zero errors and zero warnings. The combined P0 batch now contains 54 reviewed Scenarios and 95 Samples (0 errors/0 warnings); P0-A/P0-B standalone scenario checks, 45 Validator tests, and Examples also pass. Examples retain three existing duplicate/semantic-group review warnings. Samples remain machine-validated and pending independent surface review; none is final approved. FIN-002 remains excluded from Gold Sample production.

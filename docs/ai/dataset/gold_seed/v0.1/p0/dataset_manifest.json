@@ -1,0 +1,105 @@
+{
+  "manifest_schema_version": "0.1",
+  "dataset_version": "0.1",
+  "business_logic_version": "1.2",
+  "ai_contract_version": "0.1.2",
+  "ai_scope_version": "0.1",
+  "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+  "created_at": "2026-09-29T13:56:33+08:00",
+  "status": "frozen",
+  "example_only": false,
+  "scenario_count": 54,
+  "scenario_family_count": 54,
+  "sample_count": 95,
+  "split_policy": {
+    "assignment_unit": "scenario_family",
+    "target_percentages": {
+      "train": 70,
+      "validation": 10,
+      "test": 15,
+      "hard_test": 5
+    },
+    "final_split_assigned": false
+  },
+  "split_statistics": {
+    "train": 0,
+    "validation": 0,
+    "test": 0,
+    "hard_test": 0,
+    "unassigned": 95
+  },
+  "task_statistics": {
+    "parameter_extraction": 8,
+    "proposal_generation": 12,
+    "clarification": 18,
+    "tool_call": 8,
+    "result_explanation": 8,
+    "ui_context_reasoning": 5,
+    "entity_resolution": 6,
+    "interaction_context_reasoning": 6,
+    "conversation_context_reasoning": 6,
+    "intent_classification": 2,
+    "rule_qa": 8,
+    "error_handling": 6,
+    "unsupported_detection": 2
+  },
+  "scope_statistics": {
+    "CORE": 83,
+    "SUPPORTED_BUT_GATED": 12,
+    "DEFERRED": 0
+  },
+  "source_statistics": {
+    "manual": 95
+  },
+  "trust_statistics": {
+    "GOLD": 95,
+    "SILVER": 0,
+    "SYNTHETIC_UNVERIFIED": 0
+  },
+  "difficulty_statistics": {
+    "easy": 12,
+    "normal": 53,
+    "hard": 28,
+    "ood": 2
+  },
+  "lifecycle_statistics": {
+    "draft": 0,
+    "generated": 0,
+    "validated": 0,
+    "reviewed": 0,
+    "approved": 95,
+    "rejected": 0,
+    "deprecated": 0
+  },
+  "artifacts": [
+    {
+      "kind": "scenario",
+      "path": "scenarios.json",
+      "record_count": 54,
+      "sha256": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815"
+    },
+    {
+      "kind": "sample",
+      "path": "samples.json",
+      "record_count": 95,
+      "sha256": "34ffd94d9c5ccbb17e6632b8689194c4be53f7275db828e983f6d6540b406dee"
+    }
+  ],
+  "validation_summary": {
+    "schema_valid": true,
+    "contract_valid": true,
+    "scope_valid": true,
+    "leakage_valid": true,
+    "policy_valid": true,
+    "privacy_valid": true,
+    "error_count": 0,
+    "warning_count": 0,
+    "report_reference": "docs/ai/dataset/gold_seed/v0.1/P0_GOLD_SAMPLE_REVIEW.md"
+  },
+  "privacy": {
+    "synthetic_identifiers_required": true,
+    "production_data_allowed": false,
+    "real_personal_data_allowed": false
+  },
+  "notes": "P0 Gold Seed v0.1 FROZEN on 2026-09-29 at frozen baseline 55fb28a7c0660462e5842e2eb5c71cfa763e5801. The 95 human-authored Samples across 53 eligible Families are approved after owner-accepted independent review P0_GOLD_SAMPLE_REVIEW.md; reviewer identity is not recorded by that report. FIN-002 has zero Samples, remains SYNTHETIC_UNVERIFIED/draft/unassigned, and is excluded from export/training because no server-side Gateway suggestion exists. Teacher generation must not reverse-modify this frozen dataset; any correction or expansion requires a new Dataset version, updated manifest/hash, and fresh review. No Teacher provenance or generated data is present."
+}

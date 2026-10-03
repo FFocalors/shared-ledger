@@ -22,12 +22,13 @@
       "content_sha256": null
     },
     "trust": {
-      "level": "SILVER",
+      "level": "GOLD",
       "verification_methods": [
         "frozen_rule",
-        "programmatic_invariant"
+        "programmatic_invariant",
+        "human_review"
       ],
-      "business_validated": false,
+      "business_validated": true,
       "evidence_refs": [
         "docs/backend/BUSINESS_LOGIC.md#L66",
         "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L74",
@@ -369,7 +370,7 @@
       "contains_real_personal_data": false
     },
     "lifecycle": {
-      "status": "draft",
+      "status": "reviewed",
       "deprecated_by_version": null,
       "review_notes": "Independent review passed previously; authenticity preflight found citation/entity defects, downgraded pending correction and re-review."
     }
@@ -397,12 +398,13 @@
       "content_sha256": null
     },
     "trust": {
-      "level": "SILVER",
+      "level": "GOLD",
       "verification_methods": [
         "frozen_rule",
-        "programmatic_invariant"
+        "programmatic_invariant",
+        "human_review"
       ],
-      "business_validated": false,
+      "business_validated": true,
       "evidence_refs": [
         "docs/backend/BUSINESS_LOGIC.md#L66",
         "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L75"
@@ -693,7 +695,7 @@
       "contains_real_personal_data": false
     },
     "lifecycle": {
-      "status": "draft",
+      "status": "reviewed",
       "deprecated_by_version": null,
       "review_notes": "Independent review passed previously; authenticity preflight found citation/entity defects, downgraded pending correction and re-review."
     }
@@ -721,12 +723,13 @@
       "content_sha256": null
     },
     "trust": {
-      "level": "SILVER",
+      "level": "GOLD",
       "verification_methods": [
         "frozen_rule",
-        "programmatic_invariant"
+        "programmatic_invariant",
+        "human_review"
       ],
-      "business_validated": false,
+      "business_validated": true,
       "evidence_refs": [
         "docs/backend/BUSINESS_LOGIC.md#L68",
         "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L98",
@@ -893,7 +896,7 @@
       "contains_real_personal_data": false
     },
     "lifecycle": {
-      "status": "draft",
+      "status": "reviewed",
       "deprecated_by_version": null,
       "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
     }
@@ -921,12 +924,13 @@
       "content_sha256": null
     },
     "trust": {
-      "level": "SILVER",
+      "level": "GOLD",
       "verification_methods": [
         "frozen_rule",
-        "programmatic_invariant"
+        "programmatic_invariant",
+        "human_review"
       ],
-      "business_validated": false,
+      "business_validated": true,
       "evidence_refs": [
         "docs/backend/BUSINESS_LOGIC.md#L68",
         "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L100",
@@ -1126,7 +1130,7 @@
       "contains_real_personal_data": false
     },
     "lifecycle": {
-      "status": "draft",
+      "status": "reviewed",
       "deprecated_by_version": null,
       "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
     }
@@ -1154,12 +1158,13 @@
       "content_sha256": null
     },
     "trust": {
-      "level": "SILVER",
+      "level": "GOLD",
       "verification_methods": [
         "frozen_rule",
-        "programmatic_invariant"
+        "programmatic_invariant",
+        "human_review"
       ],
-      "business_validated": false,
+      "business_validated": true,
       "evidence_refs": [
         "docs/ai/schema/intent_catalog.json#/intents/17/supporting_lookup_tools",
         "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L348",
@@ -1363,7 +1368,7 @@
       "contains_real_personal_data": false
     },
     "lifecycle": {
-      "status": "draft",
+      "status": "reviewed",
       "deprecated_by_version": null,
       "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
     }
@@ -1391,12 +1396,13 @@
       "content_sha256": null
     },
     "trust": {
-      "level": "SILVER",
+      "level": "GOLD",
       "verification_methods": [
         "frozen_rule",
-        "programmatic_invariant"
+        "programmatic_invariant",
+        "human_review"
       ],
-      "business_validated": false,
+      "business_validated": true,
       "evidence_refs": [
         "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L139",
         "docs/ai/AI_MODEL_CONTRACT.md#L196",
@@ -1610,7 +1616,7 @@
       "contains_real_personal_data": false
     },
     "lifecycle": {
-      "status": "draft",
+      "status": "reviewed",
       "deprecated_by_version": null,
       "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
     }
@@ -1638,12 +1644,13 @@
       "content_sha256": null
     },
     "trust": {
-      "level": "SILVER",
+      "level": "GOLD",
       "verification_methods": [
         "frozen_rule",
-        "programmatic_invariant"
+        "programmatic_invariant",
+        "human_review"
       ],
-      "business_validated": false,
+      "business_validated": true,
       "evidence_refs": [
         "docs/ai/schema/context_envelope.schema.json#/properties/ui_context/properties/selected_entity",
         "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L140",
@@ -1785,7 +1792,7 @@
       "contains_real_personal_data": false
     },
     "lifecycle": {
-      "status": "draft",
+      "status": "reviewed",
       "deprecated_by_version": null,
       "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
     }
@@ -1813,12 +1820,13 @@
       "content_sha256": null
     },
     "trust": {
-      "level": "SILVER",
+      "level": "GOLD",
       "verification_methods": [
         "frozen_rule",
-        "programmatic_invariant"
+        "programmatic_invariant",
+        "human_review"
       ],
-      "business_validated": false,
+      "business_validated": true,
       "evidence_refs": [
         "docs/ai/schema/context_envelope.schema.json#/properties/ui_context/properties/screen_instance_id",
         "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L341",
@@ -2014,7 +2022,7 @@
       "contains_real_personal_data": false
     },
     "lifecycle": {
-      "status": "draft",
+      "status": "reviewed",
       "deprecated_by_version": null,
       "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
     }
@@ -2042,12 +2050,13 @@
       "content_sha256": null
     },
     "trust": {
-      "level": "SILVER",
+      "level": "GOLD",
       "verification_methods": [
         "frozen_rule",
-        "programmatic_invariant"
+        "programmatic_invariant",
+        "human_review"
       ],
-      "business_validated": false,
+      "business_validated": true,
       "evidence_refs": [
         "docs/ai/dataset/DATASET_VALIDATION_RULES.md#L111",
         "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L120",
@@ -2484,7 +2493,7 @@
       "contains_real_personal_data": false
     },
     "lifecycle": {
-      "status": "draft",
+      "status": "reviewed",
       "deprecated_by_version": null,
       "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
     }
@@ -2512,12 +2521,13 @@
       "content_sha256": null
     },
     "trust": {
-      "level": "SILVER",
+      "level": "GOLD",
       "verification_methods": [
         "frozen_rule",
-        "programmatic_invariant"
+        "programmatic_invariant",
+        "human_review"
       ],
-      "business_validated": false,
+      "business_validated": true,
       "evidence_refs": [
         "docs/backend/BUSINESS_LOGIC.md#L212",
         "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L232",
@@ -2741,7 +2751,7 @@
       "contains_real_personal_data": false
     },
     "lifecycle": {
-      "status": "draft",
+      "status": "reviewed",
       "deprecated_by_version": null,
       "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
     }
@@ -2769,12 +2779,13 @@
       "content_sha256": null
     },
     "trust": {
-      "level": "SILVER",
+      "level": "GOLD",
       "verification_methods": [
         "frozen_rule",
-        "programmatic_invariant"
+        "programmatic_invariant",
+        "human_review"
       ],
-      "business_validated": false,
+      "business_validated": true,
       "evidence_refs": [
         "docs/backend/BUSINESS_LOGIC.md#L189",
         "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L216",
@@ -2964,7 +2975,7 @@
       "contains_real_personal_data": false
     },
     "lifecycle": {
-      "status": "draft",
+      "status": "reviewed",
       "deprecated_by_version": null,
       "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
     }
@@ -2992,12 +3003,13 @@
       "content_sha256": null
     },
     "trust": {
-      "level": "SILVER",
+      "level": "GOLD",
       "verification_methods": [
         "frozen_rule",
-        "programmatic_invariant"
+        "programmatic_invariant",
+        "human_review"
       ],
-      "business_validated": false,
+      "business_validated": true,
       "evidence_refs": [
         "docs/backend/BUSINESS_LOGIC.md#L189",
         "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L284",
@@ -3310,7 +3322,7 @@
       "contains_real_personal_data": false
     },
     "lifecycle": {
-      "status": "draft",
+      "status": "reviewed",
       "deprecated_by_version": null,
       "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
     }
@@ -3338,12 +3350,13 @@
       "content_sha256": null
     },
     "trust": {
-      "level": "SILVER",
+      "level": "GOLD",
       "verification_methods": [
         "frozen_rule",
-        "programmatic_invariant"
+        "programmatic_invariant",
+        "human_review"
       ],
-      "business_validated": false,
+      "business_validated": true,
       "evidence_refs": [
         "docs/ai/AI_SCOPE_FREEZE_V0.1.md#L259",
         "docs/ai/AI_MODEL_CONTRACT.md#L39",
@@ -3455,7 +3468,7 @@
       "contains_real_personal_data": false
     },
     "lifecycle": {
-      "status": "draft",
+      "status": "reviewed",
       "deprecated_by_version": null,
       "review_notes": "Independent review passed previously; authenticity preflight found citation/entity defects, downgraded pending correction and re-review."
     }
@@ -3483,12 +3496,13 @@
       "content_sha256": null
     },
     "trust": {
-      "level": "SILVER",
+      "level": "GOLD",
       "verification_methods": [
         "frozen_rule",
-        "programmatic_invariant"
+        "programmatic_invariant",
+        "human_review"
       ],
-      "business_validated": false,
+      "business_validated": true,
       "evidence_refs": [
         "docs/backend/BUSINESS_LOGIC.md#L83",
         "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L170",
@@ -3602,7 +3616,7 @@
       "contains_real_personal_data": false
     },
     "lifecycle": {
-      "status": "draft",
+      "status": "reviewed",
       "deprecated_by_version": null,
       "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
     }
@@ -3630,12 +3644,13 @@
       "content_sha256": null
     },
     "trust": {
-      "level": "SILVER",
+      "level": "GOLD",
       "verification_methods": [
         "frozen_rule",
-        "programmatic_invariant"
+        "programmatic_invariant",
+        "human_review"
       ],
-      "business_validated": false,
+      "business_validated": true,
       "evidence_refs": [
         "docs/ai/dataset/GOLD_SEED_COVERAGE_MATRIX_V0.1.md#L173",
         "docs/ai/schema/intent_catalog.json#L3064",
@@ -3841,7 +3856,7 @@
       "contains_real_personal_data": false
     },
     "lifecycle": {
-      "status": "draft",
+      "status": "reviewed",
       "deprecated_by_version": null,
       "review_notes": "Ground Truth 在本轮按冻结 Contract/Catalog 修订；等待新的独立业务复审。"
     }

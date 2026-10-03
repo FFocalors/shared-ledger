@@ -1,6 +1,6 @@
 # P0-A Canonical Scenario Batch (v0.1)
 
-本目录包含 15 条合成 Canonical Scenario，不含语言 Sample 或 Teacher 输出。版本固定为 BUSINESS LOGIC 1.2、AI Contract 0.1.2、AI Scope 0.1、Dataset 0.1；所有记录 `split=unassigned`、`policy_status=active`。001、002、013 曾被标记为 GOLD/reviewed，真实性复核后已降为 `SILVER`、`business_validated=false`、`draft`；目前 15 条均为 SILVER/draft，没有 GOLD 记录。Scenario 的生产状态只由 `lifecycle.status` 表示。本批不生成 Samples、API/Teacher 输出或 Manifest，也不分配最终 split。P0-B 的 39 条 Canonical Scenario 独立记录在同级 `p0b/`，详见该目录 README。
+本目录包含 15 条合成 Canonical Scenario。依据独立终审报告 [P0_FINAL_REVIEW.md](../P0_FINAL_REVIEW.md)，15 条均已治理为 `GOLD`、`business_validated=true`、`reviewed`；权威 Ground Truth 仍只在 Scenario。Sample Surface Form 已生成在同级 `p0/`，本批 Scenario 的合并索引和 Manifest 见该目录。FIN-002 仅在 P0-B，保持 `SYNTHETIC_UNVERIFIED` 并排除。版本固定为 BUSINESS LOGIC 1.2、AI Contract 0.1.2、AI Scope 0.1、Dataset 0.1。Sample 当前为 `validated`、待独立 Surface Review，未 `approved`。
 
 ## Canonical production method
 
@@ -82,8 +82,8 @@ Supporting Lookup 来自 Catalog 映射；此批只使用当前正式 scope 中�
 
 Scenario 009 的 `update_expense` 是 D4 提案目标 Tool，`get_expense` 是 `update_expense.supporting_lookup_tools` 读取当前持久化支出的实际 Tool。Proposal 将 `original_amount`、`payments`、`manual_splits` 三项金额从已验证的当前值 100 CNY 改为 120 CNY；三个 before/after 均完整相等于 `expected_diff`。它保持 `execution_allowed=false`、`reason=d4_atomic_update_not_supported`，不代表调用或写入成功。
 
-`SILVER` 表示来源锚定冻结规则且通过程序校验，但仍待独立业务审核；不能单凭 `frozen_rule` 或 Validator 结果改为 `GOLD`/`reviewed`。原先经独立审核记录为 PASS 的 `scenario_gs_p0a_001`、`scenario_gs_p0a_002`、`scenario_gs_p0a_013` 在后续真实性检查中发现低质量证据行、未使用实体和 Family ID assertion，均降为 `SILVER`、`business_validated=false`、`draft`，并移除 Gold 级人工审核标记。本轮只将 001/002 的证据改为实际 Expense 规则行，删除三条记录中未引用的用户实体，并重写 013 的边界断言；它们仍须独立复核，当前 P0-A 没有 GOLD 记录。独立审核身份不能由本次生产者兼任。
+终审报告已独立关闭真实性缺陷并准入本批 15 条为 GOLD/reviewed。P0-A Sample 生产不改业务 Ground Truth；每条 Sample 保持待独立 Surface Review。独立审核身份不能由本次生产者兼任。
 
 ## Validation and review record
 
-使用 `DatasetValidator.validate_scenario` 对数组中每个正式 Scenario 校验；批次的 schema/role/path/diff 自检按 Scenario ID 归集，不依赖数组位置。合并 54 条时也使用 `validate_dataset` 执行完整记录与批次校验，Samples 列表为空，不伪造 Sample。CLI `validate scenario` 仅接受单对象，`validate dataset` 需要目录内样本文件。本轮按最新复审修订后，P0-A 15 条、P0-B 39 条及合并 54 条均为 0 errors/0 warnings；Validator 单测 43/43 通过，Examples 0 errors（3 条既有重复/语义组复核 warning）。这些机器结果不替代下一轮独立业务复审。修订者不得把自己的修订标为已独立审核。
+P0-A standalone Scenario validation passes (15 records, 0 errors/warnings). The combined P0 batch validates 54 Scenarios and 95 eligible Samples in `../p0/` with 0 errors/warnings. The 45-case Validator suite passes; Examples have 0 errors and three pre-existing duplicate/semantic-group review warnings. Samples are machine-validated and await independent Surface Form review; none is final approved.
