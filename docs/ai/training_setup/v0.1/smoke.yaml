@@ -1,0 +1,47 @@
+### Authorized 8-row QLoRA smoke configuration; executed from an isolated copy.
+### Data-derived maximum sequence length is 1,193; cutoff 2,048 leaves 855 tokens of headroom.
+### See README.md and the setup manifest for the completed run and hardware observations.
+model_name_or_path: D:/AI/models/Qwen3.5-4B
+trust_remote_code: true
+quantization_bit: 4
+quantization_method: bnb
+quantization_type: nf4
+double_quantization: true
+upcast_layernorm: true
+
+stage: sft
+do_train: true
+finetuning_type: lora
+lora_rank: 8
+lora_target: all
+
+dataset: sharedledger_train
+dataset_dir: D:/project/Android/shared-ledger/docs/ai/training_setup/v0.1/llamafactory
+eval_dataset: sharedledger_validation
+template: qwen3_5_nothink
+enable_thinking: false
+train_on_prompt: false
+mask_history: true
+cutoff_len: 2048
+max_samples: 8
+preprocessing_num_workers: 1
+dataloader_num_workers: 0
+
+output_dir: D:/AI/runs/shared-ledger/training-smoke-v0.1
+overwrite_output_dir: true
+logging_steps: 1
+save_steps: 4
+save_total_limit: 1
+report_to: none
+
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 1
+learning_rate: 5.0e-5
+num_train_epochs: 1.0
+lr_scheduler_type: cosine
+warmup_steps: 0
+bf16: true
+gradient_checkpointing: true
+eval_strategy: steps
+eval_steps: 4
+per_device_eval_batch_size: 1

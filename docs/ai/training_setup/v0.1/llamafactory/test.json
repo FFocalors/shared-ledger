@@ -1,0 +1,507 @@
+[
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"get_activity_context\"],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "这个活动最近有哪些账目和还款？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"tool_call\",\"intent_id\":\"query_activity\",\"tool\":\"get_activity_context\",\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\"}}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"personal-info\",\"page_type\":\"personal_info\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-pre-core-003-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "我之前存进活动的钱会先抵哪一笔？美元和日元的余额会合并吗？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"answer\",\"content\":\"先按业务规则解释预存的抵扣顺序；具体账户余额与当前债务仍以读取结果为准，美元和日元分开处理。\",\"evidence_result_ids\":[\"result-pre-core-003-verified\"]}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"personal-info\",\"page_type\":\"personal_info\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-pre-core-003-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "之前存进活动的钱先抵哪边的欠款？美元和日元会不会合并算？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"answer\",\"content\":\"先按业务规则解释预存的抵扣顺序；具体账户余额与当前债务仍以读取结果为准，美元和日元分开处理。\",\"evidence_result_ids\":[\"result-pre-core-003-verified\"]}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"prepayment/00000000-0000-4000-8000-000000000100\",\"page_type\":\"prepayment\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":\"fund\",\"focused_field\":null},\"user\":{\"claimed_participant_id\":\"00000000-0000-4000-8000-000000000103\",\"role_hint\":\"member\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":\"12\",\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"create_prepayment\"],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "我在 2026-09-15 09:00 已把 200 CNY 交给李四代管，登记这笔预存。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"proposal\",\"intent_id\":\"create_prepayment\",\"operation\":{\"tool\":\"create_prepayment\",\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"owner_participant_id\":\"00000000-0000-4000-8000-000000000103\",\"custodian_participant_id\":\"00000000-0000-4000-8000-000000000104\",\"amount\":\"200\",\"currency\":\"CNY\",\"occurred_at\":\"2026-09-15T09:00:00+08:00\",\"expected_financial_version\":\"12\"}},\"preview\":{\"kind\":\"financial\",\"summary\":\"拟登记 Owner 为我、Custodian 为李四的 200 CNY 预存；等待可信 UI 确认。\",\"diff\":[{\"field\":\"prepayment\",\"after\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"owner_participant_id\":\"00000000-0000-4000-8000-000000000103\",\"custodian_participant_id\":\"00000000-0000-4000-8000-000000000104\",\"amount\":\"200\",\"currency\":\"CNY\",\"occurred_at\":\"2026-09-15T09:00:00+08:00\",\"expected_financial_version\":\"12\"}}]},\"confirmation\":{\"level\":2,\"required\":true},\"execution_policy\":{\"execution_allowed\":true,\"reason\":\"confirmation_required\"}}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"expense-detail/00000000-0000-4000-8000-000000000120\",\"page_type\":\"expense_detail\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":{\"type\":\"expense\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\"},\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":\"00000000-0000-4000-8000-000000000103\",\"role_hint\":\"member\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[\"result-ui-002-read\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "详情页这笔民宿原来记100元，我和林各自的付款/承担金额也一起改成120元。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"proposal\",\"intent_id\":\"update_expense\",\"operation\":{\"tool\":\"update_expense\",\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"expense_id\":\"00000000-0000-4000-8000-000000000120\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"title\":\"民宿房费\",\"original_amount\":\"120\",\"original_currency\":\"CNY\",\"split_method\":\"manual\",\"payments\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000103\",\"amount\":\"120\"}],\"manual_splits\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000104\",\"amount\":\"120\"}],\"aa_participant_ids\":[],\"occurred_at\":\"2026-09-14T10:00:00+08:00\"}},\"preview\":{\"kind\":\"update\",\"summary\":\"当前选中的民宿支出财务字段拟从100元调整到120元，付款和分摊明细同步展示完整差异。D4 限制使该预览不可执行。\",\"diff\":[{\"field\":\"original_amount\",\"before\":\"100\",\"after\":\"120\"},{\"field\":\"payments\",\"before\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000103\",\"amount\":\"100\"}],\"after\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000103\",\"amount\":\"120\"}]},{\"field\":\"manual_splits\",\"before\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000104\",\"amount\":\"100\"}],\"after\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000104\",\"amount\":\"120\"}]}]},\"confirmation\":{\"level\":1,\"required\":true},\"execution_policy\":{\"execution_allowed\":false,\"reason\":\"d4_atomic_update_not_supported\"}}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"expense-detail/00000000-0000-4000-8000-000000000120\",\"page_type\":\"expense_detail\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":{\"type\":\"expense\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\"},\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":\"00000000-0000-4000-8000-000000000103\",\"role_hint\":\"member\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[\"result-ui-002-read\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "当前民宿账是100元，我和林的付款份额及承担金额都调成120。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"proposal\",\"intent_id\":\"update_expense\",\"operation\":{\"tool\":\"update_expense\",\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"expense_id\":\"00000000-0000-4000-8000-000000000120\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"title\":\"民宿房费\",\"original_amount\":\"120\",\"original_currency\":\"CNY\",\"split_method\":\"manual\",\"payments\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000103\",\"amount\":\"120\"}],\"manual_splits\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000104\",\"amount\":\"120\"}],\"aa_participant_ids\":[],\"occurred_at\":\"2026-09-14T10:00:00+08:00\"}},\"preview\":{\"kind\":\"update\",\"summary\":\"当前选中的民宿支出财务字段拟从100元调整到120元，付款和分摊明细同步展示完整差异。D4 限制使该预览不可执行。\",\"diff\":[{\"field\":\"original_amount\",\"before\":\"100\",\"after\":\"120\"},{\"field\":\"payments\",\"before\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000103\",\"amount\":\"100\"}],\"after\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000103\",\"amount\":\"120\"}]},{\"field\":\"manual_splits\",\"before\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000104\",\"amount\":\"100\"}],\"after\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000104\",\"amount\":\"120\"}]}]},\"confirmation\":{\"level\":1,\"required\":true},\"execution_policy\":{\"execution_allowed\":false,\"reason\":\"d4_atomic_update_not_supported\"}}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"home\",\"page_type\":\"home\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"succeeded\"},\"recent_actions\":[{\"action_id\":\"result-recent-parking-east\",\"intent_id\":\"create_expense\",\"entity\":{\"type\":\"expense\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\"},\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"occurred_at\":\"2026-09-29T10:00:52+08:00\",\"status\":\"succeeded\",\"result_id\":\"result-recent-parking-east\",\"financial_version_hint\":null},{\"action_id\":\"result-recent-parking-west\",\"intent_id\":\"create_expense\",\"entity\":{\"type\":\"expense\",\"id\":\"00000000-0000-4000-8000-000000000122\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\"},\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"occurred_at\":\"2026-09-29T10:00:52+08:00\",\"status\":\"succeeded\",\"result_id\":\"result-recent-parking-west\",\"financial_version_hint\":null}],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "把刚才那笔停车费的图标换成车辆。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"clarification\",\"intent_id\":\"update_expense_presentation\",\"reason\":\"ambiguous_entity\",\"missing_fields\":[],\"question\":\"最近有两笔停车费：东门停车场和西门停车场。请选一下要更换哪一笔的图标。\",\"candidates\":[{\"entity\":{\"type\":\"expense\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\"},\"label\":\"东门停车费\"},{\"entity\":{\"type\":\"expense\",\"id\":\"00000000-0000-4000-8000-000000000122\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\"},\"label\":\"西门停车费\"}]}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"home\",\"page_type\":\"home\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"succeeded\"},\"recent_actions\":[{\"action_id\":\"result-recent-parking-east\",\"intent_id\":\"create_expense\",\"entity\":{\"type\":\"expense\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\"},\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"occurred_at\":\"2026-09-29T10:00:53+08:00\",\"status\":\"succeeded\",\"result_id\":\"result-recent-parking-east\",\"financial_version_hint\":null},{\"action_id\":\"result-recent-parking-west\",\"intent_id\":\"create_expense\",\"entity\":{\"type\":\"expense\",\"id\":\"00000000-0000-4000-8000-000000000122\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\"},\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"occurred_at\":\"2026-09-29T10:00:53+08:00\",\"status\":\"succeeded\",\"result_id\":\"result-recent-parking-west\",\"financial_version_hint\":null}],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "刚才那条停车费换成车辆图标，其他内容保持原样。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"clarification\",\"intent_id\":\"update_expense_presentation\",\"reason\":\"ambiguous_entity\",\"missing_fields\":[],\"question\":\"最近有两笔停车费：东门停车场和西门停车场。请选一下要更换哪一笔的图标。\",\"candidates\":[{\"entity\":{\"type\":\"expense\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\"},\"label\":\"东门停车费\"},{\"entity\":{\"type\":\"expense\",\"id\":\"00000000-0000-4000-8000-000000000122\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\"},\"label\":\"西门停车费\"}]}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"new-expense/00000000-0000-4000-8000-000000000100\",\"page_type\":\"expense_form\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":\"create\",\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "今天晚餐90元，我先垫。"
+      },
+      {
+        "role": "assistant",
+        "content": "晚餐记账方案等待确认。"
+      },
+      {
+        "role": "user",
+        "content": "上一轮那张晚餐记账卡我看过了，聊天里说“确定”算保存了吗？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"answer\",\"content\":\"不算。聊天文字不能代替确认卡上的可信界面操作；在界面确认前，这笔仍只是待确认方案，没有写入账本。\",\"evidence_result_ids\":[]}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"new-expense/00000000-0000-4000-8000-000000000100\",\"page_type\":\"expense_form\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":\"create\",\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "今天晚餐90元，我先垫。"
+      },
+      {
+        "role": "assistant",
+        "content": "晚餐记账方案等待确认。"
+      },
+      {
+        "role": "user",
+        "content": "我在聊天里回了“确定”，上一轮那张晚餐记账卡就已经保存了吗？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"answer\",\"content\":\"不算。聊天文字不能代替确认卡上的可信界面操作；在界面确认前，这笔仍只是待确认方案，没有写入账本。\",\"evidence_result_ids\":[]}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"home\",\"page_type\":\"home\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "把刚才那个也处理一下。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"clarification\",\"intent_id\":\"clarify_reference\",\"reason\":\"unresolved_reference\",\"missing_fields\":[],\"question\":\"你说的“刚才那个”指哪一笔账？请告诉我标题、日期或选择对应记录。\",\"candidates\":[]}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"home\",\"page_type\":\"home\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "继续处理前面那个事儿吧，具体怎么弄你先问我。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"clarification\",\"intent_id\":\"clarify_reference\",\"reason\":\"unresolved_reference\",\"missing_fields\":[],\"question\":\"你说的“刚才那个”指哪一笔账？请告诉我标题、日期或选择对应记录。\",\"candidates\":[]}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-rule-008-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "活动归档后还能补录昨天的消费吗？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"answer\",\"content\":\"归档后的活动只读，不能新增消费。需要先由活动创建者解除归档，再按当前活动状态处理。\",\"evidence_result_ids\":[\"result-rule-008-verified\"]}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-rule-008-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "归档后只能查看的话，昨天漏掉的消费应该通过什么流程补录？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"answer\",\"content\":\"归档后的活动只读，不能新增消费。需要先由活动创建者解除归档，再按当前活动状态处理。\",\"evidence_result_ids\":[\"result-rule-008-verified\"]}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"prepayment/00000000-0000-4000-8000-000000000100\",\"page_type\":\"prepayment\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":\"fund\",\"focused_field\":null},\"user\":{\"claimed_participant_id\":\"00000000-0000-4000-8000-000000000103\",\"role_hint\":\"member\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":\"12\",\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"create_prepayment\"],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "2026年9月15号早上9点那会儿，我已经把200 CNY交给李四代管了，帮我把这笔预存登记一下吧。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"confirmation\":{\"level\":2,\"required\":true},\"execution_policy\":{\"execution_allowed\":true,\"reason\":\"confirmation_required\"},\"intent_id\":\"create_prepayment\",\"operation\":{\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"amount\":\"200\",\"currency\":\"CNY\",\"custodian_participant_id\":\"00000000-0000-4000-8000-000000000104\",\"expected_financial_version\":\"12\",\"occurred_at\":\"2026-09-15T09:00:00+08:00\",\"owner_participant_id\":\"00000000-0000-4000-8000-000000000103\"},\"tool\":\"create_prepayment\"},\"preview\":{\"diff\":[{\"after\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"amount\":\"200\",\"currency\":\"CNY\",\"custodian_participant_id\":\"00000000-0000-4000-8000-000000000104\",\"expected_financial_version\":\"12\",\"occurred_at\":\"2026-09-15T09:00:00+08:00\",\"owner_participant_id\":\"00000000-0000-4000-8000-000000000103\"},\"field\":\"prepayment\"}],\"kind\":\"financial\",\"summary\":\"拟登记 Owner 为我、Custodian 为李四的 200 CNY 预存；等待可信 UI 确认。\"},\"type\":\"proposal\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"prepayment/00000000-0000-4000-8000-000000000100\",\"page_type\":\"prepayment\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":\"fund\",\"focused_field\":null},\"user\":{\"claimed_participant_id\":\"00000000-0000-4000-8000-000000000103\",\"role_hint\":\"member\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":\"12\",\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"create_prepayment\"],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "2026-09-15 09:00 那会儿，已经交给李四代管的 200 CNY，这笔预存登记一下。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"confirmation\":{\"level\":2,\"required\":true},\"execution_policy\":{\"execution_allowed\":true,\"reason\":\"confirmation_required\"},\"intent_id\":\"create_prepayment\",\"operation\":{\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"amount\":\"200\",\"currency\":\"CNY\",\"custodian_participant_id\":\"00000000-0000-4000-8000-000000000104\",\"expected_financial_version\":\"12\",\"occurred_at\":\"2026-09-15T09:00:00+08:00\",\"owner_participant_id\":\"00000000-0000-4000-8000-000000000103\"},\"tool\":\"create_prepayment\"},\"preview\":{\"diff\":[{\"after\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"amount\":\"200\",\"currency\":\"CNY\",\"custodian_participant_id\":\"00000000-0000-4000-8000-000000000104\",\"expected_financial_version\":\"12\",\"occurred_at\":\"2026-09-15T09:00:00+08:00\",\"owner_participant_id\":\"00000000-0000-4000-8000-000000000103\"},\"field\":\"prepayment\"}],\"kind\":\"financial\",\"summary\":\"拟登记 Owner 为我、Custodian 为李四的 200 CNY 预存；等待可信 UI 确认。\"},\"type\":\"proposal\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"get_activity_context\"],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "呃，这个活动……最近有哪些账目，还有还款？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\"},\"intent_id\":\"query_activity\",\"tool\":\"get_activity_context\",\"type\":\"tool_call\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"personal-info\",\"page_type\":\"personal_info\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-pre-core-003-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "我之前存进活动的钱，会先抵哪一笔呀？美元和日元的余额，会不会合并到一块儿？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"先按业务规则解释预存的抵扣顺序；具体账户余额与当前债务仍以读取结果为准，美元和日元分开处理。\",\"evidence_result_ids\":[\"result-pre-core-003-verified\"],\"type\":\"answer\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"personal-info\",\"page_type\":\"personal_info\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-pre-core-003-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "嗯，我之前存进活动的那笔钱，会先抵哪一笔啊？还有，美元和日元的余额会合并吗？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"先按业务规则解释预存的抵扣顺序；具体账户余额与当前债务仍以读取结果为准，美元和日元分开处理。\",\"evidence_result_ids\":[\"result-pre-core-003-verified\"],\"type\":\"answer\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"personal-info\",\"page_type\":\"personal_info\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-pre-core-003-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "我之前存进活动里的那笔钱，会先抵哪一笔啊？美元跟日元的余额会合并吗？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"先按业务规则解释预存的抵扣顺序；具体账户余额与当前债务仍以读取结果为准，美元和日元分开处理。\",\"evidence_result_ids\":[\"result-pre-core-003-verified\"],\"type\":\"answer\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"personal-info\",\"page_type\":\"personal_info\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-pre-core-003-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "我先前存进活动的那些钱，会先拿去抵哪一笔欠款啊？还有美元和日元的余额，会合到一块儿算吗？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"先按业务规则解释预存的抵扣顺序；具体账户余额与当前债务仍以读取结果为准，美元和日元分开处理。\",\"evidence_result_ids\":[\"result-pre-core-003-verified\"],\"type\":\"answer\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"expense-detail/00000000-0000-4000-8000-000000000120\",\"page_type\":\"expense_detail\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"type\":\"expense\"},\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":\"00000000-0000-4000-8000-000000000103\",\"role_hint\":\"member\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[\"result-ui-002-read\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "详情页这笔民宿原来记的是100块，把我跟林各自出的钱和承担的部分也一块儿改成120吧。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"confirmation\":{\"level\":1,\"required\":true},\"execution_policy\":{\"execution_allowed\":false,\"reason\":\"d4_atomic_update_not_supported\"},\"intent_id\":\"update_expense\",\"operation\":{\"arguments\":{\"aa_participant_ids\":[],\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"expense_id\":\"00000000-0000-4000-8000-000000000120\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"manual_splits\":[{\"amount\":\"120\",\"participant_id\":\"00000000-0000-4000-8000-000000000104\"}],\"occurred_at\":\"2026-09-14T10:00:00+08:00\",\"original_amount\":\"120\",\"original_currency\":\"CNY\",\"payments\":[{\"amount\":\"120\",\"participant_id\":\"00000000-0000-4000-8000-000000000103\"}],\"split_method\":\"manual\",\"title\":\"民宿房费\"},\"tool\":\"update_expense\"},\"preview\":{\"diff\":[{\"after\":\"120\",\"before\":\"100\",\"field\":\"original_amount\"},{\"after\":[{\"amount\":\"120\",\"participant_id\":\"00000000-0000-4000-8000-000000000103\"}],\"before\":[{\"amount\":\"100\",\"participant_id\":\"00000000-0000-4000-8000-000000000103\"}],\"field\":\"payments\"},{\"after\":[{\"amount\":\"120\",\"participant_id\":\"00000000-0000-4000-8000-000000000104\"}],\"before\":[{\"amount\":\"100\",\"participant_id\":\"00000000-0000-4000-8000-000000000104\"}],\"field\":\"manual_splits\"}],\"kind\":\"update\",\"summary\":\"当前选中的民宿支出财务字段拟从100元调整到120元，付款和分摊明细同步展示完整差异。D4 限制使该预览不可执行。\"},\"type\":\"proposal\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"expense-detail/00000000-0000-4000-8000-000000000120\",\"page_type\":\"expense_detail\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"type\":\"expense\"},\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":\"00000000-0000-4000-8000-000000000103\",\"role_hint\":\"member\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[\"result-ui-002-read\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "呃，详情页这笔……这笔民宿哈，原来记的是100元，然后，那个，我和林各自的付款、嗯承担的金额，也一起改成120元。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"confirmation\":{\"level\":1,\"required\":true},\"execution_policy\":{\"execution_allowed\":false,\"reason\":\"d4_atomic_update_not_supported\"},\"intent_id\":\"update_expense\",\"operation\":{\"arguments\":{\"aa_participant_ids\":[],\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"expense_id\":\"00000000-0000-4000-8000-000000000120\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"manual_splits\":[{\"amount\":\"120\",\"participant_id\":\"00000000-0000-4000-8000-000000000104\"}],\"occurred_at\":\"2026-09-14T10:00:00+08:00\",\"original_amount\":\"120\",\"original_currency\":\"CNY\",\"payments\":[{\"amount\":\"120\",\"participant_id\":\"00000000-0000-4000-8000-000000000103\"}],\"split_method\":\"manual\",\"title\":\"民宿房费\"},\"tool\":\"update_expense\"},\"preview\":{\"diff\":[{\"after\":\"120\",\"before\":\"100\",\"field\":\"original_amount\"},{\"after\":[{\"amount\":\"120\",\"participant_id\":\"00000000-0000-4000-8000-000000000103\"}],\"before\":[{\"amount\":\"100\",\"participant_id\":\"00000000-0000-4000-8000-000000000103\"}],\"field\":\"payments\"},{\"after\":[{\"amount\":\"120\",\"participant_id\":\"00000000-0000-4000-8000-000000000104\"}],\"before\":[{\"amount\":\"100\",\"participant_id\":\"00000000-0000-4000-8000-000000000104\"}],\"field\":\"manual_splits\"}],\"kind\":\"update\",\"summary\":\"当前选中的民宿支出财务字段拟从100元调整到120元，付款和分摊明细同步展示完整差异。D4 限制使该预览不可执行。\"},\"type\":\"proposal\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"expense-detail/00000000-0000-4000-8000-000000000120\",\"page_type\":\"expense_detail\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"type\":\"expense\"},\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":\"00000000-0000-4000-8000-000000000103\",\"role_hint\":\"member\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[\"result-ui-002-read\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "详情页这笔民宿原来记的是100，改成120吧；我和林各自付的、承担的那两笔，也一起改成120就行。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"confirmation\":{\"level\":1,\"required\":true},\"execution_policy\":{\"execution_allowed\":false,\"reason\":\"d4_atomic_update_not_supported\"},\"intent_id\":\"update_expense\",\"operation\":{\"arguments\":{\"aa_participant_ids\":[],\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"expense_id\":\"00000000-0000-4000-8000-000000000120\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"manual_splits\":[{\"amount\":\"120\",\"participant_id\":\"00000000-0000-4000-8000-000000000104\"}],\"occurred_at\":\"2026-09-14T10:00:00+08:00\",\"original_amount\":\"120\",\"original_currency\":\"CNY\",\"payments\":[{\"amount\":\"120\",\"participant_id\":\"00000000-0000-4000-8000-000000000103\"}],\"split_method\":\"manual\",\"title\":\"民宿房费\"},\"tool\":\"update_expense\"},\"preview\":{\"diff\":[{\"after\":\"120\",\"before\":\"100\",\"field\":\"original_amount\"},{\"after\":[{\"amount\":\"120\",\"participant_id\":\"00000000-0000-4000-8000-000000000103\"}],\"before\":[{\"amount\":\"100\",\"participant_id\":\"00000000-0000-4000-8000-000000000103\"}],\"field\":\"payments\"},{\"after\":[{\"amount\":\"120\",\"participant_id\":\"00000000-0000-4000-8000-000000000104\"}],\"before\":[{\"amount\":\"100\",\"participant_id\":\"00000000-0000-4000-8000-000000000104\"}],\"field\":\"manual_splits\"}],\"kind\":\"update\",\"summary\":\"当前选中的民宿支出财务字段拟从100元调整到120元，付款和分摊明细同步展示完整差异。D4 限制使该预览不可执行。\"},\"type\":\"proposal\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"home\",\"page_type\":\"home\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"succeeded\"},\"recent_actions\":[{\"action_id\":\"result-recent-parking-east\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"type\":\"expense\"},\"financial_version_hint\":null,\"intent_id\":\"create_expense\",\"occurred_at\":\"2026-09-29T10:00:52+08:00\",\"result_id\":\"result-recent-parking-east\",\"status\":\"succeeded\"},{\"action_id\":\"result-recent-parking-west\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000122\",\"type\":\"expense\"},\"financial_version_hint\":null,\"intent_id\":\"create_expense\",\"occurred_at\":\"2026-09-29T10:00:52+08:00\",\"result_id\":\"result-recent-parking-west\",\"status\":\"succeeded\"}],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "刚才那笔停车费，帮我把图标换成车辆吧。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"candidates\":[{\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"type\":\"expense\"},\"label\":\"东门停车费\"},{\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000122\",\"type\":\"expense\"},\"label\":\"西门停车费\"}],\"intent_id\":\"update_expense_presentation\",\"missing_fields\":[],\"question\":\"最近有两笔停车费：东门停车场和西门停车场。请选一下要更换哪一笔的图标。\",\"reason\":\"ambiguous_entity\",\"type\":\"clarification\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"home\",\"page_type\":\"home\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"succeeded\"},\"recent_actions\":[{\"action_id\":\"result-recent-parking-east\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"type\":\"expense\"},\"financial_version_hint\":null,\"intent_id\":\"create_expense\",\"occurred_at\":\"2026-09-29T10:00:52+08:00\",\"result_id\":\"result-recent-parking-east\",\"status\":\"succeeded\"},{\"action_id\":\"result-recent-parking-west\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000122\",\"type\":\"expense\"},\"financial_version_hint\":null,\"intent_id\":\"create_expense\",\"occurred_at\":\"2026-09-29T10:00:52+08:00\",\"result_id\":\"result-recent-parking-west\",\"status\":\"succeeded\"}],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "呃，把刚才那笔停车费的图标……换成车辆。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"candidates\":[{\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"type\":\"expense\"},\"label\":\"东门停车费\"},{\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000122\",\"type\":\"expense\"},\"label\":\"西门停车费\"}],\"intent_id\":\"update_expense_presentation\",\"missing_fields\":[],\"question\":\"最近有两笔停车费：东门停车场和西门停车场。请选一下要更换哪一笔的图标。\",\"reason\":\"ambiguous_entity\",\"type\":\"clarification\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"home\",\"page_type\":\"home\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"succeeded\"},\"recent_actions\":[{\"action_id\":\"result-recent-parking-east\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"type\":\"expense\"},\"financial_version_hint\":null,\"intent_id\":\"create_expense\",\"occurred_at\":\"2026-09-29T10:00:52+08:00\",\"result_id\":\"result-recent-parking-east\",\"status\":\"succeeded\"},{\"action_id\":\"result-recent-parking-west\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000122\",\"type\":\"expense\"},\"financial_version_hint\":null,\"intent_id\":\"create_expense\",\"occurred_at\":\"2026-09-29T10:00:52+08:00\",\"result_id\":\"result-recent-parking-west\",\"status\":\"succeeded\"}],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "刚才那笔停车费，图标给换成车辆。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"candidates\":[{\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"type\":\"expense\"},\"label\":\"东门停车费\"},{\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000122\",\"type\":\"expense\"},\"label\":\"西门停车费\"}],\"intent_id\":\"update_expense_presentation\",\"missing_fields\":[],\"question\":\"最近有两笔停车费：东门停车场和西门停车场。请选一下要更换哪一笔的图标。\",\"reason\":\"ambiguous_entity\",\"type\":\"clarification\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"home\",\"page_type\":\"home\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"succeeded\"},\"recent_actions\":[{\"action_id\":\"result-recent-parking-east\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"type\":\"expense\"},\"financial_version_hint\":null,\"intent_id\":\"create_expense\",\"occurred_at\":\"2026-09-29T10:00:53+08:00\",\"result_id\":\"result-recent-parking-east\",\"status\":\"succeeded\"},{\"action_id\":\"result-recent-parking-west\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000122\",\"type\":\"expense\"},\"financial_version_hint\":null,\"intent_id\":\"create_expense\",\"occurred_at\":\"2026-09-29T10:00:53+08:00\",\"result_id\":\"result-recent-parking-west\",\"status\":\"succeeded\"}],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "哎，帮我把刚记的那笔停车费的图标换成车辆的，别的内容都别动哈。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"candidates\":[{\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"type\":\"expense\"},\"label\":\"东门停车费\"},{\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000122\",\"type\":\"expense\"},\"label\":\"西门停车费\"}],\"intent_id\":\"update_expense_presentation\",\"missing_fields\":[],\"question\":\"最近有两笔停车费：东门停车场和西门停车场。请选一下要更换哪一笔的图标。\",\"reason\":\"ambiguous_entity\",\"type\":\"clarification\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"new-expense/00000000-0000-4000-8000-000000000100\",\"page_type\":\"expense_form\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":\"create\",\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "今天晚饭90元，我先垫着。"
+      },
+      {
+        "role": "assistant",
+        "content": "晚餐记账方案还在等着确认。"
+      },
+      {
+        "role": "user",
+        "content": "刚才那张晚餐记账卡我瞅过了，在聊天里回个“确定”，就算存上了吗？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"不算。聊天文字不能代替确认卡上的可信界面操作；在界面确认前，这笔仍只是待确认方案，没有写入账本。\",\"evidence_result_ids\":[],\"type\":\"answer\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"home\",\"page_type\":\"home\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "刚才那个也顺手弄一下吧。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"candidates\":[],\"intent_id\":\"clarify_reference\",\"missing_fields\":[],\"question\":\"你说的“刚才那个”指哪一笔账？请告诉我标题、日期或选择对应记录。\",\"reason\":\"unresolved_reference\",\"type\":\"clarification\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"home\",\"page_type\":\"home\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "那个……就刚、刚才那个，你也帮我处理一下呗。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"candidates\":[],\"intent_id\":\"clarify_reference\",\"missing_fields\":[],\"question\":\"你说的“刚才那个”指哪一笔账？请告诉我标题、日期或选择对应记录。\",\"reason\":\"unresolved_reference\",\"type\":\"clarification\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"home\",\"page_type\":\"home\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "那个也顺手处理下吧。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"candidates\":[],\"intent_id\":\"clarify_reference\",\"missing_fields\":[],\"question\":\"你说的“刚才那个”指哪一笔账？请告诉我标题、日期或选择对应记录。\",\"reason\":\"unresolved_reference\",\"type\":\"clarification\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"home\",\"page_type\":\"home\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "那啥，刚才那个，也顺带给我处理一下呗。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"candidates\":[],\"intent_id\":\"clarify_reference\",\"missing_fields\":[],\"question\":\"你说的“刚才那个”指哪一笔账？请告诉我标题、日期或选择对应记录。\",\"reason\":\"unresolved_reference\",\"type\":\"clarification\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-rule-008-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "活动归档了之后，还能不能补录昨天那笔消费啊？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"归档后的活动只读，不能新增消费。需要先由活动创建者解除归档，再按当前活动状态处理。\",\"evidence_result_ids\":[\"result-rule-008-verified\"],\"type\":\"answer\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-rule-008-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "那个……活动归档之后，还能，还能补录昨天的消费吗？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"归档后的活动只读，不能新增消费。需要先由活动创建者解除归档，再按当前活动状态处理。\",\"evidence_result_ids\":[\"result-rule-008-verified\"],\"type\":\"answer\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-rule-008-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "活动只要归档了是不是就只能看了？那我昨天漏记的那笔消费得走啥流程才能补上啊？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"归档后的活动只读，不能新增消费。需要先由活动创建者解除归档，再按当前活动状态处理。\",\"evidence_result_ids\":[\"result-rule-008-verified\"],\"type\":\"answer\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-rule-008-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "呃，归档之后如果只能看的话，昨天漏掉的消费，那个，应该走什么流程补录啊？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"归档后的活动只读，不能新增消费。需要先由活动创建者解除归档，再按当前活动状态处理。\",\"evidence_result_ids\":[\"result-rule-008-verified\"],\"type\":\"answer\"}"
+      }
+    ]
+  }
+]

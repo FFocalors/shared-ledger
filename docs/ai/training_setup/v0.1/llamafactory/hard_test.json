@@ -1,0 +1,158 @@
+[
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":\"00000000-0000-4000-8000-000000000103\",\"role_hint\":\"member\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"create_expense\"],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "2026年9月12日中午，早餐花了50元，我付的，这笔只算我一个人。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"proposal\",\"intent_id\":\"create_expense\",\"operation\":{\"tool\":\"create_expense\",\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"title\":\"周末早餐\",\"original_amount\":\"50\",\"original_currency\":\"CNY\",\"split_method\":\"manual\",\"payments\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000103\",\"amount\":\"50\"}],\"manual_splits\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000103\",\"amount\":\"50\"}],\"aa_participant_ids\":[],\"occurred_at\":\"2026-09-12T12:00:00+08:00\"}},\"preview\":{\"kind\":\"create\",\"summary\":\"我会按你说的把50元早餐记为本人付款、本人承担的方案；这种自付自担消费仍可正常记账。\",\"diff\":[{\"field\":\"target\",\"after\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"title\":\"周末早餐\",\"original_amount\":\"50\",\"original_currency\":\"CNY\",\"split_method\":\"manual\",\"payments\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000103\",\"amount\":\"50\"}],\"manual_splits\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000103\",\"amount\":\"50\"}],\"aa_participant_ids\":[],\"occurred_at\":\"2026-09-12T12:00:00+08:00\"}}]},\"confirmation\":{\"level\":1,\"required\":true},\"execution_policy\":{\"execution_allowed\":true,\"reason\":\"confirmation_required\"}}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":\"00000000-0000-4000-8000-000000000103\",\"role_hint\":\"member\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"create_expense\"],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "补一笔早餐：9月12日中午50元是我付的，就算我自己一个人的。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"proposal\",\"intent_id\":\"create_expense\",\"operation\":{\"tool\":\"create_expense\",\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"title\":\"周末早餐\",\"original_amount\":\"50\",\"original_currency\":\"CNY\",\"split_method\":\"manual\",\"payments\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000103\",\"amount\":\"50\"}],\"manual_splits\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000103\",\"amount\":\"50\"}],\"aa_participant_ids\":[],\"occurred_at\":\"2026-09-12T12:00:00+08:00\"}},\"preview\":{\"kind\":\"create\",\"summary\":\"我会按你说的把50元早餐记为本人付款、本人承担的方案；这种自付自担消费仍可正常记账。\",\"diff\":[{\"field\":\"target\",\"after\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"title\":\"周末早餐\",\"original_amount\":\"50\",\"original_currency\":\"CNY\",\"split_method\":\"manual\",\"payments\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000103\",\"amount\":\"50\"}],\"manual_splits\":[{\"participant_id\":\"00000000-0000-4000-8000-000000000103\",\"amount\":\"50\"}],\"aa_participant_ids\":[],\"occurred_at\":\"2026-09-12T12:00:00+08:00\"}}]},\"confirmation\":{\"level\":1,\"required\":true},\"execution_policy\":{\"execution_allowed\":true,\"reason\":\"confirmation_required\"}}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"normal_activity\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[{\"type\":\"expense\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\"},{\"type\":\"expense\",\"id\":\"00000000-0000-4000-8000-000000000122\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\"}],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "民宿取消退了50元，帮我挂回那笔订单。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"clarification\",\"intent_id\":\"create_refund\",\"reason\":\"ambiguous_entity\",\"missing_fields\":[],\"question\":\"我找到两笔符合描述的民宿消费，分别是9月10日和9月12日。你要把退款关联到哪一笔？\",\"candidates\":[{\"entity\":{\"type\":\"expense\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\"},\"label\":\"9月10日民宿\"},{\"entity\":{\"type\":\"expense\",\"id\":\"00000000-0000-4000-8000-000000000122\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\"},\"label\":\"9月12日民宿\"}]}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-rule-004-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "把一笔退款删掉后，原消费是不是就能编辑了？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"answer\",\"content\":\"不能。已有真实退款历史会让原消费永久财务锁定；删除退款可能释放退款额度，但不会解除该锁。\",\"evidence_result_ids\":[\"result-rule-004-verified\"]}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-rule-004-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "退款记录删了，原单的锁就会自动解开吗？能解释下规则吗？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"type\":\"answer\",\"content\":\"不能。已有真实退款历史会让原消费永久财务锁定；删除退款可能释放退款额度，但不会解除该锁。\",\"evidence_result_ids\":[\"result-rule-004-verified\"]}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":\"00000000-0000-4000-8000-000000000103\",\"role_hint\":\"member\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"create_expense\"],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "呃……那个，2026年9月12日中午，早餐，早餐花了50元，我付的，这笔……就只算我一个人。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"confirmation\":{\"level\":1,\"required\":true},\"execution_policy\":{\"execution_allowed\":true,\"reason\":\"confirmation_required\"},\"intent_id\":\"create_expense\",\"operation\":{\"arguments\":{\"aa_participant_ids\":[],\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"manual_splits\":[{\"amount\":\"50\",\"participant_id\":\"00000000-0000-4000-8000-000000000103\"}],\"occurred_at\":\"2026-09-12T12:00:00+08:00\",\"original_amount\":\"50\",\"original_currency\":\"CNY\",\"payments\":[{\"amount\":\"50\",\"participant_id\":\"00000000-0000-4000-8000-000000000103\"}],\"split_method\":\"manual\",\"title\":\"周末早餐\"},\"tool\":\"create_expense\"},\"preview\":{\"diff\":[{\"after\":{\"aa_participant_ids\":[],\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"manual_splits\":[{\"amount\":\"50\",\"participant_id\":\"00000000-0000-4000-8000-000000000103\"}],\"occurred_at\":\"2026-09-12T12:00:00+08:00\",\"original_amount\":\"50\",\"original_currency\":\"CNY\",\"payments\":[{\"amount\":\"50\",\"participant_id\":\"00000000-0000-4000-8000-000000000103\"}],\"split_method\":\"manual\",\"title\":\"周末早餐\"},\"field\":\"target\"}],\"kind\":\"create\",\"summary\":\"我会按你说的把50元早餐记为本人付款、本人承担的方案；这种自付自担消费仍可正常记账。\"},\"type\":\"proposal\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"normal_activity\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"type\":\"expense\"},{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000122\",\"type\":\"expense\"}],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "民宿那边取消了，退了50块钱，帮我把这笔挂回那笔订单呗。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"candidates\":[{\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"type\":\"expense\"},\"label\":\"9月10日民宿\"},{\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000122\",\"type\":\"expense\"},\"label\":\"9月12日民宿\"}],\"intent_id\":\"create_refund\",\"missing_fields\":[],\"question\":\"我找到两笔符合描述的民宿消费，分别是9月10日和9月12日。你要把退款关联到哪一笔？\",\"reason\":\"ambiguous_entity\",\"type\":\"clarification\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"normal_activity\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"type\":\"expense\"},{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000122\",\"type\":\"expense\"}],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[],\"verified_result_ids\":[],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "那个……民宿取消退了50元，帮我挂回、挂回那笔订单。"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"candidates\":[{\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000120\",\"type\":\"expense\"},\"label\":\"9月10日民宿\"},{\"entity\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"id\":\"00000000-0000-4000-8000-000000000122\",\"type\":\"expense\"},\"label\":\"9月12日民宿\"}],\"intent_id\":\"create_refund\",\"missing_fields\":[],\"question\":\"我找到两笔符合描述的民宿消费，分别是9月10日和9月12日。你要把退款关联到哪一笔？\",\"reason\":\"ambiguous_entity\",\"type\":\"clarification\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-rule-004-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "要是我把一笔退款删了，那原来那笔消费是不是就能改了？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"不能。已有真实退款历史会让原消费永久财务锁定；删除退款可能释放退款额度，但不会解除该锁。\",\"evidence_result_ids\":[\"result-rule-004-verified\"],\"type\":\"answer\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-rule-004-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "嗯……就是我要是，那个，把一笔退款删掉之后啊，原来那笔消费是不是就能编辑了？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"不能。已有真实退款历史会让原消费永久财务锁定；删除退款可能释放退款额度，但不会解除该锁。\",\"evidence_result_ids\":[\"result-rule-004-verified\"],\"type\":\"answer\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-rule-004-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "我要是把退款记录给删了，原来那笔消费的锁是不是就自己解开了？能给我说道说道这规则不？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"不能。已有真实退款历史会让原消费永久财务锁定；删除退款可能释放退款额度，但不会解除该锁。\",\"evidence_result_ids\":[\"result-rule-004-verified\"],\"type\":\"answer\"}"
+      }
+    ]
+  },
+  {
+    "system": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。\n\n運行時上下文（JSON）：{\"platform\":\"android\",\"app_version\":\"1.4.0\",\"locale\":\"zh-CN\",\"timezone\":\"Asia/Shanghai\",\"ui\":{\"route\":\"activity/00000000-0000-4000-8000-000000000100\",\"page_type\":\"normal_activity\",\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"ledger_unit_id\":\"00000000-0000-4000-8000-000000000101\",\"selected_entity\":null,\"form_mode\":null,\"focused_field\":null},\"user\":{\"claimed_participant_id\":null,\"role_hint\":\"unknown\"},\"page_state\":{\"load_state\":\"ready\",\"financial_version_hint\":null,\"entity_version_hint\":null,\"filters\":{},\"visible_entities\":[],\"draft\":null,\"write_state\":\"unknown\"},\"recent_actions\":[],\"conversation_state\":{\"confirmed_bindings\":[],\"pending_clarification\":null},\"runtime_policy\":{\"enabled_tools\":[\"lookup_business_rule\"],\"verified_result_ids\":[\"result-rule-004-verified\"],\"confirmation_policy\":\"proposed_all_writes\",\"tool_results\":[]}}",
+    "conversations": [
+      {
+        "role": "user",
+        "content": "那个，退款记录删了以后啊，原单的锁就、就会自动解开吗？能解释下规则吗？"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"content\":\"不能。已有真实退款历史会让原消费永久财务锁定；删除退款可能释放退款额度，但不会解除该锁。\",\"evidence_result_ids\":[\"result-rule-004-verified\"],\"type\":\"answer\"}"
+      }
+    ]
+  }
+]

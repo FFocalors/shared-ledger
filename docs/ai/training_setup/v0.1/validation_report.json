@@ -1,0 +1,308 @@
+{
+  "python": "3.11.15",
+  "transformers": "5.8.0",
+  "llamafactory": "0.9.6.dev0",
+  "model_tokenizer_path": "D:\\AI\\models\\Qwen3.5-4B",
+  "template": "qwen3_5_nothink",
+  "dataset_registration_count": 4,
+  "split_counts": {
+    "train": 171,
+    "validation": 24,
+    "test": 37,
+    "hard_test": 12
+  },
+  "loss_mask_samples_checked": 244,
+  "history_samples": 24,
+  "samples_with_reversible_turn_blocks": 11,
+  "assistant_history_turns_masked": 13,
+  "token_lengths_total": {
+    "count": 244,
+    "p50": 450,
+    "p90": 1053,
+    "p95": 1071,
+    "p99": 1185,
+    "max": 1193
+  },
+  "input_tokens_total": {
+    "count": 244,
+    "p50": 371,
+    "p90": 471,
+    "p95": 584,
+    "p99": 680,
+    "max": 688
+  },
+  "target_tokens_total": {
+    "count": 244,
+    "p50": 66,
+    "p90": 604,
+    "p95": 622,
+    "p99": 664,
+    "max": 665
+  },
+  "native_tokenizer_template_total": {
+    "count": 244,
+    "p50": 454,
+    "p90": 1057,
+    "p95": 1075,
+    "p99": 1189,
+    "max": 1197
+  },
+  "native_vs_llamafactory_template_delta": {
+    "samples_with_different_lengths": 244,
+    "delta_min": 4,
+    "delta_max": 4,
+    "note": "Training config uses the LLaMA-Factory qwen3_5_nothink encoder; the tokenizer's bundled chat_template is measured separately."
+  },
+  "token_lengths_by_split": {
+    "train": {
+      "count": 171,
+      "p50": 476,
+      "p90": 1056,
+      "p95": 1068,
+      "p99": 1186,
+      "max": 1193
+    },
+    "validation": {
+      "count": 24,
+      "p50": 407,
+      "p90": 519,
+      "p95": 534,
+      "p99": 537,
+      "max": 538
+    },
+    "test": {
+      "count": 37,
+      "p50": 402,
+      "p90": 1073,
+      "p95": 1076,
+      "p99": 1083,
+      "max": 1084
+    },
+    "hard_test": {
+      "count": 12,
+      "p50": 557,
+      "p90": 946,
+      "p95": 950,
+      "p99": 952,
+      "max": 953
+    }
+  },
+  "input_tokens_by_split": {
+    "train": {
+      "count": 171,
+      "p50": 375,
+      "p90": 470,
+      "p95": 578,
+      "p99": 612,
+      "max": 612
+    },
+    "validation": {
+      "count": 24,
+      "p50": 345,
+      "p90": 402,
+      "p95": 406,
+      "p99": 409,
+      "max": 410
+    },
+    "test": {
+      "count": 37,
+      "p50": 353,
+      "p90": 679,
+      "p95": 680,
+      "p99": 685,
+      "max": 688
+    },
+    "hard_test": {
+      "count": 12,
+      "p50": 366,
+      "p90": 466,
+      "p95": 467,
+      "p99": 467,
+      "max": 467
+    }
+  },
+  "target_tokens_by_split": {
+    "train": {
+      "count": 171,
+      "p50": 67,
+      "p90": 618,
+      "p95": 643,
+      "p99": 664,
+      "max": 665
+    },
+    "validation": {
+      "count": 24,
+      "p50": 64,
+      "p90": 155,
+      "p95": 187,
+      "p99": 189,
+      "max": 189
+    },
+    "test": {
+      "count": 37,
+      "p50": 52,
+      "p90": 604,
+      "p95": 605,
+      "p99": 607,
+      "max": 607
+    },
+    "hard_test": {
+      "count": 12,
+      "p50": 148,
+      "p90": 565,
+      "p95": 565,
+      "p99": 565,
+      "max": 565
+    }
+  },
+  "total_tokens_by_output_type": {
+    "answer": {
+      "count": 77,
+      "p50": 415,
+      "p90": 527,
+      "p95": 534,
+      "p99": 541,
+      "max": 545
+    },
+    "clarification": {
+      "count": 69,
+      "p50": 420,
+      "p90": 713,
+      "p95": 915,
+      "p99": 919,
+      "max": 924
+    },
+    "proposal": {
+      "count": 60,
+      "p50": 1040,
+      "p90": 1081,
+      "p95": 1185,
+      "p99": 1189,
+      "max": 1193
+    },
+    "tool_call": {
+      "count": 32,
+      "p50": 440,
+      "p90": 758,
+      "p95": 761,
+      "p99": 761,
+      "max": 761
+    },
+    "unsupported": {
+      "count": 6,
+      "p50": 392,
+      "p90": 398,
+      "p95": 399,
+      "p99": 400,
+      "max": 400
+    }
+  },
+  "input_tokens_by_output_type": {
+    "answer": {
+      "count": 77,
+      "p50": 359,
+      "p90": 460,
+      "p95": 475,
+      "p99": 482,
+      "max": 486
+    },
+    "clarification": {
+      "count": 69,
+      "p50": 350,
+      "p90": 467,
+      "p95": 679,
+      "p99": 683,
+      "max": 688
+    },
+    "proposal": {
+      "count": 60,
+      "p50": 424,
+      "p90": 477,
+      "p95": 579,
+      "p99": 586,
+      "max": 590
+    },
+    "tool_call": {
+      "count": 32,
+      "p50": 354,
+      "p90": 609,
+      "p95": 612,
+      "p99": 612,
+      "max": 612
+    },
+    "unsupported": {
+      "count": 6,
+      "p50": 342,
+      "p90": 348,
+      "p95": 349,
+      "p99": 350,
+      "max": 350
+    }
+  },
+  "target_tokens_by_output_type": {
+    "answer": {
+      "count": 77,
+      "p50": 56,
+      "p90": 82,
+      "p95": 82,
+      "p99": 83,
+      "max": 83
+    },
+    "clarification": {
+      "count": 69,
+      "p50": 59,
+      "p90": 238,
+      "p95": 263,
+      "p99": 275,
+      "max": 275
+    },
+    "proposal": {
+      "count": 60,
+      "p50": 603,
+      "p90": 662,
+      "p95": 663,
+      "p99": 665,
+      "max": 665
+    },
+    "tool_call": {
+      "count": 32,
+      "p50": 71,
+      "p90": 151,
+      "p95": 151,
+      "p99": 151,
+      "max": 151
+    },
+    "unsupported": {
+      "count": 6,
+      "p50": 50,
+      "p90": 50,
+      "p95": 50,
+      "p99": 50,
+      "max": 50
+    }
+  },
+  "max_total_tokens": 1193,
+  "cutoff_candidates": [
+    2048
+  ],
+  "excluded_unassigned": 6,
+  "excluded_fin002": 0,
+  "frozen_hashes": {
+    "samples.json": "768916c8781dc2608ac8220588a0e85ffc043d8f16a45e9bd3497b87a214e562",
+    "scenarios.json": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+    "split_assignment.json": "e3e1599673b3227edeaad3bc62f04e0f3249dd886946f502664428939d8d3765",
+    "dataset_manifest.json": "7f8cc2ef70d1abedd49ea040826d93f4c3708a8cb5893e7e1fedcc488e2c2252"
+  },
+  "source_code_evidence": {
+    "sharegpt_converter": "LLaMA-Factory/src/llamafactory/data/converter.py:SharegptDatasetConverter",
+    "supervised_loss_mask": "LLaMA-Factory/src/llamafactory/data/processor/supervised.py:SupervisedDatasetProcessor._encode_data_example",
+    "qwen_template": "LLaMA-Factory/src/llamafactory/data/template.py:qwen3_5_nothink"
+  },
+  "counts": {
+    "train": 171,
+    "validation": 24,
+    "test": 37,
+    "hard_test": 12
+  },
+  "llamafactory_loader_rows": 244
+}

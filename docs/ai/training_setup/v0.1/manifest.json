@@ -1,0 +1,87 @@
+{
+  "training_setup_version": "0.1",
+  "canonical_dataset_version": "0.1",
+  "source": {
+    "path": "docs/ai/dataset/canonical_training/v0.1",
+    "manifest_sha256": "7f8cc2ef70d1abedd49ea040826d93f4c3708a8cb5893e7e1fedcc488e2c2252",
+    "samples_sha256": "768916c8781dc2608ac8220588a0e85ffc043d8f16a45e9bd3497b87a214e562",
+    "scenarios_sha256": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+    "split_assignment_sha256": "e3e1599673b3227edeaad3bc62f04e0f3249dd886946f502664428939d8d3765"
+  },
+  "export": {
+    "format": "LLaMA-Factory ShareGPT JSON",
+    "record_count": 244,
+    "split_counts": {
+      "train": 171,
+      "validation": 24,
+      "test": 37,
+      "hard_test": 12
+    },
+    "excluded_unassigned_count": 6,
+    "excluded_fin002_count": 0,
+    "output_types": {
+      "answer": 77,
+      "clarification": 69,
+      "proposal": 60,
+      "tool_call": 32,
+      "unsupported": 6
+    }
+  },
+  "serialization": {
+    "template": "qwen3_5_nothink",
+    "system_context": "allowlisted runtime context only",
+    "history_group_marker": "<|shared_ledger_turn_block_v1|>",
+    "history_roundtrip_verified": true,
+    "assistant_target": "compact JSON serialization of expected.model_output; parsed equality checked",
+    "loss_mask": {
+      "train_on_prompt": false,
+      "mask_history": true
+    }
+  },
+  "llamafactory_source_version": "0.9.6.dev0",
+  "frozen_canonical_manifest_status": "frozen",
+  "artifacts": {
+    "llamafactory/dataset_info.json": "2ac44f2ba48c5c0b21cff58590802d956c570cde92edba8cb7a9bae618ee2907",
+    "llamafactory/hard_test.json": "bd9e36c5f1fcf30fd11f87ade672515a901cb8f0c0114debe36b8919c0d9be8e",
+    "llamafactory/test.json": "35c5119a2f49e7e9c7561a19b90598e094216e351fb450f499b1382a158cbaa0",
+    "llamafactory/train.json": "7ab16f1e1dca751a404b3156458bb90c1f08b9daeefa87224ef9876867377c35",
+    "llamafactory/validation.json": "9db71eb05e10596cfe106b3da03e46ec7ceed77bafbf066f4385abe41404413d",
+    "traceability.json": "ad8fd7ba663216c8c185307945bc5507809895f4856c7739603213bf261c42ba",
+    "validation_report.json": "16392b32a995c5ccf9caff1057b7233fd794631fa5980307fec264a2ac1c0c55",
+    "smoke.yaml": "057471bb3b05630a0bcc722a5070aaba1bc8a0d9392940f560255ede6f6f3154",
+    "qlora.yaml": "b621a212b42169a2852e1db81cc7ba2da6c486e42eaeb3ece6b405e08e214561",
+    "README.md": "7da45068036fb94da94c722f2ab9bb71acf3aa17d4b000ff0499b3bdedb2e384"
+  },
+  "validation": {
+    "rows_loaded": 244,
+    "ground_truth_equal": 244,
+    "traceability_complete": 244,
+    "metadata_leakage": 0,
+    "loss_masks_verified": 244,
+    "errors": 0,
+    "loss_mask_config": {
+      "train_on_prompt": false,
+      "mask_history": true
+    }
+  },
+  "smoke_run": {
+    "status": "completed",
+    "authorization": "explicitly authorized 8-row QLoRA smoke; no formal multi-epoch run",
+    "run_path": "D:\\AI\\runs\\shared-ledger\\training_runs\\smoke-v0.1\\20260930-132418",
+    "config": "smoke.yaml copied to isolated run; output_dir/save_total_limit adjusted only in run copy",
+    "train_rows": 8,
+    "epochs": 1,
+    "optimizer_steps": 8,
+    "train_runtime_seconds": 75.7858,
+    "train_loss": 1.4014204368,
+    "eval_loss_step4": 2.1614947319,
+    "eval_loss_step8": 2.1138885021,
+    "checkpoint_steps": [
+      4,
+      8
+    ],
+    "resume_check_from_step4_completed_step": 5,
+    "adapter_reload_inference": "NF4, setup system/context, qwen3_5_nothink, 48 generated tokens; no CPU/disk offload",
+    "formal_training_started": false
+  }
+}
