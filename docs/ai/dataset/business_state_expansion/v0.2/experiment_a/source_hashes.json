@@ -1,0 +1,41 @@
+{
+  "hash_algorithm": "SHA-256",
+  "checked_at": "2026-09-30",
+  "frozen_sources_unchanged_by_this_experiment": true,
+  "artifacts": {
+    "docs/backend/BUSINESS_LOGIC.md": "c84338b0b429801720e73d0a890867053c121a9bef7c3ac3800a9de2cdd5217a",
+    "docs/ai/AI_MODEL_CONTRACT.md": "f6effbc7a4278d6e9b7f6a01298fc1644218be126f85d442da7d35acdf66100a",
+    "docs/ai/AI_SCOPE_FREEZE_V0.1.md": "e5808e18c7cd3eaffd446fc20bfa3eb90e1a08c17402e94dbe0c0f01600fd4fb",
+    "docs/ai/schema/intent_catalog.json": "5170f625130d706a4db95fa5e67ab8cc11c1d56aafc0c093692f9421d4d2e651",
+    "docs/ai/schema/tool_catalog.json": "e6f25251c6bdef6cd50f0ce01489adf9c0e6bb5efade5f789e847d86a7350744",
+    "docs/ai/schema/model_output.schema.json": "5ad944f7e1163c5b186cd4b9aea4b3ddf8c39910b9cbaf63554a7718af689bd9",
+    "docs/ai/schema/context_envelope.schema.json": "5caed757f06b2edfb6b7499d5bff5bfa68225a3416ac5627290664832b9c4a9e",
+    "docs/ai/dataset/schema/scenario.schema.json": "fc8a92e068933759fa2aa7217eafac72d1f92289f247c191f8c57af8b2821a91",
+    "docs/ai/dataset/schema/sample.schema.json": "ceb2d1f989a56e56799a93c35c60638b663e625c6022f1083ee10923baea4493",
+    "docs/ai/dataset/schema/dataset_manifest.schema.json": "a31e0f9da8a57481b76946c709154bb67d36ae12126bcd88d747e79651b77b99",
+    "docs/ai/dataset/DATASET_VALIDATION_RULES.md": "4f04e934d9660d549df2529721e6b87dd897aaf708a269290c36ecc7be23c111",
+    "docs/ai/dataset/gold_seed/v0.1/p0/dataset_manifest.json": "cb0bc5918534aba996383574e1715327730d83bcc64ed57df57a2fb4ddc4e6eb",
+    "docs/ai/dataset/gold_seed/v0.1/p0/scenarios.json": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+    "docs/ai/dataset/gold_seed/v0.1/p0/samples.json": "34ffd94d9c5ccbb17e6632b8689194c4be53f7275db828e983f6d6540b406dee",
+    "docs/ai/dataset/teacher/v0.1/dataset_manifest.json": "2add79d8111feff4aca4453480cc3380fe0cf81d1ef32f090aee0246bbdf5895",
+    "docs/ai/dataset/teacher/v0.1/scenarios.json": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+    "docs/ai/dataset/teacher/v0.1/samples.json": "5d2ca222d8ee4a87ae9e17cdaa0dd22dbfa8bf6835458e34e3be6c9292e4c4d9",
+    "docs/ai/dataset/canonical_training/v0.1/dataset_manifest.json": "7f8cc2ef70d1abedd49ea040826d93f4c3708a8cb5893e7e1fedcc488e2c2252",
+    "docs/ai/dataset/canonical_training/v0.1/scenarios.json": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+    "docs/ai/dataset/canonical_training/v0.1/samples.json": "768916c8781dc2608ac8220588a0e85ffc043d8f16a45e9bd3497b87a214e562",
+    "docs/ai/dataset/canonical_training/v0.1/split_assignment.json": "e3e1599673b3227edeaad3bc62f04e0f3249dd886946f502664428939d8d3765",
+    "docs/ai/dataset/canonical_training/v0.1/coverage_report.json": "a213bb66a34462921c46cc0f2eecc6ef95722f8b0b53944d862c7b428dfb9672",
+    "docs/ai/training_setup/v0.1/manifest.json": "0ea288d01fc33389996473f795c0632999e12b568f7541de12e29ba4fea2d67c",
+    "docs/ai/training_setup/v0.1/llamafactory/train.json": "7ab16f1e1dca751a404b3156458bb90c1f08b9daeefa87224ef9876867377c35",
+    "docs/ai/training_setup/v0.1/llamafactory/validation.json": "9db71eb05e10596cfe106b3da03e46ec7ceed77bafbf066f4385abe41404413d",
+    "docs/ai/training_setup/v0.1/llamafactory/test.json": "35c5119a2f49e7e9c7561a19b90598e094216e351fb450f499b1382a158cbaa0",
+    "docs/ai/training_setup/v0.1/llamafactory/hard_test.json": "bd9e36c5f1fcf30fd11f87ade672515a901cb8f0c0114debe36b8919c0d9be8e",
+    "docs/ai/training_setup/v0.1/llamafactory/dataset_info.json": "2ac44f2ba48c5c0b21cff58590802d956c570cde92edba8cb7a9bae618ee2907",
+    "docs/ai/training_setup/v0.1/traceability.json": "ad8fd7ba663216c8c185307945bc5507809895f4856c7739603213bf261c42ba",
+    "docs/ai/training_setup/v0.1/qlora.yaml": "b621a212b42169a2852e1db81cc7ba2da6c486e42eaeb3ece6b405e08e214561"
+  },
+  "omissions": [
+    "Large model checkpoint weights are not rehashed; use prior training-run hash metadata."
+  ],
+  "missing_paths": []
+}

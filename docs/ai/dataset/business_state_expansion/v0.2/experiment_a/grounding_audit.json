@@ -1,0 +1,1970 @@
+{
+  "method": "Frozen runtime serializer export_record(sample); target structured facts are compared to serialized system/context/history/current-user content. Scenario.state/evidence_refs are not treated as model-visible evidence. Datetime conversion is normalized only when the explicit user/context source contains the same year/month/day/hour/minute.",
+  "automated_checks": {
+    "samples_serialized": 16,
+    "history_roundtrip_pass": 16,
+    "metadata_leaks": 0,
+    "expected_external_fact_count": 102,
+    "visible_match_count": 102,
+    "missing_visible_source_count": 0
+  },
+  "records": [
+    {
+      "sample_id": "sample_v02_a_currency_missing",
+      "scenario_id": "scenario_v02_a_currency_missing",
+      "family_id": "family_v02_currency_sufficiency",
+      "split_group_id": "split_v02_currency_sufficiency",
+      "expected_external_facts": [],
+      "ground_truth_summary": {
+        "output_type": "clarification",
+        "intent_id": "create_expense",
+        "tool_name": null,
+        "operation": null
+      },
+      "grounding_verdict": "human semantic review required; no causal claims from literal matching"
+    },
+    {
+      "sample_id": "sample_v02_a_currency_supplied",
+      "scenario_id": "scenario_v02_a_currency_supplied",
+      "family_id": "family_v02_currency_sufficiency",
+      "split_group_id": "split_v02_currency_sufficiency",
+      "expected_external_facts": [
+        {
+          "expected_path": "model_output.operation.arguments.activity_id",
+          "expected_value": "c341526c-5ddf-54ef-9038-e36d2d33f049",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.activity_id",
+              "value": "c341526c-5ddf-54ef-9038-e36d2d33f049",
+              "excerpt": "c341526c-5ddf-54ef-9038-e36d2d33f049",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[0].activity_id",
+              "value": "c341526c-5ddf-54ef-9038-e36d2d33f049",
+              "excerpt": "c341526c-5ddf-54ef-9038-e36d2d33f049",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.ledger_unit_id",
+          "expected_value": "c65d2d43-e010-5afc-a37f-5ad9316108a8",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.ledger_unit_id",
+              "value": "c65d2d43-e010-5afc-a37f-5ad9316108a8",
+              "excerpt": "c65d2d43-e010-5afc-a37f-5ad9316108a8",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.title",
+          "expected_value": "溪边晚餐",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "溪边晚餐",
+              "excerpt": "2026年9月14日12:30的溪边晚餐记128 CNY，我付，和李四AA。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.original_amount",
+          "expected_value": "128",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "128",
+              "excerpt": "2026年9月14日12:30的溪边晚餐记128 CNY，我付，和李四AA。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.original_currency",
+          "expected_value": "CNY",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "CNY",
+              "excerpt": "2026年9月14日12:30的溪边晚餐记128 CNY，我付，和李四AA。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.split_method",
+          "expected_value": "aa",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "AA",
+              "excerpt": "2026年9月14日12:30的溪边晚餐记128 CNY，我付，和李四AA。",
+              "match": "human semantic mapping: user AA → frozen split_method enum aa",
+              "authority": "docs/ai/schema/tool_catalog.json split_method enum"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.payments[0].participant_id",
+          "expected_value": "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+          "visible_sources": [
+            {
+              "path": "serialized_context.user.claimed_participant_id",
+              "value": "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+              "excerpt": "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.payments[0].amount",
+          "expected_value": "128",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "128",
+              "excerpt": "2026年9月14日12:30的溪边晚餐记128 CNY，我付，和李四AA。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.aa_participant_ids[0]",
+          "expected_value": "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+          "visible_sources": [
+            {
+              "path": "serialized_context.user.claimed_participant_id",
+              "value": "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+              "excerpt": "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.aa_participant_ids[1]",
+          "expected_value": "af9fcb0b-9632-566d-81b5-9868c5dc45d0",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[0].id",
+              "value": "af9fcb0b-9632-566d-81b5-9868c5dc45d0",
+              "excerpt": "af9fcb0b-9632-566d-81b5-9868c5dc45d0",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.occurred_at",
+          "expected_value": "2026-09-14T12:30:00+08:00",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "2026年9月14日12:30的溪边晚餐记128 CNY，我付，和李四AA。",
+              "excerpt": "2026年9月14日12:30的溪边晚餐记128 CNY，我付，和李四AA。",
+              "match": "explicit date-time normalized to ISO"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.activity_id",
+          "expected_value": "c341526c-5ddf-54ef-9038-e36d2d33f049",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.activity_id",
+              "value": "c341526c-5ddf-54ef-9038-e36d2d33f049",
+              "excerpt": "c341526c-5ddf-54ef-9038-e36d2d33f049",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[0].activity_id",
+              "value": "c341526c-5ddf-54ef-9038-e36d2d33f049",
+              "excerpt": "c341526c-5ddf-54ef-9038-e36d2d33f049",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.ledger_unit_id",
+          "expected_value": "c65d2d43-e010-5afc-a37f-5ad9316108a8",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.ledger_unit_id",
+              "value": "c65d2d43-e010-5afc-a37f-5ad9316108a8",
+              "excerpt": "c65d2d43-e010-5afc-a37f-5ad9316108a8",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.title",
+          "expected_value": "溪边晚餐",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "溪边晚餐",
+              "excerpt": "2026年9月14日12:30的溪边晚餐记128 CNY，我付，和李四AA。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.original_amount",
+          "expected_value": "128",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "128",
+              "excerpt": "2026年9月14日12:30的溪边晚餐记128 CNY，我付，和李四AA。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.original_currency",
+          "expected_value": "CNY",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "CNY",
+              "excerpt": "2026年9月14日12:30的溪边晚餐记128 CNY，我付，和李四AA。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.split_method",
+          "expected_value": "aa",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "AA",
+              "excerpt": "2026年9月14日12:30的溪边晚餐记128 CNY，我付，和李四AA。",
+              "match": "human semantic mapping: user AA → frozen split_method enum aa",
+              "authority": "docs/ai/schema/tool_catalog.json split_method enum"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.payments[0].participant_id",
+          "expected_value": "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+          "visible_sources": [
+            {
+              "path": "serialized_context.user.claimed_participant_id",
+              "value": "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+              "excerpt": "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.payments[0].amount",
+          "expected_value": "128",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "128",
+              "excerpt": "2026年9月14日12:30的溪边晚餐记128 CNY，我付，和李四AA。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.aa_participant_ids[0]",
+          "expected_value": "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+          "visible_sources": [
+            {
+              "path": "serialized_context.user.claimed_participant_id",
+              "value": "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+              "excerpt": "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.aa_participant_ids[1]",
+          "expected_value": "af9fcb0b-9632-566d-81b5-9868c5dc45d0",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[0].id",
+              "value": "af9fcb0b-9632-566d-81b5-9868c5dc45d0",
+              "excerpt": "af9fcb0b-9632-566d-81b5-9868c5dc45d0",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.occurred_at",
+          "expected_value": "2026-09-14T12:30:00+08:00",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "2026年9月14日12:30的溪边晚餐记128 CNY，我付，和李四AA。",
+              "excerpt": "2026年9月14日12:30的溪边晚餐记128 CNY，我付，和李四AA。",
+              "match": "explicit date-time normalized to ISO"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        }
+      ],
+      "ground_truth_summary": {
+        "output_type": "proposal",
+        "intent_id": "create_expense",
+        "tool_name": null,
+        "operation": null
+      },
+      "grounding_verdict": "human semantic review required; no causal claims from literal matching"
+    },
+    {
+      "sample_id": "sample_v02_b_lookup_not_run",
+      "scenario_id": "scenario_v02_b_lookup_not_run",
+      "family_id": "family_v02_participant_lookup",
+      "split_group_id": "split_v02_participant_lookup",
+      "expected_external_facts": [
+        {
+          "expected_path": "model_output.arguments.activity_id",
+          "expected_value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.route",
+              "value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "excerpt": "activity/05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "match": "exact substring"
+            },
+            {
+              "path": "serialized_context.ui.activity_id",
+              "value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "excerpt": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        }
+      ],
+      "ground_truth_summary": {
+        "output_type": "tool_call",
+        "intent_id": "create_expense",
+        "tool_name": null,
+        "operation": null
+      },
+      "grounding_verdict": "human semantic review required; no causal claims from literal matching"
+    },
+    {
+      "sample_id": "sample_v02_b_lookup_multiple",
+      "scenario_id": "scenario_v02_b_lookup_multiple",
+      "family_id": "family_v02_participant_lookup",
+      "split_group_id": "split_v02_participant_lookup",
+      "expected_external_facts": [
+        {
+          "expected_path": "model_output.candidates[0].entity.activity_id",
+          "expected_value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.route",
+              "value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "excerpt": "activity/05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "match": "exact substring"
+            },
+            {
+              "path": "serialized_context.ui.activity_id",
+              "value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "excerpt": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[0].activity_id",
+              "value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "excerpt": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[1].activity_id",
+              "value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "excerpt": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.candidates[1].entity.activity_id",
+          "expected_value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.route",
+              "value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "excerpt": "activity/05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "match": "exact substring"
+            },
+            {
+              "path": "serialized_context.ui.activity_id",
+              "value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "excerpt": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[0].activity_id",
+              "value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "excerpt": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[1].activity_id",
+              "value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "excerpt": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        }
+      ],
+      "ground_truth_summary": {
+        "output_type": "clarification",
+        "intent_id": "create_expense",
+        "tool_name": null,
+        "operation": null
+      },
+      "grounding_verdict": "human semantic review required; no causal claims from literal matching"
+    },
+    {
+      "sample_id": "sample_v02_b_lookup_zero",
+      "scenario_id": "scenario_v02_b_lookup_zero",
+      "family_id": "family_v02_participant_lookup",
+      "split_group_id": "split_v02_participant_lookup",
+      "expected_external_facts": [],
+      "ground_truth_summary": {
+        "output_type": "clarification",
+        "intent_id": "create_expense",
+        "tool_name": null,
+        "operation": null
+      },
+      "grounding_verdict": "human semantic review required; no causal claims from literal matching"
+    },
+    {
+      "sample_id": "sample_v02_b_lookup_unique",
+      "scenario_id": "scenario_v02_b_lookup_unique",
+      "family_id": "family_v02_participant_lookup",
+      "split_group_id": "split_v02_participant_lookup",
+      "expected_external_facts": [
+        {
+          "expected_path": "model_output.operation.arguments.activity_id",
+          "expected_value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.route",
+              "value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "excerpt": "activity/05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "match": "exact substring"
+            },
+            {
+              "path": "serialized_context.ui.activity_id",
+              "value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "excerpt": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[0].activity_id",
+              "value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "excerpt": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.ledger_unit_id",
+          "expected_value": "cc2d4040-7d2f-558c-bc02-b7f28d596375",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.ledger_unit_id",
+              "value": "cc2d4040-7d2f-558c-bc02-b7f28d596375",
+              "excerpt": "cc2d4040-7d2f-558c-bc02-b7f28d596375",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.title",
+          "expected_value": "溪谷聚餐",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "溪谷聚餐",
+              "excerpt": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.original_amount",
+          "expected_value": "86",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "86",
+              "excerpt": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.original_currency",
+          "expected_value": "CNY",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "CNY",
+              "excerpt": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.split_method",
+          "expected_value": "aa",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[0].id",
+              "value": "aa",
+              "excerpt": "abb4bc69-dc5e-52cb-892b-faaf6360e946",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.payments[0].participant_id",
+          "expected_value": "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+          "visible_sources": [
+            {
+              "path": "serialized_context.user.claimed_participant_id",
+              "value": "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+              "excerpt": "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.payments[0].amount",
+          "expected_value": "86",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "86",
+              "excerpt": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.aa_participant_ids[0]",
+          "expected_value": "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+          "visible_sources": [
+            {
+              "path": "serialized_context.user.claimed_participant_id",
+              "value": "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+              "excerpt": "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.aa_participant_ids[1]",
+          "expected_value": "abb4bc69-dc5e-52cb-892b-faaf6360e946",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[0].id",
+              "value": "abb4bc69-dc5e-52cb-892b-faaf6360e946",
+              "excerpt": "abb4bc69-dc5e-52cb-892b-faaf6360e946",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.occurred_at",
+          "expected_value": "2026-09-29T10:00:00+08:00",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。",
+              "excerpt": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。",
+              "match": "explicit date-time normalized to ISO"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.activity_id",
+          "expected_value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.route",
+              "value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "excerpt": "activity/05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "match": "exact substring"
+            },
+            {
+              "path": "serialized_context.ui.activity_id",
+              "value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "excerpt": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[0].activity_id",
+              "value": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "excerpt": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.ledger_unit_id",
+          "expected_value": "cc2d4040-7d2f-558c-bc02-b7f28d596375",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.ledger_unit_id",
+              "value": "cc2d4040-7d2f-558c-bc02-b7f28d596375",
+              "excerpt": "cc2d4040-7d2f-558c-bc02-b7f28d596375",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.title",
+          "expected_value": "溪谷聚餐",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "溪谷聚餐",
+              "excerpt": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.original_amount",
+          "expected_value": "86",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "86",
+              "excerpt": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.original_currency",
+          "expected_value": "CNY",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "CNY",
+              "excerpt": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.split_method",
+          "expected_value": "aa",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[0].id",
+              "value": "aa",
+              "excerpt": "abb4bc69-dc5e-52cb-892b-faaf6360e946",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.payments[0].participant_id",
+          "expected_value": "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+          "visible_sources": [
+            {
+              "path": "serialized_context.user.claimed_participant_id",
+              "value": "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+              "excerpt": "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.payments[0].amount",
+          "expected_value": "86",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "86",
+              "excerpt": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.aa_participant_ids[0]",
+          "expected_value": "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+          "visible_sources": [
+            {
+              "path": "serialized_context.user.claimed_participant_id",
+              "value": "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+              "excerpt": "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.aa_participant_ids[1]",
+          "expected_value": "abb4bc69-dc5e-52cb-892b-faaf6360e946",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[0].id",
+              "value": "abb4bc69-dc5e-52cb-892b-faaf6360e946",
+              "excerpt": "abb4bc69-dc5e-52cb-892b-faaf6360e946",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.occurred_at",
+          "expected_value": "2026-09-29T10:00:00+08:00",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。",
+              "excerpt": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。",
+              "match": "explicit date-time normalized to ISO"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        }
+      ],
+      "ground_truth_summary": {
+        "output_type": "proposal",
+        "intent_id": "create_expense",
+        "tool_name": null,
+        "operation": null
+      },
+      "grounding_verdict": "human semantic review required; no causal claims from literal matching"
+    },
+    {
+      "sample_id": "sample_v02_c_payer_unbound",
+      "scenario_id": "scenario_v02_c_payer_unbound",
+      "family_id": "family_v02_payer_binding",
+      "split_group_id": "split_v02_payer_binding",
+      "expected_external_facts": [],
+      "ground_truth_summary": {
+        "output_type": "clarification",
+        "intent_id": "create_expense",
+        "tool_name": null,
+        "operation": null
+      },
+      "grounding_verdict": "human semantic review required; no causal claims from literal matching"
+    },
+    {
+      "sample_id": "sample_v02_c_payer_bound",
+      "scenario_id": "scenario_v02_c_payer_bound",
+      "family_id": "family_v02_payer_binding",
+      "split_group_id": "split_v02_payer_binding",
+      "expected_external_facts": [
+        {
+          "expected_path": "model_output.operation.arguments.activity_id",
+          "expected_value": "a32f98bc-2154-57c5-8324-2cf372ce09f5",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.activity_id",
+              "value": "a32f98bc-2154-57c5-8324-2cf372ce09f5",
+              "excerpt": "a32f98bc-2154-57c5-8324-2cf372ce09f5",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[0].activity_id",
+              "value": "a32f98bc-2154-57c5-8324-2cf372ce09f5",
+              "excerpt": "a32f98bc-2154-57c5-8324-2cf372ce09f5",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.ledger_unit_id",
+          "expected_value": "33fab182-8160-5bdd-ba25-f6bfa20ec27f",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.ledger_unit_id",
+              "value": "33fab182-8160-5bdd-ba25-f6bfa20ec27f",
+              "excerpt": "33fab182-8160-5bdd-ba25-f6bfa20ec27f",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.title",
+          "expected_value": "木桥晚餐",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "木桥晚餐",
+              "excerpt": "2026-09-12 12:30 木桥晚餐 74 CNY，我付，和李四AA。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.original_amount",
+          "expected_value": "74",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "74",
+              "excerpt": "2026-09-12 12:30 木桥晚餐 74 CNY，我付，和李四AA。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.original_currency",
+          "expected_value": "CNY",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "CNY",
+              "excerpt": "2026-09-12 12:30 木桥晚餐 74 CNY，我付，和李四AA。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.split_method",
+          "expected_value": "aa",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "AA",
+              "excerpt": "2026-09-12 12:30 木桥晚餐 74 CNY，我付，和李四AA。",
+              "match": "human semantic mapping: user AA → frozen split_method enum aa",
+              "authority": "docs/ai/schema/tool_catalog.json split_method enum"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.payments[0].participant_id",
+          "expected_value": "e89f715a-dcd7-5722-ba9a-7e0f392901ac",
+          "visible_sources": [
+            {
+              "path": "serialized_context.user.claimed_participant_id",
+              "value": "e89f715a-dcd7-5722-ba9a-7e0f392901ac",
+              "excerpt": "e89f715a-dcd7-5722-ba9a-7e0f392901ac",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.payments[0].amount",
+          "expected_value": "74",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "74",
+              "excerpt": "2026-09-12 12:30 木桥晚餐 74 CNY，我付，和李四AA。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.aa_participant_ids[0]",
+          "expected_value": "e89f715a-dcd7-5722-ba9a-7e0f392901ac",
+          "visible_sources": [
+            {
+              "path": "serialized_context.user.claimed_participant_id",
+              "value": "e89f715a-dcd7-5722-ba9a-7e0f392901ac",
+              "excerpt": "e89f715a-dcd7-5722-ba9a-7e0f392901ac",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.aa_participant_ids[1]",
+          "expected_value": "b0e3fdc4-d216-5bca-b871-f014188e2e62",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[0].id",
+              "value": "b0e3fdc4-d216-5bca-b871-f014188e2e62",
+              "excerpt": "b0e3fdc4-d216-5bca-b871-f014188e2e62",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.occurred_at",
+          "expected_value": "2026-09-12T12:30:00+08:00",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "2026-09-12 12:30 木桥晚餐 74 CNY，我付，和李四AA。",
+              "excerpt": "2026-09-12 12:30 木桥晚餐 74 CNY，我付，和李四AA。",
+              "match": "explicit date-time normalized to ISO"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.activity_id",
+          "expected_value": "a32f98bc-2154-57c5-8324-2cf372ce09f5",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.activity_id",
+              "value": "a32f98bc-2154-57c5-8324-2cf372ce09f5",
+              "excerpt": "a32f98bc-2154-57c5-8324-2cf372ce09f5",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[0].activity_id",
+              "value": "a32f98bc-2154-57c5-8324-2cf372ce09f5",
+              "excerpt": "a32f98bc-2154-57c5-8324-2cf372ce09f5",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.ledger_unit_id",
+          "expected_value": "33fab182-8160-5bdd-ba25-f6bfa20ec27f",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.ledger_unit_id",
+              "value": "33fab182-8160-5bdd-ba25-f6bfa20ec27f",
+              "excerpt": "33fab182-8160-5bdd-ba25-f6bfa20ec27f",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.title",
+          "expected_value": "木桥晚餐",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "木桥晚餐",
+              "excerpt": "2026-09-12 12:30 木桥晚餐 74 CNY，我付，和李四AA。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.original_amount",
+          "expected_value": "74",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "74",
+              "excerpt": "2026-09-12 12:30 木桥晚餐 74 CNY，我付，和李四AA。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.original_currency",
+          "expected_value": "CNY",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "CNY",
+              "excerpt": "2026-09-12 12:30 木桥晚餐 74 CNY，我付，和李四AA。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.split_method",
+          "expected_value": "aa",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "AA",
+              "excerpt": "2026-09-12 12:30 木桥晚餐 74 CNY，我付，和李四AA。",
+              "match": "human semantic mapping: user AA → frozen split_method enum aa",
+              "authority": "docs/ai/schema/tool_catalog.json split_method enum"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.payments[0].participant_id",
+          "expected_value": "e89f715a-dcd7-5722-ba9a-7e0f392901ac",
+          "visible_sources": [
+            {
+              "path": "serialized_context.user.claimed_participant_id",
+              "value": "e89f715a-dcd7-5722-ba9a-7e0f392901ac",
+              "excerpt": "e89f715a-dcd7-5722-ba9a-7e0f392901ac",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.payments[0].amount",
+          "expected_value": "74",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "74",
+              "excerpt": "2026-09-12 12:30 木桥晚餐 74 CNY，我付，和李四AA。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.aa_participant_ids[0]",
+          "expected_value": "e89f715a-dcd7-5722-ba9a-7e0f392901ac",
+          "visible_sources": [
+            {
+              "path": "serialized_context.user.claimed_participant_id",
+              "value": "e89f715a-dcd7-5722-ba9a-7e0f392901ac",
+              "excerpt": "e89f715a-dcd7-5722-ba9a-7e0f392901ac",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.aa_participant_ids[1]",
+          "expected_value": "b0e3fdc4-d216-5bca-b871-f014188e2e62",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[0].id",
+              "value": "b0e3fdc4-d216-5bca-b871-f014188e2e62",
+              "excerpt": "b0e3fdc4-d216-5bca-b871-f014188e2e62",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[0].after.occurred_at",
+          "expected_value": "2026-09-12T12:30:00+08:00",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "2026-09-12 12:30 木桥晚餐 74 CNY，我付，和李四AA。",
+              "excerpt": "2026-09-12 12:30 木桥晚餐 74 CNY，我付，和李四AA。",
+              "match": "explicit date-time normalized to ISO"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        }
+      ],
+      "ground_truth_summary": {
+        "output_type": "proposal",
+        "intent_id": "create_expense",
+        "tool_name": null,
+        "operation": null
+      },
+      "grounding_verdict": "human semantic review required; no causal claims from literal matching"
+    },
+    {
+      "sample_id": "sample_v02_d_activity_ambiguous",
+      "scenario_id": "scenario_v02_d_activity_ambiguous",
+      "family_id": "family_v02_activity_ui_target",
+      "split_group_id": "split_v02_activity_ui_target",
+      "expected_external_facts": [
+        {
+          "expected_path": "model_output.candidates[0].entity.activity_id",
+          "expected_value": "44487199-9bb8-505f-b1f5-d880641c2904",
+          "visible_sources": [
+            {
+              "path": "serialized_context.page_state.visible_entities[0].id",
+              "value": "44487199-9bb8-505f-b1f5-d880641c2904",
+              "excerpt": "44487199-9bb8-505f-b1f5-d880641c2904",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.page_state.visible_entities[0].activity_id",
+              "value": "44487199-9bb8-505f-b1f5-d880641c2904",
+              "excerpt": "44487199-9bb8-505f-b1f5-d880641c2904",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.candidates[1].entity.activity_id",
+          "expected_value": "491c4718-f4b6-5b06-b230-287abdc96ea0",
+          "visible_sources": [
+            {
+              "path": "serialized_context.page_state.visible_entities[1].id",
+              "value": "491c4718-f4b6-5b06-b230-287abdc96ea0",
+              "excerpt": "491c4718-f4b6-5b06-b230-287abdc96ea0",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.page_state.visible_entities[1].activity_id",
+              "value": "491c4718-f4b6-5b06-b230-287abdc96ea0",
+              "excerpt": "491c4718-f4b6-5b06-b230-287abdc96ea0",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        }
+      ],
+      "ground_truth_summary": {
+        "output_type": "clarification",
+        "intent_id": "find_expenses",
+        "tool_name": null,
+        "operation": null
+      },
+      "grounding_verdict": "human semantic review required; no causal claims from literal matching"
+    },
+    {
+      "sample_id": "sample_v02_d_activity_selected",
+      "scenario_id": "scenario_v02_d_activity_selected",
+      "family_id": "family_v02_activity_ui_target",
+      "split_group_id": "split_v02_activity_ui_target",
+      "expected_external_facts": [
+        {
+          "expected_path": "model_output.arguments.activity_id",
+          "expected_value": "c1cf2570-3770-5031-bbd4-3ba4cfc7b8d8",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.route",
+              "value": "c1cf2570-3770-5031-bbd4-3ba4cfc7b8d8",
+              "excerpt": "activity/c1cf2570-3770-5031-bbd4-3ba4cfc7b8d8",
+              "match": "exact substring"
+            },
+            {
+              "path": "serialized_context.ui.activity_id",
+              "value": "c1cf2570-3770-5031-bbd4-3ba4cfc7b8d8",
+              "excerpt": "c1cf2570-3770-5031-bbd4-3ba4cfc7b8d8",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.page_state.visible_entities[0].id",
+              "value": "c1cf2570-3770-5031-bbd4-3ba4cfc7b8d8",
+              "excerpt": "c1cf2570-3770-5031-bbd4-3ba4cfc7b8d8",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.page_state.visible_entities[0].activity_id",
+              "value": "c1cf2570-3770-5031-bbd4-3ba4cfc7b8d8",
+              "excerpt": "c1cf2570-3770-5031-bbd4-3ba4cfc7b8d8",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        }
+      ],
+      "ground_truth_summary": {
+        "output_type": "tool_call",
+        "intent_id": "find_expenses",
+        "tool_name": null,
+        "operation": null
+      },
+      "grounding_verdict": "human semantic review required; no causal claims from literal matching"
+    },
+    {
+      "sample_id": "sample_v02_e_recent_failed",
+      "scenario_id": "scenario_v02_e_recent_failed",
+      "family_id": "family_v02_recent_action_reference",
+      "split_group_id": "split_v02_recent_action_reference",
+      "expected_external_facts": [],
+      "ground_truth_summary": {
+        "output_type": "clarification",
+        "intent_id": "query_expense",
+        "tool_name": null,
+        "operation": null
+      },
+      "grounding_verdict": "human semantic review required; no causal claims from literal matching"
+    },
+    {
+      "sample_id": "sample_v02_e_recent_succeeded",
+      "scenario_id": "scenario_v02_e_recent_succeeded",
+      "family_id": "family_v02_recent_action_reference",
+      "split_group_id": "split_v02_recent_action_reference",
+      "expected_external_facts": [
+        {
+          "expected_path": "model_output.arguments.expense_id",
+          "expected_value": "2b70c0dd-9542-5da0-8936-a89c78210ca6",
+          "visible_sources": [
+            {
+              "path": "serialized_context.recent_actions[0].entity.id",
+              "value": "2b70c0dd-9542-5da0-8936-a89c78210ca6",
+              "excerpt": "2b70c0dd-9542-5da0-8936-a89c78210ca6",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        }
+      ],
+      "ground_truth_summary": {
+        "output_type": "tool_call",
+        "intent_id": "query_expense",
+        "tool_name": null,
+        "operation": null
+      },
+      "grounding_verdict": "human semantic review required; no causal claims from literal matching"
+    },
+    {
+      "sample_id": "sample_v02_f_verified_expense_answer",
+      "scenario_id": "scenario_v02_f_verified_expense_answer",
+      "family_id": "family_v02_verified_expense_answer",
+      "split_group_id": "split_v02_verified_expense_answer",
+      "expected_external_facts": [
+        {
+          "expected_path": "model_output.evidence_result_ids[0]",
+          "expected_value": "result-v02-expense-answer",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.verified_result_ids[0]",
+              "value": "result-v02-expense-answer",
+              "excerpt": "result-v02-expense-answer",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.result_id",
+              "value": "result-v02-expense-answer",
+              "excerpt": "result-v02-expense-answer",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.content contains expected_business_result.expense_title",
+          "expected_value": "溪边停车费",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.title",
+              "value": "溪边停车费",
+              "excerpt": "溪边停车费",
+              "match": "exact substring"
+            },
+            {
+              "path": "conversation_turn[0].user",
+              "value": "溪边停车费",
+              "excerpt": "这笔溪边停车费是谁付的？请把付款参与人 ID 告诉我。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Fact embedded in natural language; check whether the phrasing answers the user request and uses the right entity."
+        },
+        {
+          "expected_path": "model_output.content contains expected_business_result.payer_participant_id",
+          "expected_value": "caa0dc0b-b2f0-5145-9907-44b1ecfd3003",
+          "visible_sources": [
+            {
+              "path": "serialized_context.user.claimed_participant_id",
+              "value": "caa0dc0b-b2f0-5145-9907-44b1ecfd3003",
+              "excerpt": "caa0dc0b-b2f0-5145-9907-44b1ecfd3003",
+              "match": "exact substring"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.payments[0].participant_id",
+              "value": "caa0dc0b-b2f0-5145-9907-44b1ecfd3003",
+              "excerpt": "caa0dc0b-b2f0-5145-9907-44b1ecfd3003",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Fact embedded in natural language; check whether the phrasing answers the user request and uses the right entity."
+        }
+      ],
+      "ground_truth_summary": {
+        "output_type": "answer",
+        "intent_id": null,
+        "tool_name": null,
+        "operation": null
+      },
+      "grounding_verdict": "human semantic review required; no causal claims from literal matching"
+    },
+    {
+      "sample_id": "sample_v02_g_presentation_l1",
+      "scenario_id": "scenario_v02_g_presentation_l1",
+      "family_id": "family_v02_expense_update_boundary",
+      "split_group_id": "split_v02_expense_update_boundary",
+      "expected_external_facts": [
+        {
+          "expected_path": "model_output.operation.arguments.activity_id",
+          "expected_value": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.activity_id",
+              "value": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+              "excerpt": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.ui.selected_entity.activity_id",
+              "value": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+              "excerpt": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.activity_id",
+              "value": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+              "excerpt": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.expense_id",
+          "expected_value": "c1bdcd70-e5af-560f-8408-d082f69c7943",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.route",
+              "value": "c1bdcd70-e5af-560f-8408-d082f69c7943",
+              "excerpt": "expense-detail/c1bdcd70-e5af-560f-8408-d082f69c7943",
+              "match": "exact substring"
+            },
+            {
+              "path": "serialized_context.ui.selected_entity.id",
+              "value": "c1bdcd70-e5af-560f-8408-d082f69c7943",
+              "excerpt": "c1bdcd70-e5af-560f-8408-d082f69c7943",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.id",
+              "value": "c1bdcd70-e5af-560f-8408-d082f69c7943",
+              "excerpt": "c1bdcd70-e5af-560f-8408-d082f69c7943",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.title",
+          "expected_value": "设备租赁",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.title",
+              "value": "设备租赁",
+              "excerpt": "设备租赁",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.icon_key",
+          "expected_value": "dining",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "餐饮",
+              "excerpt": "把这笔费用的图标换成餐饮。",
+              "match": "human semantic mapping: user category 餐饮 → frozen Tool Catalog enum dining",
+              "authority": "docs/ai/schema/tool_catalog.json icon_key enum"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        }
+      ],
+      "ground_truth_summary": {
+        "output_type": "proposal",
+        "intent_id": "update_expense_presentation",
+        "tool_name": null,
+        "operation": null
+      },
+      "grounding_verdict": "human semantic review required; no causal claims from literal matching"
+    },
+    {
+      "sample_id": "sample_v02_g_financial_d4",
+      "scenario_id": "scenario_v02_g_financial_d4",
+      "family_id": "family_v02_expense_update_boundary",
+      "split_group_id": "split_v02_expense_update_boundary",
+      "expected_external_facts": [
+        {
+          "expected_path": "model_output.operation.arguments.activity_id",
+          "expected_value": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.activity_id",
+              "value": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+              "excerpt": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.ui.selected_entity.activity_id",
+              "value": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+              "excerpt": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.activity_id",
+              "value": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+              "excerpt": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.expense_id",
+          "expected_value": "c1bdcd70-e5af-560f-8408-d082f69c7943",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.selected_entity.id",
+              "value": "c1bdcd70-e5af-560f-8408-d082f69c7943",
+              "excerpt": "c1bdcd70-e5af-560f-8408-d082f69c7943",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.id",
+              "value": "c1bdcd70-e5af-560f-8408-d082f69c7943",
+              "excerpt": "c1bdcd70-e5af-560f-8408-d082f69c7943",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.ledger_unit_id",
+          "expected_value": "59c3ed8a-18f5-5a66-9e93-d4838fbea9a2",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.ledger_unit_id",
+              "value": "59c3ed8a-18f5-5a66-9e93-d4838fbea9a2",
+              "excerpt": "59c3ed8a-18f5-5a66-9e93-d4838fbea9a2",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.ledger_unit_id",
+              "value": "59c3ed8a-18f5-5a66-9e93-d4838fbea9a2",
+              "excerpt": "59c3ed8a-18f5-5a66-9e93-d4838fbea9a2",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.title",
+          "expected_value": "设备租赁",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.title",
+              "value": "设备租赁",
+              "excerpt": "设备租赁",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.original_amount",
+          "expected_value": "135",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "135",
+              "excerpt": "把这笔费用金额改成135 CNY。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.original_currency",
+          "expected_value": "CNY",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.original.currency",
+              "value": "CNY",
+              "excerpt": "CNY",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.base.currency",
+              "value": "CNY",
+              "excerpt": "CNY",
+              "match": "exact"
+            },
+            {
+              "path": "conversation_turn[0].user",
+              "value": "CNY",
+              "excerpt": "把这笔费用金额改成135 CNY。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.split_method",
+          "expected_value": "manual",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.split_method",
+              "value": "manual",
+              "excerpt": "manual",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.payments[0].participant_id",
+          "expected_value": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+          "visible_sources": [
+            {
+              "path": "serialized_context.user.claimed_participant_id",
+              "value": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+              "excerpt": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.payments[0].participant_id",
+              "value": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+              "excerpt": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.payments[0].amount",
+          "expected_value": "135",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "135",
+              "excerpt": "把这笔费用金额改成135 CNY。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.manual_splits[0].participant_id",
+          "expected_value": "5c7a7bd2-0b26-5c08-ac54-eb711be16a75",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.splits[0].participant_id",
+              "value": "5c7a7bd2-0b26-5c08-ac54-eb711be16a75",
+              "excerpt": "5c7a7bd2-0b26-5c08-ac54-eb711be16a75",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.manual_splits[0].amount",
+          "expected_value": "135",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "135",
+              "excerpt": "把这笔费用金额改成135 CNY。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.operation.arguments.occurred_at",
+          "expected_value": "2026-09-14T10:00:00+08:00",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.occurred_at",
+              "value": "2026-09-14T10:00:00+08:00",
+              "excerpt": "2026-09-14T10:00:00+08:00",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[1].before[0].participant_id",
+          "expected_value": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+          "visible_sources": [
+            {
+              "path": "serialized_context.user.claimed_participant_id",
+              "value": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+              "excerpt": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.payments[0].participant_id",
+              "value": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+              "excerpt": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[1].before[0].amount",
+          "expected_value": "100",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.original.amount",
+              "value": "100",
+              "excerpt": "100",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.base.amount",
+              "value": "100",
+              "excerpt": "100",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.payments[0].amount",
+              "value": "100",
+              "excerpt": "100",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.splits[0].amount",
+              "value": "100",
+              "excerpt": "100",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[1].after[0].participant_id",
+          "expected_value": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+          "visible_sources": [
+            {
+              "path": "serialized_context.user.claimed_participant_id",
+              "value": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+              "excerpt": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.payments[0].participant_id",
+              "value": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+              "excerpt": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[1].after[0].amount",
+          "expected_value": "135",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "135",
+              "excerpt": "把这笔费用金额改成135 CNY。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[2].before[0].participant_id",
+          "expected_value": "5c7a7bd2-0b26-5c08-ac54-eb711be16a75",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.splits[0].participant_id",
+              "value": "5c7a7bd2-0b26-5c08-ac54-eb711be16a75",
+              "excerpt": "5c7a7bd2-0b26-5c08-ac54-eb711be16a75",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[2].before[0].amount",
+          "expected_value": "100",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.original.amount",
+              "value": "100",
+              "excerpt": "100",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.base.amount",
+              "value": "100",
+              "excerpt": "100",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.payments[0].amount",
+              "value": "100",
+              "excerpt": "100",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.splits[0].amount",
+              "value": "100",
+              "excerpt": "100",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[2].after[0].participant_id",
+          "expected_value": "5c7a7bd2-0b26-5c08-ac54-eb711be16a75",
+          "visible_sources": [
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.expense.splits[0].participant_id",
+              "value": "5c7a7bd2-0b26-5c08-ac54-eb711be16a75",
+              "excerpt": "5c7a7bd2-0b26-5c08-ac54-eb711be16a75",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.preview.diff[2].after[0].amount",
+          "expected_value": "135",
+          "visible_sources": [
+            {
+              "path": "conversation_turn[0].user",
+              "value": "135",
+              "excerpt": "把这笔费用金额改成135 CNY。",
+              "match": "exact substring"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        }
+      ],
+      "ground_truth_summary": {
+        "output_type": "proposal",
+        "intent_id": "update_expense",
+        "tool_name": null,
+        "operation": null
+      },
+      "grounding_verdict": "human semantic review required; no causal claims from literal matching"
+    },
+    {
+      "sample_id": "sample_v02_h_gated_delete_l2",
+      "scenario_id": "scenario_v02_h_gated_delete_l2",
+      "family_id": "family_v02_gated_delete",
+      "split_group_id": "split_v02_gated_delete",
+      "expected_external_facts": [
+        {
+          "expected_path": "model_output.candidates[0].entity.activity_id",
+          "expected_value": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.route",
+              "value": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+              "excerpt": "activity/c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+              "match": "exact substring"
+            },
+            {
+              "path": "serialized_context.ui.activity_id",
+              "value": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+              "excerpt": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[0].activity_id",
+              "value": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+              "excerpt": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[1].activity_id",
+              "value": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+              "excerpt": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        },
+        {
+          "expected_path": "model_output.candidates[1].entity.activity_id",
+          "expected_value": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+          "visible_sources": [
+            {
+              "path": "serialized_context.ui.route",
+              "value": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+              "excerpt": "activity/c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+              "match": "exact substring"
+            },
+            {
+              "path": "serialized_context.ui.activity_id",
+              "value": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+              "excerpt": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[0].activity_id",
+              "value": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+              "excerpt": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+              "match": "exact"
+            },
+            {
+              "path": "serialized_context.runtime_policy.tool_results[0].result.data.items[1].activity_id",
+              "value": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+              "excerpt": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+              "match": "exact"
+            }
+          ],
+          "status": "VISIBLE_MATCH",
+          "semantic_review_note": "Literal/path proof only; a source occurrence is not by itself proof of correct entity binding."
+        }
+      ],
+      "ground_truth_summary": {
+        "output_type": "clarification",
+        "intent_id": "delete_expense",
+        "tool_name": null,
+        "operation": null
+      },
+      "grounding_verdict": "human semantic review required; no causal claims from literal matching"
+    }
+  ]
+}

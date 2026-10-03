@@ -1,0 +1,118 @@
+{
+  "status": "frozen",
+  "experiment_version": "0.2-experiment-a",
+  "frozen_at": "2026-10-01T12:35:01+08:00",
+  "maintainer_acceptance": {
+    "source": "current user request explicitly accepting final audit and authorizing approved/frozen status",
+    "decision": "approved and frozen",
+    "recorded_at": "2026-10-01T12:35:01+08:00"
+  },
+  "independent_review": {
+    "source": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/EXPERIMENT_A_INDEPENDENT_REVIEW.md",
+    "machine_record": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/independent_review.json",
+    "verdict": "V0_2_EXPERIMENT_A_READY_FOR_FREEZE",
+    "reviewer": "independent Codex reviewer for this task; not represented as a human reviewer"
+  },
+  "freeze_scope": "governance fields, manifest/provenance/README and holdout freeze metadata only; no Training/Teacher/API/Experiment B/C/commit",
+  "record_counts": {
+    "scenarios": 16,
+    "samples": 16,
+    "families": 8,
+    "contrastive_groups": 6,
+    "pairwise_contrasts": 11,
+    "output_distribution": {
+      "answer": 1,
+      "clarification": 7,
+      "proposal": 5,
+      "tool_call": 3
+    }
+  },
+  "trust_lifecycle": {
+    "scenario_trust": "SILVER",
+    "scenario_business_validated": true,
+    "scenario_lifecycle": "approved",
+    "sample_trust": "SILVER",
+    "surface_form_reviewed": true,
+    "sample_lifecycle": "approved",
+    "policy_status": "active",
+    "split": "unassigned",
+    "training_eligible": "true for governance readiness; export remains blocked until split assignment"
+  },
+  "reviewed_warning_count": 6,
+  "expected_fact_grounding": {
+    "sources": 102,
+    "facts": 102,
+    "missing": 0
+  },
+  "content_integrity": {
+    "scenario_non_governance_deep_equality": true,
+    "sample_non_governance_deep_equality": true,
+    "holdout_policy_principles_unchanged": true,
+    "pre_governance_sha256": {
+      "scenarios.json": "27e393865c595dd5d4ecb5e2b62537cd96807e603ead9e4e792a3738fd885e8c",
+      "samples.json": "d453787f79ef3834e6e575ee5790f1ecb39dbd2ed37e67e445eb9a71a5b6f28d",
+      "future_holdout_policy.json": "2e9c7154c016ebd47a0a90827743e51ef8a89db5bd9f9a242fe0f42c5dddc0c5",
+      "dataset_manifest.json": "7d79c55651a79c9c5557cd3a5f64288fb26032dfafe344b3a746a1dab1c076dc"
+    },
+    "post_governance_sha256": {
+      "scenarios.json": "09317331b1d1da3683847e804b0d96529e4ede203a7886dba74561ac4a73c523",
+      "samples.json": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f",
+      "future_holdout_policy.json": "c6cea381105097d552a4c66680c290cdff68e166283b590eb8d6da1e46d7d3ee"
+    },
+    "non_governance_comparison": "all 16 Scenario and all 16 Sample objects compared after excluding only authorized governance fields"
+  },
+  "frozen_v0_1_sources": {
+    "source_hash_file": "source_hashes.json",
+    "files_verified": 30,
+    "all_unchanged": true,
+    "hashes": {
+      "docs/backend/BUSINESS_LOGIC.md": "c84338b0b429801720e73d0a890867053c121a9bef7c3ac3800a9de2cdd5217a",
+      "docs/ai/AI_MODEL_CONTRACT.md": "f6effbc7a4278d6e9b7f6a01298fc1644218be126f85d442da7d35acdf66100a",
+      "docs/ai/AI_SCOPE_FREEZE_V0.1.md": "e5808e18c7cd3eaffd446fc20bfa3eb90e1a08c17402e94dbe0c0f01600fd4fb",
+      "docs/ai/schema/intent_catalog.json": "5170f625130d706a4db95fa5e67ab8cc11c1d56aafc0c093692f9421d4d2e651",
+      "docs/ai/schema/tool_catalog.json": "e6f25251c6bdef6cd50f0ce01489adf9c0e6bb5efade5f789e847d86a7350744",
+      "docs/ai/schema/model_output.schema.json": "5ad944f7e1163c5b186cd4b9aea4b3ddf8c39910b9cbaf63554a7718af689bd9",
+      "docs/ai/schema/context_envelope.schema.json": "5caed757f06b2edfb6b7499d5bff5bfa68225a3416ac5627290664832b9c4a9e",
+      "docs/ai/dataset/schema/scenario.schema.json": "fc8a92e068933759fa2aa7217eafac72d1f92289f247c191f8c57af8b2821a91",
+      "docs/ai/dataset/schema/sample.schema.json": "ceb2d1f989a56e56799a93c35c60638b663e625c6022f1083ee10923baea4493",
+      "docs/ai/dataset/schema/dataset_manifest.schema.json": "a31e0f9da8a57481b76946c709154bb67d36ae12126bcd88d747e79651b77b99",
+      "docs/ai/dataset/DATASET_VALIDATION_RULES.md": "4f04e934d9660d549df2529721e6b87dd897aaf708a269290c36ecc7be23c111",
+      "docs/ai/dataset/gold_seed/v0.1/p0/dataset_manifest.json": "cb0bc5918534aba996383574e1715327730d83bcc64ed57df57a2fb4ddc4e6eb",
+      "docs/ai/dataset/gold_seed/v0.1/p0/scenarios.json": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+      "docs/ai/dataset/gold_seed/v0.1/p0/samples.json": "34ffd94d9c5ccbb17e6632b8689194c4be53f7275db828e983f6d6540b406dee",
+      "docs/ai/dataset/teacher/v0.1/dataset_manifest.json": "2add79d8111feff4aca4453480cc3380fe0cf81d1ef32f090aee0246bbdf5895",
+      "docs/ai/dataset/teacher/v0.1/scenarios.json": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+      "docs/ai/dataset/teacher/v0.1/samples.json": "5d2ca222d8ee4a87ae9e17cdaa0dd22dbfa8bf6835458e34e3be6c9292e4c4d9",
+      "docs/ai/dataset/canonical_training/v0.1/dataset_manifest.json": "7f8cc2ef70d1abedd49ea040826d93f4c3708a8cb5893e7e1fedcc488e2c2252",
+      "docs/ai/dataset/canonical_training/v0.1/scenarios.json": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+      "docs/ai/dataset/canonical_training/v0.1/samples.json": "768916c8781dc2608ac8220588a0e85ffc043d8f16a45e9bd3497b87a214e562",
+      "docs/ai/dataset/canonical_training/v0.1/split_assignment.json": "e3e1599673b3227edeaad3bc62f04e0f3249dd886946f502664428939d8d3765",
+      "docs/ai/dataset/canonical_training/v0.1/coverage_report.json": "a213bb66a34462921c46cc0f2eecc6ef95722f8b0b53944d862c7b428dfb9672",
+      "docs/ai/training_setup/v0.1/manifest.json": "0ea288d01fc33389996473f795c0632999e12b568f7541de12e29ba4fea2d67c",
+      "docs/ai/training_setup/v0.1/llamafactory/train.json": "7ab16f1e1dca751a404b3156458bb90c1f08b9daeefa87224ef9876867377c35",
+      "docs/ai/training_setup/v0.1/llamafactory/validation.json": "9db71eb05e10596cfe106b3da03e46ec7ceed77bafbf066f4385abe41404413d",
+      "docs/ai/training_setup/v0.1/llamafactory/test.json": "35c5119a2f49e7e9c7561a19b90598e094216e351fb450f499b1382a158cbaa0",
+      "docs/ai/training_setup/v0.1/llamafactory/hard_test.json": "bd9e36c5f1fcf30fd11f87ade672515a901cb8f0c0114debe36b8919c0d9be8e",
+      "docs/ai/training_setup/v0.1/llamafactory/dataset_info.json": "2ac44f2ba48c5c0b21cff58590802d956c570cde92edba8cb7a9bae618ee2907",
+      "docs/ai/training_setup/v0.1/traceability.json": "ad8fd7ba663216c8c185307945bc5507809895f4856c7739603213bf261c42ba",
+      "docs/ai/training_setup/v0.1/qlora.yaml": "b621a212b42169a2852e1db81cc7ba2da6c486e42eaeb3ece6b405e08e214561"
+    }
+  },
+  "generator_guard_recovery": {
+    "initial_guard_test": "The first frozen-output smoke test found the build helper defined but not invoked at main(); the deterministic builder wrote its baseline records.",
+    "recovery": "The regenerated Scenario/Sample files exactly matched the recorded pre-governance SHA-256 values; governance was reapplied with the original freeze timestamp and acceptance/review provenance.",
+    "restored_pre_governance_scenario_sha256": "27e393865c595dd5d4ecb5e2b62537cd96807e603ead9e4e792a3738fd885e8c",
+    "restored_pre_governance_sample_sha256": "d453787f79ef3834e6e575ee5790f1ecb39dbd2ed37e67e445eb9a71a5b6f28d",
+    "post_recovery_non_governance_deep_equality": {
+      "scenarios_16_of_16": true,
+      "samples_16_of_16": true,
+      "holdout_principles": true
+    },
+    "final_negative_guard_test": {
+      "builder_exit_nonzero": true,
+      "finalizer_exit_nonzero": true,
+      "manifest_and_all_artifact_hashes_unchanged": true,
+      "checked_artifact_file_count": 10
+    }
+  }
+}

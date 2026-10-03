@@ -1,0 +1,16 @@
+{
+  "hash_algorithm": "SHA-256",
+  "experiment_version": "0.2-experiment-a",
+  "frozen_at": "2026-10-01T12:35:01+08:00",
+  "hashes": {
+    "dataset_manifest.json": "aff646574e69d55313ea6979ced593ed15738efb4e95a1062227e43b29c3d034",
+    "scenarios.json": "09317331b1d1da3683847e804b0d96529e4ede203a7886dba74561ac4a73c523",
+    "samples.json": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f",
+    "future_holdout_policy.json": "c6cea381105097d552a4c66680c290cdff68e166283b590eb8d6da1e46d7d3ee",
+    "freeze_report.json": "f7094d87d2ec89f1730ffde04485a8344e13fa0674caee7582930065de95b16f",
+    "README.md": "bbbd214c8c1a5e3e8d76a569f20497cc9083700d834b49808a0bfcd90cba6753",
+    "FREEZE_AUDIT.md": "eb02be71da0f8f0997c7172660e0fb491378e7b89bfc9fb1d490a9508eb61c37"
+  },
+  "frozen_v0_1_source_hashes_match": true,
+  "source_hash_file_count": 30
+}

@@ -1,0 +1,138 @@
+{
+  "serializer": "scripts/ai_training_setup/export_dataset.py:export_record",
+  "hash_scope": "system + serialized context + conversation/current-user messages; assistant target excluded",
+  "records": [
+    {
+      "sample_id": "sample_v02_a_currency_missing",
+      "history_roundtrip_verified": true,
+      "source_turn_count": 1,
+      "output_type": "clarification",
+      "input_only_sha256": "8297c8be39b49158e9243b00562a83a77ecdb1a4bae047982425607e9d6fb2f8",
+      "metadata_leakage": false
+    },
+    {
+      "sample_id": "sample_v02_a_currency_supplied",
+      "history_roundtrip_verified": true,
+      "source_turn_count": 1,
+      "output_type": "proposal",
+      "input_only_sha256": "1058e1d74690b600d71f486cdde8c603c5dc872bf6f5db6e3b6154f7408b8cc4",
+      "metadata_leakage": false
+    },
+    {
+      "sample_id": "sample_v02_b_lookup_not_run",
+      "history_roundtrip_verified": true,
+      "source_turn_count": 1,
+      "output_type": "tool_call",
+      "input_only_sha256": "34873bbfd53abb2208000eb03548ef286b51edf0d468f6fc4691f5e1ff913090",
+      "metadata_leakage": false
+    },
+    {
+      "sample_id": "sample_v02_b_lookup_multiple",
+      "history_roundtrip_verified": true,
+      "source_turn_count": 1,
+      "output_type": "clarification",
+      "input_only_sha256": "f25c7e075d629e2d8d2b73223fdd1de424cd4956c500d22dc0dcdd6fb5b3df87",
+      "metadata_leakage": false
+    },
+    {
+      "sample_id": "sample_v02_b_lookup_zero",
+      "history_roundtrip_verified": true,
+      "source_turn_count": 1,
+      "output_type": "clarification",
+      "input_only_sha256": "6d96bdbf9b74ad51ffa292a0086d254b2d53fe48b634e41be02b4dfbe0afc0d5",
+      "metadata_leakage": false
+    },
+    {
+      "sample_id": "sample_v02_b_lookup_unique",
+      "history_roundtrip_verified": true,
+      "source_turn_count": 1,
+      "output_type": "proposal",
+      "input_only_sha256": "bae0c51937d07ca9a831159bb61e47d4ffb95f7d7d668134c03bb6d1e5871584",
+      "metadata_leakage": false
+    },
+    {
+      "sample_id": "sample_v02_c_payer_unbound",
+      "history_roundtrip_verified": true,
+      "source_turn_count": 1,
+      "output_type": "clarification",
+      "input_only_sha256": "54f261be72177fbf5084bb1c904a0dbcad61bdbcbdb89d1f4355f1d87652d7c1",
+      "metadata_leakage": false
+    },
+    {
+      "sample_id": "sample_v02_c_payer_bound",
+      "history_roundtrip_verified": true,
+      "source_turn_count": 1,
+      "output_type": "proposal",
+      "input_only_sha256": "34f5d2f5083234f1cbf1f50a25fef7b833a1f95e97eb268736bfd9690923ded5",
+      "metadata_leakage": false
+    },
+    {
+      "sample_id": "sample_v02_d_activity_ambiguous",
+      "history_roundtrip_verified": true,
+      "source_turn_count": 1,
+      "output_type": "clarification",
+      "input_only_sha256": "49b1cf23d7a9e42e8658c258380d9e6d874ebb48ae6e4f174f5c451ed28bf6a2",
+      "metadata_leakage": false
+    },
+    {
+      "sample_id": "sample_v02_d_activity_selected",
+      "history_roundtrip_verified": true,
+      "source_turn_count": 1,
+      "output_type": "tool_call",
+      "input_only_sha256": "8a3f36393772163692b590318dba56268d2d80b6105bee09949fd950a599384d",
+      "metadata_leakage": false
+    },
+    {
+      "sample_id": "sample_v02_e_recent_failed",
+      "history_roundtrip_verified": true,
+      "source_turn_count": 1,
+      "output_type": "clarification",
+      "input_only_sha256": "67168ddb971a0ff40a101328ce535bf921efb62f548c03217b6c8b5b45f28b65",
+      "metadata_leakage": false
+    },
+    {
+      "sample_id": "sample_v02_e_recent_succeeded",
+      "history_roundtrip_verified": true,
+      "source_turn_count": 1,
+      "output_type": "tool_call",
+      "input_only_sha256": "1a2c2be4b40af25f52bba7fa993f741fe087897cae8bab650d83b45d7b2cae67",
+      "metadata_leakage": false
+    },
+    {
+      "sample_id": "sample_v02_f_verified_expense_answer",
+      "history_roundtrip_verified": true,
+      "source_turn_count": 1,
+      "output_type": "answer",
+      "input_only_sha256": "8809e07e06508e4e80be3755421db85f3b8a537630e34e7b31436afd21024b38",
+      "metadata_leakage": false
+    },
+    {
+      "sample_id": "sample_v02_g_presentation_l1",
+      "history_roundtrip_verified": true,
+      "source_turn_count": 1,
+      "output_type": "proposal",
+      "input_only_sha256": "f717d0839098ab82aaf960cf7fe2873ac04f30c645b10eff34df7a3b73d59ea2",
+      "metadata_leakage": false
+    },
+    {
+      "sample_id": "sample_v02_g_financial_d4",
+      "history_roundtrip_verified": true,
+      "source_turn_count": 1,
+      "output_type": "proposal",
+      "input_only_sha256": "283202f52b262c1f70ccd90344fa0d216fdf8e00446a29ebd0836d598850d481",
+      "metadata_leakage": false
+    },
+    {
+      "sample_id": "sample_v02_h_gated_delete_l2",
+      "history_roundtrip_verified": true,
+      "source_turn_count": 1,
+      "output_type": "clarification",
+      "input_only_sha256": "24b2c5d7615eae0290da1faa09aaf29fac6e668641255bee487584c45fc4037a",
+      "metadata_leakage": false
+    }
+  ],
+  "all_histories_roundtrip": true,
+  "metadata_leaks": 0,
+  "exact_full_input_duplicate_rows": 0,
+  "exact_full_input_duplicate_groups": 0
+}

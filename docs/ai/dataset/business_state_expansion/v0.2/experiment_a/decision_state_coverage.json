@@ -1,0 +1,98 @@
+{
+  "baseline": {
+    "train_samples": 171,
+    "train_scenarios": 36,
+    "train_decision_states": 36,
+    "gold_surfaces": 65,
+    "teacher_surfaces": 106,
+    "decision_signature_counts": {
+      "proposal": 10,
+      "clarification": 11,
+      "tool_call": 5,
+      "answer": 9,
+      "unsupported": 1
+    }
+  },
+  "experiment_a": {
+    "new_scenarios": 16,
+    "new_distinct_ground_truths": 16,
+    "new_business_states": 16,
+    "new_samples": 16,
+    "new_families": 8,
+    "groups": [
+      {
+        "family_id": "family_v02_currency_sufficiency",
+        "split_group_id": "split_v02_currency_sufficiency",
+        "scenario_ids": [
+          "scenario_v02_a_currency_missing",
+          "scenario_v02_a_currency_supplied"
+        ],
+        "decision_boundary": "original_currency absent vs explicitly supplied"
+      },
+      {
+        "family_id": "family_v02_participant_lookup",
+        "split_group_id": "split_v02_participant_lookup",
+        "scenario_ids": [
+          "scenario_v02_b_lookup_not_run",
+          "scenario_v02_b_lookup_multiple",
+          "scenario_v02_b_lookup_zero",
+          "scenario_v02_b_lookup_unique"
+        ],
+        "decision_boundary": "lookup state/cardinality not_run → multiple/zero/unique; only unique binds a proposal"
+      },
+      {
+        "family_id": "family_v02_payer_binding",
+        "split_group_id": "split_v02_payer_binding",
+        "scenario_ids": [
+          "scenario_v02_c_payer_unbound",
+          "scenario_v02_c_payer_bound"
+        ],
+        "decision_boundary": "current-user participant binding absent vs explicit"
+      },
+      {
+        "family_id": "family_v02_activity_ui_target",
+        "split_group_id": "split_v02_activity_ui_target",
+        "scenario_ids": [
+          "scenario_v02_d_activity_ambiguous",
+          "scenario_v02_d_activity_selected"
+        ],
+        "decision_boundary": "no unique Activity target vs current selected Activity"
+      },
+      {
+        "family_id": "family_v02_recent_action_reference",
+        "split_group_id": "split_v02_recent_action_reference",
+        "scenario_ids": [
+          "scenario_v02_e_recent_failed",
+          "scenario_v02_e_recent_succeeded"
+        ],
+        "decision_boundary": "same read query with failed/no entity vs succeeded/exact entity"
+      },
+      {
+        "family_id": "family_v02_verified_expense_answer",
+        "split_group_id": "split_v02_verified_expense_answer",
+        "scenario_ids": [
+          "scenario_v02_f_verified_expense_answer"
+        ],
+        "decision_boundary": "verified typed expense payload grounds the requested payer answer"
+      },
+      {
+        "family_id": "family_v02_expense_update_boundary",
+        "split_group_id": "split_v02_expense_update_boundary",
+        "scenario_ids": [
+          "scenario_v02_g_presentation_l1",
+          "scenario_v02_g_financial_d4"
+        ],
+        "decision_boundary": "same visible expense: presentation-only L1 vs financial D4 preview"
+      },
+      {
+        "family_id": "family_v02_gated_delete",
+        "split_group_id": "split_v02_gated_delete",
+        "scenario_ids": [
+          "scenario_v02_h_gated_delete_l2"
+        ],
+        "decision_boundary": "verified multiple delete candidates require clarification before L2 proposal"
+      }
+    ]
+  },
+  "interpretation": "Scenario/GT state counts represent business decision states; Teacher surface variants in frozen train do not add distinct decision states. Family/split_group closure is preserved; no split is assigned."
+}

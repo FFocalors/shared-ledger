@@ -1,0 +1,3322 @@
+[
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_v02_a_currency_missing",
+    "scenario_id": "scenario_v02_a_currency_missing",
+    "scenario_family_id": "family_v02_currency_sufficiency",
+    "split_group_id": "split_v02_currency_sufficiency",
+    "dataset_version": "0.1",
+    "example_only": false,
+    "split": "unassigned",
+    "task": {
+      "primary": "clarification",
+      "secondary": []
+    },
+    "difficulty": "normal",
+    "challenge_tags": [
+      "missing_payer",
+      "missing_participants",
+      "pronoun"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": [
+        "find_participants"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "v0.2-experiment-a:EXP-CREATE-001; derived from frozen business logic and runtime Context",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_v02_a_currency_missing#/ground_truth",
+        "EXP-CREATE-001 frozen business-rule anchor; awaits independent review",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/EXPERIMENT_A_INDEPENDENT_REVIEW.md",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/independent_review.json",
+        "Current maintainer acceptance: user request authorizing Experiment A v0.2 freeze on 2026-10-01."
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "2026年9月14日12:30的溪边晚餐记128，我付，和李四AA。"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "1f6ba6d6-e7b9-5049-857d-83cbadbe2110",
+      "user_message": "2026年9月14日12:30的溪边晚餐记128，我付，和李四AA。",
+      "client_context": {
+        "platform": "android",
+        "app_version": "1.4.0",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-30T10:01:00+08:00"
+      },
+      "ui_context": {
+        "route": "activity/00000000-0000-4000-8000-000000000100",
+        "page_type": "normal_activity",
+        "screen_instance_id": "f9ad0a45-b4d8-59fc-94e5-d2cc7051d277",
+        "activity_id": "c341526c-5ddf-54ef-9038-e36d2d33f049",
+        "ledger_unit_id": "c65d2d43-e010-5afc-a37f-5ad9316108a8",
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": null,
+        "claimed_participant_id": "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": null,
+        "financial_version_hint": null,
+        "entity_version_hint": null,
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "unknown"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "e90394b7-ac76-5e11-adbd-df1e34fd566c",
+        "turn_id": "turn-current",
+        "active_activity_id": "c341526c-5ddf-54ef-9038-e36d2d33f049",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": null,
+        "generated_at": "2026-09-30T10:01:00+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "find_participants",
+          "create_expense"
+        ],
+        "verified_result_ids": [
+          "result-v02-currency-pair"
+        ],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": [
+          {
+            "tool": "find_participants",
+            "result": {
+              "status": "success",
+              "result_id": "result-v02-currency-pair",
+              "observed_at": "2026-09-30T10:00:00+08:00",
+              "financial_version": null,
+              "data": {
+                "items": [
+                  {
+                    "id": "af9fcb0b-9632-566d-81b5-9868c5dc45d0",
+                    "activity_id": "c341526c-5ddf-54ef-9038-e36d2d33f049",
+                    "name": "李四",
+                    "participant_order": 2,
+                    "claimed_user_id": null,
+                    "is_deleted": false
+                  }
+                ],
+                "next_cursor": null,
+                "truncated": false
+              }
+            }
+          }
+        ]
+      }
+    },
+    "expected": {
+      "output_type": "clarification",
+      "model_output": {
+        "type": "clarification",
+        "intent_id": "create_expense",
+        "reason": "missing_fields",
+        "missing_fields": [
+          "original_currency"
+        ],
+        "question": "这笔128的溪边晚餐使用什么币种？",
+        "candidates": []
+      },
+      "ground_truth_pointer": "scenario_v02_a_currency_missing#/ground_truth",
+      "execution": {
+        "execution_allowed": false,
+        "confirmation_level": 1,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": [],
+      "clarification_annotation": {
+        "reason": "missing_fields",
+        "missing_fields": [
+          "original_currency"
+        ],
+        "candidate_entity_ids": [],
+        "question": "这笔128的溪边晚餐使用什么币种？"
+      }
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:v02:sample_v02_a_currency_missing",
+      "dedup_key": "sample:v02:sample_v02_a_currency_missing",
+      "semantic_group_key": "semantic:v02:family_v02_currency_sufficiency:sample_v02_a_currency_missing",
+      "lifecycle_status": "approved",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "Approved SILVER Sample at Experiment A v0.2 freeze 2026-10-01T12:35:01+08:00, following independent review and explicit maintainer acceptance recorded in freeze_report.json. Split remains unassigned; eligibility does not authorize export or training before split assignment."
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_v02_a_currency_supplied",
+    "scenario_id": "scenario_v02_a_currency_supplied",
+    "scenario_family_id": "family_v02_currency_sufficiency",
+    "split_group_id": "split_v02_currency_sufficiency",
+    "dataset_version": "0.1",
+    "example_only": false,
+    "split": "unassigned",
+    "task": {
+      "primary": "parameter_extraction",
+      "secondary": []
+    },
+    "difficulty": "easy",
+    "challenge_tags": [
+      "colloquial"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": [
+        "find_participants",
+        "create_expense"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "v0.2-experiment-a:EXP-CREATE-001; derived from frozen business logic and runtime Context",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_v02_a_currency_supplied#/ground_truth",
+        "EXP-CREATE-001 frozen business-rule anchor; awaits independent review",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/EXPERIMENT_A_INDEPENDENT_REVIEW.md",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/independent_review.json",
+        "Current maintainer acceptance: user request authorizing Experiment A v0.2 freeze on 2026-10-01."
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "2026年9月14日12:30的溪边晚餐记128 CNY，我付，和李四AA。"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "1f6ba6d6-e7b9-5049-857d-83cbadbe2110",
+      "user_message": "2026年9月14日12:30的溪边晚餐记128 CNY，我付，和李四AA。",
+      "client_context": {
+        "platform": "android",
+        "app_version": "1.4.0",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-30T10:01:00+08:00"
+      },
+      "ui_context": {
+        "route": "activity/00000000-0000-4000-8000-000000000100",
+        "page_type": "normal_activity",
+        "screen_instance_id": "f9ad0a45-b4d8-59fc-94e5-d2cc7051d277",
+        "activity_id": "c341526c-5ddf-54ef-9038-e36d2d33f049",
+        "ledger_unit_id": "c65d2d43-e010-5afc-a37f-5ad9316108a8",
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": null,
+        "claimed_participant_id": "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": null,
+        "financial_version_hint": null,
+        "entity_version_hint": null,
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "unknown"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "e90394b7-ac76-5e11-adbd-df1e34fd566c",
+        "turn_id": "turn-current",
+        "active_activity_id": "c341526c-5ddf-54ef-9038-e36d2d33f049",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": null,
+        "generated_at": "2026-09-30T10:01:00+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "find_participants",
+          "create_expense"
+        ],
+        "verified_result_ids": [
+          "result-v02-currency-pair"
+        ],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": [
+          {
+            "tool": "find_participants",
+            "result": {
+              "status": "success",
+              "result_id": "result-v02-currency-pair",
+              "observed_at": "2026-09-30T10:00:00+08:00",
+              "financial_version": null,
+              "data": {
+                "items": [
+                  {
+                    "id": "af9fcb0b-9632-566d-81b5-9868c5dc45d0",
+                    "activity_id": "c341526c-5ddf-54ef-9038-e36d2d33f049",
+                    "name": "李四",
+                    "participant_order": 2,
+                    "claimed_user_id": null,
+                    "is_deleted": false
+                  }
+                ],
+                "next_cursor": null,
+                "truncated": false
+              }
+            }
+          }
+        ]
+      }
+    },
+    "expected": {
+      "output_type": "proposal",
+      "model_output": {
+        "type": "proposal",
+        "intent_id": "create_expense",
+        "operation": {
+          "tool": "create_expense",
+          "arguments": {
+            "activity_id": "c341526c-5ddf-54ef-9038-e36d2d33f049",
+            "ledger_unit_id": "c65d2d43-e010-5afc-a37f-5ad9316108a8",
+            "title": "溪边晚餐",
+            "original_amount": "128",
+            "original_currency": "CNY",
+            "split_method": "aa",
+            "payments": [
+              {
+                "participant_id": "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+                "amount": "128"
+              }
+            ],
+            "manual_splits": [],
+            "aa_participant_ids": [
+              "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+              "af9fcb0b-9632-566d-81b5-9868c5dc45d0"
+            ],
+            "occurred_at": "2026-09-14T12:30:00+08:00",
+            "note": null,
+            "original_expense_id": null
+          }
+        },
+        "preview": {
+          "kind": "create",
+          "summary": "拟新增一笔溪边晚餐支出。",
+          "diff": [
+            {
+              "field": "expense",
+              "after": {
+                "activity_id": "c341526c-5ddf-54ef-9038-e36d2d33f049",
+                "ledger_unit_id": "c65d2d43-e010-5afc-a37f-5ad9316108a8",
+                "title": "溪边晚餐",
+                "original_amount": "128",
+                "original_currency": "CNY",
+                "split_method": "aa",
+                "payments": [
+                  {
+                    "participant_id": "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+                    "amount": "128"
+                  }
+                ],
+                "manual_splits": [],
+                "aa_participant_ids": [
+                  "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+                  "af9fcb0b-9632-566d-81b5-9868c5dc45d0"
+                ],
+                "occurred_at": "2026-09-14T12:30:00+08:00",
+                "note": null,
+                "original_expense_id": null
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 1,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": true,
+          "reason": "confirmation_required"
+        }
+      },
+      "ground_truth_pointer": "scenario_v02_a_currency_supplied#/ground_truth",
+      "execution": {
+        "execution_allowed": true,
+        "confirmation_level": 1,
+        "confirmation_required": true,
+        "final_authorization": "trusted_ui_event_required",
+        "successful_execution_label_allowed": true
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": [],
+      "expected_diff": [
+        {
+          "field": "expense",
+          "after": {
+            "activity_id": "c341526c-5ddf-54ef-9038-e36d2d33f049",
+            "ledger_unit_id": "c65d2d43-e010-5afc-a37f-5ad9316108a8",
+            "title": "溪边晚餐",
+            "original_amount": "128",
+            "original_currency": "CNY",
+            "split_method": "aa",
+            "payments": [
+              {
+                "participant_id": "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+                "amount": "128"
+              }
+            ],
+            "manual_splits": [],
+            "aa_participant_ids": [
+              "bd517b35-237f-5615-9e5c-f76a2c4013c8",
+              "af9fcb0b-9632-566d-81b5-9868c5dc45d0"
+            ],
+            "occurred_at": "2026-09-14T12:30:00+08:00",
+            "note": null,
+            "original_expense_id": null
+          }
+        }
+      ]
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:v02:sample_v02_a_currency_supplied",
+      "dedup_key": "sample:v02:sample_v02_a_currency_supplied",
+      "semantic_group_key": "semantic:v02:family_v02_currency_sufficiency:sample_v02_a_currency_supplied",
+      "lifecycle_status": "approved",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "Approved SILVER Sample at Experiment A v0.2 freeze 2026-10-01T12:35:01+08:00, following independent review and explicit maintainer acceptance recorded in freeze_report.json. Split remains unassigned; eligibility does not authorize export or training before split assignment."
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_v02_b_lookup_not_run",
+    "scenario_id": "scenario_v02_b_lookup_not_run",
+    "scenario_family_id": "family_v02_participant_lookup",
+    "split_group_id": "split_v02_participant_lookup",
+    "dataset_version": "0.1",
+    "example_only": false,
+    "split": "unassigned",
+    "task": {
+      "primary": "parameter_extraction",
+      "secondary": []
+    },
+    "difficulty": "normal",
+    "challenge_tags": [
+      "colloquial",
+      "ellipsis"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": [
+        "find_participants",
+        "create_expense"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "v0.2-experiment-a:EXP-CREATE-001; derived from frozen business logic and runtime Context",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_v02_b_lookup_not_run#/ground_truth",
+        "EXP-CREATE-001 frozen business-rule anchor; awaits independent review",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/EXPERIMENT_A_INDEPENDENT_REVIEW.md",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/independent_review.json",
+        "Current maintainer acceptance: user request authorizing Experiment A v0.2 freeze on 2026-10-01."
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "333851e2-6073-5063-b803-e095d9510953",
+      "user_message": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。",
+      "client_context": {
+        "platform": "android",
+        "app_version": "1.4.0",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-30T10:01:00+08:00"
+      },
+      "ui_context": {
+        "route": "activity/05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+        "page_type": "normal_activity",
+        "screen_instance_id": "fa3c53a3-602f-5502-87ae-236e68dcbca8",
+        "activity_id": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+        "ledger_unit_id": "cc2d4040-7d2f-558c-bc02-b7f28d596375",
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": null,
+        "claimed_participant_id": "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": null,
+        "financial_version_hint": null,
+        "entity_version_hint": null,
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "unknown"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "e031e14e-8672-545f-a1e4-2c368adc1f1a",
+        "turn_id": "turn-current",
+        "active_activity_id": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": null,
+        "generated_at": "2026-09-30T10:01:00+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "find_participants",
+          "create_expense"
+        ],
+        "verified_result_ids": [],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": []
+      }
+    },
+    "expected": {
+      "output_type": "tool_call",
+      "model_output": {
+        "type": "tool_call",
+        "intent_id": "create_expense",
+        "tool": "find_participants",
+        "arguments": {
+          "activity_id": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+          "query": "周宁"
+        }
+      },
+      "ground_truth_pointer": "scenario_v02_b_lookup_not_run#/ground_truth",
+      "execution": {
+        "execution_allowed": false,
+        "confirmation_level": 0,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": []
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:v02:sample_v02_b_lookup_not_run",
+      "dedup_key": "sample:v02:sample_v02_b_lookup_not_run",
+      "semantic_group_key": "semantic:v02:family_v02_participant_lookup:sample_v02_b_lookup_not_run",
+      "lifecycle_status": "approved",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "Approved SILVER Sample at Experiment A v0.2 freeze 2026-10-01T12:35:01+08:00, following independent review and explicit maintainer acceptance recorded in freeze_report.json. Split remains unassigned; eligibility does not authorize export or training before split assignment."
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_v02_b_lookup_multiple",
+    "scenario_id": "scenario_v02_b_lookup_multiple",
+    "scenario_family_id": "family_v02_participant_lookup",
+    "split_group_id": "split_v02_participant_lookup",
+    "dataset_version": "0.1",
+    "example_only": false,
+    "split": "unassigned",
+    "task": {
+      "primary": "clarification",
+      "secondary": []
+    },
+    "difficulty": "hard",
+    "challenge_tags": [
+      "same_name_entity",
+      "multiple_candidates",
+      "colloquial"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": [
+        "find_participants"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "v0.2-experiment-a:EXP-CREATE-001; derived from frozen business logic and runtime Context",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_v02_b_lookup_multiple#/ground_truth",
+        "EXP-CREATE-001 frozen business-rule anchor; awaits independent review",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/EXPERIMENT_A_INDEPENDENT_REVIEW.md",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/independent_review.json",
+        "Current maintainer acceptance: user request authorizing Experiment A v0.2 freeze on 2026-10-01."
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "6f3c012a-bd5d-56a7-a311-542f9131ca16",
+      "user_message": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。",
+      "client_context": {
+        "platform": "android",
+        "app_version": "1.4.0",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-30T10:01:00+08:00"
+      },
+      "ui_context": {
+        "route": "activity/05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+        "page_type": "normal_activity",
+        "screen_instance_id": "fa3c53a3-602f-5502-87ae-236e68dcbca8",
+        "activity_id": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+        "ledger_unit_id": "cc2d4040-7d2f-558c-bc02-b7f28d596375",
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": null,
+        "claimed_participant_id": "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": null,
+        "financial_version_hint": null,
+        "entity_version_hint": null,
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "unknown"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "7b3ec1a7-f224-546d-b1ee-695cd20aba03",
+        "turn_id": "turn-current",
+        "active_activity_id": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": null,
+        "generated_at": "2026-09-30T10:01:00+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "find_participants",
+          "create_expense"
+        ],
+        "verified_result_ids": [
+          "result-v02-lookup-2d7fe885d7f1"
+        ],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": [
+          {
+            "tool": "find_participants",
+            "result": {
+              "status": "success",
+              "result_id": "result-v02-lookup-2d7fe885d7f1",
+              "observed_at": "2026-09-30T10:00:00+08:00",
+              "financial_version": null,
+              "data": {
+                "items": [
+                  {
+                    "id": "3d66733e-3297-5581-8d97-cc9b797fc180",
+                    "activity_id": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+                    "name": "周宁",
+                    "participant_order": 0,
+                    "claimed_user_id": null,
+                    "is_deleted": false
+                  },
+                  {
+                    "id": "42abea79-b9c2-59f1-8903-9d8e595d3cc9",
+                    "activity_id": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+                    "name": "周宁",
+                    "participant_order": 1,
+                    "claimed_user_id": null,
+                    "is_deleted": false
+                  }
+                ],
+                "next_cursor": null,
+                "truncated": false
+              }
+            }
+          }
+        ]
+      }
+    },
+    "expected": {
+      "output_type": "clarification",
+      "model_output": {
+        "type": "clarification",
+        "intent_id": "create_expense",
+        "reason": "ambiguous_entity",
+        "missing_fields": [],
+        "question": "查到两位同名参与人。你想和哪一位一起 AA？",
+        "candidates": [
+          {
+            "label": "周宁（第1位）",
+            "entity": {
+              "type": "participant",
+              "id": "3d66733e-3297-5581-8d97-cc9b797fc180",
+              "activity_id": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed"
+            }
+          },
+          {
+            "label": "周宁（第2位）",
+            "entity": {
+              "type": "participant",
+              "id": "42abea79-b9c2-59f1-8903-9d8e595d3cc9",
+              "activity_id": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed"
+            }
+          }
+        ]
+      },
+      "ground_truth_pointer": "scenario_v02_b_lookup_multiple#/ground_truth",
+      "execution": {
+        "execution_allowed": false,
+        "confirmation_level": 1,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": [],
+      "clarification_annotation": {
+        "reason": "ambiguous_entity",
+        "missing_fields": [],
+        "candidate_entity_ids": [
+          "3d66733e-3297-5581-8d97-cc9b797fc180",
+          "42abea79-b9c2-59f1-8903-9d8e595d3cc9"
+        ],
+        "question": "查到两位同名参与人。你想和哪一位一起 AA？"
+      }
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:v02:sample_v02_b_lookup_multiple",
+      "dedup_key": "sample:v02:sample_v02_b_lookup_multiple",
+      "semantic_group_key": "semantic:v02:family_v02_participant_lookup:sample_v02_b_lookup_multiple",
+      "lifecycle_status": "approved",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "Approved SILVER Sample at Experiment A v0.2 freeze 2026-10-01T12:35:01+08:00, following independent review and explicit maintainer acceptance recorded in freeze_report.json. Split remains unassigned; eligibility does not authorize export or training before split assignment."
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_v02_b_lookup_zero",
+    "scenario_id": "scenario_v02_b_lookup_zero",
+    "scenario_family_id": "family_v02_participant_lookup",
+    "split_group_id": "split_v02_participant_lookup",
+    "dataset_version": "0.1",
+    "example_only": false,
+    "split": "unassigned",
+    "task": {
+      "primary": "clarification",
+      "secondary": []
+    },
+    "difficulty": "normal",
+    "challenge_tags": [
+      "missing_payer",
+      "missing_participants",
+      "pronoun"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": [
+        "find_participants"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "v0.2-experiment-a:EXP-CREATE-001; derived from frozen business logic and runtime Context",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_v02_b_lookup_zero#/ground_truth",
+        "EXP-CREATE-001 frozen business-rule anchor; awaits independent review",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/EXPERIMENT_A_INDEPENDENT_REVIEW.md",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/independent_review.json",
+        "Current maintainer acceptance: user request authorizing Experiment A v0.2 freeze on 2026-10-01."
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "9bdc6991-25e4-51c5-8dc5-a12164f5df94",
+      "user_message": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。",
+      "client_context": {
+        "platform": "android",
+        "app_version": "1.4.0",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-30T10:01:00+08:00"
+      },
+      "ui_context": {
+        "route": "activity/05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+        "page_type": "normal_activity",
+        "screen_instance_id": "fa3c53a3-602f-5502-87ae-236e68dcbca8",
+        "activity_id": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+        "ledger_unit_id": "cc2d4040-7d2f-558c-bc02-b7f28d596375",
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": null,
+        "claimed_participant_id": "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": null,
+        "financial_version_hint": null,
+        "entity_version_hint": null,
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "unknown"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "7c7e7055-65ea-59a4-b8a5-e0bdb6dd8afd",
+        "turn_id": "turn-current",
+        "active_activity_id": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": null,
+        "generated_at": "2026-09-30T10:01:00+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "find_participants",
+          "create_expense"
+        ],
+        "verified_result_ids": [
+          "result-v02-lookup-330580bde7d7"
+        ],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": [
+          {
+            "tool": "find_participants",
+            "result": {
+              "status": "success",
+              "result_id": "result-v02-lookup-330580bde7d7",
+              "observed_at": "2026-09-30T10:00:00+08:00",
+              "financial_version": null,
+              "data": {
+                "items": [],
+                "next_cursor": null,
+                "truncated": false
+              }
+            }
+          }
+        ]
+      }
+    },
+    "expected": {
+      "output_type": "clarification",
+      "model_output": {
+        "type": "clarification",
+        "intent_id": "create_expense",
+        "reason": "unresolved_reference",
+        "missing_fields": [
+          "participants"
+        ],
+        "question": "没有找到可确认的周宁参与人。你想选择其他参与人，还是先不登记这笔支出？",
+        "candidates": []
+      },
+      "ground_truth_pointer": "scenario_v02_b_lookup_zero#/ground_truth",
+      "execution": {
+        "execution_allowed": false,
+        "confirmation_level": 1,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": [],
+      "clarification_annotation": {
+        "reason": "unresolved_reference",
+        "missing_fields": [
+          "participants"
+        ],
+        "candidate_entity_ids": [],
+        "question": "没有找到可确认的周宁参与人。你想选择其他参与人，还是先不登记这笔支出？"
+      }
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:v02:sample_v02_b_lookup_zero",
+      "dedup_key": "sample:v02:sample_v02_b_lookup_zero",
+      "semantic_group_key": "semantic:v02:family_v02_participant_lookup:sample_v02_b_lookup_zero",
+      "lifecycle_status": "approved",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "Approved SILVER Sample at Experiment A v0.2 freeze 2026-10-01T12:35:01+08:00, following independent review and explicit maintainer acceptance recorded in freeze_report.json. Split remains unassigned; eligibility does not authorize export or training before split assignment."
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_v02_b_lookup_unique",
+    "scenario_id": "scenario_v02_b_lookup_unique",
+    "scenario_family_id": "family_v02_participant_lookup",
+    "split_group_id": "split_v02_participant_lookup",
+    "dataset_version": "0.1",
+    "example_only": false,
+    "split": "unassigned",
+    "task": {
+      "primary": "parameter_extraction",
+      "secondary": []
+    },
+    "difficulty": "easy",
+    "challenge_tags": [
+      "colloquial"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": [
+        "find_participants",
+        "create_expense"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "v0.2-experiment-a:EXP-CREATE-001; derived from frozen business logic and runtime Context",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_v02_b_lookup_unique#/ground_truth",
+        "EXP-CREATE-001 frozen business-rule anchor; awaits independent review",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/EXPERIMENT_A_INDEPENDENT_REVIEW.md",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/independent_review.json",
+        "Current maintainer acceptance: user request authorizing Experiment A v0.2 freeze on 2026-10-01."
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "780ae551-ee7d-5591-925e-9dc6796b7761",
+      "user_message": "2026-09-29 10:00 溪谷聚餐 86 CNY，我和周宁AA，我先付。",
+      "client_context": {
+        "platform": "android",
+        "app_version": "1.4.0",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-30T10:01:00+08:00"
+      },
+      "ui_context": {
+        "route": "activity/05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+        "page_type": "normal_activity",
+        "screen_instance_id": "fa3c53a3-602f-5502-87ae-236e68dcbca8",
+        "activity_id": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+        "ledger_unit_id": "cc2d4040-7d2f-558c-bc02-b7f28d596375",
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": null,
+        "claimed_participant_id": "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": null,
+        "financial_version_hint": null,
+        "entity_version_hint": null,
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "unknown"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "b177f717-e8aa-58f5-8e20-41cb6d87d9e1",
+        "turn_id": "turn-current",
+        "active_activity_id": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": null,
+        "generated_at": "2026-09-30T10:01:00+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "find_participants",
+          "create_expense"
+        ],
+        "verified_result_ids": [
+          "result-v02-lookup-f40942760074"
+        ],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": [
+          {
+            "tool": "find_participants",
+            "result": {
+              "status": "success",
+              "result_id": "result-v02-lookup-f40942760074",
+              "observed_at": "2026-09-30T10:00:00+08:00",
+              "financial_version": null,
+              "data": {
+                "items": [
+                  {
+                    "id": "abb4bc69-dc5e-52cb-892b-faaf6360e946",
+                    "activity_id": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+                    "name": "周宁",
+                    "participant_order": 0,
+                    "claimed_user_id": null,
+                    "is_deleted": false
+                  }
+                ],
+                "next_cursor": null,
+                "truncated": false
+              }
+            }
+          }
+        ]
+      }
+    },
+    "expected": {
+      "output_type": "proposal",
+      "model_output": {
+        "type": "proposal",
+        "intent_id": "create_expense",
+        "operation": {
+          "tool": "create_expense",
+          "arguments": {
+            "activity_id": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+            "ledger_unit_id": "cc2d4040-7d2f-558c-bc02-b7f28d596375",
+            "title": "溪谷聚餐",
+            "original_amount": "86",
+            "original_currency": "CNY",
+            "split_method": "aa",
+            "payments": [
+              {
+                "participant_id": "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+                "amount": "86"
+              }
+            ],
+            "manual_splits": [],
+            "aa_participant_ids": [
+              "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+              "abb4bc69-dc5e-52cb-892b-faaf6360e946"
+            ],
+            "occurred_at": "2026-09-29T10:00:00+08:00",
+            "note": null,
+            "original_expense_id": null
+          }
+        },
+        "preview": {
+          "kind": "create",
+          "summary": "拟新增一笔溪谷聚餐支出。",
+          "diff": [
+            {
+              "field": "expense",
+              "after": {
+                "activity_id": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+                "ledger_unit_id": "cc2d4040-7d2f-558c-bc02-b7f28d596375",
+                "title": "溪谷聚餐",
+                "original_amount": "86",
+                "original_currency": "CNY",
+                "split_method": "aa",
+                "payments": [
+                  {
+                    "participant_id": "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+                    "amount": "86"
+                  }
+                ],
+                "manual_splits": [],
+                "aa_participant_ids": [
+                  "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+                  "abb4bc69-dc5e-52cb-892b-faaf6360e946"
+                ],
+                "occurred_at": "2026-09-29T10:00:00+08:00",
+                "note": null,
+                "original_expense_id": null
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 1,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": true,
+          "reason": "confirmation_required"
+        }
+      },
+      "ground_truth_pointer": "scenario_v02_b_lookup_unique#/ground_truth",
+      "execution": {
+        "execution_allowed": true,
+        "confirmation_level": 1,
+        "confirmation_required": true,
+        "final_authorization": "trusted_ui_event_required",
+        "successful_execution_label_allowed": true
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": [],
+      "expected_diff": [
+        {
+          "field": "expense",
+          "after": {
+            "activity_id": "05f3fd6f-891c-56b7-8ce7-31145b2bdfed",
+            "ledger_unit_id": "cc2d4040-7d2f-558c-bc02-b7f28d596375",
+            "title": "溪谷聚餐",
+            "original_amount": "86",
+            "original_currency": "CNY",
+            "split_method": "aa",
+            "payments": [
+              {
+                "participant_id": "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+                "amount": "86"
+              }
+            ],
+            "manual_splits": [],
+            "aa_participant_ids": [
+              "cfe446a7-6e43-5e5c-b421-603b1d01d5b9",
+              "abb4bc69-dc5e-52cb-892b-faaf6360e946"
+            ],
+            "occurred_at": "2026-09-29T10:00:00+08:00",
+            "note": null,
+            "original_expense_id": null
+          }
+        }
+      ]
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:v02:sample_v02_b_lookup_unique",
+      "dedup_key": "sample:v02:sample_v02_b_lookup_unique",
+      "semantic_group_key": "semantic:v02:family_v02_participant_lookup:sample_v02_b_lookup_unique",
+      "lifecycle_status": "approved",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "Approved SILVER Sample at Experiment A v0.2 freeze 2026-10-01T12:35:01+08:00, following independent review and explicit maintainer acceptance recorded in freeze_report.json. Split remains unassigned; eligibility does not authorize export or training before split assignment."
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_v02_c_payer_unbound",
+    "scenario_id": "scenario_v02_c_payer_unbound",
+    "scenario_family_id": "family_v02_payer_binding",
+    "split_group_id": "split_v02_payer_binding",
+    "dataset_version": "0.1",
+    "example_only": false,
+    "split": "unassigned",
+    "task": {
+      "primary": "clarification",
+      "secondary": []
+    },
+    "difficulty": "normal",
+    "challenge_tags": [
+      "missing_payer",
+      "missing_participants",
+      "pronoun"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": [
+        "find_participants",
+        "create_expense"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "v0.2-experiment-a:EXP-CREATE-001; derived from frozen business logic and runtime Context",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_v02_c_payer_unbound#/ground_truth",
+        "EXP-CREATE-001 frozen business-rule anchor; awaits independent review",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/EXPERIMENT_A_INDEPENDENT_REVIEW.md",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/independent_review.json",
+        "Current maintainer acceptance: user request authorizing Experiment A v0.2 freeze on 2026-10-01."
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "2026-09-12 12:30 木桥晚餐 74 CNY，我付，和李四AA。"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "6e90fe65-b316-54ae-8e4e-14816d1a596c",
+      "user_message": "2026-09-12 12:30 木桥晚餐 74 CNY，我付，和李四AA。",
+      "client_context": {
+        "platform": "android",
+        "app_version": "1.4.0",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-30T10:01:00+08:00"
+      },
+      "ui_context": {
+        "route": "activity/00000000-0000-4000-8000-000000000100",
+        "page_type": "normal_activity",
+        "screen_instance_id": "53edb68b-6dfa-58a1-9cfc-f42b3bbccb63",
+        "activity_id": "a32f98bc-2154-57c5-8324-2cf372ce09f5",
+        "ledger_unit_id": "33fab182-8160-5bdd-ba25-f6bfa20ec27f",
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": null,
+        "claimed_participant_id": null,
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": null,
+        "financial_version_hint": null,
+        "entity_version_hint": null,
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "unknown"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "7859828f-ee47-5c62-9e1f-75eefcd973aa",
+        "turn_id": "turn-current",
+        "active_activity_id": "a32f98bc-2154-57c5-8324-2cf372ce09f5",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": null,
+        "generated_at": "2026-09-30T10:01:00+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "find_participants",
+          "create_expense"
+        ],
+        "verified_result_ids": [
+          "result-v02-lookup-4bb7cf445025"
+        ],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": [
+          {
+            "tool": "find_participants",
+            "result": {
+              "status": "success",
+              "result_id": "result-v02-lookup-4bb7cf445025",
+              "observed_at": "2026-09-30T10:00:00+08:00",
+              "financial_version": null,
+              "data": {
+                "items": [
+                  {
+                    "id": "b0e3fdc4-d216-5bca-b871-f014188e2e62",
+                    "activity_id": "a32f98bc-2154-57c5-8324-2cf372ce09f5",
+                    "name": "李四",
+                    "participant_order": 0,
+                    "claimed_user_id": null,
+                    "is_deleted": false
+                  }
+                ],
+                "next_cursor": null,
+                "truncated": false
+              }
+            }
+          }
+        ]
+      }
+    },
+    "expected": {
+      "output_type": "clarification",
+      "model_output": {
+        "type": "clarification",
+        "intent_id": "create_expense",
+        "reason": "missing_fields",
+        "missing_fields": [
+          "payer"
+        ],
+        "question": "此 Activity 中‘我’对应哪位参与人？",
+        "candidates": []
+      },
+      "ground_truth_pointer": "scenario_v02_c_payer_unbound#/ground_truth",
+      "execution": {
+        "execution_allowed": false,
+        "confirmation_level": 1,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": [],
+      "clarification_annotation": {
+        "reason": "missing_fields",
+        "missing_fields": [
+          "payer"
+        ],
+        "candidate_entity_ids": [],
+        "question": "此 Activity 中‘我’对应哪位参与人？"
+      }
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:v02:sample_v02_c_payer_unbound",
+      "dedup_key": "sample:v02:sample_v02_c_payer_unbound",
+      "semantic_group_key": "semantic:v02:family_v02_payer_binding:sample_v02_c_payer_unbound",
+      "lifecycle_status": "approved",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "Approved SILVER Sample at Experiment A v0.2 freeze 2026-10-01T12:35:01+08:00, following independent review and explicit maintainer acceptance recorded in freeze_report.json. Split remains unassigned; eligibility does not authorize export or training before split assignment."
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_v02_c_payer_bound",
+    "scenario_id": "scenario_v02_c_payer_bound",
+    "scenario_family_id": "family_v02_payer_binding",
+    "split_group_id": "split_v02_payer_binding",
+    "dataset_version": "0.1",
+    "example_only": false,
+    "split": "unassigned",
+    "task": {
+      "primary": "parameter_extraction",
+      "secondary": []
+    },
+    "difficulty": "easy",
+    "challenge_tags": [
+      "colloquial"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "create_expense"
+      ],
+      "tool_ids": [
+        "find_participants",
+        "create_expense"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "v0.2-experiment-a:EXP-CREATE-001; derived from frozen business logic and runtime Context",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_v02_c_payer_bound#/ground_truth",
+        "EXP-CREATE-001 frozen business-rule anchor; awaits independent review",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/EXPERIMENT_A_INDEPENDENT_REVIEW.md",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/independent_review.json",
+        "Current maintainer acceptance: user request authorizing Experiment A v0.2 freeze on 2026-10-01."
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "2026-09-12 12:30 木桥晚餐 74 CNY，我付，和李四AA。"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "6e90fe65-b316-54ae-8e4e-14816d1a596c",
+      "user_message": "2026-09-12 12:30 木桥晚餐 74 CNY，我付，和李四AA。",
+      "client_context": {
+        "platform": "android",
+        "app_version": "1.4.0",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-30T10:01:00+08:00"
+      },
+      "ui_context": {
+        "route": "activity/00000000-0000-4000-8000-000000000100",
+        "page_type": "normal_activity",
+        "screen_instance_id": "53edb68b-6dfa-58a1-9cfc-f42b3bbccb63",
+        "activity_id": "a32f98bc-2154-57c5-8324-2cf372ce09f5",
+        "ledger_unit_id": "33fab182-8160-5bdd-ba25-f6bfa20ec27f",
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": null,
+        "claimed_participant_id": "e89f715a-dcd7-5722-ba9a-7e0f392901ac",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": null,
+        "financial_version_hint": null,
+        "entity_version_hint": null,
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "unknown"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "7859828f-ee47-5c62-9e1f-75eefcd973aa",
+        "turn_id": "turn-current",
+        "active_activity_id": "a32f98bc-2154-57c5-8324-2cf372ce09f5",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": null,
+        "generated_at": "2026-09-30T10:01:00+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "find_participants",
+          "create_expense"
+        ],
+        "verified_result_ids": [
+          "result-v02-lookup-4bb7cf445025"
+        ],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": [
+          {
+            "tool": "find_participants",
+            "result": {
+              "status": "success",
+              "result_id": "result-v02-lookup-4bb7cf445025",
+              "observed_at": "2026-09-30T10:00:00+08:00",
+              "financial_version": null,
+              "data": {
+                "items": [
+                  {
+                    "id": "b0e3fdc4-d216-5bca-b871-f014188e2e62",
+                    "activity_id": "a32f98bc-2154-57c5-8324-2cf372ce09f5",
+                    "name": "李四",
+                    "participant_order": 0,
+                    "claimed_user_id": null,
+                    "is_deleted": false
+                  }
+                ],
+                "next_cursor": null,
+                "truncated": false
+              }
+            }
+          }
+        ]
+      }
+    },
+    "expected": {
+      "output_type": "proposal",
+      "model_output": {
+        "type": "proposal",
+        "intent_id": "create_expense",
+        "operation": {
+          "tool": "create_expense",
+          "arguments": {
+            "activity_id": "a32f98bc-2154-57c5-8324-2cf372ce09f5",
+            "ledger_unit_id": "33fab182-8160-5bdd-ba25-f6bfa20ec27f",
+            "title": "木桥晚餐",
+            "original_amount": "74",
+            "original_currency": "CNY",
+            "split_method": "aa",
+            "payments": [
+              {
+                "participant_id": "e89f715a-dcd7-5722-ba9a-7e0f392901ac",
+                "amount": "74"
+              }
+            ],
+            "manual_splits": [],
+            "aa_participant_ids": [
+              "e89f715a-dcd7-5722-ba9a-7e0f392901ac",
+              "b0e3fdc4-d216-5bca-b871-f014188e2e62"
+            ],
+            "occurred_at": "2026-09-12T12:30:00+08:00",
+            "note": null,
+            "original_expense_id": null
+          }
+        },
+        "preview": {
+          "kind": "create",
+          "summary": "拟新增一笔木桥晚餐支出。",
+          "diff": [
+            {
+              "field": "expense",
+              "after": {
+                "activity_id": "a32f98bc-2154-57c5-8324-2cf372ce09f5",
+                "ledger_unit_id": "33fab182-8160-5bdd-ba25-f6bfa20ec27f",
+                "title": "木桥晚餐",
+                "original_amount": "74",
+                "original_currency": "CNY",
+                "split_method": "aa",
+                "payments": [
+                  {
+                    "participant_id": "e89f715a-dcd7-5722-ba9a-7e0f392901ac",
+                    "amount": "74"
+                  }
+                ],
+                "manual_splits": [],
+                "aa_participant_ids": [
+                  "e89f715a-dcd7-5722-ba9a-7e0f392901ac",
+                  "b0e3fdc4-d216-5bca-b871-f014188e2e62"
+                ],
+                "occurred_at": "2026-09-12T12:30:00+08:00",
+                "note": null,
+                "original_expense_id": null
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 1,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": true,
+          "reason": "confirmation_required"
+        }
+      },
+      "ground_truth_pointer": "scenario_v02_c_payer_bound#/ground_truth",
+      "execution": {
+        "execution_allowed": true,
+        "confirmation_level": 1,
+        "confirmation_required": true,
+        "final_authorization": "trusted_ui_event_required",
+        "successful_execution_label_allowed": true
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": [],
+      "expected_diff": [
+        {
+          "field": "expense",
+          "after": {
+            "activity_id": "a32f98bc-2154-57c5-8324-2cf372ce09f5",
+            "ledger_unit_id": "33fab182-8160-5bdd-ba25-f6bfa20ec27f",
+            "title": "木桥晚餐",
+            "original_amount": "74",
+            "original_currency": "CNY",
+            "split_method": "aa",
+            "payments": [
+              {
+                "participant_id": "e89f715a-dcd7-5722-ba9a-7e0f392901ac",
+                "amount": "74"
+              }
+            ],
+            "manual_splits": [],
+            "aa_participant_ids": [
+              "e89f715a-dcd7-5722-ba9a-7e0f392901ac",
+              "b0e3fdc4-d216-5bca-b871-f014188e2e62"
+            ],
+            "occurred_at": "2026-09-12T12:30:00+08:00",
+            "note": null,
+            "original_expense_id": null
+          }
+        }
+      ]
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:v02:sample_v02_c_payer_bound",
+      "dedup_key": "sample:v02:sample_v02_c_payer_bound",
+      "semantic_group_key": "semantic:v02:family_v02_payer_binding:sample_v02_c_payer_bound",
+      "lifecycle_status": "approved",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "Approved SILVER Sample at Experiment A v0.2 freeze 2026-10-01T12:35:01+08:00, following independent review and explicit maintainer acceptance recorded in freeze_report.json. Split remains unassigned; eligibility does not authorize export or training before split assignment."
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_v02_d_activity_ambiguous",
+    "scenario_id": "scenario_v02_d_activity_ambiguous",
+    "scenario_family_id": "family_v02_activity_ui_target",
+    "split_group_id": "split_v02_activity_ui_target",
+    "dataset_version": "0.1",
+    "example_only": false,
+    "split": "unassigned",
+    "task": {
+      "primary": "parameter_extraction",
+      "secondary": []
+    },
+    "difficulty": "normal",
+    "challenge_tags": [
+      "colloquial",
+      "ellipsis"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "find_expenses"
+      ],
+      "tool_ids": [
+        "find_expenses"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "v0.2-experiment-a:ACT-002; derived from frozen business logic and runtime Context",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_v02_d_activity_ambiguous#/ground_truth",
+        "ACT-002 frozen business-rule anchor; awaits independent review",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/EXPERIMENT_A_INDEPENDENT_REVIEW.md",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/independent_review.json",
+        "Current maintainer acceptance: user request authorizing Experiment A v0.2 freeze on 2026-10-01."
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "找一下2026-09-14的湖畔晚餐费用。"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "54119103-427e-5304-befb-6bf581f9e5e8",
+      "user_message": "找一下2026-09-14的湖畔晚餐费用。",
+      "client_context": {
+        "platform": "android",
+        "app_version": "1.4.0",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-30T10:01:00+08:00"
+      },
+      "ui_context": {
+        "route": "home",
+        "page_type": "home",
+        "screen_instance_id": "6b08a02e-cba1-5b99-ae60-25887f51b882",
+        "activity_id": null,
+        "ledger_unit_id": null,
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": null,
+        "claimed_participant_id": "9fce894f-c072-53e4-b8da-4c9f5bd72540",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": null,
+        "financial_version_hint": null,
+        "entity_version_hint": null,
+        "filters": {},
+        "visible_entities": [
+          {
+            "type": "activity",
+            "id": "44487199-9bb8-505f-b1f5-d880641c2904",
+            "activity_id": "44487199-9bb8-505f-b1f5-d880641c2904"
+          },
+          {
+            "type": "activity",
+            "id": "491c4718-f4b6-5b06-b230-287abdc96ea0",
+            "activity_id": "491c4718-f4b6-5b06-b230-287abdc96ea0"
+          }
+        ],
+        "draft": null,
+        "write_state": "unknown"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "6306f1d1-9116-5b9a-a6b5-39332969c3c4",
+        "turn_id": "turn-current",
+        "active_activity_id": null,
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": null,
+        "generated_at": "2026-09-30T10:01:00+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "find_expenses"
+        ],
+        "verified_result_ids": [],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": []
+      }
+    },
+    "expected": {
+      "output_type": "clarification",
+      "model_output": {
+        "type": "clarification",
+        "intent_id": "find_expenses",
+        "reason": "ambiguous_entity",
+        "missing_fields": [
+          "activity_id"
+        ],
+        "question": "当前有两个活动目标；请选择列表中的第一个还是第二个活动。",
+        "candidates": [
+          {
+            "label": "列表中的第一个活动",
+            "entity": {
+              "type": "activity",
+              "id": "44487199-9bb8-505f-b1f5-d880641c2904",
+              "activity_id": "44487199-9bb8-505f-b1f5-d880641c2904"
+            }
+          },
+          {
+            "label": "列表中的第二个活动",
+            "entity": {
+              "type": "activity",
+              "id": "491c4718-f4b6-5b06-b230-287abdc96ea0",
+              "activity_id": "491c4718-f4b6-5b06-b230-287abdc96ea0"
+            }
+          }
+        ]
+      },
+      "ground_truth_pointer": "scenario_v02_d_activity_ambiguous#/ground_truth",
+      "execution": {
+        "execution_allowed": false,
+        "confirmation_level": 0,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": [],
+      "clarification_annotation": {
+        "reason": "ambiguous_entity",
+        "missing_fields": [
+          "activity_id"
+        ],
+        "candidate_entity_ids": [
+          "44487199-9bb8-505f-b1f5-d880641c2904",
+          "491c4718-f4b6-5b06-b230-287abdc96ea0"
+        ],
+        "question": "当前有两个活动目标；请选择列表中的第一个还是第二个活动。"
+      }
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:v02:sample_v02_d_activity_ambiguous",
+      "dedup_key": "sample:v02:sample_v02_d_activity_ambiguous",
+      "semantic_group_key": "semantic:v02:family_v02_activity_ui_target:sample_v02_d_activity_ambiguous",
+      "lifecycle_status": "approved",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "Approved SILVER Sample at Experiment A v0.2 freeze 2026-10-01T12:35:01+08:00, following independent review and explicit maintainer acceptance recorded in freeze_report.json. Split remains unassigned; eligibility does not authorize export or training before split assignment."
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_v02_d_activity_selected",
+    "scenario_id": "scenario_v02_d_activity_selected",
+    "scenario_family_id": "family_v02_activity_ui_target",
+    "split_group_id": "split_v02_activity_ui_target",
+    "dataset_version": "0.1",
+    "example_only": false,
+    "split": "unassigned",
+    "task": {
+      "primary": "parameter_extraction",
+      "secondary": []
+    },
+    "difficulty": "normal",
+    "challenge_tags": [
+      "colloquial",
+      "ellipsis"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "find_expenses"
+      ],
+      "tool_ids": [
+        "find_expenses"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "v0.2-experiment-a:ACT-002; derived from frozen business logic and runtime Context",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_v02_d_activity_selected#/ground_truth",
+        "ACT-002 frozen business-rule anchor; awaits independent review",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/EXPERIMENT_A_INDEPENDENT_REVIEW.md",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/independent_review.json",
+        "Current maintainer acceptance: user request authorizing Experiment A v0.2 freeze on 2026-10-01."
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "找一下2026-09-14的湖畔晚餐费用。"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "54119103-427e-5304-befb-6bf581f9e5e8",
+      "user_message": "找一下2026-09-14的湖畔晚餐费用。",
+      "client_context": {
+        "platform": "android",
+        "app_version": "1.4.0",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-30T10:01:00+08:00"
+      },
+      "ui_context": {
+        "route": "activity/c1cf2570-3770-5031-bbd4-3ba4cfc7b8d8",
+        "page_type": "normal_activity",
+        "screen_instance_id": "6b08a02e-cba1-5b99-ae60-25887f51b882",
+        "activity_id": "c1cf2570-3770-5031-bbd4-3ba4cfc7b8d8",
+        "ledger_unit_id": "43865336-d95b-5741-abcc-ec60ae36cd66",
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": null,
+        "claimed_participant_id": "9fce894f-c072-53e4-b8da-4c9f5bd72540",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": null,
+        "financial_version_hint": null,
+        "entity_version_hint": null,
+        "filters": {},
+        "visible_entities": [
+          {
+            "type": "activity",
+            "id": "c1cf2570-3770-5031-bbd4-3ba4cfc7b8d8",
+            "activity_id": "c1cf2570-3770-5031-bbd4-3ba4cfc7b8d8"
+          }
+        ],
+        "draft": null,
+        "write_state": "unknown"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "6306f1d1-9116-5b9a-a6b5-39332969c3c4",
+        "turn_id": "turn-current",
+        "active_activity_id": "c1cf2570-3770-5031-bbd4-3ba4cfc7b8d8",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": null,
+        "generated_at": "2026-09-30T10:01:00+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "find_expenses"
+        ],
+        "verified_result_ids": [],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": []
+      }
+    },
+    "expected": {
+      "output_type": "tool_call",
+      "model_output": {
+        "type": "tool_call",
+        "intent_id": "find_expenses",
+        "tool": "find_expenses",
+        "arguments": {
+          "activity_id": "c1cf2570-3770-5031-bbd4-3ba4cfc7b8d8",
+          "query": "2026-09-14的湖畔晚餐"
+        }
+      },
+      "ground_truth_pointer": "scenario_v02_d_activity_selected#/ground_truth",
+      "execution": {
+        "execution_allowed": false,
+        "confirmation_level": 0,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": []
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:v02:sample_v02_d_activity_selected",
+      "dedup_key": "sample:v02:sample_v02_d_activity_selected",
+      "semantic_group_key": "semantic:v02:family_v02_activity_ui_target:sample_v02_d_activity_selected",
+      "lifecycle_status": "approved",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "Approved SILVER Sample at Experiment A v0.2 freeze 2026-10-01T12:35:01+08:00, following independent review and explicit maintainer acceptance recorded in freeze_report.json. Split remains unassigned; eligibility does not authorize export or training before split assignment."
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_v02_e_recent_failed",
+    "scenario_id": "scenario_v02_e_recent_failed",
+    "scenario_family_id": "family_v02_recent_action_reference",
+    "split_group_id": "split_v02_recent_action_reference",
+    "dataset_version": "0.1",
+    "example_only": false,
+    "split": "unassigned",
+    "task": {
+      "primary": "interaction_context_reasoning",
+      "secondary": []
+    },
+    "difficulty": "hard",
+    "challenge_tags": [
+      "stale_context",
+      "ui_reference",
+      "multi_turn",
+      "cross_activity_reference"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "query_expense"
+      ],
+      "tool_ids": [
+        "get_expense"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "v0.2-experiment-a:ICTX-008; derived from frozen business logic and runtime Context",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_v02_e_recent_failed#/ground_truth",
+        "ICTX-008 frozen business-rule anchor; awaits independent review",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/EXPERIMENT_A_INDEPENDENT_REVIEW.md",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/independent_review.json",
+        "Current maintainer acceptance: user request authorizing Experiment A v0.2 freeze on 2026-10-01."
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "neutral",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "刚才那笔费用是谁付的？"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "d157cc3e-740a-5406-9d1e-aa79551b749d",
+      "user_message": "刚才那笔费用是谁付的？",
+      "client_context": {
+        "platform": "android",
+        "app_version": "1.4.0",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-30T10:01:00+08:00"
+      },
+      "ui_context": {
+        "route": "activity/e79993d5-1a6d-5eaf-b23b-96ffcdbc2808",
+        "page_type": "normal_activity",
+        "screen_instance_id": "screen-7f0cf7d34e2a",
+        "activity_id": "e79993d5-1a6d-5eaf-b23b-96ffcdbc2808",
+        "ledger_unit_id": "a955cf51-0e0e-565d-8bea-0c31569ee440",
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": null,
+        "claimed_participant_id": null,
+        "role_hint": "unknown"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": null,
+        "financial_version_hint": null,
+        "entity_version_hint": null,
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "unknown"
+      },
+      "recent_actions": [
+        {
+          "action_id": "1a844cf8-2577-5ebb-9416-fefc87e6421f",
+          "intent_id": "query_expense",
+          "entity": null,
+          "activity_id": "e79993d5-1a6d-5eaf-b23b-96ffcdbc2808",
+          "occurred_at": "2026-09-30T09:30:00+08:00",
+          "status": "failed",
+          "result_id": null,
+          "financial_version_hint": null
+        }
+      ],
+      "conversation_context": {
+        "conversation_id": "0131c2df-d6d5-5bb2-be1c-60fcdafb251a",
+        "turn_id": "turn-current",
+        "active_activity_id": "e79993d5-1a6d-5eaf-b23b-96ffcdbc2808",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": null,
+        "generated_at": "2026-09-30T10:01:00+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "get_expense"
+        ],
+        "verified_result_ids": [],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": []
+      }
+    },
+    "expected": {
+      "output_type": "clarification",
+      "model_output": {
+        "type": "clarification",
+        "intent_id": "query_expense",
+        "reason": "unresolved_reference",
+        "missing_fields": [
+          "expense_id"
+        ],
+        "question": "刚才的费用查询没有成功。请重新打开或描述那笔费用。",
+        "candidates": []
+      },
+      "ground_truth_pointer": "scenario_v02_e_recent_failed#/ground_truth",
+      "execution": {
+        "execution_allowed": false,
+        "confirmation_level": 0,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": [],
+      "clarification_annotation": {
+        "reason": "unresolved_reference",
+        "missing_fields": [
+          "expense_id"
+        ],
+        "candidate_entity_ids": [],
+        "question": "刚才的费用查询没有成功。请重新打开或描述那笔费用。"
+      }
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:v02:sample_v02_e_recent_failed",
+      "dedup_key": "sample:v02:sample_v02_e_recent_failed",
+      "semantic_group_key": "semantic:v02:family_v02_recent_action_reference:sample_v02_e_recent_failed",
+      "lifecycle_status": "approved",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "Approved SILVER Sample at Experiment A v0.2 freeze 2026-10-01T12:35:01+08:00, following independent review and explicit maintainer acceptance recorded in freeze_report.json. Split remains unassigned; eligibility does not authorize export or training before split assignment."
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_v02_e_recent_succeeded",
+    "scenario_id": "scenario_v02_e_recent_succeeded",
+    "scenario_family_id": "family_v02_recent_action_reference",
+    "split_group_id": "split_v02_recent_action_reference",
+    "dataset_version": "0.1",
+    "example_only": false,
+    "split": "unassigned",
+    "task": {
+      "primary": "tool_call",
+      "secondary": []
+    },
+    "difficulty": "normal",
+    "challenge_tags": [
+      "ui_reference",
+      "pronoun"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "query_expense"
+      ],
+      "tool_ids": [
+        "get_expense"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "v0.2-experiment-a:EXP-READ-003; derived from frozen business logic and runtime Context",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_v02_e_recent_succeeded#/ground_truth",
+        "EXP-READ-003 frozen business-rule anchor; awaits independent review",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/EXPERIMENT_A_INDEPENDENT_REVIEW.md",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/independent_review.json",
+        "Current maintainer acceptance: user request authorizing Experiment A v0.2 freeze on 2026-10-01."
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "colloquial",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "刚才那笔费用是谁付的？"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "d157cc3e-740a-5406-9d1e-aa79551b749d",
+      "user_message": "刚才那笔费用是谁付的？",
+      "client_context": {
+        "platform": "android",
+        "app_version": "1.4.0",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-30T10:01:00+08:00"
+      },
+      "ui_context": {
+        "route": "activity/e79993d5-1a6d-5eaf-b23b-96ffcdbc2808",
+        "page_type": "normal_activity",
+        "screen_instance_id": "screen-7f0cf7d34e2a",
+        "activity_id": "e79993d5-1a6d-5eaf-b23b-96ffcdbc2808",
+        "ledger_unit_id": "a955cf51-0e0e-565d-8bea-0c31569ee440",
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": null,
+        "claimed_participant_id": null,
+        "role_hint": "unknown"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": null,
+        "financial_version_hint": null,
+        "entity_version_hint": null,
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "unknown"
+      },
+      "recent_actions": [
+        {
+          "action_id": "2c0aed9d-614c-56c3-acdf-9657d624a193",
+          "intent_id": "query_expense",
+          "entity": {
+            "type": "expense",
+            "id": "2b70c0dd-9542-5da0-8936-a89c78210ca6",
+            "activity_id": "e79993d5-1a6d-5eaf-b23b-96ffcdbc2808"
+          },
+          "activity_id": "e79993d5-1a6d-5eaf-b23b-96ffcdbc2808",
+          "occurred_at": "2026-09-30T09:30:00+08:00",
+          "status": "succeeded",
+          "result_id": "result-v02-recent-success",
+          "financial_version_hint": "3"
+        }
+      ],
+      "conversation_context": {
+        "conversation_id": "0131c2df-d6d5-5bb2-be1c-60fcdafb251a",
+        "turn_id": "turn-current",
+        "active_activity_id": "e79993d5-1a6d-5eaf-b23b-96ffcdbc2808",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": null,
+        "generated_at": "2026-09-30T10:01:00+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "get_expense"
+        ],
+        "verified_result_ids": [],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": []
+      }
+    },
+    "expected": {
+      "output_type": "tool_call",
+      "model_output": {
+        "type": "tool_call",
+        "intent_id": "query_expense",
+        "tool": "get_expense",
+        "arguments": {
+          "expense_id": "2b70c0dd-9542-5da0-8936-a89c78210ca6"
+        }
+      },
+      "ground_truth_pointer": "scenario_v02_e_recent_succeeded#/ground_truth",
+      "execution": {
+        "execution_allowed": false,
+        "confirmation_level": 0,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": []
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:v02:sample_v02_e_recent_succeeded",
+      "dedup_key": "sample:v02:sample_v02_e_recent_succeeded",
+      "semantic_group_key": "semantic:v02:family_v02_recent_action_reference:sample_v02_e_recent_succeeded",
+      "lifecycle_status": "approved",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "Approved SILVER Sample at Experiment A v0.2 freeze 2026-10-01T12:35:01+08:00, following independent review and explicit maintainer acceptance recorded in freeze_report.json. Split remains unassigned; eligibility does not authorize export or training before split assignment."
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_v02_f_verified_expense_answer",
+    "scenario_id": "scenario_v02_f_verified_expense_answer",
+    "scenario_family_id": "family_v02_verified_expense_answer",
+    "split_group_id": "split_v02_verified_expense_answer",
+    "dataset_version": "0.1",
+    "example_only": false,
+    "split": "unassigned",
+    "task": {
+      "primary": "ui_context_reasoning",
+      "secondary": []
+    },
+    "difficulty": "normal",
+    "challenge_tags": [
+      "ui_reference",
+      "multiple_candidates"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "query_expense"
+      ],
+      "tool_ids": [
+        "get_expense"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "v0.2-experiment-a:EXP-READ-003; derived from frozen business logic and runtime Context",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_v02_f_verified_expense_answer#/ground_truth",
+        "EXP-READ-003 frozen business-rule anchor; awaits independent review",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/EXPERIMENT_A_INDEPENDENT_REVIEW.md",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/independent_review.json",
+        "Current maintainer acceptance: user request authorizing Experiment A v0.2 freeze on 2026-10-01."
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "neutral",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "这笔溪边停车费是谁付的？请把付款参与人 ID 告诉我。"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "c7ab5461-5a1c-5652-b200-72a45414c773",
+      "user_message": "这笔溪边停车费是谁付的？请把付款参与人 ID 告诉我。",
+      "client_context": {
+        "platform": "android",
+        "app_version": "1.4.0",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-30T10:01:00+08:00"
+      },
+      "ui_context": {
+        "route": "expense-detail/00000000-0000-4000-8000-00000000043",
+        "page_type": "expense_detail",
+        "screen_instance_id": "193aac0e-2315-5d95-8b86-5d681b04edc0",
+        "activity_id": "753d80fa-cd89-5abf-b8fe-6256b1816f36",
+        "ledger_unit_id": "bd16d4ff-6850-54a7-8851-cb0e2b2ee9c2",
+        "selected_entity": {
+          "type": "expense",
+          "id": "90cc9925-84be-5405-bfc8-0f405d7e9efe",
+          "activity_id": "753d80fa-cd89-5abf-b8fe-6256b1816f36"
+        },
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": null,
+        "claimed_participant_id": "caa0dc0b-b2f0-5145-9907-44b1ecfd3003",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": null,
+        "financial_version_hint": null,
+        "entity_version_hint": null,
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "unknown"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "94cd6fea-5752-5679-b8c3-b89e24c36a92",
+        "turn_id": "turn-current",
+        "active_activity_id": "753d80fa-cd89-5abf-b8fe-6256b1816f36",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": null,
+        "generated_at": "2026-09-30T10:01:00+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "get_expense"
+        ],
+        "verified_result_ids": [
+          "result-v02-expense-answer"
+        ],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": [
+          {
+            "tool": "get_expense",
+            "result": {
+              "status": "success",
+              "result_id": "result-v02-expense-answer",
+              "observed_at": "2026-09-30T10:00:00+08:00",
+              "financial_version": "4",
+              "data": {
+                "expense": {
+                  "id": "90cc9925-84be-5405-bfc8-0f405d7e9efe",
+                  "activity_id": "753d80fa-cd89-5abf-b8fe-6256b1816f36",
+                  "ledger_unit_id": "bd16d4ff-6850-54a7-8851-cb0e2b2ee9c2",
+                  "title": "溪边停车费",
+                  "original": {
+                    "amount": "43",
+                    "currency": "CNY"
+                  },
+                  "base": {
+                    "amount": "43",
+                    "currency": "CNY"
+                  },
+                  "fx_snapshot": {
+                    "rate": "1",
+                    "source": "base_currency",
+                    "observed_at": null
+                  },
+                  "split_method": "manual",
+                  "payments": [
+                    {
+                      "participant_id": "caa0dc0b-b2f0-5145-9907-44b1ecfd3003",
+                      "amount": "43"
+                    }
+                  ],
+                  "splits": [
+                    {
+                      "participant_id": "3de1440e-f7b2-53e5-9a78-f3a6731e3618",
+                      "amount": "43"
+                    }
+                  ],
+                  "occurred_at": "2026-09-14T10:30:00+08:00",
+                  "note": null,
+                  "icon_key": "money",
+                  "original_expense_id": null,
+                  "financial_locked": false,
+                  "version": "1",
+                  "is_deleted": false
+                },
+                "repayment_progress": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    "expected": {
+      "output_type": "answer",
+      "model_output": {
+        "type": "answer",
+        "content": "这笔“溪边停车费”的付款参与人 ID 是 caa0dc0b-b2f0-5145-9907-44b1ecfd3003。",
+        "evidence_result_ids": [
+          "result-v02-expense-answer"
+        ]
+      },
+      "ground_truth_pointer": "scenario_v02_f_verified_expense_answer#/ground_truth",
+      "execution": {
+        "execution_allowed": false,
+        "confirmation_level": 0,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": [
+        "result-v02-expense-answer"
+      ]
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:v02:sample_v02_f_verified_expense_answer",
+      "dedup_key": "sample:v02:sample_v02_f_verified_expense_answer",
+      "semantic_group_key": "semantic:v02:family_v02_verified_expense_answer:sample_v02_f_verified_expense_answer",
+      "lifecycle_status": "approved",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "Approved SILVER Sample at Experiment A v0.2 freeze 2026-10-01T12:35:01+08:00, following independent review and explicit maintainer acceptance recorded in freeze_report.json. Split remains unassigned; eligibility does not authorize export or training before split assignment."
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_v02_g_presentation_l1",
+    "scenario_id": "scenario_v02_g_presentation_l1",
+    "scenario_family_id": "family_v02_expense_update_boundary",
+    "split_group_id": "split_v02_expense_update_boundary",
+    "dataset_version": "0.1",
+    "example_only": false,
+    "split": "unassigned",
+    "task": {
+      "primary": "proposal_generation",
+      "secondary": []
+    },
+    "difficulty": "easy",
+    "challenge_tags": [
+      "ui_reference"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "update_expense_presentation"
+      ],
+      "tool_ids": [
+        "update_expense_presentation"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "v0.2-experiment-a:EXP-EDIT-004; derived from frozen business logic and runtime Context",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_v02_g_presentation_l1#/ground_truth",
+        "EXP-EDIT-004 frozen business-rule anchor; awaits independent review",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/EXPERIMENT_A_INDEPENDENT_REVIEW.md",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/independent_review.json",
+        "Current maintainer acceptance: user request authorizing Experiment A v0.2 freeze on 2026-10-01."
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "neutral",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "把这笔费用的图标换成餐饮。"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "eff7e27c-23e2-5578-b6eb-b986e1b8a1d2",
+      "user_message": "把这笔费用的图标换成餐饮。",
+      "client_context": {
+        "platform": "android",
+        "app_version": "1.4.0",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-30T10:01:00+08:00"
+      },
+      "ui_context": {
+        "route": "expense-detail/c1bdcd70-e5af-560f-8408-d082f69c7943",
+        "page_type": "expense_detail",
+        "screen_instance_id": "5d7a327e-add7-5a5b-964f-8f1447dc981b",
+        "activity_id": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+        "ledger_unit_id": "59c3ed8a-18f5-5a66-9e93-d4838fbea9a2",
+        "selected_entity": {
+          "type": "expense",
+          "id": "c1bdcd70-e5af-560f-8408-d082f69c7943",
+          "activity_id": "9b374cb8-4324-5221-bf02-868c9a5a3cbe"
+        },
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": null,
+        "claimed_participant_id": null,
+        "role_hint": "unknown"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": null,
+        "financial_version_hint": null,
+        "entity_version_hint": null,
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "unknown"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "d21008a0-3383-56ca-92f0-1bffa909e515",
+        "turn_id": "turn-current",
+        "active_activity_id": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": null,
+        "generated_at": "2026-09-30T10:01:00+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "get_expense",
+          "update_expense_presentation"
+        ],
+        "verified_result_ids": [
+          "result-v02-presentation-read"
+        ],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": [
+          {
+            "tool": "get_expense",
+            "result": {
+              "status": "success",
+              "result_id": "result-v02-presentation-read",
+              "observed_at": "2026-09-30T10:00:00+08:00",
+              "financial_version": "2",
+              "data": {
+                "expense": {
+                  "id": "c1bdcd70-e5af-560f-8408-d082f69c7943",
+                  "activity_id": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+                  "ledger_unit_id": "59c3ed8a-18f5-5a66-9e93-d4838fbea9a2",
+                  "title": "设备租赁",
+                  "original": {
+                    "amount": "100",
+                    "currency": "CNY"
+                  },
+                  "base": {
+                    "amount": "100",
+                    "currency": "CNY"
+                  },
+                  "fx_snapshot": {
+                    "rate": "1",
+                    "source": "base_currency",
+                    "observed_at": null
+                  },
+                  "split_method": "manual",
+                  "payments": [
+                    {
+                      "participant_id": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+                      "amount": "100"
+                    }
+                  ],
+                  "splits": [
+                    {
+                      "participant_id": "5c7a7bd2-0b26-5c08-ac54-eb711be16a75",
+                      "amount": "100"
+                    }
+                  ],
+                  "occurred_at": "2026-09-14T10:00:00+08:00",
+                  "note": null,
+                  "icon_key": "money",
+                  "original_expense_id": null,
+                  "financial_locked": false,
+                  "version": "3",
+                  "is_deleted": false
+                },
+                "repayment_progress": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    "expected": {
+      "output_type": "proposal",
+      "model_output": {
+        "type": "proposal",
+        "intent_id": "update_expense_presentation",
+        "operation": {
+          "tool": "update_expense_presentation",
+          "arguments": {
+            "activity_id": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+            "expense_id": "c1bdcd70-e5af-560f-8408-d082f69c7943",
+            "title": "设备租赁",
+            "note": null,
+            "icon_key": "dining",
+            "expected_version": "3"
+          }
+        },
+        "preview": {
+          "kind": "update",
+          "summary": "拟仅将这笔费用的图标改为餐饮。",
+          "diff": [
+            {
+              "field": "icon_key",
+              "before": "money",
+              "after": "dining"
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 1,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": true,
+          "reason": "confirmation_required"
+        }
+      },
+      "ground_truth_pointer": "scenario_v02_g_presentation_l1#/ground_truth",
+      "execution": {
+        "execution_allowed": true,
+        "confirmation_level": 1,
+        "confirmation_required": true,
+        "final_authorization": "trusted_ui_event_required",
+        "successful_execution_label_allowed": true
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": [],
+      "expected_diff": [
+        {
+          "field": "icon_key",
+          "before": "money",
+          "after": "dining"
+        }
+      ]
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:v02:sample_v02_g_presentation_l1",
+      "dedup_key": "sample:v02:sample_v02_g_presentation_l1",
+      "semantic_group_key": "semantic:v02:family_v02_expense_update_boundary:sample_v02_g_presentation_l1",
+      "lifecycle_status": "approved",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "Approved SILVER Sample at Experiment A v0.2 freeze 2026-10-01T12:35:01+08:00, following independent review and explicit maintainer acceptance recorded in freeze_report.json. Split remains unassigned; eligibility does not authorize export or training before split assignment."
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_v02_g_financial_d4",
+    "scenario_id": "scenario_v02_g_financial_d4",
+    "scenario_family_id": "family_v02_expense_update_boundary",
+    "split_group_id": "split_v02_expense_update_boundary",
+    "dataset_version": "0.1",
+    "example_only": false,
+    "split": "unassigned",
+    "task": {
+      "primary": "proposal_generation",
+      "secondary": []
+    },
+    "difficulty": "easy",
+    "challenge_tags": [
+      "d4_preview_only",
+      "ui_reference"
+    ],
+    "scope": {
+      "ai_scope": "CORE",
+      "intent_ids": [
+        "update_expense"
+      ],
+      "tool_ids": [
+        "get_expense",
+        "update_expense"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "v0.2-experiment-a:EXP-EDIT-001; derived from frozen business logic and runtime Context",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_v02_g_financial_d4#/ground_truth",
+        "EXP-EDIT-001 frozen business-rule anchor; awaits independent review",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/EXPERIMENT_A_INDEPENDENT_REVIEW.md",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/independent_review.json",
+        "Current maintainer acceptance: user request authorizing Experiment A v0.2 freeze on 2026-10-01."
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "neutral",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "把这笔费用金额改成135 CNY。"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "089fb37e-9571-59c8-86d3-0e3371df394f",
+      "user_message": "把这笔费用金额改成135 CNY。",
+      "client_context": {
+        "platform": "android",
+        "app_version": "1.4.0",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-30T10:01:00+08:00"
+      },
+      "ui_context": {
+        "route": "expense-detail",
+        "page_type": "expense_detail",
+        "screen_instance_id": "screen-696fc883a022",
+        "activity_id": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+        "ledger_unit_id": "59c3ed8a-18f5-5a66-9e93-d4838fbea9a2",
+        "selected_entity": {
+          "type": "expense",
+          "id": "c1bdcd70-e5af-560f-8408-d082f69c7943",
+          "activity_id": "9b374cb8-4324-5221-bf02-868c9a5a3cbe"
+        },
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": null,
+        "claimed_participant_id": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": null,
+        "financial_version_hint": null,
+        "entity_version_hint": null,
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "unknown"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "c2af3d0b-8214-57f8-90cc-3018ea0a44ec",
+        "turn_id": "turn-current",
+        "active_activity_id": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": null,
+        "generated_at": "2026-09-30T10:01:00+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "get_expense"
+        ],
+        "verified_result_ids": [
+          "result-v02-0aa97eb44c4c"
+        ],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": [
+          {
+            "tool": "get_expense",
+            "result": {
+              "status": "success",
+              "result_id": "result-v02-0aa97eb44c4c",
+              "observed_at": "2026-09-30T10:00:00+08:00",
+              "financial_version": "11",
+              "data": {
+                "expense": {
+                  "id": "c1bdcd70-e5af-560f-8408-d082f69c7943",
+                  "activity_id": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+                  "ledger_unit_id": "59c3ed8a-18f5-5a66-9e93-d4838fbea9a2",
+                  "title": "设备租赁",
+                  "original": {
+                    "amount": "100",
+                    "currency": "CNY"
+                  },
+                  "base": {
+                    "amount": "100",
+                    "currency": "CNY"
+                  },
+                  "fx_snapshot": {
+                    "rate": "1",
+                    "source": "base_currency",
+                    "observed_at": null
+                  },
+                  "split_method": "manual",
+                  "payments": [
+                    {
+                      "participant_id": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+                      "amount": "100"
+                    }
+                  ],
+                  "splits": [
+                    {
+                      "participant_id": "5c7a7bd2-0b26-5c08-ac54-eb711be16a75",
+                      "amount": "100"
+                    }
+                  ],
+                  "occurred_at": "2026-09-14T10:00:00+08:00",
+                  "note": null,
+                  "icon_key": "money",
+                  "original_expense_id": null,
+                  "financial_locked": false,
+                  "version": "3",
+                  "is_deleted": false
+                },
+                "repayment_progress": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    "expected": {
+      "output_type": "proposal",
+      "model_output": {
+        "type": "proposal",
+        "intent_id": "update_expense",
+        "operation": {
+          "tool": "update_expense",
+          "arguments": {
+            "activity_id": "9b374cb8-4324-5221-bf02-868c9a5a3cbe",
+            "expense_id": "c1bdcd70-e5af-560f-8408-d082f69c7943",
+            "ledger_unit_id": "59c3ed8a-18f5-5a66-9e93-d4838fbea9a2",
+            "title": "设备租赁",
+            "original_amount": "135",
+            "original_currency": "CNY",
+            "split_method": "manual",
+            "payments": [
+              {
+                "participant_id": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+                "amount": "135"
+              }
+            ],
+            "manual_splits": [
+              {
+                "participant_id": "5c7a7bd2-0b26-5c08-ac54-eb711be16a75",
+                "amount": "135"
+              }
+            ],
+            "aa_participant_ids": [],
+            "occurred_at": "2026-09-14T10:00:00+08:00",
+            "note": null,
+            "original_expense_id": null
+          }
+        },
+        "preview": {
+          "kind": "update",
+          "summary": "拟将支出金额从 100 CNY 调整为 135 CNY；此预览不可执行。",
+          "diff": [
+            {
+              "field": "original_amount",
+              "before": "100",
+              "after": "135"
+            },
+            {
+              "field": "payments",
+              "before": [
+                {
+                  "participant_id": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+                  "amount": "100"
+                }
+              ],
+              "after": [
+                {
+                  "participant_id": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+                  "amount": "135"
+                }
+              ]
+            },
+            {
+              "field": "manual_splits",
+              "before": [
+                {
+                  "participant_id": "5c7a7bd2-0b26-5c08-ac54-eb711be16a75",
+                  "amount": "100"
+                }
+              ],
+              "after": [
+                {
+                  "participant_id": "5c7a7bd2-0b26-5c08-ac54-eb711be16a75",
+                  "amount": "135"
+                }
+              ]
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 1,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": false,
+          "reason": "d4_atomic_update_not_supported"
+        }
+      },
+      "ground_truth_pointer": "scenario_v02_g_financial_d4#/ground_truth",
+      "execution": {
+        "execution_allowed": false,
+        "confirmation_level": 1,
+        "confirmation_required": true,
+        "final_authorization": "trusted_ui_event_required",
+        "successful_execution_label_allowed": false
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": [],
+      "expected_diff": [
+        {
+          "field": "original_amount",
+          "before": "100",
+          "after": "135"
+        },
+        {
+          "field": "payments",
+          "before": [
+            {
+              "participant_id": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+              "amount": "100"
+            }
+          ],
+          "after": [
+            {
+              "participant_id": "b356d333-93ea-5f1f-a576-7076d47d60e4",
+              "amount": "135"
+            }
+          ]
+        },
+        {
+          "field": "manual_splits",
+          "before": [
+            {
+              "participant_id": "5c7a7bd2-0b26-5c08-ac54-eb711be16a75",
+              "amount": "100"
+            }
+          ],
+          "after": [
+            {
+              "participant_id": "5c7a7bd2-0b26-5c08-ac54-eb711be16a75",
+              "amount": "135"
+            }
+          ]
+        }
+      ]
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:v02:sample_v02_g_financial_d4",
+      "dedup_key": "sample:v02:sample_v02_g_financial_d4",
+      "semantic_group_key": "semantic:v02:family_v02_expense_update_boundary:sample_v02_g_financial_d4",
+      "lifecycle_status": "approved",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "Approved SILVER Sample at Experiment A v0.2 freeze 2026-10-01T12:35:01+08:00, following independent review and explicit maintainer acceptance recorded in freeze_report.json. Split remains unassigned; eligibility does not authorize export or training before split assignment."
+    }
+  },
+  {
+    "schema_version": "0.1",
+    "sample_id": "sample_v02_h_gated_delete_l2",
+    "scenario_id": "scenario_v02_h_gated_delete_l2",
+    "scenario_family_id": "family_v02_gated_delete",
+    "split_group_id": "split_v02_gated_delete",
+    "dataset_version": "0.1",
+    "example_only": false,
+    "split": "unassigned",
+    "task": {
+      "primary": "proposal_generation",
+      "secondary": []
+    },
+    "difficulty": "normal",
+    "challenge_tags": [
+      "gated_operation",
+      "financial_risk",
+      "ui_reference"
+    ],
+    "scope": {
+      "ai_scope": "SUPPORTED_BUT_GATED",
+      "intent_ids": [
+        "delete_expense"
+      ],
+      "tool_ids": [
+        "find_expenses",
+        "delete_expense"
+      ]
+    },
+    "source": {
+      "surface_form_type": "human_authored",
+      "generator": null,
+      "source_reference": "v0.2-experiment-a:DEL-001; derived from frozen business logic and runtime Context",
+      "teacher": null
+    },
+    "trust": {
+      "level": "SILVER",
+      "ground_truth_locked": true,
+      "surface_form_reviewed": true,
+      "validation_evidence": [
+        "scenario_v02_h_gated_delete_l2#/ground_truth",
+        "DEL-001 frozen business-rule anchor; awaits independent review",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/EXPERIMENT_A_INDEPENDENT_REVIEW.md",
+        "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/independent_review.json",
+        "Current maintainer acceptance: user request authorizing Experiment A v0.2 freeze on 2026-10-01."
+      ]
+    },
+    "policy_status": "active",
+    "surface_form": {
+      "language": "zh-CN",
+      "register": "neutral",
+      "conversation": [],
+      "context_turn_count": 0,
+      "user_message": "帮我把设备租赁这笔费用删掉。"
+    },
+    "input": {
+      "contract_version": "0.1",
+      "request_id": "b4a9defc-3e30-569e-af60-f76fbb8214b4",
+      "user_message": "帮我把设备租赁这笔费用删掉。",
+      "client_context": {
+        "platform": "android",
+        "app_version": "1.4.0",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "sent_at": "2026-09-30T10:01:00+08:00"
+      },
+      "ui_context": {
+        "route": "activity/c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+        "page_type": "normal_activity",
+        "screen_instance_id": "screen-72080bbb236e",
+        "activity_id": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+        "ledger_unit_id": "6dbf9d66-aaa8-5384-b35f-3be08cae85f3",
+        "selected_entity": null,
+        "form_mode": null,
+        "focused_field": null
+      },
+      "user_context": {
+        "user_id": "5ad9153f-fec3-525d-8cc1-882c2e430e3a",
+        "claimed_participant_id": "fe9cd2cb-7110-527d-9d32-b8e8b47a2df5",
+        "role_hint": "member"
+      },
+      "page_state": {
+        "load_state": "ready",
+        "fetched_at": null,
+        "financial_version_hint": null,
+        "entity_version_hint": null,
+        "filters": {},
+        "visible_entities": [],
+        "draft": null,
+        "write_state": "unknown"
+      },
+      "recent_actions": [],
+      "conversation_context": {
+        "conversation_id": "cc361d5d-4ca4-5a8e-9f51-5e505eec8c6f",
+        "turn_id": "turn-current",
+        "active_activity_id": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+        "messages": [],
+        "confirmed_bindings": [],
+        "pending_clarification": null
+      },
+      "server_context": {
+        "authenticated_user_id": null,
+        "generated_at": "2026-09-30T10:01:00+08:00",
+        "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+        "enabled_tools": [
+          "find_expenses"
+        ],
+        "verified_result_ids": [
+          "result-v02-delete-multiple"
+        ],
+        "confirmation_policy": "proposed_all_writes",
+        "tool_results": [
+          {
+            "tool": "find_expenses",
+            "result": {
+              "status": "success",
+              "result_id": "result-v02-delete-multiple",
+              "observed_at": "2026-09-30T10:00:00+08:00",
+              "financial_version": "1",
+              "data": {
+                "items": [
+                  {
+                    "id": "a52be894-88c7-570a-a2cf-3acc763cb84d",
+                    "activity_id": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+                    "ledger_unit_id": "6dbf9d66-aaa8-5384-b35f-3be08cae85f3",
+                    "title": "设备租赁",
+                    "original": {
+                      "amount": "100",
+                      "currency": "CNY"
+                    },
+                    "base": {
+                      "amount": "100",
+                      "currency": "CNY"
+                    },
+                    "fx_snapshot": {
+                      "rate": "1",
+                      "source": "base_currency",
+                      "observed_at": null
+                    },
+                    "split_method": "manual",
+                    "payments": [
+                      {
+                        "participant_id": "fe9cd2cb-7110-527d-9d32-b8e8b47a2df5",
+                        "amount": "100"
+                      }
+                    ],
+                    "splits": [
+                      {
+                        "participant_id": "a7b9f085-5173-5f08-b48a-6bbe390d59b2",
+                        "amount": "100"
+                      }
+                    ],
+                    "occurred_at": "2026-09-10T10:00:00+08:00",
+                    "note": null,
+                    "icon_key": "money",
+                    "original_expense_id": null,
+                    "financial_locked": false,
+                    "version": "1",
+                    "is_deleted": false
+                  },
+                  {
+                    "id": "2bbe7c7e-cfe5-591b-b85e-a3ad6ff0cd29",
+                    "activity_id": "c59f9ecb-8ec4-566b-96af-d1711fe3600b",
+                    "ledger_unit_id": "6dbf9d66-aaa8-5384-b35f-3be08cae85f3",
+                    "title": "设备租赁",
+                    "original": {
+                      "amount": "125",
+                      "currency": "CNY"
+                    },
+                    "base": {
+                      "amount": "125",
+                      "currency": "CNY"
+                    },
+                    "fx_snapshot": {
+                      "rate": "1",
+                      "source": "base_currency",
+                      "observed_at": null
+                    },
+                    "split_method": "manual",
+                    "payments": [
+                      {
+                        "participant_id": "fe9cd2cb-7110-527d-9d32-b8e8b47a2df5",
+                        "amount": "125"
+                      }
+                    ],
+                    "splits": [
+                      {
+                        "participant_id": "a7b9f085-5173-5f08-b48a-6bbe390d59b2",
+                        "amount": "125"
+                      }
+                    ],
+                    "occurred_at": "2026-09-12T10:00:00+08:00",
+                    "note": null,
+                    "icon_key": "money",
+                    "original_expense_id": null,
+                    "financial_locked": false,
+                    "version": "1",
+                    "is_deleted": false
+                  }
+                ],
+                "next_cursor": null,
+                "truncated": false
+              }
+            }
+          }
+        ]
+      }
+    },
+    "expected": {
+      "output_type": "clarification",
+      "model_output": {
+        "type": "clarification",
+        "intent_id": "delete_expense",
+        "reason": "ambiguous_entity",
+        "missing_fields": [
+          "expense_id"
+        ],
+        "question": "查到两笔“设备租赁”，你要删除哪一笔？",
+        "candidates": [
+          {
+            "label": "设备租赁（100 CNY，2026-09-10）",
+            "entity": {
+              "type": "expense",
+              "id": "a52be894-88c7-570a-a2cf-3acc763cb84d",
+              "activity_id": "c59f9ecb-8ec4-566b-96af-d1711fe3600b"
+            }
+          },
+          {
+            "label": "设备租赁（125 CNY，2026-09-12）",
+            "entity": {
+              "type": "expense",
+              "id": "2bbe7c7e-cfe5-591b-b85e-a3ad6ff0cd29",
+              "activity_id": "c59f9ecb-8ec4-566b-96af-d1711fe3600b"
+            }
+          }
+        ]
+      },
+      "ground_truth_pointer": "scenario_v02_h_gated_delete_l2#/ground_truth",
+      "execution": {
+        "execution_allowed": false,
+        "confirmation_level": 2,
+        "confirmation_required": false,
+        "final_authorization": "not_applicable",
+        "successful_execution_label_allowed": false
+      },
+      "entity_resolution": [],
+      "evidence_result_ids": [
+        "result-v02-delete-multiple"
+      ],
+      "clarification_annotation": {
+        "reason": "ambiguous_entity",
+        "missing_fields": [
+          "expense_id"
+        ],
+        "candidate_entity_ids": [
+          "a52be894-88c7-570a-a2cf-3acc763cb84d",
+          "2bbe7c7e-cfe5-591b-b85e-a3ad6ff0cd29"
+        ],
+        "question": "查到两笔“设备租赁”，你要删除哪一笔？"
+      }
+    },
+    "dataset_metadata": {
+      "normalization_key": "surface:v02:sample_v02_h_gated_delete_l2",
+      "dedup_key": "sample:v02:sample_v02_h_gated_delete_l2",
+      "semantic_group_key": "semantic:v02:family_v02_gated_delete:sample_v02_h_gated_delete_l2",
+      "lifecycle_status": "approved",
+      "deprecated_by_version": null,
+      "contains_production_data": false,
+      "contains_real_personal_data": false,
+      "review_notes": "Approved SILVER Sample at Experiment A v0.2 freeze 2026-10-01T12:35:01+08:00, following independent review and explicit maintainer acceptance recorded in freeze_report.json. Split remains unassigned; eligibility does not authorize export or training before split assignment."
+    }
+  }
+]

@@ -1,0 +1,33 @@
+{
+  "validator": "scripts/ai_dataset_validator/cli.py validate dataset",
+  "recorded_result": {
+    "scenarios": 16,
+    "samples": 16,
+    "families": 8,
+    "errors": 0,
+    "warnings": 6,
+    "warning_codes": {
+      "NORMALIZED_DUPLICATE": 6
+    }
+  },
+  "warning_disposition": "Six NORMALIZED_DUPLICATE warnings retained as intentional reviewed contrasts: lookup cardinality (three), payer binding, Activity target, and recent-action status. For each pair the model-visible decision fact is sufficient and all other serialized input is held constant as recorded in independent_review.json.",
+  "serialization": {
+    "roundtrip": true,
+    "metadata_leaks": 0,
+    "input_only_exact_duplicate_groups": 0
+  },
+  "expected_external_fact_audit": {
+    "facts": 102,
+    "visible_matches": 102,
+    "missing_sources": 0,
+    "semantic_mapping_occurrences": 5
+  },
+  "source_hash_files": 30,
+  "dataset_content_hashes": {
+    "scenarios.json": "09317331b1d1da3683847e804b0d96529e4ede203a7886dba74561ac4a73c523",
+    "samples.json": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f"
+  },
+  "freeze_status": "frozen",
+  "experiment_version": "0.2-experiment-a",
+  "freeze_timestamp": "2026-10-01T12:35:01+08:00"
+}

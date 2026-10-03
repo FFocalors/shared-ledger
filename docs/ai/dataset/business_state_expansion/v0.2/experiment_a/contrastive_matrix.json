@@ -1,0 +1,110 @@
+{
+  "records": [
+    {
+      "family_id": "family_v02_currency_sufficiency",
+      "split_group_id": "split_v02_currency_sufficiency",
+      "scenario_ids": [
+        "scenario_v02_a_currency_missing",
+        "scenario_v02_a_currency_supplied"
+      ],
+      "decision_variable": "currency supplied vs absent",
+      "rationale": "The only intended decision-changing request fact is explicit currency; otherwise title, amount, participants, payer, split and timestamp are held constant.",
+      "all_counterparts_must_share_future_split": true,
+      "intentional_reviewed_contrast": false,
+      "review_disposition": "reviewed: not a normalized duplicate warning group"
+    },
+    {
+      "family_id": "family_v02_participant_lookup",
+      "split_group_id": "split_v02_participant_lookup",
+      "scenario_ids": [
+        "scenario_v02_b_lookup_not_run",
+        "scenario_v02_b_lookup_multiple",
+        "scenario_v02_b_lookup_zero",
+        "scenario_v02_b_lookup_unique"
+      ],
+      "decision_variable": "lookup execution/cardinality",
+      "rationale": "The same request moves from not-yet-queried to verified multiple/zero/unique candidate result; only a unique candidate permits ID binding.",
+      "all_counterparts_must_share_future_split": true,
+      "intentional_reviewed_contrast": true,
+      "review_disposition": "retained: same/near-identical surface, sufficient model-visible decision evidence changes the valid next action"
+    },
+    {
+      "family_id": "family_v02_payer_binding",
+      "split_group_id": "split_v02_payer_binding",
+      "scenario_ids": [
+        "scenario_v02_c_payer_unbound",
+        "scenario_v02_c_payer_bound"
+      ],
+      "decision_variable": "claimed participant binding absent vs explicit",
+      "rationale": "The user request and expense facts are held fixed; trusted current-user binding changes whether payer ID can be resolved.",
+      "all_counterparts_must_share_future_split": true,
+      "intentional_reviewed_contrast": true,
+      "review_disposition": "retained: same/near-identical surface, sufficient model-visible decision evidence changes the valid next action"
+    },
+    {
+      "family_id": "family_v02_activity_ui_target",
+      "split_group_id": "split_v02_activity_ui_target",
+      "scenario_ids": [
+        "scenario_v02_d_activity_ambiguous",
+        "scenario_v02_d_activity_selected"
+      ],
+      "decision_variable": "active/current UI target uniqueness",
+      "rationale": "Same read query; UI lacks a unique target versus showing the selected Activity.",
+      "all_counterparts_must_share_future_split": true,
+      "intentional_reviewed_contrast": true,
+      "review_disposition": "retained: same/near-identical surface, sufficient model-visible decision evidence changes the valid next action"
+    },
+    {
+      "family_id": "family_v02_recent_action_reference",
+      "split_group_id": "split_v02_recent_action_reference",
+      "scenario_ids": [
+        "scenario_v02_e_recent_failed",
+        "scenario_v02_e_recent_succeeded"
+      ],
+      "decision_variable": "recent action status/entity",
+      "rationale": "Same exact read query; failed/no entity requires clarification, succeeded/exact expense permits get_expense.",
+      "all_counterparts_must_share_future_split": true,
+      "intentional_reviewed_contrast": true,
+      "review_disposition": "retained: same/near-identical surface, sufficient model-visible decision evidence changes the valid next action"
+    },
+    {
+      "family_id": "family_v02_verified_expense_answer",
+      "split_group_id": "split_v02_verified_expense_answer",
+      "scenario_ids": [
+        "scenario_v02_f_verified_expense_answer"
+      ],
+      "decision_variable": "typed verified read payload",
+      "rationale": "Control case for an answer grounded in visible result DTO; not a contrastive pair.",
+      "all_counterparts_must_share_future_split": true,
+      "intentional_reviewed_contrast": false,
+      "review_disposition": "reviewed: not a normalized duplicate warning group"
+    },
+    {
+      "family_id": "family_v02_expense_update_boundary",
+      "split_group_id": "split_v02_expense_update_boundary",
+      "scenario_ids": [
+        "scenario_v02_g_presentation_l1",
+        "scenario_v02_g_financial_d4"
+      ],
+      "decision_variable": "requested field semantics",
+      "rationale": "The same visible existing expense and before-state; requested presentation icon versus financial amount changes confirmation/execution boundary. This is a semantic category change, not a scalar-only change.",
+      "all_counterparts_must_share_future_split": true,
+      "intentional_reviewed_contrast": false,
+      "review_disposition": "reviewed: not a normalized duplicate warning group"
+    },
+    {
+      "family_id": "family_v02_gated_delete",
+      "split_group_id": "split_v02_gated_delete",
+      "scenario_ids": [
+        "scenario_v02_h_gated_delete_l2"
+      ],
+      "decision_variable": "selected target plus gated operation",
+      "rationale": "Control for L2 delete proposal and trusted confirmation requirement; not a contrastive pair.",
+      "all_counterparts_must_share_future_split": true,
+      "intentional_reviewed_contrast": false,
+      "review_disposition": "reviewed: not a normalized duplicate warning group"
+    }
+  ],
+  "intentional_surface_duplicate_warning_count": 6,
+  "warnings_explained_by": "Six NORMALIZED_DUPLICATE warnings are intentional reviewed contrasts: three lookup cardinality edges, current-user binding, Activity target resolution, and recent-action state. In each, the serialized context fact is sufficient; no hidden metadata is needed."
+}

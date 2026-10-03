@@ -1,0 +1,364 @@
+{
+  "review_type": "independent; producer/approval status unchanged",
+  "verdict": "V0_2_EXPERIMENT_A_READY_FOR_FREEZE",
+  "governance": "draft, unassigned; not frozen/approved",
+  "scope": {
+    "scenarios": 16,
+    "samples": 16,
+    "families": 8,
+    "contrastive_groups": 6,
+    "pairwise_contrasts": 11,
+    "frozen_v0_1_modified": false
+  },
+  "initial_issue_level_severity_counts": {
+    "BLOCKER": 0,
+    "MAJOR": 4,
+    "MINOR": 3
+  },
+  "initial_findings": [
+    {
+      "id": "M1",
+      "severity": "MAJOR",
+      "finding": "H原unique+selected-target L2 proposal与frozen train scenario_gs_p0a_012 / scenario_gs_p0b_019重复，且preview含不可见creator事实。",
+      "resolution": "重构为typed verified multiple-match lookup→clarification，无selected target/隐藏permission fact，不产生proposal。"
+    },
+    {
+      "id": "M2",
+      "severity": "MAJOR",
+      "finding": "G selected UI Expense ID与verified get_expense DTO/GT target不一致，且title/state来自陈旧模板。",
+      "resolution": "ID、完整DTO、title/icon/version、operation target全部绑定同一对象，facts只标可见来源。"
+    },
+    {
+      "id": "M3",
+      "severity": "MAJOR",
+      "finding": "B not-run intent、E failed-reference intent、F payer-answer intent/type与Frozen Intent Catalog语义不一致。",
+      "resolution": "B保持create_expense意图做Supporting Lookup；E/F为query_expense；F operation=query。"
+    },
+    {
+      "id": "M4",
+      "severity": "MAJOR",
+      "finding": "旧106/106 literal match并未证明目标对象、result body与预期值的绑定。",
+      "resolution": "按当前样本重算102事实并逐项绑定关键查询链；source不只看result_id或字面同值。"
+    },
+    {
+      "id": "m1",
+      "severity": "MINOR",
+      "finding": "B multiple两个候选标签不可区分。",
+      "resolution": "改成第1/2位并询问选择。"
+    },
+    {
+      "id": "m2",
+      "severity": "MINOR",
+      "finding": "D coverage误标proposal且请求依赖相对时间。",
+      "resolution": "改为精确日期，修为只读tool_call/正确coverage。"
+    },
+    {
+      "id": "m3",
+      "severity": "MINOR",
+      "finding": "holdout文本未明确validation用途及fresh/v0.1 test边界。",
+      "resolution": "明确validation仅选方案，fresh test/hard封存，v0.1 test/hard仅历史诊断。"
+    }
+  ],
+  "unresolved_findings": 0,
+  "changed_records": [
+    "scenario_v02_b_lookup_not_run",
+    "scenario_v02_b_lookup_multiple",
+    "scenario_v02_b_lookup_zero",
+    "scenario_v02_b_lookup_unique",
+    "scenario_v02_c_payer_unbound",
+    "scenario_v02_c_payer_bound",
+    "scenario_v02_d_activity_ambiguous",
+    "scenario_v02_d_activity_selected",
+    "scenario_v02_e_recent_failed",
+    "scenario_v02_e_recent_succeeded",
+    "scenario_v02_f_verified_expense_answer",
+    "scenario_v02_g_presentation_l1",
+    "scenario_v02_g_financial_d4",
+    "scenario_v02_h_gated_delete_l2"
+  ],
+  "scenarios": [
+    {
+      "scenario_id": "scenario_v02_a_currency_missing",
+      "sample_id": "sample_v02_a_currency_missing",
+      "output_type": "clarification",
+      "decision_and_train_increment": "缺original_currency，询问，不从数额/locale推断；与supplied构成新增currency充分性边界。",
+      "verdict": "PASS"
+    },
+    {
+      "scenario_id": "scenario_v02_a_currency_supplied",
+      "sample_id": "sample_v02_a_currency_supplied",
+      "output_type": "proposal",
+      "decision_and_train_increment": "用户明确CNY后create_expense proposal；差异事实在user request。",
+      "verdict": "PASS"
+    },
+    {
+      "scenario_id": "scenario_v02_b_lookup_not_run",
+      "sample_id": "sample_v02_b_lookup_not_run",
+      "output_type": "tool_call",
+      "decision_and_train_increment": "create_expense业务intent保留；Supporting Lookup未执行，先只读find_participants。",
+      "verdict": "PASS"
+    },
+    {
+      "scenario_id": "scenario_v02_b_lookup_multiple",
+      "sample_id": "sample_v02_b_lookup_multiple",
+      "output_type": "clarification",
+      "decision_and_train_increment": "真实typed查找含两名同名Participant，显示第1/2位并询问；不绑定ID。",
+      "verdict": "PASS"
+    },
+    {
+      "scenario_id": "scenario_v02_b_lookup_zero",
+      "sample_id": "sample_v02_b_lookup_zero",
+      "output_type": "clarification",
+      "decision_and_train_increment": "真实typed结果items=[]；询问补充，不构造ID。",
+      "verdict": "PASS"
+    },
+    {
+      "scenario_id": "scenario_v02_b_lookup_unique",
+      "sample_id": "sample_v02_b_lookup_unique",
+      "output_type": "proposal",
+      "decision_and_train_increment": "唯一verified Participant ID绑定AA候选并进入create proposal。",
+      "verdict": "PASS"
+    },
+    {
+      "scenario_id": "scenario_v02_c_payer_unbound",
+      "sample_id": "sample_v02_c_payer_unbound",
+      "output_type": "clarification",
+      "decision_and_train_increment": "只缺claimed_participant_id；“我先付”不可猜付款人ID。",
+      "verdict": "PASS"
+    },
+    {
+      "scenario_id": "scenario_v02_c_payer_bound",
+      "sample_id": "sample_v02_c_payer_bound",
+      "output_type": "proposal",
+      "decision_and_train_increment": "仅claimed_participant_id出现，role_hint及其余context固定；付款ID等于绑定。",
+      "verdict": "PASS"
+    },
+    {
+      "scenario_id": "scenario_v02_d_activity_ambiguous",
+      "sample_id": "sample_v02_d_activity_ambiguous",
+      "output_type": "clarification",
+      "decision_and_train_increment": "两个UI可见Activity且无active target，不能按标题推断。",
+      "verdict": "PASS"
+    },
+    {
+      "scenario_id": "scenario_v02_d_activity_selected",
+      "sample_id": "sample_v02_d_activity_selected",
+      "output_type": "tool_call",
+      "decision_and_train_increment": "同一精确日期read query，有唯一当前Activity；调用只读find_expenses。",
+      "verdict": "PASS"
+    },
+    {
+      "scenario_id": "scenario_v02_e_recent_failed",
+      "sample_id": "sample_v02_e_recent_failed",
+      "output_type": "clarification",
+      "decision_and_train_increment": "失败recent action无实体/result；意图query_expense，无法绑定“刚才那笔”。",
+      "verdict": "PASS"
+    },
+    {
+      "scenario_id": "scenario_v02_e_recent_succeeded",
+      "sample_id": "sample_v02_e_recent_succeeded",
+      "output_type": "tool_call",
+      "decision_and_train_increment": "成功recent action含唯一Expense ID，ID传入get_expense参数。",
+      "verdict": "PASS"
+    },
+    {
+      "scenario_id": "scenario_v02_f_verified_expense_answer",
+      "sample_id": "sample_v02_f_verified_expense_answer",
+      "output_type": "answer",
+      "decision_and_train_increment": "verified完整get_expense DTO的payments[0].participant_id回答实际payer；不同于train中split responsibility解释。",
+      "verdict": "PASS"
+    },
+    {
+      "scenario_id": "scenario_v02_g_presentation_l1",
+      "sample_id": "sample_v02_g_presentation_l1",
+      "output_type": "proposal",
+      "decision_and_train_increment": "UI selected ID=verified DTO ID=write target；仅更新icon_key，L1确认。",
+      "verdict": "PASS"
+    },
+    {
+      "scenario_id": "scenario_v02_g_financial_d4",
+      "sample_id": "sample_v02_g_financial_d4",
+      "output_type": "proposal",
+      "decision_and_train_increment": "同DTO金额before完整diff；D4 execution_allowed=false且reason正确。",
+      "verdict": "PASS"
+    },
+    {
+      "scenario_id": "scenario_v02_h_gated_delete_l2",
+      "sample_id": "sample_v02_h_gated_delete_l2",
+      "output_type": "clarification",
+      "decision_and_train_increment": "verified find_expenses返回两笔同名费用、无selected target；问用户选择，不提前L2 proposal；旧selected-unique L2已有train状态。",
+      "verdict": "PASS"
+    }
+  ],
+  "pairwise_contrasts": [
+    {
+      "pair_id": "A1",
+      "left": "scenario_v02_a_currency_missing",
+      "right": "scenario_v02_a_currency_supplied",
+      "visible_difference_and_GT_reason": "原币种缺失vs显式CNY，决定clarify/propose",
+      "verdict": "PASS"
+    },
+    {
+      "pair_id": "B1",
+      "left": "scenario_v02_b_lookup_not_run",
+      "right": "scenario_v02_b_lookup_multiple",
+      "visible_difference_and_GT_reason": "未运行lookup vs verified两个结果，决定read/clarify",
+      "verdict": "PASS"
+    },
+    {
+      "pair_id": "B2",
+      "left": "scenario_v02_b_lookup_not_run",
+      "right": "scenario_v02_b_lookup_zero",
+      "visible_difference_and_GT_reason": "未运行lookup vs verified零结果，决定read/clarify",
+      "verdict": "PASS"
+    },
+    {
+      "pair_id": "B3",
+      "left": "scenario_v02_b_lookup_not_run",
+      "right": "scenario_v02_b_lookup_unique",
+      "visible_difference_and_GT_reason": "未运行lookup vs verified唯一结果，决定read/propose",
+      "verdict": "PASS"
+    },
+    {
+      "pair_id": "B4",
+      "left": "scenario_v02_b_lookup_multiple",
+      "right": "scenario_v02_b_lookup_zero",
+      "visible_difference_and_GT_reason": "两结果vs零结果，澄清候选内容与question不同",
+      "verdict": "PASS"
+    },
+    {
+      "pair_id": "B5",
+      "left": "scenario_v02_b_lookup_multiple",
+      "right": "scenario_v02_b_lookup_unique",
+      "visible_difference_and_GT_reason": "多候选不可绑定vs唯一候选绑定",
+      "verdict": "PASS"
+    },
+    {
+      "pair_id": "B6",
+      "left": "scenario_v02_b_lookup_zero",
+      "right": "scenario_v02_b_lookup_unique",
+      "visible_difference_and_GT_reason": "零结果不可绑定vs唯一结果绑定",
+      "verdict": "PASS"
+    },
+    {
+      "pair_id": "C1",
+      "left": "scenario_v02_c_payer_unbound",
+      "right": "scenario_v02_c_payer_bound",
+      "visible_difference_and_GT_reason": "只改变claimed_participant_id",
+      "verdict": "PASS"
+    },
+    {
+      "pair_id": "D1",
+      "left": "scenario_v02_d_activity_ambiguous",
+      "right": "scenario_v02_d_activity_selected",
+      "visible_difference_and_GT_reason": "两个可见Activity/no active target vs唯一current Activity",
+      "verdict": "PASS"
+    },
+    {
+      "pair_id": "E1",
+      "left": "scenario_v02_e_recent_failed",
+      "right": "scenario_v02_e_recent_succeeded",
+      "visible_difference_and_GT_reason": "除recent_actions外serialized input相同；失败无entity vs成功实体",
+      "verdict": "PASS"
+    },
+    {
+      "pair_id": "G1",
+      "left": "scenario_v02_g_presentation_l1",
+      "right": "scenario_v02_g_financial_d4",
+      "visible_difference_and_GT_reason": "同selected+verified DTO，用户请求字段icon vs amount",
+      "verdict": "PASS"
+    }
+  ],
+  "warnings": {
+    "count": 6,
+    "code": "NORMALIZED_DUPLICATE",
+    "disposition": "retain as intentional reviewed contrasts",
+    "affected_samples": [
+      {
+        "sample_id": "sample_v02_b_lookup_multiple",
+        "basis": "verified lookup含两个完整候选；与未执行对照",
+        "intentional_reviewed_contrast": true
+      },
+      {
+        "sample_id": "sample_v02_b_lookup_zero",
+        "basis": "verified lookup为空；与未执行对照",
+        "intentional_reviewed_contrast": true
+      },
+      {
+        "sample_id": "sample_v02_b_lookup_unique",
+        "basis": "verified lookup唯一并绑定提案；与未执行对照",
+        "intentional_reviewed_contrast": true
+      },
+      {
+        "sample_id": "sample_v02_c_payer_bound",
+        "basis": "只改变claimed_participant_id",
+        "intentional_reviewed_contrast": true
+      },
+      {
+        "sample_id": "sample_v02_d_activity_selected",
+        "basis": "当前Activity唯一与ambiguous UI对照",
+        "intentional_reviewed_contrast": true
+      },
+      {
+        "sample_id": "sample_v02_e_recent_succeeded",
+        "basis": "仅recent_actions从失败无实体变成功实体",
+        "intentional_reviewed_contrast": true
+      }
+    ]
+  },
+  "grounding": {
+    "prior_claim": 106,
+    "current_expected_external_facts": 102,
+    "visible_sources": 102,
+    "missing_sources": 0,
+    "serializer": "frozen export_record(sample), assistant target excluded",
+    "specific_object_binding_checks": [
+      "B verified Participant row→AA proposal ID",
+      "E recent action entity→get_expense arguments",
+      "F get_expense DTO→actual payer answer",
+      "G UI selected ID→verified DTO→write target",
+      "H verified expense rows→clarification candidates"
+    ]
+  },
+  "output_distribution": {
+    "answer": 1,
+    "clarification": 7,
+    "proposal": 5,
+    "tool_call": 3
+  },
+  "gt_contract_business_logic": {
+    "all_16_consistent": true,
+    "currency_lookup_binding_ui_recent_action_verified_read_L1_D4_L2": true,
+    "unresolved_product_decisions": 0
+  },
+  "surface": {
+    "reviewed": 16,
+    "natural": true,
+    "contract_language_leak": false,
+    "answer_leak": false,
+    "candidate_ambiguity_repaired": true
+  },
+  "holdout": {
+    "closure_axes": [
+      "scenario_family_id",
+      "split_group_id",
+      "semantic_group_key"
+    ],
+    "assignment_once_at_freeze": true,
+    "validation_use": "scheme_selection_only",
+    "fresh_test_sealed": true,
+    "fresh_hard_test_sealed": true,
+    "v0_1_test_use": "historical_regression_diagnostic_only",
+    "v0_1_hard_test_use": "historical_regression_diagnostic_only"
+  },
+  "verification": {
+    "validator_valid": true,
+    "validator_errors": 0,
+    "validator_warnings": 6,
+    "roundtrip": 16,
+    "metadata_leaks": 0,
+    "full_input_duplicate_groups": 0,
+    "source_hash_files": 30,
+    "manifest_artifact_hashes": 4
+  }
+}

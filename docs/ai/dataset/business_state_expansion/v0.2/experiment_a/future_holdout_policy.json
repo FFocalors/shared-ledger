@@ -1,0 +1,162 @@
+{
+  "assignment_performed": false,
+  "all_samples_remain_unassigned": true,
+  "closure_axes": [
+    "scenario_family_id",
+    "split_group_id",
+    "semantic_group_key"
+  ],
+  "groupings": [
+    {
+      "family_id": "family_v02_currency_sufficiency",
+      "split_group_id": "split_v02_currency_sufficiency",
+      "scenario_ids": [
+        "scenario_v02_a_currency_missing",
+        "scenario_v02_a_currency_supplied"
+      ],
+      "sample_ids": [
+        "sample_v02_a_currency_missing",
+        "sample_v02_a_currency_supplied"
+      ],
+      "semantic_group_keys": [
+        "semantic:v02:family_v02_currency_sufficiency:sample_v02_a_currency_missing",
+        "semantic:v02:family_v02_currency_sufficiency:sample_v02_a_currency_supplied"
+      ],
+      "counterparts_closed": true
+    },
+    {
+      "family_id": "family_v02_participant_lookup",
+      "split_group_id": "split_v02_participant_lookup",
+      "scenario_ids": [
+        "scenario_v02_b_lookup_not_run",
+        "scenario_v02_b_lookup_multiple",
+        "scenario_v02_b_lookup_zero",
+        "scenario_v02_b_lookup_unique"
+      ],
+      "sample_ids": [
+        "sample_v02_b_lookup_not_run",
+        "sample_v02_b_lookup_multiple",
+        "sample_v02_b_lookup_zero",
+        "sample_v02_b_lookup_unique"
+      ],
+      "semantic_group_keys": [
+        "semantic:v02:family_v02_participant_lookup:sample_v02_b_lookup_not_run",
+        "semantic:v02:family_v02_participant_lookup:sample_v02_b_lookup_multiple",
+        "semantic:v02:family_v02_participant_lookup:sample_v02_b_lookup_zero",
+        "semantic:v02:family_v02_participant_lookup:sample_v02_b_lookup_unique"
+      ],
+      "counterparts_closed": true
+    },
+    {
+      "family_id": "family_v02_payer_binding",
+      "split_group_id": "split_v02_payer_binding",
+      "scenario_ids": [
+        "scenario_v02_c_payer_unbound",
+        "scenario_v02_c_payer_bound"
+      ],
+      "sample_ids": [
+        "sample_v02_c_payer_unbound",
+        "sample_v02_c_payer_bound"
+      ],
+      "semantic_group_keys": [
+        "semantic:v02:family_v02_payer_binding:sample_v02_c_payer_unbound",
+        "semantic:v02:family_v02_payer_binding:sample_v02_c_payer_bound"
+      ],
+      "counterparts_closed": true
+    },
+    {
+      "family_id": "family_v02_activity_ui_target",
+      "split_group_id": "split_v02_activity_ui_target",
+      "scenario_ids": [
+        "scenario_v02_d_activity_ambiguous",
+        "scenario_v02_d_activity_selected"
+      ],
+      "sample_ids": [
+        "sample_v02_d_activity_ambiguous",
+        "sample_v02_d_activity_selected"
+      ],
+      "semantic_group_keys": [
+        "semantic:v02:family_v02_activity_ui_target:sample_v02_d_activity_ambiguous",
+        "semantic:v02:family_v02_activity_ui_target:sample_v02_d_activity_selected"
+      ],
+      "counterparts_closed": true
+    },
+    {
+      "family_id": "family_v02_recent_action_reference",
+      "split_group_id": "split_v02_recent_action_reference",
+      "scenario_ids": [
+        "scenario_v02_e_recent_failed",
+        "scenario_v02_e_recent_succeeded"
+      ],
+      "sample_ids": [
+        "sample_v02_e_recent_failed",
+        "sample_v02_e_recent_succeeded"
+      ],
+      "semantic_group_keys": [
+        "semantic:v02:family_v02_recent_action_reference:sample_v02_e_recent_failed",
+        "semantic:v02:family_v02_recent_action_reference:sample_v02_e_recent_succeeded"
+      ],
+      "counterparts_closed": true
+    },
+    {
+      "family_id": "family_v02_verified_expense_answer",
+      "split_group_id": "split_v02_verified_expense_answer",
+      "scenario_ids": [
+        "scenario_v02_f_verified_expense_answer"
+      ],
+      "sample_ids": [
+        "sample_v02_f_verified_expense_answer"
+      ],
+      "semantic_group_keys": [
+        "semantic:v02:family_v02_verified_expense_answer:sample_v02_f_verified_expense_answer"
+      ],
+      "counterparts_closed": true
+    },
+    {
+      "family_id": "family_v02_expense_update_boundary",
+      "split_group_id": "split_v02_expense_update_boundary",
+      "scenario_ids": [
+        "scenario_v02_g_presentation_l1",
+        "scenario_v02_g_financial_d4"
+      ],
+      "sample_ids": [
+        "sample_v02_g_presentation_l1",
+        "sample_v02_g_financial_d4"
+      ],
+      "semantic_group_keys": [
+        "semantic:v02:family_v02_expense_update_boundary:sample_v02_g_presentation_l1",
+        "semantic:v02:family_v02_expense_update_boundary:sample_v02_g_financial_d4"
+      ],
+      "counterparts_closed": true
+    },
+    {
+      "family_id": "family_v02_gated_delete",
+      "split_group_id": "split_v02_gated_delete",
+      "scenario_ids": [
+        "scenario_v02_h_gated_delete_l2"
+      ],
+      "sample_ids": [
+        "sample_v02_h_gated_delete_l2"
+      ],
+      "semantic_group_keys": [
+        "semantic:v02:family_v02_gated_delete:sample_v02_h_gated_delete_l2"
+      ],
+      "counterparts_closed": true
+    }
+  ],
+  "policy": "On future v0.2 freeze, assign each complete scenario_family/split_group/semantic-state closure exactly once using the frozen 70/10/15/5 plan. Use validation only for scheme selection. Keep fresh test and hard_test sealed until the final scheme is fixed. v0.1 test and hard_test are historical regression/diagnostic only and are not fresh generalization evidence. No split assignment or new holdout was made in this packet.",
+  "assignment_once_at_freeze": true,
+  "validation_use": "scheme_selection_only",
+  "fresh_test_sealed_until_scheme_fixed": true,
+  "fresh_hard_test_sealed_until_scheme_fixed": true,
+  "v0_1_test_use": "historical_regression_diagnostic_only",
+  "v0_1_hard_test_use": "historical_regression_diagnostic_only",
+  "v0_1_test_is_fresh_generalization_evidence": false,
+  "v0_1_hard_test_is_fresh_generalization_evidence": false,
+  "freeze_metadata": {
+    "status": "frozen",
+    "experiment_version": "0.2-experiment-a",
+    "frozen_at": "2026-10-01T12:35:01+08:00",
+    "principles_sha256": "7dad516a57be7bac09ee2b7a6a227af2851a0bd8642f43502430d695d78538ad"
+  }
+}

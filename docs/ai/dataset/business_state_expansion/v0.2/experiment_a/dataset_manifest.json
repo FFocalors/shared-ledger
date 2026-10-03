@@ -1,0 +1,122 @@
+{
+  "manifest_schema_version": "0.1",
+  "dataset_version": "0.1",
+  "business_logic_version": "1.2",
+  "ai_contract_version": "0.1.2",
+  "ai_scope_version": "0.1",
+  "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+  "created_at": "2026-10-01T12:35:01+08:00",
+  "status": "frozen",
+  "example_only": false,
+  "scenario_count": 16,
+  "scenario_family_count": 8,
+  "sample_count": 16,
+  "split_policy": {
+    "assignment_unit": "scenario_family",
+    "target_percentages": {
+      "train": 70,
+      "validation": 10,
+      "test": 15,
+      "hard_test": 5
+    },
+    "final_split_assigned": false
+  },
+  "split_statistics": {
+    "train": 0,
+    "validation": 0,
+    "test": 0,
+    "hard_test": 0,
+    "unassigned": 16
+  },
+  "task_statistics": {
+    "clarification": 4,
+    "parameter_extraction": 6,
+    "interaction_context_reasoning": 1,
+    "tool_call": 1,
+    "ui_context_reasoning": 1,
+    "proposal_generation": 3
+  },
+  "scope_statistics": {
+    "CORE": 15,
+    "SUPPORTED_BUT_GATED": 1,
+    "DEFERRED": 0
+  },
+  "source_statistics": {
+    "manual": 16
+  },
+  "trust_statistics": {
+    "GOLD": 0,
+    "SILVER": 16,
+    "SYNTHETIC_UNVERIFIED": 0
+  },
+  "difficulty_statistics": {
+    "easy": 5,
+    "normal": 9,
+    "hard": 2,
+    "ood": 0
+  },
+  "lifecycle_statistics": {
+    "draft": 0,
+    "generated": 0,
+    "validated": 0,
+    "reviewed": 0,
+    "approved": 16,
+    "rejected": 0,
+    "deprecated": 0
+  },
+  "artifacts": [
+    {
+      "kind": "scenario",
+      "path": "scenarios.json",
+      "record_count": 16,
+      "sha256": "09317331b1d1da3683847e804b0d96529e4ede203a7886dba74561ac4a73c523"
+    },
+    {
+      "kind": "sample",
+      "path": "samples.json",
+      "record_count": 16,
+      "sha256": "b29009b4ff062e09cb3f0fff111bb4de3d659c33dae11ce48788ebda521d472f"
+    },
+    {
+      "kind": "validation_report",
+      "path": "decision_state_coverage.json",
+      "record_count": 3,
+      "sha256": "a22cfa3263b0f0b9ac8c067c5a11ee810ef232f3cb6ea983b55d245da7b2a8f5"
+    },
+    {
+      "kind": "validation_report",
+      "path": "validation_report.json",
+      "record_count": 10,
+      "sha256": "c07ccc295be98a86cae74cd221c18c9a4da0467d7c0b94c0e1bd4de4e3308ae4"
+    },
+    {
+      "kind": "validation_report",
+      "path": "future_holdout_policy.json",
+      "record_count": 14,
+      "sha256": "c6cea381105097d552a4c66680c290cdff68e166283b590eb8d6da1e46d7d3ee"
+    },
+    {
+      "kind": "validation_report",
+      "path": "freeze_report.json",
+      "record_count": 13,
+      "sha256": "f7094d87d2ec89f1730ffde04485a8344e13fa0674caee7582930065de95b16f"
+    }
+  ],
+  "validation_summary": {
+    "schema_valid": true,
+    "contract_valid": true,
+    "scope_valid": true,
+    "leakage_valid": true,
+    "policy_valid": true,
+    "privacy_valid": true,
+    "error_count": 0,
+    "warning_count": 6,
+    "report_reference": "docs/ai/dataset/business_state_expansion/v0.2/experiment_a/EXPERIMENT_A_INDEPENDENT_REVIEW.md"
+  },
+  "privacy": {
+    "synthetic_identifiers_required": true,
+    "production_data_allowed": false,
+    "real_personal_data_allowed": false
+  },
+  "notes": "Frozen Training v0.2 Experiment A on 2026-10-01T12:35:01+08:00; external experiment_version=0.2-experiment-a. Dataset Schema v0.1 and dataset_version=0.1 remain unchanged because the frozen schema requires them. All 16 Scenarios and Samples are approved; trust remains SILVER. training_eligible=true as governance readiness only; all Samples remain split=unassigned, so export is blocked by the split gate; no export or training was performed. Freeze audit: FREEZE_AUDIT.md and freeze_report.json. Six intentional reviewed NORMALIZED_DUPLICATE contrast warnings are retained. Frozen-output overwrite guard recovery is documented in freeze_report.json; original freeze time and accepted review provenance are preserved."
+}
