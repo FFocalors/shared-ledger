@@ -34,3 +34,4 @@ supabase/.temp/
 # Python bytecode caches from local tooling
 __pycache__/
 *.py[cod]
+.claude/settings.json
