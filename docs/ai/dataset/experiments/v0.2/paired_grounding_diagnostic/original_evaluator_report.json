@@ -1,0 +1,177 @@
+{
+  "run_name": "paired-grounding-checkpoint33",
+  "summary_recomputed_at": "2026-10-03T11:39:31.776215+08:00",
+  "summary": {
+    "records": 96,
+    "raw_json_rate": {
+      "count": 96,
+      "total": 96,
+      "rate": 1.0
+    },
+    "extractable_json_rate": {
+      "count": 96,
+      "total": 96,
+      "rate": 1.0
+    },
+    "exact_model_output_rate": {
+      "count": 0,
+      "total": 96,
+      "rate": 0.0
+    },
+    "normalized_json_structural_rate": {
+      "count": 0,
+      "total": 96,
+      "rate": 0.0
+    },
+    "schema_valid_rate": {
+      "count": 80,
+      "total": 96,
+      "rate": 0.8333333333333334
+    },
+    "type_accuracy": {
+      "count": 73,
+      "total": 96,
+      "rate": 0.7604166666666666
+    },
+    "normalized_business_structure_accuracy": {
+      "count": 73,
+      "total": 96,
+      "rate": 0.7604166666666666
+    },
+    "field_fact_accuracy": {
+      "correct": 154,
+      "total": 634,
+      "rate": 0.24290220820189273
+    },
+    "contract_safe_rate": {
+      "count": 80,
+      "total": 96,
+      "rate": 0.8333333333333334
+    },
+    "duplicate_json_key_records": 0,
+    "safety_violation_counts": {
+      "intent_tool_call_not_enabled": 2,
+      "model_output_schema_invalid": 16,
+      "tool_not_mapped_to_intent": 1,
+      "write_tool_call_instead_of_ground_truth_response": 1
+    },
+    "key_fact_accuracy": {
+      "correct": 154,
+      "total": 522,
+      "rate": 0.2950191570881226
+    },
+    "grouped": {
+      "split": {
+        "hard_test": {
+          "count": 12,
+          "schema_valid": 10,
+          "type_correct": 10,
+          "exact_model_output_match": 0,
+          "normalized_json_structural_match": 0,
+          "normalized_business_structure_match": 10,
+          "contract_unsafe": 2,
+          "extractable_json": 12
+        },
+        "test": {
+          "count": 24,
+          "schema_valid": 21,
+          "type_correct": 21,
+          "exact_model_output_match": 0,
+          "normalized_json_structural_match": 0,
+          "normalized_business_structure_match": 21,
+          "contract_unsafe": 3,
+          "extractable_json": 24
+        },
+        "train": {
+          "count": 48,
+          "schema_valid": 37,
+          "type_correct": 30,
+          "exact_model_output_match": 0,
+          "normalized_json_structural_match": 0,
+          "normalized_business_structure_match": 30,
+          "contract_unsafe": 11,
+          "extractable_json": 48
+        },
+        "validation": {
+          "count": 12,
+          "schema_valid": 12,
+          "type_correct": 12,
+          "exact_model_output_match": 0,
+          "normalized_json_structural_match": 0,
+          "normalized_business_structure_match": 12,
+          "contract_unsafe": 0,
+          "extractable_json": 12
+        }
+      },
+      "output_type": {
+        "answer": {
+          "count": 78,
+          "schema_valid": 73,
+          "type_correct": 73,
+          "exact_model_output_match": 0,
+          "normalized_json_structural_match": 0,
+          "normalized_business_structure_match": 73,
+          "contract_unsafe": 5,
+          "extractable_json": 78
+        },
+        "proposal": {
+          "count": 18,
+          "schema_valid": 7,
+          "type_correct": 0,
+          "exact_model_output_match": 0,
+          "normalized_json_structural_match": 0,
+          "normalized_business_structure_match": 0,
+          "contract_unsafe": 11,
+          "extractable_json": 18
+        }
+      },
+      "difficulty": {
+        "easy": {
+          "count": 22,
+          "schema_valid": 18,
+          "type_correct": 12,
+          "exact_model_output_match": 0,
+          "normalized_json_structural_match": 0,
+          "normalized_business_structure_match": 12,
+          "contract_unsafe": 4,
+          "extractable_json": 22
+        },
+        "hard": {
+          "count": 12,
+          "schema_valid": 12,
+          "type_correct": 12,
+          "exact_model_output_match": 0,
+          "normalized_json_structural_match": 0,
+          "normalized_business_structure_match": 12,
+          "contract_unsafe": 0,
+          "extractable_json": 12
+        },
+        "normal": {
+          "count": 62,
+          "schema_valid": 50,
+          "type_correct": 49,
+          "exact_model_output_match": 0,
+          "normalized_json_structural_match": 0,
+          "normalized_business_structure_match": 49,
+          "contract_unsafe": 12,
+          "extractable_json": 62
+        }
+      }
+    },
+    "type_confusion": {
+      "answer": {
+        "answer": 73,
+        "clarification": 5
+      },
+      "proposal": {
+        "tool_call": 3,
+        "clarification": 9,
+        "answer": 5,
+        "confirmation": 1
+      }
+    },
+    "automated_metric_limitations": "Answer/summary/question/reason wording is not judged as semantically equivalent by string similarity. Clarification compares reason, missing_fields and candidates but not literal question text. Proposal compares tool arguments, kind, complete diff, confirmation and execution policy, but not summary wording. Results identify candidates for review and are not human business approval."
+  },
+  "records_file": "docs\\ai\\dataset\\experiments\\v0.2\\paired_grounding_diagnostic\\generation_records.jsonl",
+  "evaluation_version": "structured-contract-evaluator-v0.1.1"
+}

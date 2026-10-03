@@ -1,0 +1,238 @@
+{
+  "pairs": 48,
+  "transition_counts": {
+    "contract_safe_improved": 8,
+    "contract_safe_unchanged": 40,
+    "fact_improved": 3,
+    "fact_regressed": 4,
+    "fact_unchanged": 41,
+    "normalized_business_structure_match_improved": 3,
+    "normalized_business_structure_match_unchanged": 45,
+    "schema_valid_improved": 8,
+    "schema_valid_unchanged": 40,
+    "type_correct_improved": 3,
+    "type_correct_unchanged": 45
+  },
+  "scenario_summary": {
+    "scenario_gs_p0a_009": {
+      "rows": 5,
+      "key_fact_improved_rows": 0,
+      "key_fact_regressed_rows": 0,
+      "schema_valid_A": 1,
+      "schema_valid_B": 5,
+      "unsafe_A": 4,
+      "unsafe_B": 0
+    },
+    "scenario_gs_p0a_012": {
+      "rows": 4,
+      "key_fact_improved_rows": 0,
+      "key_fact_regressed_rows": 4,
+      "schema_valid_A": 0,
+      "schema_valid_B": 1,
+      "unsafe_A": 4,
+      "unsafe_B": 3
+    },
+    "scenario_gs_p0b_009": {
+      "rows": 6,
+      "key_fact_improved_rows": 0,
+      "key_fact_regressed_rows": 0,
+      "schema_valid_A": 6,
+      "schema_valid_B": 6,
+      "unsafe_A": 0,
+      "unsafe_B": 0
+    },
+    "scenario_gs_p0b_033": {
+      "rows": 4,
+      "key_fact_improved_rows": 0,
+      "key_fact_regressed_rows": 0,
+      "schema_valid_A": 4,
+      "schema_valid_B": 4,
+      "unsafe_A": 0,
+      "unsafe_B": 0
+    },
+    "scenario_gs_p0b_034": {
+      "rows": 6,
+      "key_fact_improved_rows": 0,
+      "key_fact_regressed_rows": 0,
+      "schema_valid_A": 6,
+      "schema_valid_B": 6,
+      "unsafe_A": 0,
+      "unsafe_B": 0
+    },
+    "scenario_gs_p0b_035": {
+      "rows": 6,
+      "key_fact_improved_rows": 0,
+      "key_fact_regressed_rows": 0,
+      "schema_valid_A": 5,
+      "schema_valid_B": 5,
+      "unsafe_A": 1,
+      "unsafe_B": 1
+    },
+    "scenario_gs_p0b_036": {
+      "rows": 5,
+      "key_fact_improved_rows": 0,
+      "key_fact_regressed_rows": 0,
+      "schema_valid_A": 5,
+      "schema_valid_B": 5,
+      "unsafe_A": 0,
+      "unsafe_B": 0
+    },
+    "scenario_gs_p0b_038": {
+      "rows": 6,
+      "key_fact_improved_rows": 0,
+      "key_fact_regressed_rows": 0,
+      "schema_valid_A": 6,
+      "schema_valid_B": 6,
+      "unsafe_A": 0,
+      "unsafe_B": 0
+    },
+    "scenario_gs_p0b_039": {
+      "rows": 6,
+      "key_fact_improved_rows": 3,
+      "key_fact_regressed_rows": 0,
+      "schema_valid_A": 3,
+      "schema_valid_B": 6,
+      "unsafe_A": 3,
+      "unsafe_B": 0
+    }
+  },
+  "backend_id_confounds": 9,
+  "decision": "EXPERIMENT_B_GROUNDING_SIGNAL_WEAK",
+  "human_review_summary": {
+    "static_rows": 39,
+    "backend_rows": 9,
+    "static_exact_receipt_citations": 38,
+    "static_long_exact_copy_rows": 14,
+    "static_rows_with_new_unsupported_claim": 5,
+    "directional_change_counts_not_full_pass_counts": {
+      "scenario_gs_p0b_009": {
+        "rows": 6,
+        "improve": 5,
+        "regress": 0,
+        "neutral": 1
+      },
+      "scenario_gs_p0b_033": {
+        "rows": 4,
+        "improve": 4,
+        "regress": 0,
+        "neutral": 0
+      },
+      "scenario_gs_p0b_034": {
+        "rows": 6,
+        "improve": 6,
+        "regress": 0,
+        "neutral": 0
+      },
+      "scenario_gs_p0b_035": {
+        "rows": 6,
+        "improve": 5,
+        "regress": 0,
+        "neutral": 1
+      },
+      "scenario_gs_p0b_036": {
+        "rows": 5,
+        "improve": 0,
+        "regress": 0,
+        "neutral": 5
+      },
+      "scenario_gs_p0b_038": {
+        "rows": 6,
+        "improve": 1,
+        "regress": 4,
+        "neutral": 1
+      },
+      "scenario_gs_p0b_039": {
+        "rows": 6,
+        "improve": 5,
+        "regress": 1,
+        "neutral": 0
+      }
+    },
+    "A_B_full_fact_pass_by_state": {
+      "scenario_gs_p0b_009": {
+        "rows": 6,
+        "A_correct_pass": 2,
+        "A_rate": 0.3333333333333333,
+        "B_correct_pass": 6,
+        "B_rate": 1.0,
+        "delta_percentage_points": 66.66666666666666,
+        "A_receipt_body_available": false,
+        "B_receipt_source_citation_count": 6
+      },
+      "scenario_gs_p0b_033": {
+        "rows": 4,
+        "A_correct_pass": 0,
+        "A_rate": 0.0,
+        "B_correct_pass": 4,
+        "B_rate": 1.0,
+        "delta_percentage_points": 100.0,
+        "A_receipt_body_available": false,
+        "B_receipt_source_citation_count": 4
+      },
+      "scenario_gs_p0b_034": {
+        "rows": 6,
+        "A_correct_pass": 0,
+        "A_rate": 0.0,
+        "B_correct_pass": 6,
+        "B_rate": 1.0,
+        "delta_percentage_points": 100.0,
+        "A_receipt_body_available": false,
+        "B_receipt_source_citation_count": 6
+      },
+      "scenario_gs_p0b_035": {
+        "rows": 6,
+        "A_correct_pass": 0,
+        "A_rate": 0.0,
+        "B_correct_pass": 5,
+        "B_rate": 0.8333333333333334,
+        "delta_percentage_points": 83.33333333333334,
+        "A_receipt_body_available": false,
+        "B_receipt_source_citation_count": 5
+      },
+      "scenario_gs_p0b_036": {
+        "rows": 5,
+        "A_correct_pass": 5,
+        "A_rate": 1.0,
+        "B_correct_pass": 5,
+        "B_rate": 1.0,
+        "delta_percentage_points": 0.0,
+        "A_receipt_body_available": false,
+        "B_receipt_source_citation_count": 5
+      },
+      "scenario_gs_p0b_038": {
+        "rows": 6,
+        "A_correct_pass": 4,
+        "A_rate": 0.6666666666666666,
+        "B_correct_pass": 1,
+        "B_rate": 0.16666666666666666,
+        "delta_percentage_points": -50.0,
+        "A_receipt_body_available": false,
+        "B_receipt_source_citation_count": 6
+      },
+      "scenario_gs_p0b_039": {
+        "rows": 6,
+        "A_correct_pass": 0,
+        "A_rate": 0.0,
+        "B_correct_pass": 5,
+        "B_rate": 0.8333333333333334,
+        "delta_percentage_points": 83.33333333333334,
+        "A_receipt_body_available": false,
+        "B_receipt_source_citation_count": 6
+      }
+    },
+    "manual_directional_net_row_change_not_exact_pass_count": 21,
+    "static_states_with_at_least_50pp_improvement_in_full_fact_pass_rate": [
+      "scenario_gs_p0b_009",
+      "scenario_gs_p0b_033",
+      "scenario_gs_p0b_034",
+      "scenario_gs_p0b_035",
+      "scenario_gs_p0b_039"
+    ],
+    "static_states_with_at_least_50pp_regression": [
+      "scenario_gs_p0b_038"
+    ],
+    "backend_uuid_mismatches": 9,
+    "backend_grounding_credit": 0,
+    "state_verdict": "mixed: gains in policy explanation states; one state has repeated unsupported baseline_commit claims; archive answers improve with one unsupported transaction-path claim"
+  }
+}

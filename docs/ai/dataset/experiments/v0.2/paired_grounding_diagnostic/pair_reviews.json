@@ -1,0 +1,6026 @@
+[
+  {
+    "sample_id": "sample_gs_p0_034",
+    "scenario_id": "scenario_gs_p0b_009",
+    "split": "test",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"不会。活动存款按活动币种记账，不会与账户其他币种余额合并。还款时按活动币种逐笔匹配；若活动币种不足，会按活动币种优先、不足部分转入其他币种。\",\"evidence_result_ids\":[\"result-pre-core-003-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "不会。活动存款按活动币种记账，不会与账户其他币种余额合并。还款时按活动币种逐笔匹配；若活动币种不足，会按活动币种优先、不足部分转入其他币种。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。base 币付款按债务历史 base valuation 清偿；外币账户清偿同币外债。\",\"evidence_result_ids\":[\"result-pre-core-003-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。base 币付款按债务历史 base valuation 清偿；外币账户清偿同币外债。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "mixed_or_unsupported_currency/order_claims",
+      "B_fact_status": "correct_partial_direct_rule_use",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_gs_p0_035",
+    "scenario_id": "scenario_gs_p0b_009",
+    "split": "test",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"活动里的存款不会自动按汇率折算成活动记账单位，也不会跨币种合并抵债。它只会按活动规则先冲抵当前活动内、且币种与活动记账单位一致的那一方欠款；若活动记账单位是美元，则日元存款不会直接用来抵美元债务。\",\"evidence_result_ids\":[\"result-pre-core-003-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "活动里的存款不会自动按汇率折算成活动记账单位，也不会跨币种合并抵债。它只会按活动规则先冲抵当前活动内、且币种与活动记账单位一致的那一方欠款；若活动记账单位是美元，则日元存款不会直接用来抵美元债务。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。base 币付款按债务历史 base valuation 清偿；外币账户清偿同币外债。\",\"evidence_result_ids\":[\"result-pre-core-003-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。base 币付款按债务历史 base valuation 清偿；外币账户清偿同币外债。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "mixed_or_unsupported_currency/order_claims",
+      "B_fact_status": "correct_partial_direct_rule_use",
+      "human_change": "neutral",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_gs_p0_080",
+    "scenario_id": "scenario_gs_p0b_033",
+    "split": "train",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"content\":\"因为100除以3等于33.333...，系统会按四舍五入分别显示33.4、33.3、33.3，这样合计仍为100。\",\"evidence_result_ids\":[\"result-rule-001-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "因为100除以3等于33.333...，系统会按四舍五入分别显示33.4、33.3、33.3，这样合计仍为100。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"AA 原币金额在所选 Participant 间等分，以原币 4 位小数保存。当 100 元按三人等分时，会出现 0.01 的尾差，系统会按 participant_order、id 稳定顺序逐个分配最小单位，正负金额对称处理；尾差不全部压给最后一人。\",\"evidence_result_ids\":[\"result-rule-001-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "AA 原币金额在所选 Participant 间等分，以原币 4 位小数保存。当 100 元按三人等分时，会出现 0.01 的尾差，系统会按 participant_order、id 稳定顺序逐个分配最小单位，正负金额对称处理；尾差不全部压给最后一人。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "partial_or_wrong_rounding_mechanism",
+      "B_fact_status": "correct_and_receipt_supported",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_gs_p0_081",
+    "scenario_id": "scenario_gs_p0b_033",
+    "split": "train",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"content\":\"因为100元除以3等于33.333…，系统会按当前显示精度四舍五入。前两个33.4、33.3、33.3合计100.0，避免累计误差；若都按33.3会少1元。\",\"evidence_result_ids\":[\"result-rule-001-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "因为100元除以3等于33.333…，系统会按当前显示精度四舍五入。前两个33.4、33.3、33.3合计100.0，避免累计误差；若都按33.3会少1元。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"AA Split 的 base amount 按原币等分，尾差按 participant_order、id 稳定顺序逐个分配最小单位，正负金额对称处理；尾差不全部压给最后一人。因此 100 元分三笔会出现 33.4、33.3、33.3 的分布。\",\"evidence_result_ids\":[\"result-rule-001-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "AA Split 的 base amount 按原币等分，尾差按 participant_order、id 稳定顺序逐个分配最小单位，正负金额对称处理；尾差不全部压给最后一人。因此 100 元分三笔会出现 33.4、33.3、33.3 的分布。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "partial_or_wrong_rounding_mechanism",
+      "B_fact_status": "correct_and_receipt_supported",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "near-verbatim/partial phrase overlap",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_gs_p0_082",
+    "scenario_id": "scenario_gs_p0b_034",
+    "split": "validation",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"活动里有未结债务时，你存入的余额会先按活动规则抵扣未结债务；只有债务结清后，剩余余额才会计入你的个人欠款。\",\"evidence_result_ids\":[\"result-rule-003-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "活动里有未结债务时，你存入的余额会先按活动规则抵扣未结债务；只有债务结清后，剩余余额才会计入你的个人欠款。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。\",\"evidence_result_ids\":[\"result-rule-003-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "generic_or_wrong_debt_order",
+      "B_fact_status": "correct_partial_receipt_supported",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_gs_p0_083",
+    "scenario_id": "scenario_gs_p0b_034",
+    "split": "validation",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"content\":\"活动内还款按“先还活动内债务、再还个人债务”的顺序执行。\",\"evidence_result_ids\":[\"result-rule-003-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "活动内还款按“先还活动内债务、再还个人债务”的顺序执行。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。base 币付款按债务历史 base valuation 清偿；外币账户清偿同币外债。投影先扣有效真实 Settlement/Final allocation，再对同币反向债务抵销，之后才应用预存 Usage。相反方向的未结债务不能提前消费另一方向的预存。\",\"evidence_result_ids\":[\"result-rule-003-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。base 币付款按债务历史 base valuation 清偿；外币账户清偿同币外债。投影先扣有效真实 Settlement/Final allocation，再对同币反向债务抵销，之后才应用预存 Usage。相反方向的未结债务不能提前消费另一方向的预存。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "generic_or_wrong_debt_order",
+      "B_fact_status": "correct_partial_receipt_supported",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_gs_p0_084",
+    "scenario_id": "scenario_gs_p0b_035",
+    "split": "hard_test",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"退款删除后，原消费仍然保留在账本中，不会自动恢复可编辑状态。退款只是对同一笔消费生成另一条退款记录；要修改原消费，仍需重新发起编辑。\",\"evidence_result_ids\":[\"result-rule-004-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "退款删除后，原消费仍然保留在账本中，不会自动恢复可编辑状态。退款只是对同一笔消费生成另一条退款记录；要修改原消费，仍需重新发起编辑。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"type\":\"answer\",\"content\":\"不能。只要曾经存在 linked refund，原 Expense 的财务锁不会解除，即使退款后来全部删除。退款删除只会释放可用额度，不会解除原 Expense 的锁。\",\"evidence_result_ids\":[\"result-rule-004-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "不能。只要曾经存在 linked refund，原 Expense 的财务锁不会解除，即使退款后来全部删除。退款删除只会释放可用额度，不会解除原 Expense 的锁。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "mixed_lock_explanation",
+      "B_fact_status": "correct_for_five_nonclarification_rows",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "near-verbatim/partial phrase overlap",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_gs_p0_085",
+    "scenario_id": "scenario_gs_p0b_035",
+    "split": "hard_test",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"不会。退款记录删除后，原单仍然保留在账本中，锁不会自动解除。只有当原单被删除或原单对应的锁被显式解除时，锁才会消失。退款只是原单的一个子记录，删除它不会触发锁的自动释放。\",\"evidence_result_ids\":[\"result-rule-004-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "不会。退款记录删除后，原单仍然保留在账本中，锁不会自动解除。只有当原单被删除或原单对应的锁被显式解除时，锁才会消失。退款只是原单的一个子记录，删除它不会触发锁的自动释放。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"不会。删除退款只释放原退款占用的可用额度；原 Expense 的财务锁不会解除，即使退款后来全部删除。\",\"evidence_result_ids\":[\"result-rule-004-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "不会。删除退款只释放原退款占用的可用额度；原 Expense 的财务锁不会解除，即使退款后来全部删除。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "mixed_lock_explanation",
+      "B_fact_status": "correct_for_five_nonclarification_rows",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "near-verbatim/partial phrase overlap",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_gs_p0_086",
+    "scenario_id": "scenario_gs_p0b_036",
+    "split": "train",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"content\":\"是的。当前会话中所有记账方案都未确认；上一笔仍然待确认。请在当前界面点击确认或取消。\",\"evidence_result_ids\":[\"result-rule-005-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "是的。当前会话中所有记账方案都未确认；上一笔仍然待确认。请在当前界面点击确认或取消。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"是的。当前会话仍停留在待确认阶段；上一笔方案尚未执行，因此不能自动提交。\",\"evidence_result_ids\":[\"result-rule-005-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "是的。当前会话仍停留在待确认阶段；上一笔方案尚未执行，因此不能自动提交。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "already_generally_correct",
+      "B_fact_status": "correct_more_explicit_confirmation_gate",
+      "human_change": "neutral",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_gs_p0_087",
+    "scenario_id": "scenario_gs_p0b_036",
+    "split": "train",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"content\":\"是的。对话里确认只是提出记账方案；真正记账需要在界面上点击“记账”或“确认”按钮。\",\"evidence_result_ids\":[\"result-rule-005-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "是的。对话里确认只是提出记账方案；真正记账需要在界面上点击“记账”或“确认”按钮。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"是的。对话里回复“同意”只会把当前方案提交到确认流程；真正记账需要你在活动页面按“记账/确认”提交，由可信 UI 与 Gateway 复核后才会写入。\",\"evidence_result_ids\":[\"result-rule-005-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "是的。对话里回复“同意”只会把当前方案提交到确认流程；真正记账需要你在活动页面按“记账/确认”提交，由可信 UI 与 Gateway 复核后才会写入。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "already_generally_correct",
+      "B_fact_status": "correct_more_explicit_confirmation_gate",
+      "human_change": "neutral",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_gs_p0_090",
+    "scenario_id": "scenario_gs_p0b_038",
+    "split": "train",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"账单的财务状态（如是否已结算、是否已合并）可能已在后台更新。当前表单不再反映旧状态，因此不能基于旧数据提交。请先刷新页面重新加载当前账单，再重新填写。\",\"evidence_result_ids\":[\"result-rule-007-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "账单的财务状态（如是否已结算、是否已合并）可能已在后台更新。当前表单不再反映旧状态，因此不能基于旧数据提交。请先刷新页面重新加载当前账单，再重新填写。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"当前 proposal 的 baseline_commit 与服务器最新状态不一致，因此旧方案不再可信。请刷新页面重新加载 proposal，并重新确认当前有效版本。\",\"evidence_result_ids\":[\"result-rule-007-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "当前 proposal 的 baseline_commit 与服务器最新状态不一致，因此旧方案不再可信。请刷新页面重新加载 proposal，并重新确认当前有效版本。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "generic_but_directionally_correct_refresh_and_reread",
+      "B_fact_status": "mixed_with_new_unsupported_version_cause",
+      "human_change": "regress",
+      "unsupported_or_hallucinated_fact": "claims proposal baseline_commit mismatch/latest-state comparison absent from authoritative receipt",
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_gs_p0_091",
+    "scenario_id": "scenario_gs_p0b_038",
+    "split": "train",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"content\":\"当前页面显示的是最新快照，但你的草稿可能基于旧版本。不要直接提交旧草稿；先刷新当前活动，重新读取最新状态，再基于最新快照重新填写并提交。\",\"evidence_result_ids\":[\"result-rule-007-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "当前页面显示的是最新快照，但你的草稿可能基于旧版本。不要直接提交旧草稿；先刷新当前活动，重新读取最新状态，再基于最新快照重新填写并提交。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"当前 proposal 已过期，不能基于旧版本继续提交。请刷新页面重新加载最新提案，并在确认界面重新核对金额、参与人和版本信息后再提交。\",\"evidence_result_ids\":[\"result-rule-007-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "当前 proposal 已过期，不能基于旧版本继续提交。请刷新页面重新加载最新提案，并在确认界面重新核对金额、参与人和版本信息后再提交。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "generic_but_directionally_correct_refresh_and_reread",
+      "B_fact_status": "mixed_with_new_unsupported_version_cause",
+      "human_change": "neutral",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_gs_p0_092",
+    "scenario_id": "scenario_gs_p0b_039",
+    "split": "test",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"不能。活动归档后不再接受补录消费。归档会锁定该活动的所有收支记录，后续只能新建活动或从其他活动迁移收支。\",\"evidence_result_ids\":[\"result-rule-008-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "不能。活动归档后不再接受补录消费。归档会锁定该活动的所有收支记录，后续只能新建活动或从其他活动迁移收支。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"type\":\"answer\",\"content\":\"不能。归档后财务写入变为只读，无法再补录消费；如需恢复，请先解除归档。\",\"evidence_result_ids\":[\"result-rule-008-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "不能。归档后财务写入变为只读，无法再补录消费；如需恢复，请先解除归档。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "mixed_including_wrong_or_nonresponsive_archive_guidance",
+      "B_fact_status": "correct_for_five_rows_one_unsupported_activity_claim",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_gs_p0_093",
+    "scenario_id": "scenario_gs_p0b_039",
+    "split": "test",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"不能通过归档后的补录或撤销操作恢复。应联系活动管理员重新发起记账；如无法联系，按活动规则走退款/补偿流程。\",\"evidence_result_ids\":[\"result-rule-008-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "不能通过归档后的补录或撤销操作恢复。应联系活动管理员重新发起记账；如无法联系，按活动规则走退款/补偿流程。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"type\":\"answer\",\"content\":\"不能通过归档活动来补录。归档只改变该活动的可见性与可写性，不会把历史交易写入账本。补录应通过当前活动的新交易入口提交；若原活动已归档且不再可写，请联系管理员解除归档后按实时投影重新提交。\",\"evidence_result_ids\":[\"result-rule-008-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "不能通过归档活动来补录。归档只改变该活动的可见性与可写性，不会把历史交易写入账本。补录应通过当前活动的新交易入口提交；若原活动已归档且不再可写，请联系管理员解除归档后按实时投影重新提交。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "mixed_including_wrong_or_nonresponsive_archive_guidance",
+      "B_fact_status": "correct_for_five_rows_one_unsupported_activity_claim",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_e24b1a12d1e4",
+    "scenario_id": "scenario_gs_p0b_009",
+    "split": "test",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"活动里的存款不会自动合并到账户的美元或日元余额。它们会按各自币种分别记账，并在活动结算时按活动汇率折算成活动记账单位。\",\"evidence_result_ids\":[\"result-pre-core-003-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "活动里的存款不会自动合并到账户的美元或日元余额。它们会按各自币种分别记账，并在活动结算时按活动汇率折算成活动记账单位。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。base 币付款按债务历史 base valuation 清偿；外币账户清偿同币外债。\",\"evidence_result_ids\":[\"result-pre-core-003-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。base 币付款按债务历史 base valuation 清偿；外币账户清偿同币外债。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "mixed_or_unsupported_currency/order_claims",
+      "B_fact_status": "correct_partial_direct_rule_use",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_ae1660aab544",
+    "scenario_id": "scenario_gs_p0b_009",
+    "split": "test",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"活动存款会按活动内记账顺序先匹配最早未结清的债务。不同活动之间不会互相抵扣。美元和日元不会合并；它们各自在各自货币的债务和还款中按顺序匹配。\",\"evidence_result_ids\":[\"result-pre-core-003-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "活动存款会按活动内记账顺序先匹配最早未结清的债务。不同活动之间不会互相抵扣。美元和日元不会合并；它们各自在各自货币的债务和还款中按顺序匹配。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"根据当前业务规则，新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。美元和日元不会合并，各自按对应币种分别清偿同币债务。\",\"evidence_result_ids\":[\"result-pre-core-003-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "根据当前业务规则，新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。美元和日元不会合并，各自按对应币种分别清偿同币债务。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "mixed_or_unsupported_currency/order_claims",
+      "B_fact_status": "correct_partial_direct_rule_use",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_2b0ab71ccf9c",
+    "scenario_id": "scenario_gs_p0b_009",
+    "split": "test",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"活动里的存款不会自动按汇率或时间顺序去“抵”某笔支出。它先按活动记账规则记为活动资产；支出时由活动账本按各自币种分别匹配。不同币种不会合并，也不会跨币种抵扣。\",\"evidence_result_ids\":[\"result-pre-core-003-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "活动里的存款不会自动按汇率或时间顺序去“抵”某笔支出。它先按活动记账规则记为活动资产；支出时由活动账本按各自币种分别匹配。不同币种不会合并，也不会跨币种抵扣。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"根据当前业务规则，预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。base 币付款按债务历史 base valuation 清偿；外币账户清偿同币外债。投影先扣有效真实 Settlement/Final allocation，再对同币反向债务抵销，之后才应用预存 Usage。相反方向的未结债务不能提前消费另一方向的预存。\",\"evidence_result_ids\":[\"result-pre-core-003-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "根据当前业务规则，预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。base 币付款按债务历史 base valuation 清偿；外币账户清偿同币外债。投影先扣有效真实 Settlement/Final allocation，再对同币反向债务抵销，之后才应用预存 Usage。相反方向的未结债务不能提前消费另一方向的预存。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "mixed_or_unsupported_currency/order_claims",
+      "B_fact_status": "correct_partial_direct_rule_use",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_7e6dab2d3489",
+    "scenario_id": "scenario_gs_p0b_009",
+    "split": "test",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"活动里的存款会按活动内债务的到期顺序先还最早到期的；不同币种不会合在一起，各自按各自债务还各自。\",\"evidence_result_ids\":[\"result-pre-core-003-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "活动里的存款会按活动内债务的到期顺序先还最早到期的；不同币种不会合在一起，各自按各自债务还各自。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务；base 币付款按债务历史 base valuation 清偿，外币账户清偿同币外债。\",\"evidence_result_ids\":[\"result-pre-core-003-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务；base 币付款按债务历史 base valuation 清偿，外币账户清偿同币外债。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "mixed_or_unsupported_currency/order_claims",
+      "B_fact_status": "correct_partial_direct_rule_use",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_b6a3bfa9da68",
+    "scenario_id": "scenario_gs_p0b_033",
+    "split": "train",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"因为100元除以3等于33.333...，系统会按固定小数位四舍五入。通常先让前几个人多承担0.01的尾差，使合计正好等于100。\",\"evidence_result_ids\":[\"result-rule-001-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "因为100元除以3等于33.333...，系统会按固定小数位四舍五入。通常先让前几个人多承担0.01的尾差，使合计正好等于100。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"AA 原币金额在所选 Participant 间等分，以原币 4 位小数保存。100 元按三人等分，每人应为 33.3333...，系统会按 participant_order、id 稳定顺序逐个分配最小单位，正负金额对称处理；尾差不全部压给最后一人。因此会出现 33.4、33.3、33.3 这种四舍五入后的分布。\",\"evidence_result_ids\":[\"result-rule-001-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "AA 原币金额在所选 Participant 间等分，以原币 4 位小数保存。100 元按三人等分，每人应为 33.3333...，系统会按 participant_order、id 稳定顺序逐个分配最小单位，正负金额对称处理；尾差不全部压给最后一人。因此会出现 33.4、33.3、33.3 这种四舍五入后的分布。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "partial_or_wrong_rounding_mechanism",
+      "B_fact_status": "correct_and_receipt_supported",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_d128b17c1db8",
+    "scenario_id": "scenario_gs_p0b_033",
+    "split": "train",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"content\":\"因为100除以3等于33.333...，系统会按四舍五入把小数位四舍五入到两位，所以会出现33.4、33.3、33.3。\",\"evidence_result_ids\":[\"result-rule-001-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "因为100除以3等于33.333...，系统会按四舍五入把小数位四舍五入到两位，所以会出现33.4、33.3、33.3。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"AA 原币金额在所选 Participant 间等分，以原币 4 位小数保存。33.3333×3=99.9999，尾差0.0001按 participant_order、id 稳定顺序逐个分配最小单位，因此出现33.4、33.3、33.3。\",\"evidence_result_ids\":[\"result-rule-001-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "AA 原币金额在所选 Participant 间等分，以原币 4 位小数保存。33.3333×3=99.9999，尾差0.0001按 participant_order、id 稳定顺序逐个分配最小单位，因此出现33.4、33.3、33.3。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "partial_or_wrong_rounding_mechanism",
+      "B_fact_status": "correct_and_receipt_supported",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_401a2f5ad127",
+    "scenario_id": "scenario_gs_p0b_034",
+    "split": "validation",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"充入的余额会按活动规则先抵扣当前未结清的债务；若活动内债务已结清，则按活动规则处理。\",\"evidence_result_ids\":[\"result-rule-003-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "充入的余额会按活动规则先抵扣当前未结清的债务；若活动内债务已结清，则按活动规则处理。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。\",\"evidence_result_ids\":[\"result-rule-003-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "generic_or_wrong_debt_order",
+      "B_fact_status": "correct_partial_receipt_supported",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_f3941370d729",
+    "scenario_id": "scenario_gs_p0b_034",
+    "split": "validation",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"content\":\"未结债务会按活动规则逐笔匹配当前存款，优先抵扣最早到期或最早确认的债务；同一笔债务可能分多笔存款逐步清偿。\",\"evidence_result_ids\":[\"result-rule-003-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "未结债务会按活动规则逐笔匹配当前存款，优先抵扣最早到期或最早确认的债务；同一笔债务可能分多笔存款逐步清偿。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。\",\"evidence_result_ids\":[\"result-rule-003-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "generic_or_wrong_debt_order",
+      "B_fact_status": "correct_partial_receipt_supported",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_191d11c1745f",
+    "scenario_id": "scenario_gs_p0b_034",
+    "split": "validation",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"活动里若有未结债务，存进去的余额会按活动规则先用于清偿债务；债务结清后，剩余余额才会转入活动资金池。\",\"evidence_result_ids\":[\"result-rule-003-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "活动里若有未结债务，存进去的余额会按活动规则先用于清偿债务；债务结清后，剩余余额才会转入活动资金池。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"活动里若有未结债务，新预存先按债务历史估值清偿 Owner 欠 Custodian 的债务；剩余资金才进入预存账户。\",\"evidence_result_ids\":[\"result-rule-003-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "活动里若有未结债务，新预存先按债务历史估值清偿 Owner 欠 Custodian 的债务；剩余资金才进入预存账户。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "generic_or_wrong_debt_order",
+      "B_fact_status": "correct_partial_receipt_supported",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "near-verbatim/partial phrase overlap",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_6c16bbf26c83",
+    "scenario_id": "scenario_gs_p0b_034",
+    "split": "validation",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"活动内还款按“先还当前债务、再还历史债务”的顺序执行。同一笔债务按“先还本金、再还利息”的顺序执行。\",\"evidence_result_ids\":[\"result-rule-003-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "活动内还款按“先还当前债务、再还历史债务”的顺序执行。同一笔债务按“先还本金、再还利息”的顺序执行。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。\",\"evidence_result_ids\":[\"result-rule-003-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "generic_or_wrong_debt_order",
+      "B_fact_status": "correct_partial_receipt_supported",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_495133fe795c",
+    "scenario_id": "scenario_gs_p0b_035",
+    "split": "hard_test",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"不能。删除退款不会改变原消费记录；退款只是把原消费冲回。要改原消费，必须重新发起一笔新的消费。\",\"evidence_result_ids\":[\"result-rule-004-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "不能。删除退款不会改变原消费记录；退款只是把原消费冲回。要改原消费，必须重新发起一笔新的消费。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"type\":\"answer\",\"content\":\"不能。删除退款只会释放原消费占用的额度；原消费及其财务锁不会解除，金额、币种、汇率、付款方、分摊、账本单元、时间等财务事实不可修改。\",\"evidence_result_ids\":[\"result-rule-004-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "不能。删除退款只会释放原消费占用的额度；原消费及其财务锁不会解除，金额、币种、汇率、付款方、分摊、账本单元、时间等财务事实不可修改。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "mixed_lock_explanation",
+      "B_fact_status": "correct_for_five_nonclarification_rows",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "near-verbatim/partial phrase overlap",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_af85b5a16d3b",
+    "scenario_id": "scenario_gs_p0b_035",
+    "split": "hard_test",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"clarification\",\"intent_id\":\"query_editability\",\"reason\":\"missing_entity\",\"missing_fields\":[\"activity_id\"],\"question\":\"退款删除后，原消费是否可编辑取决于退款是否已结算。请提供活动 ID，以便我查询当前状态。\",\"candidates\":[]}",
+      "parsed": {
+        "type": "clarification",
+        "intent_id": "query_editability",
+        "reason": "missing_entity",
+        "missing_fields": [
+          "activity_id"
+        ],
+        "question": "退款删除后，原消费是否可编辑取决于退款是否已结算。请提供活动 ID，以便我查询当前状态。",
+        "candidates": []
+      },
+      "evaluation": {
+        "schema_valid": false,
+        "schema_errors": [
+          "$: expected exactly one oneOf schema match (found 0)"
+        ],
+        "expected_type": "answer",
+        "actual_type": "clarification",
+        "type_correct": false,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 0,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 0.0,
+        "key_facts_correct": 0,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 0.0,
+        "natural_language_fields": {
+          "content": {
+            "present": false,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [
+          "model_output_schema_invalid"
+        ],
+        "contract_safe": false
+      }
+    },
+    "B": {
+      "raw": "{\"type\":\"clarification\",\"intent_id\":\"query_editability\",\"reason\":\"missing_field\",\"missing_fields\":[\"original_expense_id\"],\"question\":\"退款删除后原消费是否可编辑，取决于原消费是否仍被其他退款引用。请提供原消费 ID。\",\"candidates\":[]}",
+      "parsed": {
+        "type": "clarification",
+        "intent_id": "query_editability",
+        "reason": "missing_field",
+        "missing_fields": [
+          "original_expense_id"
+        ],
+        "question": "退款删除后原消费是否可编辑，取决于原消费是否仍被其他退款引用。请提供原消费 ID。",
+        "candidates": []
+      },
+      "evaluation": {
+        "schema_valid": false,
+        "schema_errors": [
+          "$: expected exactly one oneOf schema match (found 0)"
+        ],
+        "expected_type": "answer",
+        "actual_type": "clarification",
+        "type_correct": false,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 0,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 0.0,
+        "key_facts_correct": 0,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 0.0,
+        "natural_language_fields": {
+          "content": {
+            "present": false,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [
+          "model_output_schema_invalid"
+        ],
+        "contract_safe": false
+      }
+    },
+    "changes": {
+      "schema": [
+        false,
+        false
+      ],
+      "type": [
+        false,
+        false
+      ],
+      "business_structure": [
+        false,
+        false
+      ],
+      "field_facts": [
+        0,
+        0
+      ],
+      "key_facts": [
+        0,
+        0
+      ],
+      "safety": [
+        false,
+        false
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": false,
+      "B_legacy_id_cited": false,
+      "B_actual_receipt_id_cited": false
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "mixed_lock_explanation",
+      "B_fact_status": "correct_for_five_nonclarification_rows",
+      "human_change": "neutral",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "no exact receipt citation",
+      "copying": "paraphrase or synthesis",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_2a2434a010ba",
+    "scenario_id": "scenario_gs_p0b_035",
+    "split": "hard_test",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"退款记录删除并不会自动解除原消费记录的锁。锁的解除由退款结果中的退款ID与退款金额匹配决定；删除只是移除一条记录，不会触发锁的释放。\",\"evidence_result_ids\":[\"result-rule-004-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "退款记录删除并不会自动解除原消费记录的锁。锁的解除由退款结果中的退款ID与退款金额匹配决定；删除只是移除一条记录，不会触发锁的释放。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"不能。删除退款记录不会解除原 Expense 的财务锁。只要曾经存在 linked refund，原 Expense 的财务锁就不会解除，即使退款后来全部删除。退款只是释放可用额度，不会改变原 Expense 的锁状态。\",\"evidence_result_ids\":[\"result-rule-004-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "不能。删除退款记录不会解除原 Expense 的财务锁。只要曾经存在 linked refund，原 Expense 的财务锁就不会解除，即使退款后来全部删除。退款只是释放可用额度，不会改变原 Expense 的锁状态。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "mixed_lock_explanation",
+      "B_fact_status": "correct_for_five_nonclarification_rows",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "near-verbatim/partial phrase overlap",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_8e1096f2010d",
+    "scenario_id": "scenario_gs_p0b_035",
+    "split": "hard_test",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"不会。退款记录删除后，原单仍然保留在账本中，其锁不会自动解除。退款只是原单的一个子记录，删除退款不会改变原单的状态或释放锁。\",\"evidence_result_ids\":[\"result-rule-004-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "不会。退款记录删除后，原单仍然保留在账本中，其锁不会自动解除。退款只是原单的一个子记录，删除退款不会改变原单的状态或释放锁。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"退款记录删除后，原支出单不会自动解除财务锁。只要曾经存在过关联退款，原支出单仍保持锁定；删除退款只会释放退款本身占用的额度。\",\"evidence_result_ids\":[\"result-rule-004-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "退款记录删除后，原支出单不会自动解除财务锁。只要曾经存在过关联退款，原支出单仍保持锁定；删除退款只会释放退款本身占用的额度。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "mixed_lock_explanation",
+      "B_fact_status": "correct_for_five_nonclarification_rows",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_0847b1b27f7f",
+    "scenario_id": "scenario_gs_p0b_036",
+    "split": "train",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"content\":\"是的。记账方案会在对话框里显示，必须点击确认才能提交。上一笔方案还在待确认状态，没有提交。\",\"evidence_result_ids\":[\"result-rule-005-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "是的。记账方案会在对话框里显示，必须点击确认才能提交。上一笔方案还在待确认状态，没有提交。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"是的。记账属于写操作，必须先由可信界面确认并经过 Gateway 复核，才能执行。上一笔方案还在待确认状态，没有确认就不能执行。\",\"evidence_result_ids\":[\"result-rule-005-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "是的。记账属于写操作，必须先由可信界面确认并经过 Gateway 复核，才能执行。上一笔方案还在待确认状态，没有确认就不能执行。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "already_generally_correct",
+      "B_fact_status": "correct_more_explicit_confirmation_gate",
+      "human_change": "neutral",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_538a5e7bdb1e",
+    "scenario_id": "scenario_gs_p0b_036",
+    "split": "train",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"content\":\"是的。上一笔记账方案仍待确认；请在当前界面点击确认。\",\"evidence_result_ids\":[\"result-rule-005-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "是的。上一笔记账方案仍待确认；请在当前界面点击确认。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"是的。上一笔记账方案仍停留在待确认状态，必须重新确认才能执行。\",\"evidence_result_ids\":[\"result-rule-005-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "是的。上一笔记账方案仍停留在待确认状态，必须重新确认才能执行。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "already_generally_correct",
+      "B_fact_status": "correct_more_explicit_confirmation_gate",
+      "human_change": "neutral",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_720594c4fe1e",
+    "scenario_id": "scenario_gs_p0b_036",
+    "split": "train",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"content\":\"是的。当前这笔记账还没有被确认，所以不会写入账本。\",\"evidence_result_ids\":[\"result-rule-005-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "是的。当前这笔记账还没有被确认，所以不会写入账本。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"是的。当前会话里还有未确认的记账方案，必须通过确认才能写入。\",\"evidence_result_ids\":[\"result-rule-005-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "是的。当前会话里还有未确认的记账方案，必须通过确认才能写入。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "already_generally_correct",
+      "B_fact_status": "correct_more_explicit_confirmation_gate",
+      "human_change": "neutral",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_c2e46813f818",
+    "scenario_id": "scenario_gs_p0b_038",
+    "split": "train",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"content\":\"当前活动对应的账本版本已更新，你看到的旧数据不再适用。重新读取最新活动后才能继续提交。\",\"evidence_result_ids\":[\"result-rule-007-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "当前活动对应的账本版本已更新，你看到的旧数据不再适用。重新读取最新活动后才能继续提交。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"当前 proposal 的 baseline_commit 与服务器最新状态不一致，说明已有服务端变更（如金额、参与人、版本等）；旧方案不再可信，必须重新生成并重新确认。\",\"evidence_result_ids\":[\"result-rule-007-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "当前 proposal 的 baseline_commit 与服务器最新状态不一致，说明已有服务端变更（如金额、参与人、版本等）；旧方案不再可信，必须重新生成并重新确认。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "generic_but_directionally_correct_refresh_and_reread",
+      "B_fact_status": "mixed_with_new_unsupported_version_cause",
+      "human_change": "regress",
+      "unsupported_or_hallucinated_fact": "claims proposal baseline_commit mismatch/latest-state comparison absent from authoritative receipt",
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_0c10938359b3",
+    "scenario_id": "scenario_gs_p0b_038",
+    "split": "train",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"content\":\"账单的财务版本在后台已更新，当前草稿不再匹配最新账本。请刷新页面重新读取当前版本，再重新填写。\",\"evidence_result_ids\":[\"result-rule-007-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "账单的财务版本在后台已更新，当前草稿不再匹配最新账本。请刷新页面重新读取当前版本，再重新填写。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"当前 proposal 的 baseline_commit 与服务器最新状态不一致，因此旧方案不再可信。请刷新页面重新加载 proposal，不要基于旧结果继续操作。\",\"evidence_result_ids\":[\"result-rule-007-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "当前 proposal 的 baseline_commit 与服务器最新状态不一致，因此旧方案不再可信。请刷新页面重新加载 proposal，不要基于旧结果继续操作。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "generic_but_directionally_correct_refresh_and_reread",
+      "B_fact_status": "mixed_with_new_unsupported_version_cause",
+      "human_change": "regress",
+      "unsupported_or_hallucinated_fact": "claims proposal baseline_commit mismatch/latest-state comparison absent from authoritative receipt",
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_95b271a2d3c6",
+    "scenario_id": "scenario_gs_p0b_038",
+    "split": "train",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"content\":\"当前活动中的财务版本已经更新，旧活动不再反映最新账目。重新加载活动后，旧活动会被替换为最新版本。\",\"evidence_result_ids\":[\"result-rule-007-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "当前活动中的财务版本已经更新，旧活动不再反映最新账目。重新加载活动后，旧活动会被替换为最新版本。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"当前 proposal 已过期，旧版本不再可信。请刷新页面重新生成 proposal，并重新确认。\",\"evidence_result_ids\":[\"result-rule-007-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "当前 proposal 已过期，旧版本不再可信。请刷新页面重新生成 proposal，并重新确认。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "generic_but_directionally_correct_refresh_and_reread",
+      "B_fact_status": "mixed_with_new_unsupported_version_cause",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_a75531445264",
+    "scenario_id": "scenario_gs_p0b_038",
+    "split": "train",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"content\":\"财务状态已变化表示当前页面引用的账单在后台被其他操作更新过，因此不再反映你看到的旧数据。为避免基于过期信息提交错误结果，应用要求重新加载并确认当前版本。\",\"evidence_result_ids\":[\"result-rule-007-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "财务状态已变化表示当前页面引用的账单在后台被其他操作更新过，因此不再反映你看到的旧数据。为避免基于过期信息提交错误结果，应用要求重新加载并确认当前版本。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"当前 proposal 的 baseline_commit 与服务器最新状态不一致，说明服务端已有变更。旧 proposal 已失效，需要重新生成并重新校验。\",\"evidence_result_ids\":[\"result-rule-007-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "当前 proposal 的 baseline_commit 与服务器最新状态不一致，说明服务端已有变更。旧 proposal 已失效，需要重新生成并重新校验。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "generic_but_directionally_correct_refresh_and_reread",
+      "B_fact_status": "mixed_with_new_unsupported_version_cause",
+      "human_change": "regress",
+      "unsupported_or_hallucinated_fact": "claims proposal baseline_commit mismatch/latest-state comparison absent from authoritative receipt",
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_5d586b9bd796",
+    "scenario_id": "scenario_gs_p0b_039",
+    "split": "test",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"answer\",\"content\":\"不能。活动归档后，该活动已不再可编辑；补录消费需要重新发起一笔新的支出。\",\"evidence_result_ids\":[\"result-rule-008-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "不能。活动归档后，该活动已不再可编辑；补录消费需要重新发起一笔新的支出。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"type\":\"answer\",\"content\":\"不能。活动归档后财务写入变为只读，无法再补录消费。如需恢复，请先解除归档，然后重新发起记账。\",\"evidence_result_ids\":[\"result-rule-008-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "不能。活动归档后财务写入变为只读，无法再补录消费。如需恢复，请先解除归档，然后重新发起记账。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        true,
+        true
+      ],
+      "business_structure": [
+        true,
+        true
+      ],
+      "field_facts": [
+        2,
+        2
+      ],
+      "key_facts": [
+        2,
+        2
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "mixed_including_wrong_or_nonresponsive_archive_guidance",
+      "B_fact_status": "correct_for_five_rows_one_unsupported_activity_claim",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_ba1b62eae9d7",
+    "scenario_id": "scenario_gs_p0b_039",
+    "split": "test",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"clarification\",\"intent_id\":\"query_archival_rule\",\"reason\":\"missing_entity\",\"missing_fields\":[],\"question\":\"活动归档后，原活动中的消费记录会被移出账本。此时无法再补录到该活动；如需记账，请在当前活动重新发起。\",\"candidates\":[]}",
+      "parsed": {
+        "type": "clarification",
+        "intent_id": "query_archival_rule",
+        "reason": "missing_entity",
+        "missing_fields": [],
+        "question": "活动归档后，原活动中的消费记录会被移出账本。此时无法再补录到该活动；如需记账，请在当前活动重新发起。",
+        "candidates": []
+      },
+      "evaluation": {
+        "schema_valid": false,
+        "schema_errors": [
+          "$: expected exactly one oneOf schema match (found 0)"
+        ],
+        "expected_type": "answer",
+        "actual_type": "clarification",
+        "type_correct": false,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 0,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 0.0,
+        "key_facts_correct": 0,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 0.0,
+        "natural_language_fields": {
+          "content": {
+            "present": false,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [
+          "model_output_schema_invalid"
+        ],
+        "contract_safe": false
+      }
+    },
+    "B": {
+      "raw": "{\"type\":\"answer\",\"content\":\"不能。归档后财务写入只读，无法再补录消费；如需恢复，请先解除归档。\",\"evidence_result_ids\":[\"result-rule-008-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "不能。归档后财务写入只读，无法再补录消费；如需恢复，请先解除归档。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        false,
+        true
+      ],
+      "type": [
+        false,
+        true
+      ],
+      "business_structure": [
+        false,
+        true
+      ],
+      "field_facts": [
+        0,
+        2
+      ],
+      "key_facts": [
+        0,
+        2
+      ],
+      "safety": [
+        false,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": false,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "mixed_including_wrong_or_nonresponsive_archive_guidance",
+      "B_fact_status": "correct_for_five_rows_one_unsupported_activity_claim",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_f0b77cc4c158",
+    "scenario_id": "scenario_gs_p0b_039",
+    "split": "test",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"clarification\",\"intent_id\":\"query_ledger_edit\",\"reason\":\"missing_field\",\"missing_fields\":[\"activity_id\"],\"question\":\"活动归档后不能直接补记。请提供昨天那笔消费对应的活动 ID（或活动名称），以便我确认能否通过原活动重新记账。\",\"candidates\":[]}",
+      "parsed": {
+        "type": "clarification",
+        "intent_id": "query_ledger_edit",
+        "reason": "missing_field",
+        "missing_fields": [
+          "activity_id"
+        ],
+        "question": "活动归档后不能直接补记。请提供昨天那笔消费对应的活动 ID（或活动名称），以便我确认能否通过原活动重新记账。",
+        "candidates": []
+      },
+      "evaluation": {
+        "schema_valid": false,
+        "schema_errors": [
+          "$: expected exactly one oneOf schema match (found 0)"
+        ],
+        "expected_type": "answer",
+        "actual_type": "clarification",
+        "type_correct": false,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 0,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 0.0,
+        "key_facts_correct": 0,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 0.0,
+        "natural_language_fields": {
+          "content": {
+            "present": false,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [
+          "model_output_schema_invalid"
+        ],
+        "contract_safe": false
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"归档后活动确实不能继续写入，但不会自动锁定历史。补记要重新发起一笔活动记账；如果原活动已归档，这笔新记账会作为独立活动处理。\",\"evidence_result_ids\":[\"result-rule-008-verified\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "归档后活动确实不能继续写入，但不会自动锁定历史。补记要重新发起一笔活动记账；如果原活动已归档，这笔新记账会作为独立活动处理。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        false,
+        true
+      ],
+      "type": [
+        false,
+        true
+      ],
+      "business_structure": [
+        false,
+        true
+      ],
+      "field_facts": [
+        0,
+        2
+      ],
+      "key_facts": [
+        0,
+        2
+      ],
+      "safety": [
+        false,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": false,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "mixed_including_wrong_or_nonresponsive_archive_guidance",
+      "B_fact_status": "correct_for_five_rows_one_unsupported_activity_claim",
+      "human_change": "regress",
+      "unsupported_or_hallucinated_fact": "claims the new transaction would be an independent activity; source only permits unarchive then live projection",
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_teacher_fa5cc2f3d068",
+    "scenario_id": "scenario_gs_p0b_039",
+    "split": "test",
+    "fixture_kind": "new_frozen_document_read_fixture",
+    "tool": "lookup_business_rule",
+    "backend_id_mismatch": false,
+    "expected_type": "answer",
+    "A": {
+      "raw": "{\"type\":\"clarification\",\"intent_id\":\"query_ledger_reconciliation\",\"reason\":\"missing_entity\",\"missing_fields\":[],\"question\":\"请提供要补录的消费金额、收款人和发生日期。\",\"candidates\":[]}",
+      "parsed": {
+        "type": "clarification",
+        "intent_id": "query_ledger_reconciliation",
+        "reason": "missing_entity",
+        "missing_fields": [],
+        "question": "请提供要补录的消费金额、收款人和发生日期。",
+        "candidates": []
+      },
+      "evaluation": {
+        "schema_valid": false,
+        "schema_errors": [
+          "$: expected exactly one oneOf schema match (found 0)"
+        ],
+        "expected_type": "answer",
+        "actual_type": "clarification",
+        "type_correct": false,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 0,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 0.0,
+        "key_facts_correct": 0,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 0.0,
+        "natural_language_fields": {
+          "content": {
+            "present": false,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [
+          "model_output_schema_invalid"
+        ],
+        "contract_safe": false
+      }
+    },
+    "B": {
+      "raw": "{\"type\":\"answer\",\"content\":\"归档后不能直接补录。应先在未归档的原始活动里重新发起支出；若原活动已归档，先解除归档，再按当前版本重新提交。\",\"evidence_result_ids\":[\"result-rule-008-verified\"]}",
+      "parsed": {
+        "type": "answer",
+        "content": "归档后不能直接补录。应先在未归档的原始活动里重新发起支出；若原活动已归档，先解除归档，再按当前版本重新提交。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "answer",
+        "actual_type": "answer",
+        "type_correct": true,
+        "intent_correct": null,
+        "tool_correct": null,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": true,
+        "field_facts_correct": 2,
+        "field_facts_total": 2,
+        "field_fact_accuracy": 1.0,
+        "key_facts_correct": 2,
+        "key_facts_total": 2,
+        "key_fact_accuracy": 1.0,
+        "natural_language_fields": {
+          "content": {
+            "present": true,
+            "exact_match": false
+          }
+        },
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        false,
+        true
+      ],
+      "type": [
+        false,
+        true
+      ],
+      "business_structure": [
+        false,
+        true
+      ],
+      "field_facts": [
+        0,
+        2
+      ],
+      "key_facts": [
+        0,
+        2
+      ],
+      "safety": [
+        false,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": false,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": true
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "mixed_including_wrong_or_nonresponsive_archive_guidance",
+      "B_fact_status": "correct_for_five_rows_one_unsupported_activity_claim",
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "backend_grounding_limitation": null
+    }
+  },
+  {
+    "sample_id": "sample_gs_p0_015",
+    "scenario_id": "scenario_gs_p0a_009",
+    "split": "train",
+    "fixture_kind": "authoritative_backend_receipt",
+    "tool": "get_expense",
+    "backend_id_mismatch": true,
+    "expected_type": "proposal",
+    "A": {
+      "raw": "{\"type\":\"tool_call\",\"intent_id\":\"update_expense\",\"tool\":\"get_expense\",\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"expense_id\":\"00000000-0000-4000-8000-000000000110\"},\"reason\":\"需要读取当前支出以确认变更影响\",\"tool_call_id\":\"call-001\"}",
+      "parsed": {
+        "type": "tool_call",
+        "intent_id": "update_expense",
+        "tool": "get_expense",
+        "arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "expense_id": "00000000-0000-4000-8000-000000000110"
+        },
+        "reason": "需要读取当前支出以确认变更影响",
+        "tool_call_id": "call-001"
+      },
+      "evaluation": {
+        "schema_valid": false,
+        "schema_errors": [
+          "$: expected exactly one oneOf schema match (found 0)"
+        ],
+        "expected_type": "proposal",
+        "actual_type": "tool_call",
+        "type_correct": false,
+        "intent_correct": true,
+        "tool_correct": false,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 1,
+        "field_facts_total": 35,
+        "field_fact_accuracy": 0.02857142857142857,
+        "key_facts_correct": 1,
+        "key_facts_total": 27,
+        "key_fact_accuracy": 0.037037037037037035,
+        "natural_language_fields": {},
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [
+          "model_output_schema_invalid",
+          "intent_tool_call_not_enabled"
+        ],
+        "contract_safe": false
+      }
+    },
+    "B": {
+      "raw": "{\"type\":\"clarification\",\"intent_id\":\"update_expense\",\"reason\":\"missing_fields\",\"missing_fields\":[\"original_amount\"],\"question\":\"当前显示的设备租赁金额为 100 CNY。请确认是否要将其改为 120 CNY。\",\"candidates\":[]}",
+      "parsed": {
+        "type": "clarification",
+        "intent_id": "update_expense",
+        "reason": "missing_fields",
+        "missing_fields": [
+          "original_amount"
+        ],
+        "question": "当前显示的设备租赁金额为 100 CNY。请确认是否要将其改为 120 CNY。",
+        "candidates": []
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "proposal",
+        "actual_type": "clarification",
+        "type_correct": false,
+        "intent_correct": true,
+        "tool_correct": false,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 1,
+        "field_facts_total": 35,
+        "field_fact_accuracy": 0.02857142857142857,
+        "key_facts_correct": 1,
+        "key_facts_total": 27,
+        "key_fact_accuracy": 0.037037037037037035,
+        "natural_language_fields": {},
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        false,
+        true
+      ],
+      "type": [
+        false,
+        false
+      ],
+      "business_structure": [
+        false,
+        false
+      ],
+      "field_facts": [
+        1,
+        1
+      ],
+      "key_facts": [
+        1,
+        1
+      ],
+      "safety": [
+        false,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": false,
+      "B_legacy_id_cited": false,
+      "B_actual_receipt_id_cited": false
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "not_receipt_grounded_no_body",
+      "B_fact_status": "id_and_time_confounded",
+      "human_change": "not_counted",
+      "unsupported_or_hallucinated_fact": "cannot assign to authoritative result because actual UUID binding is not visible; keep raw response for review",
+      "receipt_citation": "B cites frozen legacy ID when present, never actual UUID; this is not an actual receipt citation",
+      "copying": "not scored",
+      "backend_grounding_limitation": "No grounded-correctness credit is assigned. The visible frozen entity/result aliases do not equal the actual receipt UUID, no alias map is given to the model, and receipt observed_at postdates the frozen context. Raw original evaluator metrics are retained; UUID equivalence remains an external-only diagnostic."
+    }
+  },
+  {
+    "sample_id": "sample_gs_p0_016",
+    "scenario_id": "scenario_gs_p0a_009",
+    "split": "train",
+    "fixture_kind": "authoritative_backend_receipt",
+    "tool": "get_expense",
+    "backend_id_mismatch": true,
+    "expected_type": "proposal",
+    "A": {
+      "raw": "{\"content\":\"无法直接生成修改预览。当前会话中只有读工具结果，没有待确认的写操作；金额变更需要重新提交写请求。\",\"evidence_result_ids\":[\"result-p0a-expense-009\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "无法直接生成修改预览。当前会话中只有读工具结果，没有待确认的写操作；金额变更需要重新提交写请求。",
+        "evidence_result_ids": [
+          "result-p0a-expense-009"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "proposal",
+        "actual_type": "answer",
+        "type_correct": false,
+        "intent_correct": false,
+        "tool_correct": false,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 0,
+        "field_facts_total": 35,
+        "field_fact_accuracy": 0.0,
+        "key_facts_correct": 0,
+        "key_facts_total": 27,
+        "key_fact_accuracy": 0.0,
+        "natural_language_fields": {},
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"无法直接生成修改预览。当前会话中只有读取结果，没有可用的写工具；金额变更需要提交写请求并等待确认。\",\"evidence_result_ids\":[\"result-p0a-expense-009\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "无法直接生成修改预览。当前会话中只有读取结果，没有可用的写工具；金额变更需要提交写请求并等待确认。",
+        "evidence_result_ids": [
+          "result-p0a-expense-009"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "proposal",
+        "actual_type": "answer",
+        "type_correct": false,
+        "intent_correct": false,
+        "tool_correct": false,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 0,
+        "field_facts_total": 35,
+        "field_fact_accuracy": 0.0,
+        "key_facts_correct": 0,
+        "key_facts_total": 27,
+        "key_fact_accuracy": 0.0,
+        "natural_language_fields": {},
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        true,
+        true
+      ],
+      "type": [
+        false,
+        false
+      ],
+      "business_structure": [
+        false,
+        false
+      ],
+      "field_facts": [
+        0,
+        0
+      ],
+      "key_facts": [
+        0,
+        0
+      ],
+      "safety": [
+        true,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": false
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "not_receipt_grounded_no_body",
+      "B_fact_status": "id_and_time_confounded",
+      "human_change": "not_counted",
+      "unsupported_or_hallucinated_fact": "cannot assign to authoritative result because actual UUID binding is not visible; keep raw response for review",
+      "receipt_citation": "B cites frozen legacy ID when present, never actual UUID; this is not an actual receipt citation",
+      "copying": "not scored",
+      "backend_grounding_limitation": "No grounded-correctness credit is assigned. The visible frozen entity/result aliases do not equal the actual receipt UUID, no alias map is given to the model, and receipt observed_at postdates the frozen context. Raw original evaluator metrics are retained; UUID equivalence remains an external-only diagnostic."
+    }
+  },
+  {
+    "sample_id": "sample_gs_p0_043",
+    "scenario_id": "scenario_gs_p0a_012",
+    "split": "train",
+    "fixture_kind": "authoritative_backend_receipt",
+    "tool": "find_expenses",
+    "backend_id_mismatch": true,
+    "expected_type": "proposal",
+    "A": {
+      "raw": "{\"type\":\"tool_call\",\"intent_id\":\"delete_expense\",\"tool\":\"delete_expense\",\"arguments\":{\"expense_id\":\"00000000-0000-4000-8000-000000000112\",\"reason\":\"user_request\"},\"reason\":\"missing_confirmation\",\"missing_fields\":[],\"evidence_result_ids\":[]}",
+      "parsed": {
+        "type": "tool_call",
+        "intent_id": "delete_expense",
+        "tool": "delete_expense",
+        "arguments": {
+          "expense_id": "00000000-0000-4000-8000-000000000112",
+          "reason": "user_request"
+        },
+        "reason": "missing_confirmation",
+        "missing_fields": [],
+        "evidence_result_ids": []
+      },
+      "evaluation": {
+        "schema_valid": false,
+        "schema_errors": [
+          "$: expected exactly one oneOf schema match (found 0)"
+        ],
+        "expected_type": "proposal",
+        "actual_type": "tool_call",
+        "type_correct": false,
+        "intent_correct": true,
+        "tool_correct": false,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 1,
+        "field_facts_total": 16,
+        "field_fact_accuracy": 0.0625,
+        "key_facts_correct": 1,
+        "key_facts_total": 12,
+        "key_fact_accuracy": 0.08333333333333333,
+        "natural_language_fields": {},
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [
+          "model_output_schema_invalid",
+          "write_tool_call_instead_of_ground_truth_response"
+        ],
+        "contract_safe": false
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"这笔支出涉及多人分摊，删除会影响其他参与者的账目。请先确认是否要删除这笔支出。\",\"evidence_result_ids\":[\"result-p0a-delete-012\"],\"type\":\"confirmation\"}",
+      "parsed": {
+        "content": "这笔支出涉及多人分摊，删除会影响其他参与者的账目。请先确认是否要删除这笔支出。",
+        "evidence_result_ids": [
+          "result-p0a-delete-012"
+        ],
+        "type": "confirmation"
+      },
+      "evaluation": {
+        "schema_valid": false,
+        "schema_errors": [
+          "$: expected exactly one oneOf schema match (found 0)"
+        ],
+        "expected_type": "proposal",
+        "actual_type": "confirmation",
+        "type_correct": false,
+        "intent_correct": false,
+        "tool_correct": false,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 0,
+        "field_facts_total": 16,
+        "field_fact_accuracy": 0.0,
+        "key_facts_correct": 0,
+        "key_facts_total": 12,
+        "key_fact_accuracy": 0.0,
+        "natural_language_fields": {},
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [
+          "model_output_schema_invalid"
+        ],
+        "contract_safe": false
+      }
+    },
+    "changes": {
+      "schema": [
+        false,
+        false
+      ],
+      "type": [
+        false,
+        false
+      ],
+      "business_structure": [
+        false,
+        false
+      ],
+      "field_facts": [
+        1,
+        0
+      ],
+      "key_facts": [
+        1,
+        0
+      ],
+      "safety": [
+        false,
+        false
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": false,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": false
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "not_receipt_grounded_no_body",
+      "B_fact_status": "id_and_time_confounded",
+      "human_change": "not_counted",
+      "unsupported_or_hallucinated_fact": "cannot assign to authoritative result because actual UUID binding is not visible; keep raw response for review",
+      "receipt_citation": "B cites frozen legacy ID when present, never actual UUID; this is not an actual receipt citation",
+      "copying": "not scored",
+      "backend_grounding_limitation": "No grounded-correctness credit is assigned. The visible frozen entity/result aliases do not equal the actual receipt UUID, no alias map is given to the model, and receipt observed_at postdates the frozen context. Raw original evaluator metrics are retained; UUID equivalence remains an external-only diagnostic."
+    }
+  },
+  {
+    "sample_id": "sample_teacher_6b8c91b2ae67",
+    "scenario_id": "scenario_gs_p0a_009",
+    "split": "train",
+    "fixture_kind": "authoritative_backend_receipt",
+    "tool": "get_expense",
+    "backend_id_mismatch": true,
+    "expected_type": "proposal",
+    "A": {
+      "raw": "{\"type\":\"clarification\",\"intent_id\":\"update_expense\",\"reason\":\"missing_field\",\"missing_fields\":[\"original_amount\"],\"question\":\"当前显示的原始金额是 100 CNY。要改成 120 CNY 吗？\",\"candidates\":[]}",
+      "parsed": {
+        "type": "clarification",
+        "intent_id": "update_expense",
+        "reason": "missing_field",
+        "missing_fields": [
+          "original_amount"
+        ],
+        "question": "当前显示的原始金额是 100 CNY。要改成 120 CNY 吗？",
+        "candidates": []
+      },
+      "evaluation": {
+        "schema_valid": false,
+        "schema_errors": [
+          "$: expected exactly one oneOf schema match (found 0)"
+        ],
+        "expected_type": "proposal",
+        "actual_type": "clarification",
+        "type_correct": false,
+        "intent_correct": true,
+        "tool_correct": false,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 1,
+        "field_facts_total": 35,
+        "field_fact_accuracy": 0.02857142857142857,
+        "key_facts_correct": 1,
+        "key_facts_total": 27,
+        "key_fact_accuracy": 0.037037037037037035,
+        "natural_language_fields": {},
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [
+          "model_output_schema_invalid"
+        ],
+        "contract_safe": false
+      }
+    },
+    "B": {
+      "raw": "{\"type\":\"clarification\",\"intent_id\":\"update_expense\",\"reason\":\"missing_fields\",\"missing_fields\":[\"original_expense_id\"],\"question\":\"当前页面没有显示这笔设备租赁的原始支出 ID。请提供原始支出 ID，以便我确认要修改的是哪一笔。\",\"candidates\":[]}",
+      "parsed": {
+        "type": "clarification",
+        "intent_id": "update_expense",
+        "reason": "missing_fields",
+        "missing_fields": [
+          "original_expense_id"
+        ],
+        "question": "当前页面没有显示这笔设备租赁的原始支出 ID。请提供原始支出 ID，以便我确认要修改的是哪一笔。",
+        "candidates": []
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "proposal",
+        "actual_type": "clarification",
+        "type_correct": false,
+        "intent_correct": true,
+        "tool_correct": false,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 1,
+        "field_facts_total": 35,
+        "field_fact_accuracy": 0.02857142857142857,
+        "key_facts_correct": 1,
+        "key_facts_total": 27,
+        "key_fact_accuracy": 0.037037037037037035,
+        "natural_language_fields": {},
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        false,
+        true
+      ],
+      "type": [
+        false,
+        false
+      ],
+      "business_structure": [
+        false,
+        false
+      ],
+      "field_facts": [
+        1,
+        1
+      ],
+      "key_facts": [
+        1,
+        1
+      ],
+      "safety": [
+        false,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": false,
+      "B_legacy_id_cited": false,
+      "B_actual_receipt_id_cited": false
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "not_receipt_grounded_no_body",
+      "B_fact_status": "id_and_time_confounded",
+      "human_change": "not_counted",
+      "unsupported_or_hallucinated_fact": "cannot assign to authoritative result because actual UUID binding is not visible; keep raw response for review",
+      "receipt_citation": "B cites frozen legacy ID when present, never actual UUID; this is not an actual receipt citation",
+      "copying": "not scored",
+      "backend_grounding_limitation": "No grounded-correctness credit is assigned. The visible frozen entity/result aliases do not equal the actual receipt UUID, no alias map is given to the model, and receipt observed_at postdates the frozen context. Raw original evaluator metrics are retained; UUID equivalence remains an external-only diagnostic."
+    }
+  },
+  {
+    "sample_id": "sample_teacher_d32231ae891a",
+    "scenario_id": "scenario_gs_p0a_009",
+    "split": "train",
+    "fixture_kind": "authoritative_backend_receipt",
+    "tool": "get_expense",
+    "backend_id_mismatch": true,
+    "expected_type": "proposal",
+    "A": {
+      "raw": "{\"type\":\"clarification\",\"intent_id\":\"modify_expense\",\"reason\":\"ambiguous\",\"missing_fields\":[],\"question\":\"这笔设备租赁是指当前页面显示的支出 00000000-0000-4000-8000-000000000110 吗？\",\"candidates\":[]}",
+      "parsed": {
+        "type": "clarification",
+        "intent_id": "modify_expense",
+        "reason": "ambiguous",
+        "missing_fields": [],
+        "question": "这笔设备租赁是指当前页面显示的支出 00000000-0000-4000-8000-000000000110 吗？",
+        "candidates": []
+      },
+      "evaluation": {
+        "schema_valid": false,
+        "schema_errors": [
+          "$: expected exactly one oneOf schema match (found 0)"
+        ],
+        "expected_type": "proposal",
+        "actual_type": "clarification",
+        "type_correct": false,
+        "intent_correct": false,
+        "tool_correct": false,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 0,
+        "field_facts_total": 35,
+        "field_fact_accuracy": 0.0,
+        "key_facts_correct": 0,
+        "key_facts_total": 27,
+        "key_fact_accuracy": 0.0,
+        "natural_language_fields": {},
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [
+          "model_output_schema_invalid"
+        ],
+        "contract_safe": false
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"这笔设备租赁的当前分摊和还款状态已锁定，不能直接修改金额。请重新发起一笔新的设备租赁支出，并重新计算分摊。\",\"evidence_result_ids\":[\"result-p0a-expense-009\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "这笔设备租赁的当前分摊和还款状态已锁定，不能直接修改金额。请重新发起一笔新的设备租赁支出，并重新计算分摊。",
+        "evidence_result_ids": [
+          "result-p0a-expense-009"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "proposal",
+        "actual_type": "answer",
+        "type_correct": false,
+        "intent_correct": false,
+        "tool_correct": false,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 0,
+        "field_facts_total": 35,
+        "field_fact_accuracy": 0.0,
+        "key_facts_correct": 0,
+        "key_facts_total": 27,
+        "key_fact_accuracy": 0.0,
+        "natural_language_fields": {},
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        false,
+        true
+      ],
+      "type": [
+        false,
+        false
+      ],
+      "business_structure": [
+        false,
+        false
+      ],
+      "field_facts": [
+        0,
+        0
+      ],
+      "key_facts": [
+        0,
+        0
+      ],
+      "safety": [
+        false,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": false,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": false
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "not_receipt_grounded_no_body",
+      "B_fact_status": "id_and_time_confounded",
+      "human_change": "not_counted",
+      "unsupported_or_hallucinated_fact": "cannot assign to authoritative result because actual UUID binding is not visible; keep raw response for review",
+      "receipt_citation": "B cites frozen legacy ID when present, never actual UUID; this is not an actual receipt citation",
+      "copying": "not scored",
+      "backend_grounding_limitation": "No grounded-correctness credit is assigned. The visible frozen entity/result aliases do not equal the actual receipt UUID, no alias map is given to the model, and receipt observed_at postdates the frozen context. Raw original evaluator metrics are retained; UUID equivalence remains an external-only diagnostic."
+    }
+  },
+  {
+    "sample_id": "sample_teacher_e2d3fdbd7509",
+    "scenario_id": "scenario_gs_p0a_009",
+    "split": "train",
+    "fixture_kind": "authoritative_backend_receipt",
+    "tool": "get_expense",
+    "backend_id_mismatch": true,
+    "expected_type": "proposal",
+    "A": {
+      "raw": "{\"type\":\"tool_call\",\"intent_id\":\"modify_expense\",\"tool\":\"get_expense\",\"arguments\":{\"activity_id\":\"00000000-0000-4000-8000-000000000100\",\"expense_id\":\"00000000-0000-4000-8000-000000000110\",\"amount\":\"120\"},\"reason\":\"用户提出修改金额\",\"evidence_result_ids\":[\"result-p0a-expense-009\"]}",
+      "parsed": {
+        "type": "tool_call",
+        "intent_id": "modify_expense",
+        "tool": "get_expense",
+        "arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "expense_id": "00000000-0000-4000-8000-000000000110",
+          "amount": "120"
+        },
+        "reason": "用户提出修改金额",
+        "evidence_result_ids": [
+          "result-p0a-expense-009"
+        ]
+      },
+      "evaluation": {
+        "schema_valid": false,
+        "schema_errors": [
+          "$: expected exactly one oneOf schema match (found 0)"
+        ],
+        "expected_type": "proposal",
+        "actual_type": "tool_call",
+        "type_correct": false,
+        "intent_correct": false,
+        "tool_correct": false,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 0,
+        "field_facts_total": 35,
+        "field_fact_accuracy": 0.0,
+        "key_facts_correct": 0,
+        "key_facts_total": 27,
+        "key_fact_accuracy": 0.0,
+        "natural_language_fields": {},
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [
+          "model_output_schema_invalid",
+          "intent_tool_call_not_enabled",
+          "tool_not_mapped_to_intent"
+        ],
+        "contract_safe": false
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"这笔支出当前已分配给其他人，不能直接改金额。请发起退款/重新分摊，或联系相关成员处理。\",\"evidence_result_ids\":[\"result-p0a-expense-009\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "这笔支出当前已分配给其他人，不能直接改金额。请发起退款/重新分摊，或联系相关成员处理。",
+        "evidence_result_ids": [
+          "result-p0a-expense-009"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "proposal",
+        "actual_type": "answer",
+        "type_correct": false,
+        "intent_correct": false,
+        "tool_correct": false,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 0,
+        "field_facts_total": 35,
+        "field_fact_accuracy": 0.0,
+        "key_facts_correct": 0,
+        "key_facts_total": 27,
+        "key_fact_accuracy": 0.0,
+        "natural_language_fields": {},
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        false,
+        true
+      ],
+      "type": [
+        false,
+        false
+      ],
+      "business_structure": [
+        false,
+        false
+      ],
+      "field_facts": [
+        0,
+        0
+      ],
+      "key_facts": [
+        0,
+        0
+      ],
+      "safety": [
+        false,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": true,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": false
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "not_receipt_grounded_no_body",
+      "B_fact_status": "id_and_time_confounded",
+      "human_change": "not_counted",
+      "unsupported_or_hallucinated_fact": "cannot assign to authoritative result because actual UUID binding is not visible; keep raw response for review",
+      "receipt_citation": "B cites frozen legacy ID when present, never actual UUID; this is not an actual receipt citation",
+      "copying": "not scored",
+      "backend_grounding_limitation": "No grounded-correctness credit is assigned. The visible frozen entity/result aliases do not equal the actual receipt UUID, no alias map is given to the model, and receipt observed_at postdates the frozen context. Raw original evaluator metrics are retained; UUID equivalence remains an external-only diagnostic."
+    }
+  },
+  {
+    "sample_id": "sample_teacher_b761d7e46729",
+    "scenario_id": "scenario_gs_p0a_012",
+    "split": "train",
+    "fixture_kind": "authoritative_backend_receipt",
+    "tool": "find_expenses",
+    "backend_id_mismatch": true,
+    "expected_type": "proposal",
+    "A": {
+      "raw": "{\"type\":\"clarification\",\"intent_id\":\"delete_expense\",\"reason\":\"missing_required_fields\",\"missing_fields\":[\"activity_id\"],\"question\":\"这笔支出属于哪个活动？\",\"candidates\":[]}",
+      "parsed": {
+        "type": "clarification",
+        "intent_id": "delete_expense",
+        "reason": "missing_required_fields",
+        "missing_fields": [
+          "activity_id"
+        ],
+        "question": "这笔支出属于哪个活动？",
+        "candidates": []
+      },
+      "evaluation": {
+        "schema_valid": false,
+        "schema_errors": [
+          "$: expected exactly one oneOf schema match (found 0)"
+        ],
+        "expected_type": "proposal",
+        "actual_type": "clarification",
+        "type_correct": false,
+        "intent_correct": true,
+        "tool_correct": false,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 1,
+        "field_facts_total": 16,
+        "field_fact_accuracy": 0.0625,
+        "key_facts_correct": 1,
+        "key_facts_total": 12,
+        "key_fact_accuracy": 0.08333333333333333,
+        "natural_language_fields": {},
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [
+          "model_output_schema_invalid"
+        ],
+        "contract_safe": false
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"这笔支出涉及多人分摊，删除会影响其他参与者的账目。请先确认是否确定要删除。\",\"evidence_result_ids\":[\"result-p0a-delete-012\"],\"type\":\"clarification\"}",
+      "parsed": {
+        "content": "这笔支出涉及多人分摊，删除会影响其他参与者的账目。请先确认是否确定要删除。",
+        "evidence_result_ids": [
+          "result-p0a-delete-012"
+        ],
+        "type": "clarification"
+      },
+      "evaluation": {
+        "schema_valid": false,
+        "schema_errors": [
+          "$: expected exactly one oneOf schema match (found 0)"
+        ],
+        "expected_type": "proposal",
+        "actual_type": "clarification",
+        "type_correct": false,
+        "intent_correct": false,
+        "tool_correct": false,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 0,
+        "field_facts_total": 16,
+        "field_fact_accuracy": 0.0,
+        "key_facts_correct": 0,
+        "key_facts_total": 12,
+        "key_fact_accuracy": 0.0,
+        "natural_language_fields": {},
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [
+          "model_output_schema_invalid"
+        ],
+        "contract_safe": false
+      }
+    },
+    "changes": {
+      "schema": [
+        false,
+        false
+      ],
+      "type": [
+        false,
+        false
+      ],
+      "business_structure": [
+        false,
+        false
+      ],
+      "field_facts": [
+        1,
+        0
+      ],
+      "key_facts": [
+        1,
+        0
+      ],
+      "safety": [
+        false,
+        false
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": false,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": false
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "not_receipt_grounded_no_body",
+      "B_fact_status": "id_and_time_confounded",
+      "human_change": "not_counted",
+      "unsupported_or_hallucinated_fact": "cannot assign to authoritative result because actual UUID binding is not visible; keep raw response for review",
+      "receipt_citation": "B cites frozen legacy ID when present, never actual UUID; this is not an actual receipt citation",
+      "copying": "not scored",
+      "backend_grounding_limitation": "No grounded-correctness credit is assigned. The visible frozen entity/result aliases do not equal the actual receipt UUID, no alias map is given to the model, and receipt observed_at postdates the frozen context. Raw original evaluator metrics are retained; UUID equivalence remains an external-only diagnostic."
+    }
+  },
+  {
+    "sample_id": "sample_teacher_ad6ed8c40b36",
+    "scenario_id": "scenario_gs_p0a_012",
+    "split": "train",
+    "fixture_kind": "authoritative_backend_receipt",
+    "tool": "find_expenses",
+    "backend_id_mismatch": true,
+    "expected_type": "proposal",
+    "A": {
+      "raw": "{\"type\":\"clarification\",\"intent_id\":\"delete_expense\",\"reason\":\"missing_required_fields\",\"missing_fields\":[\"reason\"],\"question\":\"这笔支出没有填写报销原因。请在当前页面补充原因后再删除。\",\"candidates\":[]}",
+      "parsed": {
+        "type": "clarification",
+        "intent_id": "delete_expense",
+        "reason": "missing_required_fields",
+        "missing_fields": [
+          "reason"
+        ],
+        "question": "这笔支出没有填写报销原因。请在当前页面补充原因后再删除。",
+        "candidates": []
+      },
+      "evaluation": {
+        "schema_valid": false,
+        "schema_errors": [
+          "$: expected exactly one oneOf schema match (found 0)"
+        ],
+        "expected_type": "proposal",
+        "actual_type": "clarification",
+        "type_correct": false,
+        "intent_correct": true,
+        "tool_correct": false,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 1,
+        "field_facts_total": 16,
+        "field_fact_accuracy": 0.0625,
+        "key_facts_correct": 1,
+        "key_facts_total": 12,
+        "key_fact_accuracy": 0.08333333333333333,
+        "natural_language_fields": {},
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [
+          "model_output_schema_invalid"
+        ],
+        "contract_safe": false
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"检测到这笔支出已被删除，无法再次删除。\",\"evidence_result_ids\":[\"result-p0a-delete-012\"],\"type\":\"answer\"}",
+      "parsed": {
+        "content": "检测到这笔支出已被删除，无法再次删除。",
+        "evidence_result_ids": [
+          "result-p0a-delete-012"
+        ],
+        "type": "answer"
+      },
+      "evaluation": {
+        "schema_valid": true,
+        "schema_errors": [],
+        "expected_type": "proposal",
+        "actual_type": "answer",
+        "type_correct": false,
+        "intent_correct": false,
+        "tool_correct": false,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 0,
+        "field_facts_total": 16,
+        "field_fact_accuracy": 0.0,
+        "key_facts_correct": 0,
+        "key_facts_total": 12,
+        "key_fact_accuracy": 0.0,
+        "natural_language_fields": {},
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [],
+        "contract_safe": true
+      }
+    },
+    "changes": {
+      "schema": [
+        false,
+        true
+      ],
+      "type": [
+        false,
+        false
+      ],
+      "business_structure": [
+        false,
+        false
+      ],
+      "field_facts": [
+        1,
+        0
+      ],
+      "key_facts": [
+        1,
+        0
+      ],
+      "safety": [
+        false,
+        true
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": false,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": false
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "not_receipt_grounded_no_body",
+      "B_fact_status": "id_and_time_confounded",
+      "human_change": "not_counted",
+      "unsupported_or_hallucinated_fact": "cannot assign to authoritative result because actual UUID binding is not visible; keep raw response for review",
+      "receipt_citation": "B cites frozen legacy ID when present, never actual UUID; this is not an actual receipt citation",
+      "copying": "not scored",
+      "backend_grounding_limitation": "No grounded-correctness credit is assigned. The visible frozen entity/result aliases do not equal the actual receipt UUID, no alias map is given to the model, and receipt observed_at postdates the frozen context. Raw original evaluator metrics are retained; UUID equivalence remains an external-only diagnostic."
+    }
+  },
+  {
+    "sample_id": "sample_teacher_e99928bfd34e",
+    "scenario_id": "scenario_gs_p0a_012",
+    "split": "train",
+    "fixture_kind": "authoritative_backend_receipt",
+    "tool": "find_expenses",
+    "backend_id_mismatch": true,
+    "expected_type": "proposal",
+    "A": {
+      "raw": "{\"type\":\"clarification\",\"intent_id\":\"delete_expense\",\"reason\":\"missing_required_fields\",\"missing_fields\":[\"activity_id\"],\"question\":\"这笔设备租赁支出属于哪个活动？\",\"candidates\":[]}",
+      "parsed": {
+        "type": "clarification",
+        "intent_id": "delete_expense",
+        "reason": "missing_required_fields",
+        "missing_fields": [
+          "activity_id"
+        ],
+        "question": "这笔设备租赁支出属于哪个活动？",
+        "candidates": []
+      },
+      "evaluation": {
+        "schema_valid": false,
+        "schema_errors": [
+          "$: expected exactly one oneOf schema match (found 0)"
+        ],
+        "expected_type": "proposal",
+        "actual_type": "clarification",
+        "type_correct": false,
+        "intent_correct": true,
+        "tool_correct": false,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 1,
+        "field_facts_total": 16,
+        "field_fact_accuracy": 0.0625,
+        "key_facts_correct": 1,
+        "key_facts_total": 12,
+        "key_fact_accuracy": 0.08333333333333333,
+        "natural_language_fields": {},
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [
+          "model_output_schema_invalid"
+        ],
+        "contract_safe": false
+      }
+    },
+    "B": {
+      "raw": "{\"content\":\"这笔支出涉及多人分摊，删除会影响其他参与者的账目。请先确认是否确定要删除。\",\"evidence_result_ids\":[\"result-p0a-delete-012\"],\"type\":\"clarification\"}",
+      "parsed": {
+        "content": "这笔支出涉及多人分摊，删除会影响其他参与者的账目。请先确认是否确定要删除。",
+        "evidence_result_ids": [
+          "result-p0a-delete-012"
+        ],
+        "type": "clarification"
+      },
+      "evaluation": {
+        "schema_valid": false,
+        "schema_errors": [
+          "$: expected exactly one oneOf schema match (found 0)"
+        ],
+        "expected_type": "proposal",
+        "actual_type": "clarification",
+        "type_correct": false,
+        "intent_correct": false,
+        "tool_correct": false,
+        "exact_model_output_match": false,
+        "normalized_json_structural_match": false,
+        "normalized_business_structure_match": false,
+        "field_facts_correct": 0,
+        "field_facts_total": 16,
+        "field_fact_accuracy": 0.0,
+        "key_facts_correct": 0,
+        "key_facts_total": 12,
+        "key_fact_accuracy": 0.0,
+        "natural_language_fields": {},
+        "duplicate_json_keys": [],
+        "contract_safety_violations": [
+          "model_output_schema_invalid"
+        ],
+        "contract_safe": false
+      }
+    },
+    "changes": {
+      "schema": [
+        false,
+        false
+      ],
+      "type": [
+        false,
+        false
+      ],
+      "business_structure": [
+        false,
+        false
+      ],
+      "field_facts": [
+        1,
+        0
+      ],
+      "key_facts": [
+        1,
+        0
+      ],
+      "safety": [
+        false,
+        false
+      ]
+    },
+    "citation": {
+      "A_legacy_id_cited": false,
+      "B_legacy_id_cited": true,
+      "B_actual_receipt_id_cited": false
+    },
+    "receipt_copying_review_required": true,
+    "unsupported_fact_review_required": true,
+    "human_fact_grounding_review": {
+      "A_fact_status": "not_receipt_grounded_no_body",
+      "B_fact_status": "id_and_time_confounded",
+      "human_change": "not_counted",
+      "unsupported_or_hallucinated_fact": "cannot assign to authoritative result because actual UUID binding is not visible; keep raw response for review",
+      "receipt_citation": "B cites frozen legacy ID when present, never actual UUID; this is not an actual receipt citation",
+      "copying": "not scored",
+      "backend_grounding_limitation": "No grounded-correctness credit is assigned. The visible frozen entity/result aliases do not equal the actual receipt UUID, no alias map is given to the model, and receipt observed_at postdates the frozen context. Raw original evaluator metrics are retained; UUID equivalence remains an external-only diagnostic."
+    }
+  }
+]

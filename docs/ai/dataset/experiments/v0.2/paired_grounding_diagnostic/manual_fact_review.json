@@ -1,0 +1,3052 @@
+{
+  "review_method": "Manual pairwise review of each user request, Expected GT, complete authoritative receipt text and A/B answer; response facts are rated supported/correct, partial, wrong/nonresponsive, or blocked by receipt ID scope. Exact substring and sequence similarity support the separate copying check.",
+  "rows": [
+    {
+      "sample_id": "sample_gs_p0_034",
+      "scenario_id": "scenario_gs_p0b_009",
+      "split": "test",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-pre-core-003-verified",
+      "receipt_result_id": "result-pre-core-003-verified",
+      "expected_verified_result_ids": [
+        "result-pre-core-003-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:00:34+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "不会。活动存款按活动币种记账，不会与账户其他币种余额合并。还款时按活动币种逐笔匹配；若活动币种不足，会按活动币种优先、不足部分转入其他币种。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ]
+      },
+      "B_output": {
+        "content": "新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。base 币付款按债务历史 base valuation 清偿；外币账户清偿同币外债。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "type": "answer",
+        "content": "先按业务规则解释预存的抵扣顺序；具体账户余额与当前债务仍以读取结果为准，美元和日元分开处理。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ]
+      },
+      "A_fact_status": "mixed_or_unsupported_currency/order_claims",
+      "B_fact_status": "correct_partial_direct_rule_use",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "receipt_text_similarity_sequence_ratio": 0.691,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_gs_p0_035",
+      "scenario_id": "scenario_gs_p0b_009",
+      "split": "test",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-pre-core-003-verified",
+      "receipt_result_id": "result-pre-core-003-verified",
+      "expected_verified_result_ids": [
+        "result-pre-core-003-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:00:35+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "活动里的存款不会自动按汇率折算成活动记账单位，也不会跨币种合并抵债。它只会按活动规则先冲抵当前活动内、且币种与活动记账单位一致的那一方欠款；若活动记账单位是美元，则日元存款不会直接用来抵美元债务。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ]
+      },
+      "B_output": {
+        "content": "新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。base 币付款按债务历史 base valuation 清偿；外币账户清偿同币外债。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "type": "answer",
+        "content": "先按业务规则解释预存的抵扣顺序；具体账户余额与当前债务仍以读取结果为准，美元和日元分开处理。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ]
+      },
+      "A_fact_status": "mixed_or_unsupported_currency/order_claims",
+      "B_fact_status": "correct_partial_direct_rule_use",
+      "A_full_fact_pass": true,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "neutral",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "receipt_text_similarity_sequence_ratio": 0.691,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_gs_p0_080",
+      "scenario_id": "scenario_gs_p0b_033",
+      "split": "train",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-001-verified",
+      "receipt_result_id": "result-rule-001-verified",
+      "expected_verified_result_ids": [
+        "result-rule-001-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:20+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "content": "因为100除以3等于33.333...，系统会按四舍五入分别显示33.4、33.3、33.3，这样合计仍为100。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ],
+        "type": "answer"
+      },
+      "B_output": {
+        "content": "AA 原币金额在所选 Participant 间等分，以原币 4 位小数保存。当 100 元按三人等分时，会出现 0.01 的尾差，系统会按 participant_order、id 稳定顺序逐个分配最小单位，正负金额对称处理；尾差不全部压给最后一人。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "type": "answer",
+        "content": "AA 先按原币等分；base 金额按稳定参与人顺序把最小单位尾差逐个分配。因此三人分100.0可显示33.4、33.3、33.3，合计仍为100.0。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ]
+      },
+      "A_fact_status": "partial_or_wrong_rounding_mechanism",
+      "B_fact_status": "correct_and_receipt_supported",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "receipt_text_similarity_sequence_ratio": 0.68,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_gs_p0_081",
+      "scenario_id": "scenario_gs_p0b_033",
+      "split": "train",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-001-verified",
+      "receipt_result_id": "result-rule-001-verified",
+      "expected_verified_result_ids": [
+        "result-rule-001-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:21+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "content": "因为100元除以3等于33.333…，系统会按当前显示精度四舍五入。前两个33.4、33.3、33.3合计100.0，避免累计误差；若都按33.3会少1元。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ],
+        "type": "answer"
+      },
+      "B_output": {
+        "content": "AA Split 的 base amount 按原币等分，尾差按 participant_order、id 稳定顺序逐个分配最小单位，正负金额对称处理；尾差不全部压给最后一人。因此 100 元分三笔会出现 33.4、33.3、33.3 的分布。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "type": "answer",
+        "content": "AA 先按原币等分；base 金额按稳定参与人顺序把最小单位尾差逐个分配。因此三人分100.0可显示33.4、33.3、33.3，合计仍为100.0。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ]
+      },
+      "A_fact_status": "partial_or_wrong_rounding_mechanism",
+      "B_fact_status": "correct_and_receipt_supported",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "near-verbatim/partial phrase overlap",
+      "receipt_text_similarity_sequence_ratio": 0.608,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_gs_p0_082",
+      "scenario_id": "scenario_gs_p0b_034",
+      "split": "validation",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-003-verified",
+      "receipt_result_id": "result-rule-003-verified",
+      "expected_verified_result_ids": [
+        "result-rule-003-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:22+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "活动里有未结债务时，你存入的余额会先按活动规则抵扣未结债务；只有债务结清后，剩余余额才会计入你的个人欠款。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ]
+      },
+      "B_output": {
+        "content": "新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "type": "answer",
+        "content": "服务端先用预存抵销同币种的反向债务；只有剩余可用金额才形成预存 Usage。当前是否产生 Usage 要看最新账户和债务读取。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ]
+      },
+      "A_fact_status": "generic_or_wrong_debt_order",
+      "B_fact_status": "correct_partial_receipt_supported",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "receipt_text_similarity_sequence_ratio": 0.448,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_gs_p0_083",
+      "scenario_id": "scenario_gs_p0b_034",
+      "split": "validation",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-003-verified",
+      "receipt_result_id": "result-rule-003-verified",
+      "expected_verified_result_ids": [
+        "result-rule-003-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:23+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "content": "活动内还款按“先还活动内债务、再还个人债务”的顺序执行。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "B_output": {
+        "content": "新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。base 币付款按债务历史 base valuation 清偿；外币账户清偿同币外债。投影先扣有效真实 Settlement/Final allocation，再对同币反向债务抵销，之后才应用预存 Usage。相反方向的未结债务不能提前消费另一方向的预存。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "type": "answer",
+        "content": "服务端先用预存抵销同币种的反向债务；只有剩余可用金额才形成预存 Usage。当前是否产生 Usage 要看最新账户和债务读取。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ]
+      },
+      "A_fact_status": "generic_or_wrong_debt_order",
+      "B_fact_status": "correct_partial_receipt_supported",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "receipt_text_similarity_sequence_ratio": 1.0,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_gs_p0_084",
+      "scenario_id": "scenario_gs_p0b_035",
+      "split": "hard_test",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-004-verified",
+      "receipt_result_id": "result-rule-004-verified",
+      "expected_verified_result_ids": [
+        "result-rule-004-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:24+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "退款删除后，原消费仍然保留在账本中，不会自动恢复可编辑状态。退款只是对同一笔消费生成另一条退款记录；要修改原消费，仍需重新发起编辑。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ]
+      },
+      "B_output": {
+        "type": "answer",
+        "content": "不能。只要曾经存在 linked refund，原 Expense 的财务锁不会解除，即使退款后来全部删除。退款删除只会释放可用额度，不会解除原 Expense 的锁。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ]
+      },
+      "expected_output": {
+        "type": "answer",
+        "content": "不能。已有真实退款历史会让原消费永久财务锁定；删除退款可能释放退款额度，但不会解除该锁。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ]
+      },
+      "A_fact_status": "mixed_lock_explanation",
+      "B_fact_status": "correct_for_five_nonclarification_rows",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "near-verbatim/partial phrase overlap",
+      "receipt_text_similarity_sequence_ratio": 0.47,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_gs_p0_085",
+      "scenario_id": "scenario_gs_p0b_035",
+      "split": "hard_test",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-004-verified",
+      "receipt_result_id": "result-rule-004-verified",
+      "expected_verified_result_ids": [
+        "result-rule-004-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:25+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "不会。退款记录删除后，原单仍然保留在账本中，锁不会自动解除。只有当原单被删除或原单对应的锁被显式解除时，锁才会消失。退款只是原单的一个子记录，删除它不会触发锁的自动释放。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ]
+      },
+      "B_output": {
+        "content": "不会。删除退款只释放原退款占用的可用额度；原 Expense 的财务锁不会解除，即使退款后来全部删除。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "type": "answer",
+        "content": "不能。已有真实退款历史会让原消费永久财务锁定；删除退款可能释放退款额度，但不会解除该锁。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ]
+      },
+      "A_fact_status": "mixed_lock_explanation",
+      "B_fact_status": "correct_for_five_nonclarification_rows",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "near-verbatim/partial phrase overlap",
+      "receipt_text_similarity_sequence_ratio": 0.364,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_gs_p0_086",
+      "scenario_id": "scenario_gs_p0b_036",
+      "split": "train",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-005-verified",
+      "receipt_result_id": "result-rule-005-verified",
+      "expected_verified_result_ids": [
+        "result-rule-005-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:26+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "content": "是的。当前会话中所有记账方案都未确认；上一笔仍然待确认。请在当前界面点击确认或取消。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "B_output": {
+        "content": "是的。当前会话仍停留在待确认阶段；上一笔方案尚未执行，因此不能自动提交。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "type": "answer",
+        "content": "是的，记账方案需要在可信确认界面核对后才能提交。聊天中说“好”或“确定”不会写入账本；上一笔仍处于待确认状态。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ]
+      },
+      "A_fact_status": "already_generally_correct",
+      "B_fact_status": "correct_more_explicit_confirmation_gate",
+      "A_full_fact_pass": true,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "neutral",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "receipt_text_similarity_sequence_ratio": 0.032,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_gs_p0_087",
+      "scenario_id": "scenario_gs_p0b_036",
+      "split": "train",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-005-verified",
+      "receipt_result_id": "result-rule-005-verified",
+      "expected_verified_result_ids": [
+        "result-rule-005-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:27+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "content": "是的。对话里确认只是提出记账方案；真正记账需要在界面上点击“记账”或“确认”按钮。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "B_output": {
+        "content": "是的。对话里回复“同意”只会把当前方案提交到确认流程；真正记账需要你在活动页面按“记账/确认”提交，由可信 UI 与 Gateway 复核后才会写入。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "type": "answer",
+        "content": "是的，记账方案需要在可信确认界面核对后才能提交。聊天中说“好”或“确定”不会写入账本；上一笔仍处于待确认状态。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ]
+      },
+      "A_fact_status": "already_generally_correct",
+      "B_fact_status": "correct_more_explicit_confirmation_gate",
+      "A_full_fact_pass": true,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "neutral",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "receipt_text_similarity_sequence_ratio": 0.066,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_gs_p0_090",
+      "scenario_id": "scenario_gs_p0b_038",
+      "split": "train",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-007-verified",
+      "receipt_result_id": "result-rule-007-verified",
+      "expected_verified_result_ids": [
+        "result-rule-007-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:30+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "账单的财务状态（如是否已结算、是否已合并）可能已在后台更新。当前表单不再反映旧状态，因此不能基于旧数据提交。请先刷新页面重新加载当前账单，再重新填写。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ]
+      },
+      "B_output": {
+        "content": "当前 proposal 的 baseline_commit 与服务器最新状态不一致，因此旧方案不再可信。请刷新页面重新加载 proposal，并重新确认当前有效版本。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "type": "answer",
+        "content": "预览后账务版本发生了变化，旧参数可能基于过期余额或锁状态。应重新读取最新记录并重新生成预览，不能沿用旧版本提交。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ]
+      },
+      "A_fact_status": "generic_but_directionally_correct_refresh_and_reread",
+      "B_fact_status": "mixed_with_new_unsupported_version_cause",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": false,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "regress",
+      "unsupported_or_hallucinated_fact": "claims proposal baseline_commit mismatch/latest-state comparison absent from authoritative receipt",
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "receipt_text_similarity_sequence_ratio": 0.12,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_gs_p0_091",
+      "scenario_id": "scenario_gs_p0b_038",
+      "split": "train",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-007-verified",
+      "receipt_result_id": "result-rule-007-verified",
+      "expected_verified_result_ids": [
+        "result-rule-007-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:31+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "content": "当前页面显示的是最新快照，但你的草稿可能基于旧版本。不要直接提交旧草稿；先刷新当前活动，重新读取最新状态，再基于最新快照重新填写并提交。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "B_output": {
+        "content": "当前 proposal 已过期，不能基于旧版本继续提交。请刷新页面重新加载最新提案，并在确认界面重新核对金额、参与人和版本信息后再提交。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "type": "answer",
+        "content": "预览后账务版本发生了变化，旧参数可能基于过期余额或锁状态。应重新读取最新记录并重新生成预览，不能沿用旧版本提交。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ]
+      },
+      "A_fact_status": "generic_but_directionally_correct_refresh_and_reread",
+      "B_fact_status": "mixed_with_new_unsupported_version_cause",
+      "A_full_fact_pass": true,
+      "B_full_fact_pass": false,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "neutral",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "receipt_text_similarity_sequence_ratio": 0.042,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_gs_p0_092",
+      "scenario_id": "scenario_gs_p0b_039",
+      "split": "test",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-008-verified",
+      "receipt_result_id": "result-rule-008-verified",
+      "expected_verified_result_ids": [
+        "result-rule-008-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:32+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "不能。活动归档后不再接受补录消费。归档会锁定该活动的所有收支记录，后续只能新建活动或从其他活动迁移收支。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "B_output": {
+        "type": "answer",
+        "content": "不能。归档后财务写入变为只读，无法再补录消费；如需恢复，请先解除归档。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "expected_output": {
+        "type": "answer",
+        "content": "归档后的活动只读，不能新增消费。需要先由活动创建者解除归档，再按当前活动状态处理。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "A_fact_status": "mixed_including_wrong_or_nonresponsive_archive_guidance",
+      "B_fact_status": "correct_for_five_rows_one_unsupported_activity_claim",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "receipt_text_similarity_sequence_ratio": 0.23,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_gs_p0_093",
+      "scenario_id": "scenario_gs_p0b_039",
+      "split": "test",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-008-verified",
+      "receipt_result_id": "result-rule-008-verified",
+      "expected_verified_result_ids": [
+        "result-rule-008-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:33+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "不能通过归档后的补录或撤销操作恢复。应联系活动管理员重新发起记账；如无法联系，按活动规则走退款/补偿流程。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "B_output": {
+        "type": "answer",
+        "content": "不能通过归档活动来补录。归档只改变该活动的可见性与可写性，不会把历史交易写入账本。补录应通过当前活动的新交易入口提交；若原活动已归档且不再可写，请联系管理员解除归档后按实时投影重新提交。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "expected_output": {
+        "type": "answer",
+        "content": "归档后的活动只读，不能新增消费。需要先由活动创建者解除归档，再按当前活动状态处理。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "A_fact_status": "mixed_including_wrong_or_nonresponsive_archive_guidance",
+      "B_fact_status": "correct_for_five_rows_one_unsupported_activity_claim",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "receipt_text_similarity_sequence_ratio": 0.193,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_e24b1a12d1e4",
+      "scenario_id": "scenario_gs_p0b_009",
+      "split": "test",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-pre-core-003-verified",
+      "receipt_result_id": "result-pre-core-003-verified",
+      "expected_verified_result_ids": [
+        "result-pre-core-003-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:00:34+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "活动里的存款不会自动合并到账户的美元或日元余额。它们会按各自币种分别记账，并在活动结算时按活动汇率折算成活动记账单位。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ]
+      },
+      "B_output": {
+        "content": "新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。base 币付款按债务历史 base valuation 清偿；外币账户清偿同币外债。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "先按业务规则解释预存的抵扣顺序；具体账户余额与当前债务仍以读取结果为准，美元和日元分开处理。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "mixed_or_unsupported_currency/order_claims",
+      "B_fact_status": "correct_partial_direct_rule_use",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "receipt_text_similarity_sequence_ratio": 0.691,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_ae1660aab544",
+      "scenario_id": "scenario_gs_p0b_009",
+      "split": "test",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-pre-core-003-verified",
+      "receipt_result_id": "result-pre-core-003-verified",
+      "expected_verified_result_ids": [
+        "result-pre-core-003-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:00:34+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "活动存款会按活动内记账顺序先匹配最早未结清的债务。不同活动之间不会互相抵扣。美元和日元不会合并；它们各自在各自货币的债务和还款中按顺序匹配。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ]
+      },
+      "B_output": {
+        "content": "根据当前业务规则，新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。美元和日元不会合并，各自按对应币种分别清偿同币债务。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "先按业务规则解释预存的抵扣顺序；具体账户余额与当前债务仍以读取结果为准，美元和日元分开处理。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "mixed_or_unsupported_currency/order_claims",
+      "B_fact_status": "correct_partial_direct_rule_use",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "receipt_text_similarity_sequence_ratio": 0.457,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_2b0ab71ccf9c",
+      "scenario_id": "scenario_gs_p0b_009",
+      "split": "test",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-pre-core-003-verified",
+      "receipt_result_id": "result-pre-core-003-verified",
+      "expected_verified_result_ids": [
+        "result-pre-core-003-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:00:34+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "活动里的存款不会自动按汇率或时间顺序去“抵”某笔支出。它先按活动记账规则记为活动资产；支出时由活动账本按各自币种分别匹配。不同币种不会合并，也不会跨币种抵扣。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ]
+      },
+      "B_output": {
+        "content": "根据当前业务规则，预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。base 币付款按债务历史 base valuation 清偿；外币账户清偿同币外债。投影先扣有效真实 Settlement/Final allocation，再对同币反向债务抵销，之后才应用预存 Usage。相反方向的未结债务不能提前消费另一方向的预存。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "先按业务规则解释预存的抵扣顺序；具体账户余额与当前债务仍以读取结果为准，美元和日元分开处理。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "mixed_or_unsupported_currency/order_claims",
+      "B_fact_status": "correct_partial_direct_rule_use",
+      "A_full_fact_pass": true,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "receipt_text_similarity_sequence_ratio": 0.973,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_7e6dab2d3489",
+      "scenario_id": "scenario_gs_p0b_009",
+      "split": "test",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-pre-core-003-verified",
+      "receipt_result_id": "result-pre-core-003-verified",
+      "expected_verified_result_ids": [
+        "result-pre-core-003-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:00:35+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "活动里的存款会按活动内债务的到期顺序先还最早到期的；不同币种不会合在一起，各自按各自债务还各自。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ]
+      },
+      "B_output": {
+        "content": "预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务；base 币付款按债务历史 base valuation 清偿，外币账户清偿同币外债。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "先按业务规则解释预存的抵扣顺序；具体账户余额与当前债务仍以读取结果为准，美元和日元分开处理。",
+        "evidence_result_ids": [
+          "result-pre-core-003-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "mixed_or_unsupported_currency/order_claims",
+      "B_fact_status": "correct_partial_direct_rule_use",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "receipt_text_similarity_sequence_ratio": 0.611,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_b6a3bfa9da68",
+      "scenario_id": "scenario_gs_p0b_033",
+      "split": "train",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-001-verified",
+      "receipt_result_id": "result-rule-001-verified",
+      "expected_verified_result_ids": [
+        "result-rule-001-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:20+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "因为100元除以3等于33.333...，系统会按固定小数位四舍五入。通常先让前几个人多承担0.01的尾差，使合计正好等于100。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ]
+      },
+      "B_output": {
+        "content": "AA 原币金额在所选 Participant 间等分，以原币 4 位小数保存。100 元按三人等分，每人应为 33.3333...，系统会按 participant_order、id 稳定顺序逐个分配最小单位，正负金额对称处理；尾差不全部压给最后一人。因此会出现 33.4、33.3、33.3 这种四舍五入后的分布。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "AA 先按原币等分；base 金额按稳定参与人顺序把最小单位尾差逐个分配。因此三人分100.0可显示33.4、33.3、33.3，合计仍为100.0。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "partial_or_wrong_rounding_mechanism",
+      "B_fact_status": "correct_and_receipt_supported",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "receipt_text_similarity_sequence_ratio": 0.632,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_d128b17c1db8",
+      "scenario_id": "scenario_gs_p0b_033",
+      "split": "train",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-001-verified",
+      "receipt_result_id": "result-rule-001-verified",
+      "expected_verified_result_ids": [
+        "result-rule-001-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:21+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "content": "因为100除以3等于33.333...，系统会按四舍五入把小数位四舍五入到两位，所以会出现33.4、33.3、33.3。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ],
+        "type": "answer"
+      },
+      "B_output": {
+        "content": "AA 原币金额在所选 Participant 间等分，以原币 4 位小数保存。33.3333×3=99.9999，尾差0.0001按 participant_order、id 稳定顺序逐个分配最小单位，因此出现33.4、33.3、33.3。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "AA 先按原币等分；base 金额按稳定参与人顺序把最小单位尾差逐个分配。因此三人分100.0可显示33.4、33.3、33.3，合计仍为100.0。",
+        "evidence_result_ids": [
+          "result-rule-001-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "partial_or_wrong_rounding_mechanism",
+      "B_fact_status": "correct_and_receipt_supported",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "receipt_text_similarity_sequence_ratio": 0.543,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_401a2f5ad127",
+      "scenario_id": "scenario_gs_p0b_034",
+      "split": "validation",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-003-verified",
+      "receipt_result_id": "result-rule-003-verified",
+      "expected_verified_result_ids": [
+        "result-rule-003-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:22+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "充入的余额会按活动规则先抵扣当前未结清的债务；若活动内债务已结清，则按活动规则处理。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ]
+      },
+      "B_output": {
+        "content": "新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "服务端先用预存抵销同币种的反向债务；只有剩余可用金额才形成预存 Usage。当前是否产生 Usage 要看最新账户和债务读取。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "generic_or_wrong_debt_order",
+      "B_fact_status": "correct_partial_receipt_supported",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "receipt_text_similarity_sequence_ratio": 0.448,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_f3941370d729",
+      "scenario_id": "scenario_gs_p0b_034",
+      "split": "validation",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-003-verified",
+      "receipt_result_id": "result-rule-003-verified",
+      "expected_verified_result_ids": [
+        "result-rule-003-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:22+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "content": "未结债务会按活动规则逐笔匹配当前存款，优先抵扣最早到期或最早确认的债务；同一笔债务可能分多笔存款逐步清偿。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "B_output": {
+        "content": "新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "服务端先用预存抵销同币种的反向债务；只有剩余可用金额才形成预存 Usage。当前是否产生 Usage 要看最新账户和债务读取。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "generic_or_wrong_debt_order",
+      "B_fact_status": "correct_partial_receipt_supported",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "receipt_text_similarity_sequence_ratio": 0.448,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_191d11c1745f",
+      "scenario_id": "scenario_gs_p0b_034",
+      "split": "validation",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-003-verified",
+      "receipt_result_id": "result-rule-003-verified",
+      "expected_verified_result_ids": [
+        "result-rule-003-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:22+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "活动里若有未结债务，存进去的余额会按活动规则先用于清偿债务；债务结清后，剩余余额才会转入活动资金池。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ]
+      },
+      "B_output": {
+        "content": "活动里若有未结债务，新预存先按债务历史估值清偿 Owner 欠 Custodian 的债务；剩余资金才进入预存账户。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "服务端先用预存抵销同币种的反向债务；只有剩余可用金额才形成预存 Usage。当前是否产生 Usage 要看最新账户和债务读取。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "generic_or_wrong_debt_order",
+      "B_fact_status": "correct_partial_receipt_supported",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "near-verbatim/partial phrase overlap",
+      "receipt_text_similarity_sequence_ratio": 0.336,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_6c16bbf26c83",
+      "scenario_id": "scenario_gs_p0b_034",
+      "split": "validation",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-003-verified",
+      "receipt_result_id": "result-rule-003-verified",
+      "expected_verified_result_ids": [
+        "result-rule-003-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:23+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "活动内还款按“先还当前债务、再还历史债务”的顺序执行。同一笔债务按“先还本金、再还利息”的顺序执行。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ]
+      },
+      "B_output": {
+        "content": "新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "服务端先用预存抵销同币种的反向债务；只有剩余可用金额才形成预存 Usage。当前是否产生 Usage 要看最新账户和债务读取。",
+        "evidence_result_ids": [
+          "result-rule-003-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "generic_or_wrong_debt_order",
+      "B_fact_status": "correct_partial_receipt_supported",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "long exact receipt sentence copied",
+      "receipt_text_similarity_sequence_ratio": 0.448,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_495133fe795c",
+      "scenario_id": "scenario_gs_p0b_035",
+      "split": "hard_test",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-004-verified",
+      "receipt_result_id": "result-rule-004-verified",
+      "expected_verified_result_ids": [
+        "result-rule-004-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:24+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "不能。删除退款不会改变原消费记录；退款只是把原消费冲回。要改原消费，必须重新发起一笔新的消费。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ]
+      },
+      "B_output": {
+        "type": "answer",
+        "content": "不能。删除退款只会释放原消费占用的额度；原消费及其财务锁不会解除，金额、币种、汇率、付款方、分摊、账本单元、时间等财务事实不可修改。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ]
+      },
+      "expected_output": {
+        "content": "不能。已有真实退款历史会让原消费永久财务锁定；删除退款可能释放退款额度，但不会解除该锁。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "mixed_lock_explanation",
+      "B_fact_status": "correct_for_five_nonclarification_rows",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "near-verbatim/partial phrase overlap",
+      "receipt_text_similarity_sequence_ratio": 0.349,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_af85b5a16d3b",
+      "scenario_id": "scenario_gs_p0b_035",
+      "split": "hard_test",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-004-verified",
+      "receipt_result_id": "result-rule-004-verified",
+      "expected_verified_result_ids": [
+        "result-rule-004-verified"
+      ],
+      "B_cites_actual_receipt_id": false,
+      "frozen_context_generated_at": "2026-09-29T10:01:24+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "clarification",
+        "intent_id": "query_editability",
+        "reason": "missing_entity",
+        "missing_fields": [
+          "activity_id"
+        ],
+        "question": "退款删除后，原消费是否可编辑取决于退款是否已结算。请提供活动 ID，以便我查询当前状态。",
+        "candidates": []
+      },
+      "B_output": {
+        "type": "clarification",
+        "intent_id": "query_editability",
+        "reason": "missing_field",
+        "missing_fields": [
+          "original_expense_id"
+        ],
+        "question": "退款删除后原消费是否可编辑，取决于原消费是否仍被其他退款引用。请提供原消费 ID。",
+        "candidates": []
+      },
+      "expected_output": {
+        "content": "不能。已有真实退款历史会让原消费永久财务锁定；删除退款可能释放退款额度，但不会解除该锁。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "mixed_lock_explanation",
+      "B_fact_status": "correct_for_five_nonclarification_rows",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": false,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "neutral",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "no exact receipt citation",
+      "copying": "paraphrase or synthesis",
+      "receipt_text_similarity_sequence_ratio": null,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_2a2434a010ba",
+      "scenario_id": "scenario_gs_p0b_035",
+      "split": "hard_test",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-004-verified",
+      "receipt_result_id": "result-rule-004-verified",
+      "expected_verified_result_ids": [
+        "result-rule-004-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:25+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "退款记录删除并不会自动解除原消费记录的锁。锁的解除由退款结果中的退款ID与退款金额匹配决定；删除只是移除一条记录，不会触发锁的释放。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ]
+      },
+      "B_output": {
+        "content": "不能。删除退款记录不会解除原 Expense 的财务锁。只要曾经存在 linked refund，原 Expense 的财务锁就不会解除，即使退款后来全部删除。退款只是释放可用额度，不会改变原 Expense 的锁状态。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "不能。已有真实退款历史会让原消费永久财务锁定；删除退款可能释放退款额度，但不会解除该锁。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "mixed_lock_explanation",
+      "B_fact_status": "correct_for_five_nonclarification_rows",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "near-verbatim/partial phrase overlap",
+      "receipt_text_similarity_sequence_ratio": 0.462,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_8e1096f2010d",
+      "scenario_id": "scenario_gs_p0b_035",
+      "split": "hard_test",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-004-verified",
+      "receipt_result_id": "result-rule-004-verified",
+      "expected_verified_result_ids": [
+        "result-rule-004-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:25+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "不会。退款记录删除后，原单仍然保留在账本中，其锁不会自动解除。退款只是原单的一个子记录，删除退款不会改变原单的状态或释放锁。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ]
+      },
+      "B_output": {
+        "content": "退款记录删除后，原支出单不会自动解除财务锁。只要曾经存在过关联退款，原支出单仍保持锁定；删除退款只会释放退款本身占用的额度。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "不能。已有真实退款历史会让原消费永久财务锁定；删除退款可能释放退款额度，但不会解除该锁。",
+        "evidence_result_ids": [
+          "result-rule-004-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "mixed_lock_explanation",
+      "B_fact_status": "correct_for_five_nonclarification_rows",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "receipt_text_similarity_sequence_ratio": 0.142,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_0847b1b27f7f",
+      "scenario_id": "scenario_gs_p0b_036",
+      "split": "train",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-005-verified",
+      "receipt_result_id": "result-rule-005-verified",
+      "expected_verified_result_ids": [
+        "result-rule-005-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:26+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "content": "是的。记账方案会在对话框里显示，必须点击确认才能提交。上一笔方案还在待确认状态，没有提交。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "B_output": {
+        "content": "是的。记账属于写操作，必须先由可信界面确认并经过 Gateway 复核，才能执行。上一笔方案还在待确认状态，没有确认就不能执行。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "是的，记账方案需要在可信确认界面核对后才能提交。聊天中说“好”或“确定”不会写入账本；上一笔仍处于待确认状态。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "already_generally_correct",
+      "B_fact_status": "correct_more_explicit_confirmation_gate",
+      "A_full_fact_pass": true,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "neutral",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "receipt_text_similarity_sequence_ratio": 0.077,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_538a5e7bdb1e",
+      "scenario_id": "scenario_gs_p0b_036",
+      "split": "train",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-005-verified",
+      "receipt_result_id": "result-rule-005-verified",
+      "expected_verified_result_ids": [
+        "result-rule-005-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:26+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "content": "是的。上一笔记账方案仍待确认；请在当前界面点击确认。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "B_output": {
+        "content": "是的。上一笔记账方案仍停留在待确认状态，必须重新确认才能执行。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "是的，记账方案需要在可信确认界面核对后才能提交。聊天中说“好”或“确定”不会写入账本；上一笔仍处于待确认状态。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "already_generally_correct",
+      "B_fact_status": "correct_more_explicit_confirmation_gate",
+      "A_full_fact_pass": true,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "neutral",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "receipt_text_similarity_sequence_ratio": 0.026,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_720594c4fe1e",
+      "scenario_id": "scenario_gs_p0b_036",
+      "split": "train",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-005-verified",
+      "receipt_result_id": "result-rule-005-verified",
+      "expected_verified_result_ids": [
+        "result-rule-005-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:26+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "content": "是的。当前这笔记账还没有被确认，所以不会写入账本。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "B_output": {
+        "content": "是的。当前会话里还有未确认的记账方案，必须通过确认才能写入。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "是的，记账方案需要在可信确认界面核对后才能提交。聊天中说“好”或“确定”不会写入账本；上一笔仍处于待确认状态。",
+        "evidence_result_ids": [
+          "result-rule-005-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "already_generally_correct",
+      "B_fact_status": "correct_more_explicit_confirmation_gate",
+      "A_full_fact_pass": true,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "neutral",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "receipt_text_similarity_sequence_ratio": 0.013,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_c2e46813f818",
+      "scenario_id": "scenario_gs_p0b_038",
+      "split": "train",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-007-verified",
+      "receipt_result_id": "result-rule-007-verified",
+      "expected_verified_result_ids": [
+        "result-rule-007-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:30+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "content": "当前活动对应的账本版本已更新，你看到的旧数据不再适用。重新读取最新活动后才能继续提交。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "B_output": {
+        "content": "当前 proposal 的 baseline_commit 与服务器最新状态不一致，说明已有服务端变更（如金额、参与人、版本等）；旧方案不再可信，必须重新生成并重新确认。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "预览后账务版本发生了变化，旧参数可能基于过期余额或锁状态。应重新读取最新记录并重新生成预览，不能沿用旧版本提交。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "generic_but_directionally_correct_refresh_and_reread",
+      "B_fact_status": "mixed_with_new_unsupported_version_cause",
+      "A_full_fact_pass": true,
+      "B_full_fact_pass": false,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "regress",
+      "unsupported_or_hallucinated_fact": "claims proposal baseline_commit mismatch/latest-state comparison absent from authoritative receipt",
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "receipt_text_similarity_sequence_ratio": 0.137,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_0c10938359b3",
+      "scenario_id": "scenario_gs_p0b_038",
+      "split": "train",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-007-verified",
+      "receipt_result_id": "result-rule-007-verified",
+      "expected_verified_result_ids": [
+        "result-rule-007-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:30+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "content": "账单的财务版本在后台已更新，当前草稿不再匹配最新账本。请刷新页面重新读取当前版本，再重新填写。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "B_output": {
+        "content": "当前 proposal 的 baseline_commit 与服务器最新状态不一致，因此旧方案不再可信。请刷新页面重新加载 proposal，不要基于旧结果继续操作。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "预览后账务版本发生了变化，旧参数可能基于过期余额或锁状态。应重新读取最新记录并重新生成预览，不能沿用旧版本提交。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "generic_but_directionally_correct_refresh_and_reread",
+      "B_fact_status": "mixed_with_new_unsupported_version_cause",
+      "A_full_fact_pass": true,
+      "B_full_fact_pass": false,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "regress",
+      "unsupported_or_hallucinated_fact": "claims proposal baseline_commit mismatch/latest-state comparison absent from authoritative receipt",
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "receipt_text_similarity_sequence_ratio": 0.12,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_95b271a2d3c6",
+      "scenario_id": "scenario_gs_p0b_038",
+      "split": "train",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-007-verified",
+      "receipt_result_id": "result-rule-007-verified",
+      "expected_verified_result_ids": [
+        "result-rule-007-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:30+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "content": "当前活动中的财务版本已经更新，旧活动不再反映最新账目。重新加载活动后，旧活动会被替换为最新版本。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "B_output": {
+        "content": "当前 proposal 已过期，旧版本不再可信。请刷新页面重新生成 proposal，并重新确认。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "预览后账务版本发生了变化，旧参数可能基于过期余额或锁状态。应重新读取最新记录并重新生成预览，不能沿用旧版本提交。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "generic_but_directionally_correct_refresh_and_reread",
+      "B_fact_status": "mixed_with_new_unsupported_version_cause",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "receipt_text_similarity_sequence_ratio": 0.051,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_a75531445264",
+      "scenario_id": "scenario_gs_p0b_038",
+      "split": "train",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-007-verified",
+      "receipt_result_id": "result-rule-007-verified",
+      "expected_verified_result_ids": [
+        "result-rule-007-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:31+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "content": "财务状态已变化表示当前页面引用的账单在后台被其他操作更新过，因此不再反映你看到的旧数据。为避免基于过期信息提交错误结果，应用要求重新加载并确认当前版本。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "B_output": {
+        "content": "当前 proposal 的 baseline_commit 与服务器最新状态不一致，说明服务端已有变更。旧 proposal 已失效，需要重新生成并重新校验。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "预览后账务版本发生了变化，旧参数可能基于过期余额或锁状态。应重新读取最新记录并重新生成预览，不能沿用旧版本提交。",
+        "evidence_result_ids": [
+          "result-rule-007-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "generic_but_directionally_correct_refresh_and_reread",
+      "B_fact_status": "mixed_with_new_unsupported_version_cause",
+      "A_full_fact_pass": true,
+      "B_full_fact_pass": false,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "regress",
+      "unsupported_or_hallucinated_fact": "claims proposal baseline_commit mismatch/latest-state comparison absent from authoritative receipt",
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "receipt_text_similarity_sequence_ratio": 0.191,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_5d586b9bd796",
+      "scenario_id": "scenario_gs_p0b_039",
+      "split": "test",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-008-verified",
+      "receipt_result_id": "result-rule-008-verified",
+      "expected_verified_result_ids": [
+        "result-rule-008-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:32+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "answer",
+        "content": "不能。活动归档后，该活动已不再可编辑；补录消费需要重新发起一笔新的支出。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "B_output": {
+        "type": "answer",
+        "content": "不能。活动归档后财务写入变为只读，无法再补录消费。如需恢复，请先解除归档，然后重新发起记账。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "expected_output": {
+        "content": "归档后的活动只读，不能新增消费。需要先由活动创建者解除归档，再按当前活动状态处理。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "mixed_including_wrong_or_nonresponsive_archive_guidance",
+      "B_fact_status": "correct_for_five_rows_one_unsupported_activity_claim",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "receipt_text_similarity_sequence_ratio": 0.227,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_ba1b62eae9d7",
+      "scenario_id": "scenario_gs_p0b_039",
+      "split": "test",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-008-verified",
+      "receipt_result_id": "result-rule-008-verified",
+      "expected_verified_result_ids": [
+        "result-rule-008-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:32+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "clarification",
+        "intent_id": "query_archival_rule",
+        "reason": "missing_entity",
+        "missing_fields": [],
+        "question": "活动归档后，原活动中的消费记录会被移出账本。此时无法再补录到该活动；如需记账，请在当前活动重新发起。",
+        "candidates": []
+      },
+      "B_output": {
+        "type": "answer",
+        "content": "不能。归档后财务写入只读，无法再补录消费；如需恢复，请先解除归档。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "expected_output": {
+        "content": "归档后的活动只读，不能新增消费。需要先由活动创建者解除归档，再按当前活动状态处理。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "mixed_including_wrong_or_nonresponsive_archive_guidance",
+      "B_fact_status": "correct_for_five_rows_one_unsupported_activity_claim",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "receipt_text_similarity_sequence_ratio": 0.234,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_f0b77cc4c158",
+      "scenario_id": "scenario_gs_p0b_039",
+      "split": "test",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-008-verified",
+      "receipt_result_id": "result-rule-008-verified",
+      "expected_verified_result_ids": [
+        "result-rule-008-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:33+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "clarification",
+        "intent_id": "query_ledger_edit",
+        "reason": "missing_field",
+        "missing_fields": [
+          "activity_id"
+        ],
+        "question": "活动归档后不能直接补记。请提供昨天那笔消费对应的活动 ID（或活动名称），以便我确认能否通过原活动重新记账。",
+        "candidates": []
+      },
+      "B_output": {
+        "content": "归档后活动确实不能继续写入，但不会自动锁定历史。补记要重新发起一笔活动记账；如果原活动已归档，这笔新记账会作为独立活动处理。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "content": "归档后的活动只读，不能新增消费。需要先由活动创建者解除归档，再按当前活动状态处理。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "mixed_including_wrong_or_nonresponsive_archive_guidance",
+      "B_fact_status": "correct_for_five_rows_one_unsupported_activity_claim",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": false,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "regress",
+      "unsupported_or_hallucinated_fact": "claims the new transaction would be an independent activity; source only permits unarchive then live projection",
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "receipt_text_similarity_sequence_ratio": 0.133,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_teacher_fa5cc2f3d068",
+      "scenario_id": "scenario_gs_p0b_039",
+      "split": "test",
+      "fixture_kind": "new_frozen_document_read_fixture",
+      "tool": "lookup_business_rule",
+      "legacy_result_id": "result-rule-008-verified",
+      "receipt_result_id": "result-rule-008-verified",
+      "expected_verified_result_ids": [
+        "result-rule-008-verified"
+      ],
+      "B_cites_actual_receipt_id": true,
+      "frozen_context_generated_at": "2026-09-29T10:01:33+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "clarification",
+        "intent_id": "query_ledger_reconciliation",
+        "reason": "missing_entity",
+        "missing_fields": [],
+        "question": "请提供要补录的消费金额、收款人和发生日期。",
+        "candidates": []
+      },
+      "B_output": {
+        "type": "answer",
+        "content": "归档后不能直接补录。应先在未归档的原始活动里重新发起支出；若原活动已归档，先解除归档，再按当前版本重新提交。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ]
+      },
+      "expected_output": {
+        "content": "归档后的活动只读，不能新增消费。需要先由活动创建者解除归档，再按当前活动状态处理。",
+        "evidence_result_ids": [
+          "result-rule-008-verified"
+        ],
+        "type": "answer"
+      },
+      "A_fact_status": "mixed_including_wrong_or_nonresponsive_archive_guidance",
+      "B_fact_status": "correct_for_five_rows_one_unsupported_activity_claim",
+      "A_full_fact_pass": false,
+      "B_full_fact_pass": true,
+      "A_receipt_body_available": false,
+      "B_receipt_body_available": true,
+      "human_change": "improve",
+      "unsupported_or_hallucinated_fact": null,
+      "receipt_citation": "correct frozen result ID cited",
+      "copying": "paraphrase or synthesis",
+      "receipt_text_similarity_sequence_ratio": 0.127,
+      "backend_grounding_limitation": null
+    },
+    {
+      "sample_id": "sample_gs_p0_015",
+      "scenario_id": "scenario_gs_p0a_009",
+      "split": "train",
+      "fixture_kind": "authoritative_backend_receipt",
+      "tool": "get_expense",
+      "legacy_result_id": "result-p0a-expense-009",
+      "receipt_result_id": "52906326-7912-5bea-b956-1279bd792266",
+      "expected_verified_result_ids": [
+        "result-p0a-expense-009"
+      ],
+      "B_cites_actual_receipt_id": false,
+      "frozen_context_generated_at": "2026-09-29T10:00:15+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "tool_call",
+        "intent_id": "update_expense",
+        "tool": "get_expense",
+        "arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "expense_id": "00000000-0000-4000-8000-000000000110"
+        },
+        "reason": "需要读取当前支出以确认变更影响",
+        "tool_call_id": "call-001"
+      },
+      "B_output": {
+        "type": "clarification",
+        "intent_id": "update_expense",
+        "reason": "missing_fields",
+        "missing_fields": [
+          "original_amount"
+        ],
+        "question": "当前显示的设备租赁金额为 100 CNY。请确认是否要将其改为 120 CNY。",
+        "candidates": []
+      },
+      "expected_output": {
+        "type": "proposal",
+        "intent_id": "update_expense",
+        "operation": {
+          "tool": "update_expense",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "expense_id": "00000000-0000-4000-8000-000000000110",
+            "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+            "title": "设备租赁",
+            "original_amount": "120",
+            "original_currency": "CNY",
+            "split_method": "manual",
+            "payments": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "120"
+              }
+            ],
+            "manual_splits": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000104",
+                "amount": "120"
+              }
+            ],
+            "aa_participant_ids": [],
+            "occurred_at": "2026-09-14T10:00:00+08:00",
+            "note": null,
+            "original_expense_id": null
+          }
+        },
+        "preview": {
+          "kind": "update",
+          "summary": "拟将支出金额从 100 CNY 调整为 120 CNY；此预览不可执行。",
+          "diff": [
+            {
+              "field": "original_amount",
+              "before": "100",
+              "after": "120"
+            },
+            {
+              "field": "payments",
+              "before": [
+                {
+                  "participant_id": "00000000-0000-4000-8000-000000000103",
+                  "amount": "100"
+                }
+              ],
+              "after": [
+                {
+                  "participant_id": "00000000-0000-4000-8000-000000000103",
+                  "amount": "120"
+                }
+              ]
+            },
+            {
+              "field": "manual_splits",
+              "before": [
+                {
+                  "participant_id": "00000000-0000-4000-8000-000000000104",
+                  "amount": "100"
+                }
+              ],
+              "after": [
+                {
+                  "participant_id": "00000000-0000-4000-8000-000000000104",
+                  "amount": "120"
+                }
+              ]
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 1,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": false,
+          "reason": "d4_atomic_update_not_supported"
+        }
+      },
+      "A_fact_status": "not_receipt_grounded_no_body",
+      "B_fact_status": "id_and_time_confounded",
+      "human_change": "not_counted",
+      "A_full_fact_pass": null,
+      "B_full_fact_pass": null,
+      "unsupported_or_hallucinated_fact": "cannot assign to authoritative result because actual UUID binding is not visible; keep raw response for review",
+      "receipt_citation": "B cites frozen legacy ID when present, never actual UUID; this is not an actual receipt citation",
+      "copying": "not scored",
+      "backend_grounding_limitation": "No grounded-correctness credit is assigned. The visible frozen entity/result aliases do not equal the actual receipt UUID, no alias map is given to the model, and receipt observed_at postdates the frozen context. Raw original evaluator metrics are retained; UUID equivalence remains an external-only diagnostic."
+    },
+    {
+      "sample_id": "sample_gs_p0_016",
+      "scenario_id": "scenario_gs_p0a_009",
+      "split": "train",
+      "fixture_kind": "authoritative_backend_receipt",
+      "tool": "get_expense",
+      "legacy_result_id": "result-p0a-expense-009",
+      "receipt_result_id": "52906326-7912-5bea-b956-1279bd792266",
+      "expected_verified_result_ids": [
+        "result-p0a-expense-009"
+      ],
+      "B_cites_actual_receipt_id": false,
+      "frozen_context_generated_at": "2026-09-29T10:00:16+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "content": "无法直接生成修改预览。当前会话中只有读工具结果，没有待确认的写操作；金额变更需要重新提交写请求。",
+        "evidence_result_ids": [
+          "result-p0a-expense-009"
+        ],
+        "type": "answer"
+      },
+      "B_output": {
+        "content": "无法直接生成修改预览。当前会话中只有读取结果，没有可用的写工具；金额变更需要提交写请求并等待确认。",
+        "evidence_result_ids": [
+          "result-p0a-expense-009"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "type": "proposal",
+        "intent_id": "update_expense",
+        "operation": {
+          "tool": "update_expense",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "expense_id": "00000000-0000-4000-8000-000000000110",
+            "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+            "title": "设备租赁",
+            "original_amount": "120",
+            "original_currency": "CNY",
+            "split_method": "manual",
+            "payments": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000103",
+                "amount": "120"
+              }
+            ],
+            "manual_splits": [
+              {
+                "participant_id": "00000000-0000-4000-8000-000000000104",
+                "amount": "120"
+              }
+            ],
+            "aa_participant_ids": [],
+            "occurred_at": "2026-09-14T10:00:00+08:00",
+            "note": null,
+            "original_expense_id": null
+          }
+        },
+        "preview": {
+          "kind": "update",
+          "summary": "拟将支出金额从 100 CNY 调整为 120 CNY；此预览不可执行。",
+          "diff": [
+            {
+              "field": "original_amount",
+              "before": "100",
+              "after": "120"
+            },
+            {
+              "field": "payments",
+              "before": [
+                {
+                  "participant_id": "00000000-0000-4000-8000-000000000103",
+                  "amount": "100"
+                }
+              ],
+              "after": [
+                {
+                  "participant_id": "00000000-0000-4000-8000-000000000103",
+                  "amount": "120"
+                }
+              ]
+            },
+            {
+              "field": "manual_splits",
+              "before": [
+                {
+                  "participant_id": "00000000-0000-4000-8000-000000000104",
+                  "amount": "100"
+                }
+              ],
+              "after": [
+                {
+                  "participant_id": "00000000-0000-4000-8000-000000000104",
+                  "amount": "120"
+                }
+              ]
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 1,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": false,
+          "reason": "d4_atomic_update_not_supported"
+        }
+      },
+      "A_fact_status": "not_receipt_grounded_no_body",
+      "B_fact_status": "id_and_time_confounded",
+      "human_change": "not_counted",
+      "A_full_fact_pass": null,
+      "B_full_fact_pass": null,
+      "unsupported_or_hallucinated_fact": "cannot assign to authoritative result because actual UUID binding is not visible; keep raw response for review",
+      "receipt_citation": "B cites frozen legacy ID when present, never actual UUID; this is not an actual receipt citation",
+      "copying": "not scored",
+      "backend_grounding_limitation": "No grounded-correctness credit is assigned. The visible frozen entity/result aliases do not equal the actual receipt UUID, no alias map is given to the model, and receipt observed_at postdates the frozen context. Raw original evaluator metrics are retained; UUID equivalence remains an external-only diagnostic."
+    },
+    {
+      "sample_id": "sample_gs_p0_043",
+      "scenario_id": "scenario_gs_p0a_012",
+      "split": "train",
+      "fixture_kind": "authoritative_backend_receipt",
+      "tool": "find_expenses",
+      "legacy_result_id": "result-p0a-delete-012",
+      "receipt_result_id": "f7407f6b-f74c-5b77-9378-ae50f7184c10",
+      "expected_verified_result_ids": [
+        "result-p0a-delete-012"
+      ],
+      "B_cites_actual_receipt_id": false,
+      "frozen_context_generated_at": "2026-09-29T10:00:43+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "tool_call",
+        "intent_id": "delete_expense",
+        "tool": "delete_expense",
+        "arguments": {
+          "expense_id": "00000000-0000-4000-8000-000000000112",
+          "reason": "user_request"
+        },
+        "reason": "missing_confirmation",
+        "missing_fields": [],
+        "evidence_result_ids": []
+      },
+      "B_output": {
+        "content": "这笔支出涉及多人分摊，删除会影响其他参与者的账目。请先确认是否要删除这笔支出。",
+        "evidence_result_ids": [
+          "result-p0a-delete-012"
+        ],
+        "type": "confirmation"
+      },
+      "expected_output": {
+        "type": "proposal",
+        "intent_id": "delete_expense",
+        "operation": {
+          "tool": "delete_expense",
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "expense_id": "00000000-0000-4000-8000-000000000112"
+          }
+        },
+        "preview": {
+          "kind": "delete",
+          "summary": "拟删除你创建的未锁定支出“设备租赁”，请在应用中确认。",
+          "diff": [
+            {
+              "field": "expense",
+              "before": {
+                "expense_id": "00000000-0000-4000-8000-000000000112",
+                "title": "设备租赁",
+                "original_amount": "100",
+                "original_currency": "CNY",
+                "is_deleted": false
+              }
+            }
+          ]
+        },
+        "confirmation": {
+          "level": 2,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": true,
+          "reason": "confirmation_required"
+        }
+      },
+      "A_fact_status": "not_receipt_grounded_no_body",
+      "B_fact_status": "id_and_time_confounded",
+      "human_change": "not_counted",
+      "A_full_fact_pass": null,
+      "B_full_fact_pass": null,
+      "unsupported_or_hallucinated_fact": "cannot assign to authoritative result because actual UUID binding is not visible; keep raw response for review",
+      "receipt_citation": "B cites frozen legacy ID when present, never actual UUID; this is not an actual receipt citation",
+      "copying": "not scored",
+      "backend_grounding_limitation": "No grounded-correctness credit is assigned. The visible frozen entity/result aliases do not equal the actual receipt UUID, no alias map is given to the model, and receipt observed_at postdates the frozen context. Raw original evaluator metrics are retained; UUID equivalence remains an external-only diagnostic."
+    },
+    {
+      "sample_id": "sample_teacher_6b8c91b2ae67",
+      "scenario_id": "scenario_gs_p0a_009",
+      "split": "train",
+      "fixture_kind": "authoritative_backend_receipt",
+      "tool": "get_expense",
+      "legacy_result_id": "result-p0a-expense-009",
+      "receipt_result_id": "52906326-7912-5bea-b956-1279bd792266",
+      "expected_verified_result_ids": [
+        "result-p0a-expense-009"
+      ],
+      "B_cites_actual_receipt_id": false,
+      "frozen_context_generated_at": "2026-09-29T10:00:15+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "clarification",
+        "intent_id": "update_expense",
+        "reason": "missing_field",
+        "missing_fields": [
+          "original_amount"
+        ],
+        "question": "当前显示的原始金额是 100 CNY。要改成 120 CNY 吗？",
+        "candidates": []
+      },
+      "B_output": {
+        "type": "clarification",
+        "intent_id": "update_expense",
+        "reason": "missing_fields",
+        "missing_fields": [
+          "original_expense_id"
+        ],
+        "question": "当前页面没有显示这笔设备租赁的原始支出 ID。请提供原始支出 ID，以便我确认要修改的是哪一笔。",
+        "candidates": []
+      },
+      "expected_output": {
+        "confirmation": {
+          "level": 1,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": false,
+          "reason": "d4_atomic_update_not_supported"
+        },
+        "intent_id": "update_expense",
+        "operation": {
+          "arguments": {
+            "aa_participant_ids": [],
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "expense_id": "00000000-0000-4000-8000-000000000110",
+            "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+            "manual_splits": [
+              {
+                "amount": "120",
+                "participant_id": "00000000-0000-4000-8000-000000000104"
+              }
+            ],
+            "note": null,
+            "occurred_at": "2026-09-14T10:00:00+08:00",
+            "original_amount": "120",
+            "original_currency": "CNY",
+            "original_expense_id": null,
+            "payments": [
+              {
+                "amount": "120",
+                "participant_id": "00000000-0000-4000-8000-000000000103"
+              }
+            ],
+            "split_method": "manual",
+            "title": "设备租赁"
+          },
+          "tool": "update_expense"
+        },
+        "preview": {
+          "diff": [
+            {
+              "after": "120",
+              "before": "100",
+              "field": "original_amount"
+            },
+            {
+              "after": [
+                {
+                  "amount": "120",
+                  "participant_id": "00000000-0000-4000-8000-000000000103"
+                }
+              ],
+              "before": [
+                {
+                  "amount": "100",
+                  "participant_id": "00000000-0000-4000-8000-000000000103"
+                }
+              ],
+              "field": "payments"
+            },
+            {
+              "after": [
+                {
+                  "amount": "120",
+                  "participant_id": "00000000-0000-4000-8000-000000000104"
+                }
+              ],
+              "before": [
+                {
+                  "amount": "100",
+                  "participant_id": "00000000-0000-4000-8000-000000000104"
+                }
+              ],
+              "field": "manual_splits"
+            }
+          ],
+          "kind": "update",
+          "summary": "拟将支出金额从 100 CNY 调整为 120 CNY；此预览不可执行。"
+        },
+        "type": "proposal"
+      },
+      "A_fact_status": "not_receipt_grounded_no_body",
+      "B_fact_status": "id_and_time_confounded",
+      "human_change": "not_counted",
+      "A_full_fact_pass": null,
+      "B_full_fact_pass": null,
+      "unsupported_or_hallucinated_fact": "cannot assign to authoritative result because actual UUID binding is not visible; keep raw response for review",
+      "receipt_citation": "B cites frozen legacy ID when present, never actual UUID; this is not an actual receipt citation",
+      "copying": "not scored",
+      "backend_grounding_limitation": "No grounded-correctness credit is assigned. The visible frozen entity/result aliases do not equal the actual receipt UUID, no alias map is given to the model, and receipt observed_at postdates the frozen context. Raw original evaluator metrics are retained; UUID equivalence remains an external-only diagnostic."
+    },
+    {
+      "sample_id": "sample_teacher_d32231ae891a",
+      "scenario_id": "scenario_gs_p0a_009",
+      "split": "train",
+      "fixture_kind": "authoritative_backend_receipt",
+      "tool": "get_expense",
+      "legacy_result_id": "result-p0a-expense-009",
+      "receipt_result_id": "52906326-7912-5bea-b956-1279bd792266",
+      "expected_verified_result_ids": [
+        "result-p0a-expense-009"
+      ],
+      "B_cites_actual_receipt_id": false,
+      "frozen_context_generated_at": "2026-09-29T10:00:15+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "clarification",
+        "intent_id": "modify_expense",
+        "reason": "ambiguous",
+        "missing_fields": [],
+        "question": "这笔设备租赁是指当前页面显示的支出 00000000-0000-4000-8000-000000000110 吗？",
+        "candidates": []
+      },
+      "B_output": {
+        "content": "这笔设备租赁的当前分摊和还款状态已锁定，不能直接修改金额。请重新发起一笔新的设备租赁支出，并重新计算分摊。",
+        "evidence_result_ids": [
+          "result-p0a-expense-009"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "confirmation": {
+          "level": 1,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": false,
+          "reason": "d4_atomic_update_not_supported"
+        },
+        "intent_id": "update_expense",
+        "operation": {
+          "arguments": {
+            "aa_participant_ids": [],
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "expense_id": "00000000-0000-4000-8000-000000000110",
+            "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+            "manual_splits": [
+              {
+                "amount": "120",
+                "participant_id": "00000000-0000-4000-8000-000000000104"
+              }
+            ],
+            "note": null,
+            "occurred_at": "2026-09-14T10:00:00+08:00",
+            "original_amount": "120",
+            "original_currency": "CNY",
+            "original_expense_id": null,
+            "payments": [
+              {
+                "amount": "120",
+                "participant_id": "00000000-0000-4000-8000-000000000103"
+              }
+            ],
+            "split_method": "manual",
+            "title": "设备租赁"
+          },
+          "tool": "update_expense"
+        },
+        "preview": {
+          "diff": [
+            {
+              "after": "120",
+              "before": "100",
+              "field": "original_amount"
+            },
+            {
+              "after": [
+                {
+                  "amount": "120",
+                  "participant_id": "00000000-0000-4000-8000-000000000103"
+                }
+              ],
+              "before": [
+                {
+                  "amount": "100",
+                  "participant_id": "00000000-0000-4000-8000-000000000103"
+                }
+              ],
+              "field": "payments"
+            },
+            {
+              "after": [
+                {
+                  "amount": "120",
+                  "participant_id": "00000000-0000-4000-8000-000000000104"
+                }
+              ],
+              "before": [
+                {
+                  "amount": "100",
+                  "participant_id": "00000000-0000-4000-8000-000000000104"
+                }
+              ],
+              "field": "manual_splits"
+            }
+          ],
+          "kind": "update",
+          "summary": "拟将支出金额从 100 CNY 调整为 120 CNY；此预览不可执行。"
+        },
+        "type": "proposal"
+      },
+      "A_fact_status": "not_receipt_grounded_no_body",
+      "B_fact_status": "id_and_time_confounded",
+      "human_change": "not_counted",
+      "A_full_fact_pass": null,
+      "B_full_fact_pass": null,
+      "unsupported_or_hallucinated_fact": "cannot assign to authoritative result because actual UUID binding is not visible; keep raw response for review",
+      "receipt_citation": "B cites frozen legacy ID when present, never actual UUID; this is not an actual receipt citation",
+      "copying": "not scored",
+      "backend_grounding_limitation": "No grounded-correctness credit is assigned. The visible frozen entity/result aliases do not equal the actual receipt UUID, no alias map is given to the model, and receipt observed_at postdates the frozen context. Raw original evaluator metrics are retained; UUID equivalence remains an external-only diagnostic."
+    },
+    {
+      "sample_id": "sample_teacher_e2d3fdbd7509",
+      "scenario_id": "scenario_gs_p0a_009",
+      "split": "train",
+      "fixture_kind": "authoritative_backend_receipt",
+      "tool": "get_expense",
+      "legacy_result_id": "result-p0a-expense-009",
+      "receipt_result_id": "52906326-7912-5bea-b956-1279bd792266",
+      "expected_verified_result_ids": [
+        "result-p0a-expense-009"
+      ],
+      "B_cites_actual_receipt_id": false,
+      "frozen_context_generated_at": "2026-09-29T10:00:15+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "tool_call",
+        "intent_id": "modify_expense",
+        "tool": "get_expense",
+        "arguments": {
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "expense_id": "00000000-0000-4000-8000-000000000110",
+          "amount": "120"
+        },
+        "reason": "用户提出修改金额",
+        "evidence_result_ids": [
+          "result-p0a-expense-009"
+        ]
+      },
+      "B_output": {
+        "content": "这笔支出当前已分配给其他人，不能直接改金额。请发起退款/重新分摊，或联系相关成员处理。",
+        "evidence_result_ids": [
+          "result-p0a-expense-009"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "confirmation": {
+          "level": 1,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": false,
+          "reason": "d4_atomic_update_not_supported"
+        },
+        "intent_id": "update_expense",
+        "operation": {
+          "arguments": {
+            "aa_participant_ids": [],
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "expense_id": "00000000-0000-4000-8000-000000000110",
+            "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+            "manual_splits": [
+              {
+                "amount": "120",
+                "participant_id": "00000000-0000-4000-8000-000000000104"
+              }
+            ],
+            "note": null,
+            "occurred_at": "2026-09-14T10:00:00+08:00",
+            "original_amount": "120",
+            "original_currency": "CNY",
+            "original_expense_id": null,
+            "payments": [
+              {
+                "amount": "120",
+                "participant_id": "00000000-0000-4000-8000-000000000103"
+              }
+            ],
+            "split_method": "manual",
+            "title": "设备租赁"
+          },
+          "tool": "update_expense"
+        },
+        "preview": {
+          "diff": [
+            {
+              "after": "120",
+              "before": "100",
+              "field": "original_amount"
+            },
+            {
+              "after": [
+                {
+                  "amount": "120",
+                  "participant_id": "00000000-0000-4000-8000-000000000103"
+                }
+              ],
+              "before": [
+                {
+                  "amount": "100",
+                  "participant_id": "00000000-0000-4000-8000-000000000103"
+                }
+              ],
+              "field": "payments"
+            },
+            {
+              "after": [
+                {
+                  "amount": "120",
+                  "participant_id": "00000000-0000-4000-8000-000000000104"
+                }
+              ],
+              "before": [
+                {
+                  "amount": "100",
+                  "participant_id": "00000000-0000-4000-8000-000000000104"
+                }
+              ],
+              "field": "manual_splits"
+            }
+          ],
+          "kind": "update",
+          "summary": "拟将支出金额从 100 CNY 调整为 120 CNY；此预览不可执行。"
+        },
+        "type": "proposal"
+      },
+      "A_fact_status": "not_receipt_grounded_no_body",
+      "B_fact_status": "id_and_time_confounded",
+      "human_change": "not_counted",
+      "A_full_fact_pass": null,
+      "B_full_fact_pass": null,
+      "unsupported_or_hallucinated_fact": "cannot assign to authoritative result because actual UUID binding is not visible; keep raw response for review",
+      "receipt_citation": "B cites frozen legacy ID when present, never actual UUID; this is not an actual receipt citation",
+      "copying": "not scored",
+      "backend_grounding_limitation": "No grounded-correctness credit is assigned. The visible frozen entity/result aliases do not equal the actual receipt UUID, no alias map is given to the model, and receipt observed_at postdates the frozen context. Raw original evaluator metrics are retained; UUID equivalence remains an external-only diagnostic."
+    },
+    {
+      "sample_id": "sample_teacher_b761d7e46729",
+      "scenario_id": "scenario_gs_p0a_012",
+      "split": "train",
+      "fixture_kind": "authoritative_backend_receipt",
+      "tool": "find_expenses",
+      "legacy_result_id": "result-p0a-delete-012",
+      "receipt_result_id": "f7407f6b-f74c-5b77-9378-ae50f7184c10",
+      "expected_verified_result_ids": [
+        "result-p0a-delete-012"
+      ],
+      "B_cites_actual_receipt_id": false,
+      "frozen_context_generated_at": "2026-09-29T10:00:43+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "clarification",
+        "intent_id": "delete_expense",
+        "reason": "missing_required_fields",
+        "missing_fields": [
+          "activity_id"
+        ],
+        "question": "这笔支出属于哪个活动？",
+        "candidates": []
+      },
+      "B_output": {
+        "content": "这笔支出涉及多人分摊，删除会影响其他参与者的账目。请先确认是否确定要删除。",
+        "evidence_result_ids": [
+          "result-p0a-delete-012"
+        ],
+        "type": "clarification"
+      },
+      "expected_output": {
+        "confirmation": {
+          "level": 2,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": true,
+          "reason": "confirmation_required"
+        },
+        "intent_id": "delete_expense",
+        "operation": {
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "expense_id": "00000000-0000-4000-8000-000000000112"
+          },
+          "tool": "delete_expense"
+        },
+        "preview": {
+          "diff": [
+            {
+              "before": {
+                "expense_id": "00000000-0000-4000-8000-000000000112",
+                "is_deleted": false,
+                "original_amount": "100",
+                "original_currency": "CNY",
+                "title": "设备租赁"
+              },
+              "field": "expense"
+            }
+          ],
+          "kind": "delete",
+          "summary": "拟删除你创建的未锁定支出“设备租赁”，请在应用中确认。"
+        },
+        "type": "proposal"
+      },
+      "A_fact_status": "not_receipt_grounded_no_body",
+      "B_fact_status": "id_and_time_confounded",
+      "human_change": "not_counted",
+      "A_full_fact_pass": null,
+      "B_full_fact_pass": null,
+      "unsupported_or_hallucinated_fact": "cannot assign to authoritative result because actual UUID binding is not visible; keep raw response for review",
+      "receipt_citation": "B cites frozen legacy ID when present, never actual UUID; this is not an actual receipt citation",
+      "copying": "not scored",
+      "backend_grounding_limitation": "No grounded-correctness credit is assigned. The visible frozen entity/result aliases do not equal the actual receipt UUID, no alias map is given to the model, and receipt observed_at postdates the frozen context. Raw original evaluator metrics are retained; UUID equivalence remains an external-only diagnostic."
+    },
+    {
+      "sample_id": "sample_teacher_ad6ed8c40b36",
+      "scenario_id": "scenario_gs_p0a_012",
+      "split": "train",
+      "fixture_kind": "authoritative_backend_receipt",
+      "tool": "find_expenses",
+      "legacy_result_id": "result-p0a-delete-012",
+      "receipt_result_id": "f7407f6b-f74c-5b77-9378-ae50f7184c10",
+      "expected_verified_result_ids": [
+        "result-p0a-delete-012"
+      ],
+      "B_cites_actual_receipt_id": false,
+      "frozen_context_generated_at": "2026-09-29T10:00:43+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "clarification",
+        "intent_id": "delete_expense",
+        "reason": "missing_required_fields",
+        "missing_fields": [
+          "reason"
+        ],
+        "question": "这笔支出没有填写报销原因。请在当前页面补充原因后再删除。",
+        "candidates": []
+      },
+      "B_output": {
+        "content": "检测到这笔支出已被删除，无法再次删除。",
+        "evidence_result_ids": [
+          "result-p0a-delete-012"
+        ],
+        "type": "answer"
+      },
+      "expected_output": {
+        "confirmation": {
+          "level": 2,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": true,
+          "reason": "confirmation_required"
+        },
+        "intent_id": "delete_expense",
+        "operation": {
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "expense_id": "00000000-0000-4000-8000-000000000112"
+          },
+          "tool": "delete_expense"
+        },
+        "preview": {
+          "diff": [
+            {
+              "before": {
+                "expense_id": "00000000-0000-4000-8000-000000000112",
+                "is_deleted": false,
+                "original_amount": "100",
+                "original_currency": "CNY",
+                "title": "设备租赁"
+              },
+              "field": "expense"
+            }
+          ],
+          "kind": "delete",
+          "summary": "拟删除你创建的未锁定支出“设备租赁”，请在应用中确认。"
+        },
+        "type": "proposal"
+      },
+      "A_fact_status": "not_receipt_grounded_no_body",
+      "B_fact_status": "id_and_time_confounded",
+      "human_change": "not_counted",
+      "A_full_fact_pass": null,
+      "B_full_fact_pass": null,
+      "unsupported_or_hallucinated_fact": "cannot assign to authoritative result because actual UUID binding is not visible; keep raw response for review",
+      "receipt_citation": "B cites frozen legacy ID when present, never actual UUID; this is not an actual receipt citation",
+      "copying": "not scored",
+      "backend_grounding_limitation": "No grounded-correctness credit is assigned. The visible frozen entity/result aliases do not equal the actual receipt UUID, no alias map is given to the model, and receipt observed_at postdates the frozen context. Raw original evaluator metrics are retained; UUID equivalence remains an external-only diagnostic."
+    },
+    {
+      "sample_id": "sample_teacher_e99928bfd34e",
+      "scenario_id": "scenario_gs_p0a_012",
+      "split": "train",
+      "fixture_kind": "authoritative_backend_receipt",
+      "tool": "find_expenses",
+      "legacy_result_id": "result-p0a-delete-012",
+      "receipt_result_id": "f7407f6b-f74c-5b77-9378-ae50f7184c10",
+      "expected_verified_result_ids": [
+        "result-p0a-delete-012"
+      ],
+      "B_cites_actual_receipt_id": false,
+      "frozen_context_generated_at": "2026-09-29T10:00:43+08:00",
+      "receipt_observed_at_later_than_frozen_context": true,
+      "A_output": {
+        "type": "clarification",
+        "intent_id": "delete_expense",
+        "reason": "missing_required_fields",
+        "missing_fields": [
+          "activity_id"
+        ],
+        "question": "这笔设备租赁支出属于哪个活动？",
+        "candidates": []
+      },
+      "B_output": {
+        "content": "这笔支出涉及多人分摊，删除会影响其他参与者的账目。请先确认是否确定要删除。",
+        "evidence_result_ids": [
+          "result-p0a-delete-012"
+        ],
+        "type": "clarification"
+      },
+      "expected_output": {
+        "confirmation": {
+          "level": 2,
+          "required": true
+        },
+        "execution_policy": {
+          "execution_allowed": true,
+          "reason": "confirmation_required"
+        },
+        "intent_id": "delete_expense",
+        "operation": {
+          "arguments": {
+            "activity_id": "00000000-0000-4000-8000-000000000100",
+            "expense_id": "00000000-0000-4000-8000-000000000112"
+          },
+          "tool": "delete_expense"
+        },
+        "preview": {
+          "diff": [
+            {
+              "before": {
+                "expense_id": "00000000-0000-4000-8000-000000000112",
+                "is_deleted": false,
+                "original_amount": "100",
+                "original_currency": "CNY",
+                "title": "设备租赁"
+              },
+              "field": "expense"
+            }
+          ],
+          "kind": "delete",
+          "summary": "拟删除你创建的未锁定支出“设备租赁”，请在应用中确认。"
+        },
+        "type": "proposal"
+      },
+      "A_fact_status": "not_receipt_grounded_no_body",
+      "B_fact_status": "id_and_time_confounded",
+      "human_change": "not_counted",
+      "A_full_fact_pass": null,
+      "B_full_fact_pass": null,
+      "unsupported_or_hallucinated_fact": "cannot assign to authoritative result because actual UUID binding is not visible; keep raw response for review",
+      "receipt_citation": "B cites frozen legacy ID when present, never actual UUID; this is not an actual receipt citation",
+      "copying": "not scored",
+      "backend_grounding_limitation": "No grounded-correctness credit is assigned. The visible frozen entity/result aliases do not equal the actual receipt UUID, no alias map is given to the model, and receipt observed_at postdates the frozen context. Raw original evaluator metrics are retained; UUID equivalence remains an external-only diagnostic."
+    }
+  ],
+  "static_state_summary": {
+    "scenario_gs_p0b_009": {
+      "rows": 6,
+      "improve": 5,
+      "regress": 0,
+      "neutral": 1
+    },
+    "scenario_gs_p0b_033": {
+      "rows": 4,
+      "improve": 4,
+      "regress": 0,
+      "neutral": 0
+    },
+    "scenario_gs_p0b_034": {
+      "rows": 6,
+      "improve": 6,
+      "regress": 0,
+      "neutral": 0
+    },
+    "scenario_gs_p0b_035": {
+      "rows": 6,
+      "improve": 5,
+      "regress": 0,
+      "neutral": 1
+    },
+    "scenario_gs_p0b_036": {
+      "rows": 5,
+      "improve": 0,
+      "regress": 0,
+      "neutral": 5
+    },
+    "scenario_gs_p0b_038": {
+      "rows": 6,
+      "improve": 1,
+      "regress": 4,
+      "neutral": 1
+    },
+    "scenario_gs_p0b_039": {
+      "rows": 6,
+      "improve": 5,
+      "regress": 1,
+      "neutral": 0
+    }
+  },
+  "summary": {
+    "static_rows": 39,
+    "backend_rows": 9,
+    "static_exact_receipt_citations": 38,
+    "static_long_exact_copy_rows": 14,
+    "static_rows_with_new_unsupported_claim": 5,
+    "directional_change_counts_not_full_pass_counts": {
+      "scenario_gs_p0b_009": {
+        "rows": 6,
+        "improve": 5,
+        "regress": 0,
+        "neutral": 1
+      },
+      "scenario_gs_p0b_033": {
+        "rows": 4,
+        "improve": 4,
+        "regress": 0,
+        "neutral": 0
+      },
+      "scenario_gs_p0b_034": {
+        "rows": 6,
+        "improve": 6,
+        "regress": 0,
+        "neutral": 0
+      },
+      "scenario_gs_p0b_035": {
+        "rows": 6,
+        "improve": 5,
+        "regress": 0,
+        "neutral": 1
+      },
+      "scenario_gs_p0b_036": {
+        "rows": 5,
+        "improve": 0,
+        "regress": 0,
+        "neutral": 5
+      },
+      "scenario_gs_p0b_038": {
+        "rows": 6,
+        "improve": 1,
+        "regress": 4,
+        "neutral": 1
+      },
+      "scenario_gs_p0b_039": {
+        "rows": 6,
+        "improve": 5,
+        "regress": 1,
+        "neutral": 0
+      }
+    },
+    "A_B_full_fact_pass_by_state": {
+      "scenario_gs_p0b_009": {
+        "rows": 6,
+        "A_correct_pass": 2,
+        "A_rate": 0.3333333333333333,
+        "B_correct_pass": 6,
+        "B_rate": 1.0,
+        "delta_percentage_points": 66.66666666666666,
+        "A_receipt_body_available": false,
+        "B_receipt_source_citation_count": 6
+      },
+      "scenario_gs_p0b_033": {
+        "rows": 4,
+        "A_correct_pass": 0,
+        "A_rate": 0.0,
+        "B_correct_pass": 4,
+        "B_rate": 1.0,
+        "delta_percentage_points": 100.0,
+        "A_receipt_body_available": false,
+        "B_receipt_source_citation_count": 4
+      },
+      "scenario_gs_p0b_034": {
+        "rows": 6,
+        "A_correct_pass": 0,
+        "A_rate": 0.0,
+        "B_correct_pass": 6,
+        "B_rate": 1.0,
+        "delta_percentage_points": 100.0,
+        "A_receipt_body_available": false,
+        "B_receipt_source_citation_count": 6
+      },
+      "scenario_gs_p0b_035": {
+        "rows": 6,
+        "A_correct_pass": 0,
+        "A_rate": 0.0,
+        "B_correct_pass": 5,
+        "B_rate": 0.8333333333333334,
+        "delta_percentage_points": 83.33333333333334,
+        "A_receipt_body_available": false,
+        "B_receipt_source_citation_count": 5
+      },
+      "scenario_gs_p0b_036": {
+        "rows": 5,
+        "A_correct_pass": 5,
+        "A_rate": 1.0,
+        "B_correct_pass": 5,
+        "B_rate": 1.0,
+        "delta_percentage_points": 0.0,
+        "A_receipt_body_available": false,
+        "B_receipt_source_citation_count": 5
+      },
+      "scenario_gs_p0b_038": {
+        "rows": 6,
+        "A_correct_pass": 4,
+        "A_rate": 0.6666666666666666,
+        "B_correct_pass": 1,
+        "B_rate": 0.16666666666666666,
+        "delta_percentage_points": -50.0,
+        "A_receipt_body_available": false,
+        "B_receipt_source_citation_count": 6
+      },
+      "scenario_gs_p0b_039": {
+        "rows": 6,
+        "A_correct_pass": 0,
+        "A_rate": 0.0,
+        "B_correct_pass": 5,
+        "B_rate": 0.8333333333333334,
+        "delta_percentage_points": 83.33333333333334,
+        "A_receipt_body_available": false,
+        "B_receipt_source_citation_count": 6
+      }
+    },
+    "manual_directional_net_row_change_not_exact_pass_count": 21,
+    "static_states_with_at_least_50pp_improvement_in_full_fact_pass_rate": [
+      "scenario_gs_p0b_009",
+      "scenario_gs_p0b_033",
+      "scenario_gs_p0b_034",
+      "scenario_gs_p0b_035",
+      "scenario_gs_p0b_039"
+    ],
+    "static_states_with_at_least_50pp_regression": [
+      "scenario_gs_p0b_038"
+    ],
+    "backend_uuid_mismatches": 9,
+    "backend_grounding_credit": 0,
+    "state_verdict": "mixed: gains in policy explanation states; one state has repeated unsupported baseline_commit claims; archive answers improve with one unsupported transaction-path claim"
+  },
+  "scenario_notes": {
+    "scenario_gs_p0b_009": {
+      "a": "mixed_or_unsupported_currency/order_claims",
+      "b": "correct_partial_direct_rule_use",
+      "improve": 5,
+      "regress": 0,
+      "neutral": 1,
+      "note": "B correctly states same-currency repayment and owner/creditor order, but often omits a direct USD-versus-JPY sentence. It copies exact policy sentences in all six rows. A includes unsupported cross-currency/oldest-debt claims in several rows."
+    },
+    "scenario_gs_p0b_033": {
+      "a": "partial_or_wrong_rounding_mechanism",
+      "b": "correct_and_receipt_supported",
+      "improve": 4,
+      "regress": 0,
+      "neutral": 0,
+      "note": "B explains stable participant ordering and smallest-unit allocation. It reproduces a long exact receipt sentence in three rows. A attributes the distribution to ordinary rounding and does not state the frozen deterministic rule."
+    },
+    "scenario_gs_p0b_034": {
+      "a": "generic_or_wrong_debt_order",
+      "b": "correct_partial_receipt_supported",
+      "improve": 6,
+      "regress": 0,
+      "neutral": 0,
+      "note": "B states that prepayment first clears the qualifying Owner-to-Custodian debt and remaining value enters the account; longer answers copy receipt text. A invents generic activity-debt/personal-debt or principal/interest ordering."
+    },
+    "scenario_gs_p0b_035": {
+      "a": "mixed_lock_explanation",
+      "b": "correct_for_five_nonclarification_rows",
+      "improve": 5,
+      "regress": 0,
+      "neutral": 1,
+      "note": "B accurately says deleting refunds does not release the original Expense financial lock and only frees refund capacity. One row remains an unnecessary clarification asking for original_expense_id and posits other linked refunds; both arms fail to answer that row's general rule question."
+    },
+    "scenario_gs_p0b_036": {
+      "a": "already_generally_correct",
+      "b": "correct_more_explicit_confirmation_gate",
+      "improve": 0,
+      "regress": 0,
+      "neutral": 5,
+      "note": "Both arms generally preserve the pending-confirmation state. B adds trusted UI/Gateway details from the receipt in some rows; this did not materially change correctness."
+    },
+    "scenario_gs_p0b_038": {
+      "a": "generic_but_directionally_correct_refresh_and_reread",
+      "b": "mixed_with_new_unsupported_version_cause",
+      "improve": 1,
+      "regress": 4,
+      "neutral": 1,
+      "note": "Four B rows assert the proposal baseline_commit mismatches latest server state, but the receipt only says page/entity/server state or financial_version changes invalidate a proposal; it does not report a proposal baseline_commit comparison. One B row says reload an existing proposal where the receipt requires invalidation and regeneration. One B row gives the correct regenerate/reconfirm action without the unsupported commit claim; another mixes the correct action with the unsupported cause. This is the main new unsupported fact pattern."
+    },
+    "scenario_gs_p0b_039": {
+      "a": "mixed_including_wrong_or_nonresponsive_archive_guidance",
+      "b": "correct_for_five_rows_one_unsupported_activity_claim",
+      "improve": 5,
+      "regress": 1,
+      "neutral": 0,
+      "note": "B correctly states archived financial writes are read-only and recommends unarchive before recording. One B row claims the new transaction would be handled as an independent activity; neither receipt nor frozen context supports that. Most B answers are paraphrases rather than exact receipt copies."
+    }
+  },
+  "decision_against_preregistered_threshold": "EXPERIMENT_B_GROUNDING_SIGNAL_WEAK",
+  "decision_reason": "Although the fixed receipt body improves grounded explanations across multiple policy states and the original evaluator shows structural gains, the manual static full-pass comparison identifies a >=50 percentage-point regression state from repeated unsupported baseline_commit explanations. The positive gate also requires no such state regression. Backend rows receive no correctness credit because receipt UUIDs are not model-visible verified IDs. No new dangerous write/bypass appeared.",
+  "reviewed_at": "2026-10-03T03:50:17.109483+00:00"
+}

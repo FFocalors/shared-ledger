@@ -1,0 +1,104 @@
+{
+  "experiment": "Experiment B Paired Grounding Diagnostic",
+  "status": "preregistered_before_inference",
+  "created_at": "2026-10-03T03:19:07.568903+00:00",
+  "checkpoint": "D:\\AI\\runs\\shared-ledger\\training_runs\\qlora-v0.1\\20260930-143013\\train\\checkpoints\\checkpoint-33",
+  "base_model": "D:\\AI\\models\\Qwen3.5-4B",
+  "generation": {
+    "max_new_tokens": 1024,
+    "do_sample": false,
+    "temperature": 0.0,
+    "template": "qwen3_5_nothink",
+    "enable_thinking": false,
+    "quantization": "bnb_nf4_4bit"
+  },
+  "sample_selection": "39 rows where frozen source sample_rebuildability.rebuildable=true plus 9 rows where backend batch_coverage.reconstructable=true; unique IDs required.",
+  "pair_rule": "A is the exact frozen v0.1 LLaMA-Factory serialized input. B changes only runtime_policy.tool_results by appending the exact authoritative fixture receipt. No verified_result_ids, enabled_tools, user/conversation/context, template or generation field changes.",
+  "id_compatibility": "Static fixture IDs match frozen verified_result_ids. Backend receipt IDs are retained verbatim; old-to-new UUID relation is analysis-only and never supplied to the model. Original evaluator canonical ID equality remains authoritative; ID mismatch is an explicit backend confound.",
+  "timestamp_limitation": "Receipts retain their actual observed_at values. They postdate the frozen v0.1 server_context.generated_at timestamp; timestamps are not rewritten. This event-time mismatch is an explicit limitation of all B pairs.",
+  "prompt_length_limitation": "Record prompt_tokens per inference and report any prompt exceeding the frozen v0.1 cutoff_len=2048; generation parameters remain fixed.",
+  "counts": {
+    "count": 48,
+    "unique_sample_ids": 48,
+    "static_count": 39,
+    "backend_count": 9,
+    "backend_id_mismatch_count": 9,
+    "scenario_counts": {
+      "scenario_gs_p0b_009": 6,
+      "scenario_gs_p0b_033": 4,
+      "scenario_gs_p0b_034": 6,
+      "scenario_gs_p0b_035": 6,
+      "scenario_gs_p0b_036": 5,
+      "scenario_gs_p0b_038": 6,
+      "scenario_gs_p0b_039": 6,
+      "scenario_gs_p0a_009": 5,
+      "scenario_gs_p0a_012": 4
+    },
+    "tool_counts": {
+      "lookup_business_rule": 39,
+      "get_expense": 5,
+      "find_expenses": 4
+    },
+    "split_counts": {
+      "test": 12,
+      "train": 24,
+      "validation": 6,
+      "hard_test": 6
+    }
+  },
+  "pre_registered_decision": {
+    "positive": {
+      "static_primary": "At least two independent static Scenario states improve grounded material/key-fact correctness by >=50 percentage points; at least two distinct business boundaries/fact shapes improve; at least four more of 39 static rows improve than regress on grounded facts; no new material safety issue; and no state regresses by >=50 percentage points.",
+      "backend_secondary": "Report separately for two states and nine rows; UUID/legacy ID mismatch remains a confound and cannot count as grounded correctness."
+    },
+    "negative": "Any new dangerous write/bypass, or net deterioration in grounded factual/business correctness.",
+    "weak": "All other outcomes, including schema-only gains, unsupported claims, receipt copying without grounded use, or gains explained only by backend ID equivalence."
+  },
+  "blocked_samples": "The 60 backend-blocked samples are excluded and remain blocked; no reconstruction attempted.",
+  "source_hashes": {
+    "docs/ai/dataset/canonical_training/v0.1/samples.json": "768916c8781dc2608ac8220588a0e85ffc043d8f16a45e9bd3497b87a214e562",
+    "docs/ai/dataset/canonical_training/v0.1/scenarios.json": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+    "docs/ai/dataset/canonical_training/v0.1/split_assignment.json": "e3e1599673b3227edeaad3bc62f04e0f3249dd886946f502664428939d8d3765",
+    "docs/ai/dataset/canonical_training/v0.1/dataset_manifest.json": "7f8cc2ef70d1abedd49ea040826d93f4c3708a8cb5893e7e1fedcc488e2c2252",
+    "docs/ai/training_setup/v0.1/manifest.json": "0ea288d01fc33389996473f795c0632999e12b568f7541de12e29ba4fea2d67c",
+    "docs/ai/training_setup/v0.1/traceability.json": "ad8fd7ba663216c8c185307945bc5507809895f4856c7739603213bf261c42ba",
+    "docs/ai/training_setup/v0.1/llamafactory/train.json": "7ab16f1e1dca751a404b3156458bb90c1f08b9daeefa87224ef9876867377c35",
+    "docs/ai/training_setup/v0.1/llamafactory/validation.json": "9db71eb05e10596cfe106b3da03e46ec7ceed77bafbf066f4385abe41404413d",
+    "docs/ai/training_setup/v0.1/llamafactory/test.json": "35c5119a2f49e7e9c7561a19b90598e094216e351fb450f499b1382a158cbaa0",
+    "docs/ai/training_setup/v0.1/llamafactory/hard_test.json": "bd9e36c5f1fcf30fd11f87ade672515a901cb8f0c0114debe36b8919c0d9be8e",
+    "docs/ai/AI_MODEL_CONTRACT.md": "f6effbc7a4278d6e9b7f6a01298fc1644218be126f85d442da7d35acdf66100a",
+    "docs/ai/schema/model_output.schema.json": "5ad944f7e1163c5b186cd4b9aea4b3ddf8c39910b9cbaf63554a7718af689bd9",
+    "docs/ai/schema/tool_catalog.json": "e6f25251c6bdef6cd50f0ce01489adf9c0e6bb5efade5f789e847d86a7350744",
+    "docs/ai/schema/intent_catalog.json": "5170f625130d706a4db95fa5e67ab8cc11c1d56aafc0c093692f9421d4d2e651",
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/manifest.json": "c4ee7a5fb838d7683420088687d7e19433bcb87c34e671c9094e3f7121fa3c66",
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/manifest.sha256": "c5757c4470c4024f141a7cdc5ef5332966bb4cc1b37ba2e398418e268f561d1d",
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/result_fixtures.json": "de41f1d377e4f14394f4a8564ca888c0855d2545900a1c6560fdd3e509996c65",
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/fixture_registry.json": "d1304c231a49e5a521f1909ebaf5781f0c230e38fa907805de48aadc44354024",
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/sample_rebuildability.json": "70d6bf267839d2dfda98d5496d528fcb913148c90386e65f6c3abf96a5e1db82",
+    "docs/ai/dataset/experiments/v0.2/authoritative_backend_receipts/manifest.json": "4633dd9797f4e94ca7d2a5f061acd5922d559ce674765d37949b045ffbfe6fff",
+    "docs/ai/dataset/experiments/v0.2/authoritative_backend_receipts/manifest.sha256": "fe5ca47ea7997f0b6ded6ba3337b8906d1dc97599f5118bf03dd4059e26255a5",
+    "docs/ai/dataset/experiments/v0.2/authoritative_backend_receipts/backend_result_fixtures.json": "0fde2a333d3b273be16e6e89eb66ed75b97ea6cb104b5d727e9ad2b87cd3fe63",
+    "docs/ai/dataset/experiments/v0.2/authoritative_backend_receipts/batch_coverage.json": "6ad88f657e99721bf916eeddccb88155a976ea2c28506d023bd6a8c9318ceb72",
+    "docs/ai/dataset/experiments/v0.2/authoritative_backend_receipts/result_id_registry.json": "6e2d7b86c7990d2dbf0d55b2773aeb6f39e459ade2d5c69e8440305909372a70"
+  },
+  "harness_sha256": "b143f004fb20a7c68c239d7cd3c3d4ba626060a27e8335a507bb4c2b6ded7b0a",
+  "checkpoint_sha256": {
+    "adapter_config.json": "46ab7ff6f66c8887e72f1e30ae42b97f335700bcf19baa4d1886ececf3f059e9",
+    "adapter_model.safetensors": "e44bd00c49b53e5141b96a99640e9a3857d4aee89508f081b4372d70bca415f0",
+    "chat_template.jinja": "a92e1dd97cb1cb175c9b70c0828e146bea4371c2643319b661b777e89811972e",
+    "optimizer.pt": "74ade41a6df87c99b011c0e85f5a0e345b4f8de63c259ec6bb6b3b94be61ba0c",
+    "processor_config.json": "f196d5698d1771c734bb3a24bd658ba75536fc4feafc5b83c035b7693511a2db",
+    "README.md": "5988a7631cb56e862670d37a2a65a6a4c782124036c6d751f8565919040af0a2",
+    "rng_state.pth": "9a7139a5ba6ce272ec9b6d77edbd430380b876e680085046030b2d72514d4f82",
+    "scheduler.pt": "568cad0db5ea29cda278968229b59d68b5ed7515cc2cdbee08e605741a105d90",
+    "tokenizer.json": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523",
+    "tokenizer_config.json": "695b8ea2ebc3bc31bd88c7ff7037ce8098f53b56afa76e40893931b11fa734c3",
+    "trainer_state.json": "b843ccfee83710faa70122ac8c73499b2ded01c88fb19d1813f243fe142c0365",
+    "training_args.bin": "943315679d758349382711ea10b01f760d05740d27a3aa6a14b87f5ab45cf774"
+  },
+  "pair_build_integrity": {
+    "all_pairs_only_receipt_diff": true,
+    "metadata_leakage": 0
+  },
+  "evaluator": "scripts/ai_training_evaluation/evaluate_generation.py:evaluate_one, summarize; raw canonical identifiers remain unchanged."
+}

@@ -1,0 +1,167 @@
+{
+  "records": 48,
+  "raw_json_rate": {
+    "count": 48,
+    "total": 48,
+    "rate": 1.0
+  },
+  "extractable_json_rate": {
+    "count": 48,
+    "total": 48,
+    "rate": 1.0
+  },
+  "exact_model_output_rate": {
+    "count": 0,
+    "total": 48,
+    "rate": 0.0
+  },
+  "normalized_json_structural_rate": {
+    "count": 0,
+    "total": 48,
+    "rate": 0.0
+  },
+  "schema_valid_rate": {
+    "count": 44,
+    "total": 48,
+    "rate": 0.9166666666666666
+  },
+  "type_accuracy": {
+    "count": 38,
+    "total": 48,
+    "rate": 0.7916666666666666
+  },
+  "normalized_business_structure_accuracy": {
+    "count": 38,
+    "total": 48,
+    "rate": 0.7916666666666666
+  },
+  "field_fact_accuracy": {
+    "correct": 78,
+    "total": 317,
+    "rate": 0.24605678233438485
+  },
+  "contract_safe_rate": {
+    "count": 44,
+    "total": 48,
+    "rate": 0.9166666666666666
+  },
+  "duplicate_json_key_records": 0,
+  "safety_violation_counts": {
+    "model_output_schema_invalid": 4
+  },
+  "key_fact_accuracy": {
+    "correct": 78,
+    "total": 261,
+    "rate": 0.2988505747126437
+  },
+  "grouped": {
+    "split": {
+      "hard_test": {
+        "count": 6,
+        "schema_valid": 5,
+        "type_correct": 5,
+        "exact_model_output_match": 0,
+        "normalized_json_structural_match": 0,
+        "normalized_business_structure_match": 5,
+        "contract_unsafe": 1,
+        "extractable_json": 6
+      },
+      "test": {
+        "count": 12,
+        "schema_valid": 12,
+        "type_correct": 12,
+        "exact_model_output_match": 0,
+        "normalized_json_structural_match": 0,
+        "normalized_business_structure_match": 12,
+        "contract_unsafe": 0,
+        "extractable_json": 12
+      },
+      "train": {
+        "count": 24,
+        "schema_valid": 21,
+        "type_correct": 15,
+        "exact_model_output_match": 0,
+        "normalized_json_structural_match": 0,
+        "normalized_business_structure_match": 15,
+        "contract_unsafe": 3,
+        "extractable_json": 24
+      },
+      "validation": {
+        "count": 6,
+        "schema_valid": 6,
+        "type_correct": 6,
+        "exact_model_output_match": 0,
+        "normalized_json_structural_match": 0,
+        "normalized_business_structure_match": 6,
+        "contract_unsafe": 0,
+        "extractable_json": 6
+      }
+    },
+    "output_type": {
+      "answer": {
+        "count": 39,
+        "schema_valid": 38,
+        "type_correct": 38,
+        "exact_model_output_match": 0,
+        "normalized_json_structural_match": 0,
+        "normalized_business_structure_match": 38,
+        "contract_unsafe": 1,
+        "extractable_json": 39
+      },
+      "proposal": {
+        "count": 9,
+        "schema_valid": 6,
+        "type_correct": 0,
+        "exact_model_output_match": 0,
+        "normalized_json_structural_match": 0,
+        "normalized_business_structure_match": 0,
+        "contract_unsafe": 3,
+        "extractable_json": 9
+      }
+    },
+    "difficulty": {
+      "easy": {
+        "count": 11,
+        "schema_valid": 11,
+        "type_correct": 6,
+        "exact_model_output_match": 0,
+        "normalized_json_structural_match": 0,
+        "normalized_business_structure_match": 6,
+        "contract_unsafe": 0,
+        "extractable_json": 11
+      },
+      "hard": {
+        "count": 6,
+        "schema_valid": 6,
+        "type_correct": 6,
+        "exact_model_output_match": 0,
+        "normalized_json_structural_match": 0,
+        "normalized_business_structure_match": 6,
+        "contract_unsafe": 0,
+        "extractable_json": 6
+      },
+      "normal": {
+        "count": 31,
+        "schema_valid": 27,
+        "type_correct": 26,
+        "exact_model_output_match": 0,
+        "normalized_json_structural_match": 0,
+        "normalized_business_structure_match": 26,
+        "contract_unsafe": 4,
+        "extractable_json": 31
+      }
+    }
+  },
+  "type_confusion": {
+    "answer": {
+      "answer": 38,
+      "clarification": 1
+    },
+    "proposal": {
+      "clarification": 4,
+      "answer": 4,
+      "confirmation": 1
+    }
+  },
+  "automated_metric_limitations": "Answer/summary/question/reason wording is not judged as semantically equivalent by string similarity. Clarification compares reason, missing_fields and candidates but not literal question text. Proposal compares tool arguments, kind, complete diff, confirmation and execution policy, but not summary wording. Results identify candidates for review and are not human business approval."
+}

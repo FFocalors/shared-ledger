@@ -1,0 +1,172 @@
+{
+  "status": "EXPERIMENT_B_GROUNDING_SIGNAL_WEAK",
+  "created_at": "2026-10-03T12:01:50.1182776+08:00",
+  "artifact_sha256": {
+    "a_evaluator_summary.json": "e30a69f39e4cb65b6b11c69ce0a88bf01f26a646215f85668107435e02c6abe5",
+    "automated_summary.json": "0fb5482498a169490ee28cb78a3f3b8441265d4477d10faeb831dcdd5ad50791",
+    "b_evaluator_summary.json": "68726b1ee259c49368bd81e11bf50c5f2894c065df4500f6374485ec957858ce",
+    "generation_records.jsonl": "84b6b19c535d00dcad683cef1689560e4d0bf0aeffb2b1e3e3a6d15c70de0265",
+    "manual_fact_review.json": "8a94fb32509a63639a044953778afb8124ede38d1a23fb991aaba59d3fbaac0c",
+    "original_evaluator_report.json": "778e19d037c1b37be739704cbcb19504a4f6fd33d881dd894c6ae2839f175c55",
+    "pair_reviews.json": "3f4cafcad439aaf5b882e02c909c0a0d6880cc6afd67df404baed6d7339b7d67",
+    "paired_inputs.json": "75627f7c96819f56943123b38f4f2f0f57bcb292ff3fd4536559ad99f67cab4c",
+    "preregistration.json": "99986a027181985956facdcc960991f75a4bdb12c930f105f03abb4b6f0f4480",
+    "README.md": "40d3a2c41768a2de6bfcfcf13cf14b9bdb9253109e8acc699f0e7bcc343bcc0a"
+  },
+  "preregistered_source_hashes_verified": true,
+  "preregistered_source_hashes": {
+    "docs/ai/dataset/canonical_training/v0.1/samples.json": {
+      "expected": "768916c8781dc2608ac8220588a0e85ffc043d8f16a45e9bd3497b87a214e562",
+      "matches": true,
+      "actual": "768916c8781dc2608ac8220588a0e85ffc043d8f16a45e9bd3497b87a214e562"
+    },
+    "docs/ai/dataset/canonical_training/v0.1/scenarios.json": {
+      "expected": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+      "matches": true,
+      "actual": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815"
+    },
+    "docs/ai/dataset/canonical_training/v0.1/split_assignment.json": {
+      "expected": "e3e1599673b3227edeaad3bc62f04e0f3249dd886946f502664428939d8d3765",
+      "matches": true,
+      "actual": "e3e1599673b3227edeaad3bc62f04e0f3249dd886946f502664428939d8d3765"
+    },
+    "docs/ai/dataset/canonical_training/v0.1/dataset_manifest.json": {
+      "expected": "7f8cc2ef70d1abedd49ea040826d93f4c3708a8cb5893e7e1fedcc488e2c2252",
+      "matches": true,
+      "actual": "7f8cc2ef70d1abedd49ea040826d93f4c3708a8cb5893e7e1fedcc488e2c2252"
+    },
+    "docs/ai/training_setup/v0.1/manifest.json": {
+      "expected": "0ea288d01fc33389996473f795c0632999e12b568f7541de12e29ba4fea2d67c",
+      "matches": true,
+      "actual": "0ea288d01fc33389996473f795c0632999e12b568f7541de12e29ba4fea2d67c"
+    },
+    "docs/ai/training_setup/v0.1/traceability.json": {
+      "expected": "ad8fd7ba663216c8c185307945bc5507809895f4856c7739603213bf261c42ba",
+      "matches": true,
+      "actual": "ad8fd7ba663216c8c185307945bc5507809895f4856c7739603213bf261c42ba"
+    },
+    "docs/ai/training_setup/v0.1/llamafactory/train.json": {
+      "expected": "7ab16f1e1dca751a404b3156458bb90c1f08b9daeefa87224ef9876867377c35",
+      "matches": true,
+      "actual": "7ab16f1e1dca751a404b3156458bb90c1f08b9daeefa87224ef9876867377c35"
+    },
+    "docs/ai/training_setup/v0.1/llamafactory/validation.json": {
+      "expected": "9db71eb05e10596cfe106b3da03e46ec7ceed77bafbf066f4385abe41404413d",
+      "matches": true,
+      "actual": "9db71eb05e10596cfe106b3da03e46ec7ceed77bafbf066f4385abe41404413d"
+    },
+    "docs/ai/training_setup/v0.1/llamafactory/test.json": {
+      "expected": "35c5119a2f49e7e9c7561a19b90598e094216e351fb450f499b1382a158cbaa0",
+      "matches": true,
+      "actual": "35c5119a2f49e7e9c7561a19b90598e094216e351fb450f499b1382a158cbaa0"
+    },
+    "docs/ai/training_setup/v0.1/llamafactory/hard_test.json": {
+      "expected": "bd9e36c5f1fcf30fd11f87ade672515a901cb8f0c0114debe36b8919c0d9be8e",
+      "matches": true,
+      "actual": "bd9e36c5f1fcf30fd11f87ade672515a901cb8f0c0114debe36b8919c0d9be8e"
+    },
+    "docs/ai/AI_MODEL_CONTRACT.md": {
+      "expected": "f6effbc7a4278d6e9b7f6a01298fc1644218be126f85d442da7d35acdf66100a",
+      "matches": true,
+      "actual": "f6effbc7a4278d6e9b7f6a01298fc1644218be126f85d442da7d35acdf66100a"
+    },
+    "docs/ai/schema/model_output.schema.json": {
+      "expected": "5ad944f7e1163c5b186cd4b9aea4b3ddf8c39910b9cbaf63554a7718af689bd9",
+      "matches": true,
+      "actual": "5ad944f7e1163c5b186cd4b9aea4b3ddf8c39910b9cbaf63554a7718af689bd9"
+    },
+    "docs/ai/schema/tool_catalog.json": {
+      "expected": "e6f25251c6bdef6cd50f0ce01489adf9c0e6bb5efade5f789e847d86a7350744",
+      "matches": true,
+      "actual": "e6f25251c6bdef6cd50f0ce01489adf9c0e6bb5efade5f789e847d86a7350744"
+    },
+    "docs/ai/schema/intent_catalog.json": {
+      "expected": "5170f625130d706a4db95fa5e67ab8cc11c1d56aafc0c093692f9421d4d2e651",
+      "matches": true,
+      "actual": "5170f625130d706a4db95fa5e67ab8cc11c1d56aafc0c093692f9421d4d2e651"
+    },
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/manifest.json": {
+      "expected": "c4ee7a5fb838d7683420088687d7e19433bcb87c34e671c9094e3f7121fa3c66",
+      "matches": true,
+      "actual": "c4ee7a5fb838d7683420088687d7e19433bcb87c34e671c9094e3f7121fa3c66"
+    },
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/manifest.sha256": {
+      "expected": "c5757c4470c4024f141a7cdc5ef5332966bb4cc1b37ba2e398418e268f561d1d",
+      "matches": true,
+      "actual": "c5757c4470c4024f141a7cdc5ef5332966bb4cc1b37ba2e398418e268f561d1d"
+    },
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/result_fixtures.json": {
+      "expected": "de41f1d377e4f14394f4a8564ca888c0855d2545900a1c6560fdd3e509996c65",
+      "matches": true,
+      "actual": "de41f1d377e4f14394f4a8564ca888c0855d2545900a1c6560fdd3e509996c65"
+    },
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/fixture_registry.json": {
+      "expected": "d1304c231a49e5a521f1909ebaf5781f0c230e38fa907805de48aadc44354024",
+      "matches": true,
+      "actual": "d1304c231a49e5a521f1909ebaf5781f0c230e38fa907805de48aadc44354024"
+    },
+    "docs/ai/dataset/experiments/v0.2/authoritative_result_fixtures/sample_rebuildability.json": {
+      "expected": "70d6bf267839d2dfda98d5496d528fcb913148c90386e65f6c3abf96a5e1db82",
+      "matches": true,
+      "actual": "70d6bf267839d2dfda98d5496d528fcb913148c90386e65f6c3abf96a5e1db82"
+    },
+    "docs/ai/dataset/experiments/v0.2/authoritative_backend_receipts/manifest.json": {
+      "expected": "4633dd9797f4e94ca7d2a5f061acd5922d559ce674765d37949b045ffbfe6fff",
+      "matches": true,
+      "actual": "4633dd9797f4e94ca7d2a5f061acd5922d559ce674765d37949b045ffbfe6fff"
+    },
+    "docs/ai/dataset/experiments/v0.2/authoritative_backend_receipts/manifest.sha256": {
+      "expected": "fe5ca47ea7997f0b6ded6ba3337b8906d1dc97599f5118bf03dd4059e26255a5",
+      "matches": true,
+      "actual": "fe5ca47ea7997f0b6ded6ba3337b8906d1dc97599f5118bf03dd4059e26255a5"
+    },
+    "docs/ai/dataset/experiments/v0.2/authoritative_backend_receipts/backend_result_fixtures.json": {
+      "expected": "0fde2a333d3b273be16e6e89eb66ed75b97ea6cb104b5d727e9ad2b87cd3fe63",
+      "matches": true,
+      "actual": "0fde2a333d3b273be16e6e89eb66ed75b97ea6cb104b5d727e9ad2b87cd3fe63"
+    },
+    "docs/ai/dataset/experiments/v0.2/authoritative_backend_receipts/batch_coverage.json": {
+      "expected": "6ad88f657e99721bf916eeddccb88155a976ea2c28506d023bd6a8c9318ceb72",
+      "matches": true,
+      "actual": "6ad88f657e99721bf916eeddccb88155a976ea2c28506d023bd6a8c9318ceb72"
+    },
+    "docs/ai/dataset/experiments/v0.2/authoritative_backend_receipts/result_id_registry.json": {
+      "expected": "6e2d7b86c7990d2dbf0d55b2773aeb6f39e459ade2d5c69e8440305909372a70",
+      "matches": true,
+      "actual": "6e2d7b86c7990d2dbf0d55b2773aeb6f39e459ade2d5c69e8440305909372a70"
+    }
+  },
+  "pipeline_sha256": {
+    "scripts/ai_training_evaluation/paired_grounding_diagnostic.py": "709d02d0ada8a40791c3622ec60e0538461dadadf5f74f787f2757218787a2f0",
+    "scripts/ai_training_evaluation/review_paired_grounding.py": "115500eb81f6f573ba01e727195ae4ff8f5b2d3249f68085dd822624068cd15d",
+    "scripts/ai_training_evaluation/evaluate_generation.py": "30c021a3e4fadbfbe03a079f8c59ad9180a7e7a2662e094c154b147f0f42d9fe",
+    "scripts/ai_training_setup/export_dataset.py": "eaab37ce9d9b81a17c4c62bfaa575bed4aac2f2ecdb4072fac455d7c767b7350"
+  },
+  "checkpoint_sha256": {
+    "adapter_config.json": "46ab7ff6f66c8887e72f1e30ae42b97f335700bcf19baa4d1886ececf3f059e9",
+    "adapter_model.safetensors": "e44bd00c49b53e5141b96a99640e9a3857d4aee89508f081b4372d70bca415f0",
+    "chat_template.jinja": "a92e1dd97cb1cb175c9b70c0828e146bea4371c2643319b661b777e89811972e",
+    "optimizer.pt": "74ade41a6df87c99b011c0e85f5a0e345b4f8de63c259ec6bb6b3b94be61ba0c",
+    "processor_config.json": "f196d5698d1771c734bb3a24bd658ba75536fc4feafc5b83c035b7693511a2db",
+    "README.md": "5988a7631cb56e862670d37a2a65a6a4c782124036c6d751f8565919040af0a2",
+    "rng_state.pth": "9a7139a5ba6ce272ec9b6d77edbd430380b876e680085046030b2d72514d4f82",
+    "scheduler.pt": "568cad0db5ea29cda278968229b59d68b5ed7515cc2cdbee08e605741a105d90",
+    "tokenizer.json": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523",
+    "tokenizer_config.json": "695b8ea2ebc3bc31bd88c7ff7037ce8098f53b56afa76e40893931b11fa734c3",
+    "trainer_state.json": "b843ccfee83710faa70122ac8c73499b2ded01c88fb19d1813f243fe142c0365",
+    "training_args.bin": "943315679d758349382711ea10b01f760d05740d27a3aa6a14b87f5ab45cf774"
+  },
+  "integrity": {
+    "receipt_observed_at_later_than_frozen_context": {
+      "static": 39,
+      "total": 48,
+      "backend": 9
+    },
+    "pair_count": 48,
+    "all_pairs_only_receipt_diff": true,
+    "backend_count": 9,
+    "static_count": 39,
+    "metadata_leakage": 0,
+    "blocked_samples_remaining": 60
+  }
+}
