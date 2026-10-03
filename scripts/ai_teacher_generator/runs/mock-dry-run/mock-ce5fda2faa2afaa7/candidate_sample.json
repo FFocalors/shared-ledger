@@ -1,0 +1,235 @@
+{
+  "challenge_tags": [
+    "colloquial"
+  ],
+  "dataset_metadata": {
+    "contains_production_data": false,
+    "contains_real_personal_data": false,
+    "dedup_key": "sample:teacher:a821e84a4bf6d42b50446b97",
+    "deprecated_by_version": null,
+    "lifecycle_status": "generated",
+    "normalization_key": "surface:teacher:806a1462f5a210141f51bff1",
+    "review_notes": "Generated candidate only; requires independent surface review. Never include mock or unreviewed candidates in training.",
+    "semantic_group_key": "semantic:p0:002:v2"
+  },
+  "dataset_version": "0.1",
+  "difficulty": "easy",
+  "example_only": true,
+  "expected": {
+    "entity_resolution": [],
+    "evidence_result_ids": [],
+    "execution": {
+      "confirmation_level": 1,
+      "confirmation_required": true,
+      "execution_allowed": true,
+      "final_authorization": "trusted_ui_event_required",
+      "successful_execution_label_allowed": true
+    },
+    "expected_diff": [
+      {
+        "after": {
+          "aa_participant_ids": [
+            "00000000-0000-4000-8000-000000000103",
+            "00000000-0000-4000-8000-000000000104"
+          ],
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+          "manual_splits": [],
+          "note": null,
+          "occurred_at": "2026-09-12T12:30:00+08:00",
+          "original_amount": "90",
+          "original_currency": "CNY",
+          "original_expense_id": null,
+          "payments": [
+            {
+              "amount": "90",
+              "participant_id": "00000000-0000-4000-8000-000000000103"
+            }
+          ],
+          "split_method": "aa",
+          "title": "山野午餐"
+        },
+        "field": "expense"
+      }
+    ],
+    "ground_truth_pointer": "scenario_gs_p0a_001#/ground_truth",
+    "model_output": {
+      "confirmation": {
+        "level": 1,
+        "required": true
+      },
+      "execution_policy": {
+        "execution_allowed": true,
+        "reason": "confirmation_required"
+      },
+      "intent_id": "create_expense",
+      "operation": {
+        "arguments": {
+          "aa_participant_ids": [
+            "00000000-0000-4000-8000-000000000103",
+            "00000000-0000-4000-8000-000000000104"
+          ],
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+          "manual_splits": [],
+          "note": null,
+          "occurred_at": "2026-09-12T12:30:00+08:00",
+          "original_amount": "90",
+          "original_currency": "CNY",
+          "original_expense_id": null,
+          "payments": [
+            {
+              "amount": "90",
+              "participant_id": "00000000-0000-4000-8000-000000000103"
+            }
+          ],
+          "split_method": "aa",
+          "title": "山野午餐"
+        },
+        "tool": "create_expense"
+      },
+      "preview": {
+        "diff": [
+          {
+            "after": {
+              "aa_participant_ids": [
+                "00000000-0000-4000-8000-000000000103",
+                "00000000-0000-4000-8000-000000000104"
+              ],
+              "activity_id": "00000000-0000-4000-8000-000000000100",
+              "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+              "manual_splits": [],
+              "note": null,
+              "occurred_at": "2026-09-12T12:30:00+08:00",
+              "original_amount": "90",
+              "original_currency": "CNY",
+              "original_expense_id": null,
+              "payments": [
+                {
+                  "amount": "90",
+                  "participant_id": "00000000-0000-4000-8000-000000000103"
+                }
+              ],
+              "split_method": "aa",
+              "title": "山野午餐"
+            },
+            "field": "expense"
+          }
+        ],
+        "kind": "create",
+        "summary": "拟新增一笔山野午餐支出。"
+      },
+      "type": "proposal"
+    },
+    "output_type": "proposal"
+  },
+  "input": {
+    "client_context": {
+      "app_version": "1.4.0",
+      "locale": "zh-CN",
+      "platform": "android",
+      "sent_at": "2026-09-29T10:00:02+08:00",
+      "timezone": "Asia/Shanghai"
+    },
+    "contract_version": "0.1",
+    "conversation_context": {
+      "active_activity_id": "00000000-0000-4000-8000-000000000100",
+      "confirmed_bindings": [],
+      "conversation_id": "ac19228a-2734-50bb-bd39-779e425aa6e0",
+      "messages": [],
+      "pending_clarification": null,
+      "turn_id": "turn-current"
+    },
+    "page_state": {
+      "draft": null,
+      "entity_version_hint": null,
+      "fetched_at": null,
+      "filters": {},
+      "financial_version_hint": null,
+      "load_state": "ready",
+      "visible_entities": [],
+      "write_state": "unknown"
+    },
+    "recent_actions": [],
+    "request_id": "3f507717-861a-556c-8771-11522b18241f",
+    "server_context": {
+      "authenticated_user_id": null,
+      "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+      "confirmation_policy": "proposed_all_writes",
+      "enabled_tools": [
+        "find_participants",
+        "create_expense"
+      ],
+      "generated_at": "2026-09-29T10:00:02+08:00",
+      "tool_results": [],
+      "verified_result_ids": []
+    },
+    "ui_context": {
+      "activity_id": "00000000-0000-4000-8000-000000000100",
+      "focused_field": null,
+      "form_mode": null,
+      "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+      "page_type": "normal_activity",
+      "route": "activity/00000000-0000-4000-8000-000000000100",
+      "screen_instance_id": "b7150a44-cc20-5f56-b2df-0b254b7ecf36",
+      "selected_entity": null
+    },
+    "user_context": {
+      "claimed_participant_id": "00000000-0000-4000-8000-000000000103",
+      "role_hint": "member",
+      "user_id": null
+    },
+    "user_message": "呃，中午那顿山野午餐记90元，我先付，和李四一人一半，时间是9月12日12点半。"
+  },
+  "policy_status": "active",
+  "sample_id": "sample_teacher_a821e84a4bf6",
+  "scenario_family_id": "family_exp_create_001",
+  "scenario_id": "scenario_gs_p0a_001",
+  "schema_version": "0.1",
+  "scope": {
+    "ai_scope": "CORE",
+    "intent_ids": [
+      "create_expense"
+    ],
+    "tool_ids": [
+      "find_participants",
+      "create_expense"
+    ]
+  },
+  "source": {
+    "generator": "ai_teacher_generator/0.1.0",
+    "source_reference": "run:mock-ce5fda2faa2afaa7/request:req-352fdf7afabf1a8f618c/seed:sample_gs_p0_002",
+    "surface_form_type": "teacher_generated",
+    "teacher": {
+      "generated_at": "2026-09-29T00:00:00+00:00",
+      "generation_run_id": "mock-ce5fda2faa2afaa7",
+      "model": "deterministic-mock-teacher-v1",
+      "prompt_version": "surface-variant-v1.0.0",
+      "provider": "mock",
+      "seed": 19,
+      "temperature": 0.0
+    }
+  },
+  "split": "unassigned",
+  "split_group_id": "split_exp_create_001",
+  "surface_form": {
+    "context_turn_count": 0,
+    "conversation": [],
+    "language": "zh-CN",
+    "register": "asr_like",
+    "user_message": "呃，中午那顿山野午餐记90元，我先付，和李四一人一半，时间是9月12日12点半。"
+  },
+  "task": {
+    "primary": "parameter_extraction",
+    "secondary": []
+  },
+  "trust": {
+    "ground_truth_locked": true,
+    "level": "SILVER",
+    "surface_form_reviewed": false,
+    "validation_evidence": [
+      "Frozen Gold Seed source: sample_gs_p0_002#/expected",
+      "Teacher request: req-352fdf7afabf1a8f618c; candidate output is not approved and is not training eligible."
+    ]
+  }
+}

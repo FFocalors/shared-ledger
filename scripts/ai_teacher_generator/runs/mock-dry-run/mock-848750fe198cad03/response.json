@@ -1,0 +1,20 @@
+{
+  "surface_form": {
+    "context_turn_count": 2,
+    "conversation": [
+      {
+        "content": "今天晚餐90元，我先垫。",
+        "role": "user",
+        "turn_id": "turn-1"
+      },
+      {
+        "content": "我和林AA。",
+        "role": "user",
+        "turn_id": "turn-2"
+      }
+    ],
+    "language": "zh-CN",
+    "register": "colloquial",
+    "user_message": "接着刚才说的，晚餐90元我先垫的；把林也算上，我们两个平摊。"
+  }
+}

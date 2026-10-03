@@ -1,0 +1,97 @@
+{
+  "candidate_governance": {
+    "example_only": true,
+    "lifecycle_status": "generated",
+    "trust_level": "SILVER"
+  },
+  "candidate_validation": {
+    "errors": 0,
+    "statistics": {
+      "difficulty": {
+        "easy": 0,
+        "hard": 1,
+        "normal": 0,
+        "ood": 0
+      },
+      "families": 1,
+      "lifecycle": {
+        "approved": 0,
+        "deprecated": 0,
+        "draft": 0,
+        "generated": 1,
+        "rejected": 0,
+        "reviewed": 0,
+        "validated": 0
+      },
+      "samples": 1,
+      "scenarios": 1,
+      "scopes": {
+        "CORE": 1
+      },
+      "sources": {
+        "teacher_generated": 1
+      },
+      "splits": {
+        "unassigned": 1
+      },
+      "supporting_lookup_resolutions": {
+        "multiple": 0,
+        "unique": 0,
+        "zero": 0
+      },
+      "tasks": {
+        "conversation_context_reasoning": 1
+      },
+      "trust": {
+        "GOLD": 0,
+        "SILVER": 1,
+        "SYNTHETIC_UNVERIFIED": 0
+      }
+    },
+    "valid": true,
+    "warning_codes": [
+      "SEMANTIC_GROUP_REVIEW"
+    ],
+    "warnings": 1
+  },
+  "created_at": "2026-09-29T00:00:00+00:00",
+  "generator_version": "0.1.0",
+  "mode": "mock_dry_run",
+  "outputs": {
+    "candidate_sample": "candidate_sample.json",
+    "request": "request.json",
+    "response": "response.json"
+  },
+  "prompt_version": "surface-variant-v1.0.0",
+  "remote_provider_called": false,
+  "run_id": "mock-848750fe198cad03",
+  "run_manifest_version": "0.1",
+  "sha256": {
+    "candidate_sample": "644e06dd2df4cbe798694388f442da4f4ddf323b7937db9d1bc838eb1d0303e3",
+    "request": "6a8a59a6416c46edda231a9d3bde3ac91e0815ef80cd8bf874be875be2959509",
+    "response": "f77ef985693873f8ef72e93e9428da1657794c11a71ab17e056247b0ffe9e36f"
+  },
+  "source": {
+    "frozen_hashes": {
+      "ai_contract_sha256": "f6effbc7a4278d6e9b7f6a01298fc1644218be126f85d442da7d35acdf66100a",
+      "ai_scope_sha256": "e5808e18c7cd3eaffd446fc20bfa3eb90e1a08c17402e94dbe0c0f01600fd4fb",
+      "context_envelope_schema_sha256": "5caed757f06b2edfb6b7499d5bff5bfa68225a3416ac5627290664832b9c4a9e",
+      "intent_catalog_sha256": "5170f625130d706a4db95fa5e67ab8cc11c1d56aafc0c093692f9421d4d2e651",
+      "matrix_sha256": "51d7bf9f6339acab8623ba305413975564534f57aa086d2b0e74b7357bccae98",
+      "model_output_schema_sha256": "5ad944f7e1163c5b186cd4b9aea4b3ddf8c39910b9cbaf63554a7718af689bd9",
+      "prompt_template_sha256": "a01f894620453d2aa33b9de46fa4d86dc461d715ec25b707448ac34c367acca0",
+      "sample_schema_sha256": "ceb2d1f989a56e56799a93c35c60638b663e625c6022f1083ee10923baea4493",
+      "samples_sha256": "34ffd94d9c5ccbb17e6632b8689194c4be53f7275db828e983f6d6540b406dee",
+      "scenario_schema_sha256": "fc8a92e068933759fa2aa7217eafac72d1f92289f247c191f8c57af8b2821a91",
+      "scenarios_sha256": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+      "tool_catalog_sha256": "e6f25251c6bdef6cd50f0ce01489adf9c0e6bb5efade5f789e847d86a7350744",
+      "validation_rules_sha256": "4f04e934d9660d549df2529721e6b87dd897aaf708a269290c36ecc7be23c111"
+    },
+    "gold_sample_id": "sample_gs_p0_067",
+    "scenario_family_id": "family_conv_001",
+    "scenario_id": "scenario_gs_p0b_026",
+    "split_group_id": "split_conv_001"
+  },
+  "status": "candidate_review_required",
+  "training_eligible": false
+}

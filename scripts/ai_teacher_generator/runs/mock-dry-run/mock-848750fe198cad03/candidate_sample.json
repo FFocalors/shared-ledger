@@ -1,0 +1,255 @@
+{
+  "challenge_tags": [
+    "multi_turn",
+    "missing_participants",
+    "missing_split_method",
+    "ellipsis",
+    "missing_payer"
+  ],
+  "dataset_metadata": {
+    "contains_production_data": false,
+    "contains_real_personal_data": false,
+    "dedup_key": "sample:teacher:7c25116f4cb372f6e43e3028",
+    "deprecated_by_version": null,
+    "lifecycle_status": "generated",
+    "normalization_key": "surface:teacher:d27a8e2c47c128c699973f80",
+    "review_notes": "Generated candidate only; requires independent surface review. Never include mock or unreviewed candidates in training.",
+    "semantic_group_key": "semantic:p0:067:v2"
+  },
+  "dataset_version": "0.1",
+  "difficulty": "hard",
+  "example_only": true,
+  "expected": {
+    "entity_resolution": [],
+    "evidence_result_ids": [],
+    "execution": {
+      "confirmation_level": 1,
+      "confirmation_required": true,
+      "execution_allowed": true,
+      "final_authorization": "trusted_ui_event_required",
+      "successful_execution_label_allowed": true
+    },
+    "expected_diff": [
+      {
+        "after": {
+          "aa_participant_ids": [
+            "00000000-0000-4000-8000-000000000103",
+            "00000000-0000-4000-8000-000000000104"
+          ],
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+          "manual_splits": [],
+          "occurred_at": "2026-09-12T19:00:00+08:00",
+          "original_amount": "90",
+          "original_currency": "CNY",
+          "payments": [
+            {
+              "amount": "90",
+              "participant_id": "00000000-0000-4000-8000-000000000103"
+            }
+          ],
+          "split_method": "aa",
+          "title": "晚餐报销"
+        },
+        "field": "target"
+      }
+    ],
+    "ground_truth_pointer": "scenario_gs_p0b_026#/ground_truth",
+    "model_output": {
+      "confirmation": {
+        "level": 1,
+        "required": true
+      },
+      "execution_policy": {
+        "execution_allowed": true,
+        "reason": "confirmation_required"
+      },
+      "intent_id": "create_expense",
+      "operation": {
+        "arguments": {
+          "aa_participant_ids": [
+            "00000000-0000-4000-8000-000000000103",
+            "00000000-0000-4000-8000-000000000104"
+          ],
+          "activity_id": "00000000-0000-4000-8000-000000000100",
+          "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+          "manual_splits": [],
+          "occurred_at": "2026-09-12T19:00:00+08:00",
+          "original_amount": "90",
+          "original_currency": "CNY",
+          "payments": [
+            {
+              "amount": "90",
+              "participant_id": "00000000-0000-4000-8000-000000000103"
+            }
+          ],
+          "split_method": "aa",
+          "title": "晚餐报销"
+        },
+        "tool": "create_expense"
+      },
+      "preview": {
+        "diff": [
+          {
+            "after": {
+              "aa_participant_ids": [
+                "00000000-0000-4000-8000-000000000103",
+                "00000000-0000-4000-8000-000000000104"
+              ],
+              "activity_id": "00000000-0000-4000-8000-000000000100",
+              "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+              "manual_splits": [],
+              "occurred_at": "2026-09-12T19:00:00+08:00",
+              "original_amount": "90",
+              "original_currency": "CNY",
+              "payments": [
+                {
+                  "amount": "90",
+                  "participant_id": "00000000-0000-4000-8000-000000000103"
+                }
+              ],
+              "split_method": "aa",
+              "title": "晚餐报销"
+            },
+            "field": "target"
+          }
+        ],
+        "kind": "create",
+        "summary": "我会把90元晚餐按你和林两人AA，付款人是你；这仍是一份待确认的记账方案。"
+      },
+      "type": "proposal"
+    },
+    "output_type": "proposal"
+  },
+  "input": {
+    "client_context": {
+      "app_version": "1.4.0",
+      "locale": "zh-CN",
+      "platform": "android",
+      "sent_at": "2026-09-29T10:01:07+08:00",
+      "timezone": "Asia/Shanghai"
+    },
+    "contract_version": "0.1",
+    "conversation_context": {
+      "active_activity_id": "00000000-0000-4000-8000-000000000100",
+      "confirmed_bindings": [],
+      "conversation_id": "36212fe3-a7a7-51d1-b897-0d477c264ae7",
+      "messages": [
+        {
+          "content": "今天晚餐90元，我先垫。",
+          "created_at": "2026-09-29T09:00:00+08:00",
+          "role": "user",
+          "turn_id": "turn-1"
+        },
+        {
+          "content": "我和林AA。",
+          "created_at": "2026-09-29T09:00:01+08:00",
+          "role": "user",
+          "turn_id": "turn-2"
+        }
+      ],
+      "pending_clarification": null,
+      "turn_id": "turn-current"
+    },
+    "page_state": {
+      "draft": null,
+      "entity_version_hint": null,
+      "fetched_at": null,
+      "filters": {},
+      "financial_version_hint": null,
+      "load_state": "ready",
+      "visible_entities": [],
+      "write_state": "unknown"
+    },
+    "recent_actions": [],
+    "request_id": "62f58ca2-4570-56b3-b467-01e03f633f7a",
+    "server_context": {
+      "authenticated_user_id": null,
+      "baseline_commit": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+      "confirmation_policy": "proposed_all_writes",
+      "enabled_tools": [
+        "create_expense"
+      ],
+      "generated_at": "2026-09-29T10:01:07+08:00",
+      "tool_results": [],
+      "verified_result_ids": []
+    },
+    "ui_context": {
+      "activity_id": "00000000-0000-4000-8000-000000000100",
+      "focused_field": null,
+      "form_mode": "create",
+      "ledger_unit_id": "00000000-0000-4000-8000-000000000101",
+      "page_type": "expense_form",
+      "route": "new-expense/00000000-0000-4000-8000-000000000100",
+      "screen_instance_id": "7407178e-3d01-5176-8b9a-6cddd43819c3",
+      "selected_entity": null
+    },
+    "user_context": {
+      "claimed_participant_id": "00000000-0000-4000-8000-000000000103",
+      "role_hint": "member",
+      "user_id": null
+    },
+    "user_message": "接着刚才说的，晚餐90元我先垫的；把林也算上，我们两个平摊。"
+  },
+  "policy_status": "active",
+  "sample_id": "sample_teacher_7c25116f4cb3",
+  "scenario_family_id": "family_conv_001",
+  "scenario_id": "scenario_gs_p0b_026",
+  "schema_version": "0.1",
+  "scope": {
+    "ai_scope": "CORE",
+    "intent_ids": [
+      "create_expense"
+    ],
+    "tool_ids": [
+      "create_expense"
+    ]
+  },
+  "source": {
+    "generator": "ai_teacher_generator/0.1.0",
+    "source_reference": "run:mock-848750fe198cad03/request:req-c0c534212c2d2621ac3f/seed:sample_gs_p0_067",
+    "surface_form_type": "teacher_generated",
+    "teacher": {
+      "generated_at": "2026-09-29T00:00:00+00:00",
+      "generation_run_id": "mock-848750fe198cad03",
+      "model": "deterministic-mock-teacher-v1",
+      "prompt_version": "surface-variant-v1.0.0",
+      "provider": "mock",
+      "seed": 19,
+      "temperature": 0.0
+    }
+  },
+  "split": "unassigned",
+  "split_group_id": "split_conv_001",
+  "surface_form": {
+    "context_turn_count": 2,
+    "conversation": [
+      {
+        "content": "今天晚餐90元，我先垫。",
+        "role": "user",
+        "turn_id": "turn-1"
+      },
+      {
+        "content": "我和林AA。",
+        "role": "user",
+        "turn_id": "turn-2"
+      }
+    ],
+    "language": "zh-CN",
+    "register": "colloquial",
+    "user_message": "接着刚才说的，晚餐90元我先垫的；把林也算上，我们两个平摊。"
+  },
+  "task": {
+    "primary": "conversation_context_reasoning",
+    "secondary": []
+  },
+  "trust": {
+    "ground_truth_locked": true,
+    "level": "SILVER",
+    "surface_form_reviewed": false,
+    "validation_evidence": [
+      "Frozen Gold Seed source: sample_gs_p0_067#/expected",
+      "Teacher request: req-c0c534212c2d2621ac3f; candidate output is not approved and is not training eligible."
+    ]
+  }
+}

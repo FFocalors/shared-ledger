@@ -1,0 +1,4 @@
+# Ignore generated runs by default; retain the one deterministic mock fixture.
+/runs/*
+!/runs/mock-dry-run/
+!/runs/mock-dry-run/**
