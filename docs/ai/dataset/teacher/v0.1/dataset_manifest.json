@@ -1,0 +1,105 @@
+{
+  "manifest_schema_version": "0.1",
+  "dataset_version": "0.1",
+  "business_logic_version": "1.2",
+  "ai_contract_version": "0.1.2",
+  "ai_scope_version": "0.1",
+  "frozen_reference_sha": "55fb28a7c0660462e5842e2eb5c71cfa763e5801",
+  "created_at": "2026-09-29T17:40:50+08:00",
+  "status": "frozen",
+  "example_only": false,
+  "scenario_count": 54,
+  "scenario_family_count": 54,
+  "sample_count": 155,
+  "split_policy": {
+    "assignment_unit": "scenario_family",
+    "target_percentages": {
+      "train": 70,
+      "validation": 10,
+      "test": 15,
+      "hard_test": 5
+    },
+    "final_split_assigned": false
+  },
+  "split_statistics": {
+    "train": 0,
+    "validation": 0,
+    "test": 0,
+    "hard_test": 0,
+    "unassigned": 155
+  },
+  "task_statistics": {
+    "parameter_extraction": 9,
+    "clarification": 27,
+    "proposal_generation": 19,
+    "entity_resolution": 8,
+    "conversation_context_reasoning": 8,
+    "ui_context_reasoning": 9,
+    "tool_call": 14,
+    "interaction_context_reasoning": 11,
+    "unsupported_detection": 4,
+    "result_explanation": 17,
+    "intent_classification": 4,
+    "rule_qa": 13,
+    "error_handling": 12
+  },
+  "scope_statistics": {
+    "CORE": 128,
+    "SUPPORTED_BUT_GATED": 27,
+    "DEFERRED": 0
+  },
+  "source_statistics": {
+    "teacher_generated": 155
+  },
+  "trust_statistics": {
+    "GOLD": 0,
+    "SILVER": 155,
+    "SYNTHETIC_UNVERIFIED": 0
+  },
+  "difficulty_statistics": {
+    "easy": 16,
+    "normal": 84,
+    "hard": 51,
+    "ood": 4
+  },
+  "lifecycle_statistics": {
+    "draft": 0,
+    "generated": 0,
+    "validated": 0,
+    "reviewed": 0,
+    "approved": 155,
+    "rejected": 0,
+    "deprecated": 0
+  },
+  "artifacts": [
+    {
+      "kind": "scenario",
+      "path": "scenarios.json",
+      "record_count": 54,
+      "sha256": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815"
+    },
+    {
+      "kind": "sample",
+      "path": "samples.json",
+      "record_count": 155,
+      "sha256": "5d2ca222d8ee4a87ae9e17cdaa0dd22dbfa8bf6835458e34e3be6c9292e4c4d9"
+    }
+  ],
+  "validation_summary": {
+    "schema_valid": true,
+    "contract_valid": true,
+    "scope_valid": true,
+    "leakage_valid": true,
+    "policy_valid": true,
+    "privacy_valid": true,
+    "error_count": 0,
+    "warning_count": 84,
+    "report_reference": "docs/ai/dataset/teacher/v0.1/README.md#validation"
+  },
+  "privacy": {
+    "synthetic_identifiers_required": true,
+    "production_data_allowed": false,
+    "real_personal_data_allowed": false
+  },
+  "notes": "training_eligible=true. Frozen Teacher Dataset v0.1 on 2026-09-29 from the reviewed 155-candidate pool in scripts/ai_teacher_generator/runs/full-generation-v0.1/fullgen-20260929T082701Z-ff76470a; provider=opencode; model=deepseek-v4.1-flash; prompt_version=surface-variant-v1.0.0. All records remain SILVER, approved, surface_form_reviewed=true, example_only=false and split=unassigned; no split assignment, export or training was performed. Canonical Ground Truth is the frozen Gold P0 Scenario; this directory contains an exact, read-only scenario snapshot. Source review: human_quality_review.json (155 retained, 17 rejected) and quality_report.json; reused Pilot run pilot-20260929T074620Z-c314cc93. FIN-002 has zero Teacher samples. Rejected candidates remain in the source run audit and are not copied. Frozen content must not be changed in place; corrections or additions require a new Teacher Dataset version and review."
+}

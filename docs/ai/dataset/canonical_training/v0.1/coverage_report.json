@@ -1,0 +1,266 @@
+[
+  {
+    "report_version": "0.1",
+    "assignment_method": "sha256_seeded_balanced_swap_annealing_v1",
+    "seed": "9be1655ffe2c0904fb738c7f5be94e603bcfa3c2f4f71e30c970a9879073404e",
+    "eligible_family_target_counts": {
+      "train": 36,
+      "validation": 5,
+      "test": 8,
+      "hard_test": 3
+    },
+    "eligible_sample_target_counts": {
+      "train": 171,
+      "validation": 24,
+      "test": 37,
+      "hard_test": 12
+    },
+    "family_counts_by_split": {
+      "train": 36,
+      "validation": 5,
+      "test": 8,
+      "hard_test": 3,
+      "unassigned": 1
+    },
+    "sample_counts_by_split": {
+      "train": 171,
+      "validation": 24,
+      "test": 37,
+      "hard_test": 12,
+      "unassigned": 6
+    },
+    "active_samples": 244,
+    "pending_policy_samples_unassigned": 6,
+    "coverage_by_split": {
+      "task_primary": {
+        "train": {
+          "parameter_extraction": 14,
+          "clarification": 30,
+          "proposal_generation": 22,
+          "tool_call": 14,
+          "result_explanation": 13,
+          "ui_context_reasoning": 9,
+          "entity_resolution": 14,
+          "interaction_context_reasoning": 11,
+          "conversation_context_reasoning": 11,
+          "intent_classification": 6,
+          "rule_qa": 9,
+          "error_handling": 12,
+          "unsupported_detection": 6
+        },
+        "validation": {
+          "parameter_extraction": 3,
+          "tool_call": 6,
+          "result_explanation": 6,
+          "proposal_generation": 3,
+          "rule_qa": 6
+        },
+        "test": {
+          "tool_call": 2,
+          "result_explanation": 6,
+          "proposal_generation": 3,
+          "ui_context_reasoning": 5,
+          "clarification": 12,
+          "conversation_context_reasoning": 3,
+          "error_handling": 6
+        },
+        "hard_test": {
+          "proposal_generation": 3,
+          "clarification": 3,
+          "rule_qa": 6
+        },
+        "unassigned": {
+          "interaction_context_reasoning": 6
+        }
+      },
+      "output_type": {
+        "train": {
+          "proposal": 46,
+          "clarification": 51,
+          "tool_call": 24,
+          "answer": 44,
+          "unsupported": 6
+        },
+        "validation": {
+          "clarification": 3,
+          "tool_call": 6,
+          "answer": 12,
+          "proposal": 3
+        },
+        "test": {
+          "tool_call": 2,
+          "answer": 15,
+          "proposal": 8,
+          "clarification": 12
+        },
+        "hard_test": {
+          "proposal": 3,
+          "clarification": 3,
+          "answer": 6
+        },
+        "unassigned": {
+          "clarification": 6
+        }
+      },
+      "difficulty": {
+        "train": {
+          "easy": 17,
+          "normal": 96,
+          "hard": 52,
+          "ood": 6
+        },
+        "validation": {
+          "normal": 12,
+          "hard": 6,
+          "easy": 6
+        },
+        "test": {
+          "easy": 2,
+          "normal": 23,
+          "hard": 12
+        },
+        "hard_test": {
+          "easy": 3,
+          "hard": 3,
+          "normal": 6
+        },
+        "unassigned": {
+          "hard": 6
+        }
+      },
+      "source_type": {
+        "train": {
+          "human_authored": 65,
+          "teacher_generated": 106
+        },
+        "validation": {
+          "human_authored": 9,
+          "teacher_generated": 15
+        },
+        "test": {
+          "human_authored": 14,
+          "teacher_generated": 23
+        },
+        "hard_test": {
+          "human_authored": 5,
+          "teacher_generated": 7
+        },
+        "unassigned": {
+          "human_authored": 2,
+          "teacher_generated": 4
+        }
+      },
+      "scope": {
+        "train": {
+          "CORE": 144,
+          "SUPPORTED_BUT_GATED": 27
+        },
+        "validation": {
+          "CORE": 21,
+          "SUPPORTED_BUT_GATED": 3
+        },
+        "test": {
+          "CORE": 31,
+          "SUPPORTED_BUT_GATED": 6
+        },
+        "hard_test": {
+          "CORE": 9,
+          "SUPPORTED_BUT_GATED": 3
+        },
+        "unassigned": {
+          "CORE": 6
+        }
+      },
+      "challenge_tag": {
+        "train": {
+          "colloquial": 33,
+          "manual_split": 14,
+          "missing_payer": 10,
+          "missing_participants": 14,
+          "pronoun": 28,
+          "missing_split_method": 15,
+          "d4_preview_only": 19,
+          "ui_reference": 50,
+          "financial_risk": 63,
+          "ellipsis": 21,
+          "multiple_candidates": 19,
+          "multi_currency": 8,
+          "gated_operation": 33,
+          "missing_currency": 3,
+          "contradictory_input": 3,
+          "recent_action_reference": 22,
+          "multi_turn": 37,
+          "unknown_write_state": 14,
+          "stale_context": 12,
+          "cross_activity_reference": 6,
+          "same_name_entity": 6,
+          "asr_like": 6,
+          "permission_boundary": 6,
+          "unsupported": 6
+        },
+        "validation": {
+          "typo": 3,
+          "asr_like": 3,
+          "missing_payer": 3,
+          "colloquial": 6,
+          "ellipsis": 6,
+          "multiple_candidates": 6,
+          "financial_risk": 21,
+          "multi_currency": 6,
+          "recent_action_reference": 3,
+          "gated_operation": 9
+        },
+        "test": {
+          "ui_reference": 13,
+          "multi_currency": 6,
+          "financial_risk": 18,
+          "gated_operation": 12,
+          "multi_turn": 9,
+          "d4_preview_only": 5,
+          "recent_action_reference": 6,
+          "multiple_candidates": 6,
+          "permission_boundary": 3,
+          "unsupported": 3,
+          "pronoun": 6,
+          "ellipsis": 6,
+          "colloquial": 6,
+          "stale_context": 6
+        },
+        "hard_test": {
+          "colloquial": 3,
+          "ellipsis": 3,
+          "multiple_candidates": 3,
+          "gated_operation": 9,
+          "financial_risk": 9
+        },
+        "unassigned": {
+          "pending_default_policy": 6,
+          "missing_payer": 6,
+          "ui_reference": 6
+        }
+      }
+    },
+    "duplicate_review": {
+      "exact_surface_pairs": 0,
+      "normalized_surface_pairs": 0,
+      "near_duplicate_pairs_at_or_above_0_90": 0,
+      "near_duplicate_pairs": [],
+      "cross_split_near_duplicate_pairs": [],
+      "source_review_method": "NFKC + casefold + whitespace removal + difflib.SequenceMatcher ratio"
+    },
+    "excluded": {
+      "FIN-002_samples": 0,
+      "rejected_teacher_candidates": 0
+    },
+    "source_sample_ids_preserved": true,
+    "canonical_scenarios_sha256": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+    "validator_result": {
+      "errors": 0,
+      "warnings": 155,
+      "warning_codes": {
+        "SEMANTIC_GROUP_REVIEW": 155
+      }
+    },
+    "semantic_group_warning_disposition": "SEMANTIC_GROUP_REVIEW warnings are retained: each repeated semantic group belongs to the same closed Scenario Family and assigned split, and the frozen Teacher human_quality_review.json records all-pool near-duplicate screening. No exact, normalized or >=0.90 surface duplicates remain."
+  }
+]
