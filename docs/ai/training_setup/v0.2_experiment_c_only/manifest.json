@@ -1,0 +1,91 @@
+{
+  "training_setup_version": "0.2-experiment-c-only",
+  "canonical_dataset_version": "0.1",
+  "source": {
+    "path": "docs/ai/dataset/canonical_training/v0.1",
+    "manifest_sha256": "7f8cc2ef70d1abedd49ea040826d93f4c3708a8cb5893e7e1fedcc488e2c2252",
+    "samples_sha256": "768916c8781dc2608ac8220588a0e85ffc043d8f16a45e9bd3497b87a214e562",
+    "scenarios_sha256": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+    "split_assignment_sha256": "e3e1599673b3227edeaad3bc62f04e0f3249dd886946f502664428939d8d3765",
+    "old_setup_manifest_sha256": "0ea288d01fc33389996473f795c0632999e12b568f7541de12e29ba4fea2d67c",
+    "contract_sha256": "f6effbc7a4278d6e9b7f6a01298fc1644218be126f85d442da7d35acdf66100a",
+    "scope_freeze_sha256": "e5808e18c7cd3eaffd446fc20bfa3eb90e1a08c17402e94dbe0c0f01600fd4fb",
+    "output_schema_sha256": "5ad944f7e1163c5b186cd4b9aea4b3ddf8c39910b9cbaf63554a7718af689bd9"
+  },
+  "export": {
+    "format": "LLaMA-Factory ShareGPT JSON",
+    "record_count": 244,
+    "split_counts": {
+      "train": 171,
+      "validation": 24,
+      "test": 37,
+      "hard_test": 12
+    },
+    "excluded_unassigned_count": 6,
+    "excluded_fin002_count": 0,
+    "output_types": {
+      "answer": 77,
+      "clarification": 69,
+      "proposal": 60,
+      "tool_call": 32,
+      "unsupported": 6
+    }
+  },
+  "serialization": {
+    "template": "qwen3_5_nothink",
+    "system_context": "allowlisted runtime context only",
+    "history_group_marker": "<|shared_ledger_turn_block_v1|>",
+    "history_roundtrip_verified": true,
+    "assistant_target": "compact JSON serialization of expected.model_output; parsed equality checked",
+    "loss_mask": {
+      "train_on_prompt": false,
+      "mask_history": true
+    }
+  },
+  "llamafactory_source_version": "0.9.6.dev0",
+  "frozen_canonical_manifest_status": "frozen",
+  "artifacts": {
+    "contract_coverage.json": "f859b440b20dcf224aaac4ea9de03df062daf22a769868c490d0efa46852d5dc",
+    "llamafactory/dataset_info.json": "2ac44f2ba48c5c0b21cff58590802d956c570cde92edba8cb7a9bae618ee2907",
+    "llamafactory/hard_test.json": "d4802f93af6e589c1b8221354f0c141286c2697c1f268753af1f677680937ea0",
+    "llamafactory/test.json": "965cb79c4e709bb5274d7a9cad91c1a50d27e3b615654063f00cc0147183a0f2",
+    "llamafactory/train.json": "a3dd18aecb6823a3461682d16b07a90cf4c6dee6439aee24d77503ef07ee0a77",
+    "llamafactory/validation.json": "3bb00b6f639663650fa3b1afb5f9a0751121653d9820048a9c005b93c90c9b90",
+    "qlora.yaml": "9fdb0b0310bb53118228afb056581e471ef60b4bc50c5268a851c1e9086354aa",
+    "README.md": "b9a765e28b8a2dbc3951266319da4ca22660ef3f71e3032290e275687e44a963",
+    "smoke.yaml": "8875ef863d0376fb4af872dd1edc3633e55c030962a2e3e8b6d09345bfc3e0e9",
+    "system_guide.txt": "bc3d2603b819fddf1934a3639d72ac6c12b86443c4403b706609399bd2d8fb6d",
+    "traceability.json": "ad8fd7ba663216c8c185307945bc5507809895f4856c7739603213bf261c42ba",
+    "validation_report.json": "83d91f98b1344052e1b348f5b45bfdd26d06e5f13fb1720d0a5f3ce17eae0304"
+  },
+  "experiment": "C_compact_contract_guide",
+  "variable": "model-visible system Contract guide only",
+  "frozen_baseline_setup": "docs/ai/training_setup/v0.1",
+  "system_guide": {
+    "old": "你是 Android 共享账本应用中的助手。根据下方运行时上下文、对话历史和当前用户消息作答，遵守应用边界，并严格按要求输出 JSON。",
+    "new": "你是 Android 共享账本助手。只依据本轮消息、对话及模型可见的运行时上下文/工具结果；事实缺失、冲突或指代不唯一时先输出 clarification，不猜实体、金额、时间、结果或用户确认。明确由用户提供的操作参数可用于方案；余额、债务、额度、汇率、分摊/结算结果等账务事实只引用可见且已验证的服务端结果，不自行计算，也不宣称写入成功。实体仅取自明确消息、可见上下文/已确认绑定或已验证结果。\n仅对当前范围已开放且允许的查询/实体解析，按 enabled_tools 与意图工具映射输出一个读 tool_call；不得调用未开放能力、任意工具、SQL 或后端接口。写意图只有在能力已开放、所需事实充分时才先输出 proposal；缺少/冲突信息时澄清，DEFERRED 能力使用 unsupported 或引导至原生流程。L1/L2 proposal 只有经可信 UI 明确点击确认且 Gateway 复核后，编排层才可转为写 tool_call；聊天中的“确认”不是授权，proposal/tool_call 不代表 RPC 已成功。D4 的 update_expense/update_refund 仅可给出 execution_policy.execution_allowed=false、reason=d4_atomic_update_not_supported 的 proposal，永不转为写 tool_call。未裁定的 OPEN_DECISION 按冻结规则澄清，不自行补定。\n每轮只输出一个符合约定 JSON contract 的对象，不输出 Markdown 或额外文字。只使用六种既有 type：answer、proposal、tool_call、clarification、unsupported、error；按该 type 的封闭分支填写全部必需字段与正确类型，禁止额外字段。proposal 必须含完整 operation、preview/diff、confirmation 和 execution_policy；tool_call 必须匹配允许的 intent/tool/arguments。候选与 evidence ID 仅引用可见且有依据的来源；不得编造事实。",
+    "tokenizer": "D:/AI/models/Qwen3.5-4B local tokenizer; measured by validation script"
+  },
+  "validation": {
+    "rows_loaded": 244,
+    "ground_truth_equal": 244,
+    "traceability_complete": 244,
+    "metadata_leakage": 0,
+    "loss_masks_verified": 244,
+    "errors": 0,
+    "loss_mask_config": {
+      "train_on_prompt": false,
+      "mask_history": true
+    },
+    "system_only_variable_pairs_verified": 244,
+    "cutoff_2048_fits_all": true
+  },
+  "contract_coverage_review": {
+    "scope": "Experiment C runtime summary for routing, schema discipline, grounding and safety. This is not a complete restatement or validation of every Contract rule.",
+    "summary_rules": 9,
+    "deliberate_omissions": 5,
+    "proposal_staleness_explicitly_covered_by_guide": false,
+    "proposal_staleness_runtime_enforcement_required": true,
+    "conflicts_found_in_scoped_summary": 0
+  }
+}

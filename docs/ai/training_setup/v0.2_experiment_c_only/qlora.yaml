@@ -1,0 +1,48 @@
+### Conservative QLoRA draft updated after the authorized 8-sample smoke run.
+### Data-derived: 244 examples max at 1,193 LLaMA-Factory-template tokens; cutoff 2,048.
+### Hardware estimates (bnb NF4, batch 1, gradient checkpointing) are provisional until smoke.
+model_name_or_path: D:/AI/models/Qwen3.5-4B
+trust_remote_code: true
+quantization_bit: 4
+quantization_method: bnb
+quantization_type: nf4
+double_quantization: true
+upcast_layernorm: true
+
+stage: sft
+do_train: true
+finetuning_type: lora
+lora_rank: 8
+lora_alpha: 16
+lora_dropout: 0.05
+lora_target: all
+
+dataset: sharedledger_train
+dataset_dir: D:/project/Android/shared-ledger/docs/ai/training_setup/v0.2_experiment_c_only/llamafactory
+eval_dataset: sharedledger_validation
+template: qwen3_5_nothink
+enable_thinking: false
+train_on_prompt: false
+mask_history: true
+cutoff_len: 2048
+preprocessing_num_workers: 2
+dataloader_num_workers: 0
+
+output_dir: D:/AI/runs/shared-ledger/qwen3.5-4b-qlora-v0.2-experiment-c-only
+overwrite_output_dir: false
+logging_steps: 10
+save_steps: 11
+save_total_limit: 2
+report_to: none
+
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 16
+learning_rate: 1.0e-4
+num_train_epochs: 3.0
+lr_scheduler_type: cosine
+warmup_steps: 2
+bf16: true
+gradient_checkpointing: true
+eval_strategy: steps
+eval_steps: 11
+per_device_eval_batch_size: 1

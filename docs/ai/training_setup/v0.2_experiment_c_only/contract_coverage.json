@@ -1,0 +1,25 @@
+{
+  "baseline_contract": "docs/ai/AI_MODEL_CONTRACT.md v0.1.2 plus docs/ai/AI_SCOPE_FREEZE_V0.1.md",
+  "output_schema": "docs/ai/schema/model_output.schema.json",
+  "coverage_scope": "Experiment C runtime summary for routing, schema discipline, grounding and safety. This is not a complete restatement or validation of every Contract rule.",
+  "coverage": [
+    {"rule": "Ground on model-visible facts; distinguish user-supplied operation parameters from server-owned balances, debt, limits, FX and computed settlement facts", "source": ["AI_MODEL_CONTRACT.md §3, §6, §10, §17", "AI_SCOPE_FREEZE_V0.1.md §10, §11"], "guide": "paragraph 1", "status": "covered"},
+    {"rule": "Missing, conflicting or ambiguous facts/references require clarification; do not infer financial choices", "source": ["AI_MODEL_CONTRACT.md §11", "AI_SCOPE_FREEZE_V0.1.md §9-10"], "guide": "paragraph 1; paragraph 2", "status": "covered_at_summary_level"},
+    {"rule": "Use currently enabled and intent-authorized tools; scope read calls to one operation", "source": ["AI_MODEL_CONTRACT.md §5, §12, §17.1", "AI_SCOPE_FREEZE_V0.1.md §7"], "guide": "paragraph 2", "status": "principle_covered_catalog_details_omitted"},
+    {"rule": "Only open, sufficiently grounded writes produce proposals; L1/L2 need trusted UI confirmation and Gateway recheck; chat text is not authority", "source": ["AI_MODEL_CONTRACT.md §14-15", "AI_SCOPE_FREEZE_V0.1.md §8"], "guide": "paragraph 2", "status": "covered_at_summary_level"},
+    {"rule": "Deferred capabilities remain unsupported or use native flow", "source": ["AI_MODEL_CONTRACT.md §5, §17", "AI_SCOPE_FREEZE_V0.1.md §5, §8"], "guide": "paragraph 2", "status": "principle_covered_catalog_details_omitted"},
+    {"rule": "D4 financial update is a non-executable proposal with exact reason and cannot become a write tool call", "source": ["AI_MODEL_CONTRACT.md §14", "AI_SCOPE_FREEZE_V0.1.md §3, §16"], "guide": "paragraph 2", "status": "covered"},
+    {"rule": "Unresolved OPEN_DECISION is not invented", "source": ["AI_MODEL_CONTRACT.md §21", "AI_SCOPE_FREEZE_V0.1.md §19"], "guide": "paragraph 2", "status": "covered_at_summary_level"},
+    {"rule": "One JSON object, six existing types, closed branches, no additional fields, and high-level proposal/tool-call requirements", "source": ["AI_MODEL_CONTRACT.md §14", "docs/ai/schema/model_output.schema.json"], "guide": "paragraph 3", "status": "high_level_covered_exact_fields_and_slots_delegated_to_schema"},
+    {"rule": "Do not fabricate facts or evidence IDs", "source": ["AI_MODEL_CONTRACT.md §6, §14, §17"], "guide": "paragraph 1 and paragraph 3", "status": "covered_at_summary_level"}
+  ],
+  "deliberate_omissions": [
+    {"detail": "Complete per-type JSON keys, required/optional slots, argument shapes, enum constraints and every intent-tool branch", "reason": "Would reproduce a large schema/catalog rather than provide a compact system guide.", "authority": ["docs/ai/schema/model_output.schema.json", "docs/ai/schema/intent_catalog.json", "docs/ai/schema/tool_catalog.json"]},
+    {"detail": "Proposal invalidation on page, Activity, selected object, server state or financial_version changes; proposal expiry and lifecycle", "reason": "The guide says facts must be current and a trusted Gateway recheck is required, but does not explicitly instruct the model to invalidate and regenerate a stale proposal after each listed state change. This is a remaining model-visible instruction gap; the runtime must enforce invalidation/recheck.", "authority": ["AI_MODEL_CONTRACT.md §14-15", "AI_SCOPE_FREEZE_V0.1.md §8", "Gateway/runtime proposal lifecycle"]},
+    {"detail": "Supporting lookup limits, retry budgets and bounded orchestration policy", "reason": "These are Gateway policy/open decisions; the guide only restricts calls to enabled and intent-authorized tools.", "authority": ["AI_MODEL_CONTRACT.md §17.1", "Gateway Policy / OPEN_DECISION"]},
+    {"detail": "Tool error classification, unknown commit reconciliation, retry and recovery behavior", "reason": "Not repeated in the compact guide; must remain governed by the frozen runtime Contract and Gateway/client logic.", "authority": ["AI_MODEL_CONTRACT.md §15-16", "Gateway/client deterministic logic"]},
+    {"detail": "Detailed entity resolution precedence, source typing, privacy limits, result freshness and complete financial invariants", "reason": "Only grounding and clarification principles are summarized; detailed rules are too specific for this guide and remain in the frozen Contract/runtime.", "authority": ["AI_MODEL_CONTRACT.md §4, §6, §9-11, §17", "AI_SCOPE_FREEZE_V0.1.md §9-12, §14"]}
+  ],
+  "conflicts_found": [],
+  "interpretation_note": "No conflict was found among the included summary rules. This means no detected contradiction in the scoped summary, not full Contract coverage. Omitted details remain authoritative in the referenced schema, catalogs, frozen Contract and deterministic runtime; the proposal-staleness gap is called out explicitly rather than counted as covered."
+}

@@ -1,0 +1,347 @@
+{
+  "python": "3.11.15",
+  "transformers": "5.8.0",
+  "llamafactory": "0.9.6.dev0",
+  "model_tokenizer_path": "D:\\AI\\models\\Qwen3.5-4B",
+  "template": "qwen3_5_nothink",
+  "dataset_registration_count": 4,
+  "guide_token_lengths": {
+    "old": 32,
+    "new": 394
+  },
+  "guide_token_delta_new_minus_old": 362,
+  "full_system_token_lengths_old": {
+    "count": 244,
+    "p50": 332,
+    "p90": 433,
+    "p95": 539,
+    "p99": 654,
+    "max": 654
+  },
+  "full_system_token_lengths_new": {
+    "count": 244,
+    "p50": 694,
+    "p90": 795,
+    "p95": 901,
+    "p99": 1016,
+    "max": 1016
+  },
+  "full_system_token_delta_new_minus_old": {
+    "count": 244,
+    "p50": 362,
+    "p90": 362,
+    "p95": 362,
+    "p99": 362,
+    "max": 362
+  },
+  "system_only_variable_pairs_verified": 244,
+  "split_counts": {
+    "train": 171,
+    "validation": 24,
+    "test": 37,
+    "hard_test": 12
+  },
+  "loss_mask_samples_checked": 244,
+  "history_samples": 24,
+  "samples_with_reversible_turn_blocks": 11,
+  "assistant_history_turns_masked": 13,
+  "token_lengths_total": {
+    "count": 244,
+    "p50": 812,
+    "p90": 1415,
+    "p95": 1433,
+    "p99": 1547,
+    "max": 1555
+  },
+  "input_tokens_total": {
+    "count": 244,
+    "p50": 733,
+    "p90": 833,
+    "p95": 946,
+    "p99": 1042,
+    "max": 1050
+  },
+  "target_tokens_total": {
+    "count": 244,
+    "p50": 66,
+    "p90": 604,
+    "p95": 622,
+    "p99": 664,
+    "max": 665
+  },
+  "native_tokenizer_template_total": {
+    "count": 244,
+    "p50": 816,
+    "p90": 1419,
+    "p95": 1437,
+    "p99": 1551,
+    "max": 1559
+  },
+  "native_vs_llamafactory_template_delta": {
+    "samples_with_different_lengths": 244,
+    "delta_min": 4,
+    "delta_max": 4,
+    "note": "Training config uses the LLaMA-Factory qwen3_5_nothink encoder; the tokenizer's bundled chat_template is measured separately."
+  },
+  "token_lengths_by_split": {
+    "train": {
+      "count": 171,
+      "p50": 838,
+      "p90": 1418,
+      "p95": 1430,
+      "p99": 1548,
+      "max": 1555
+    },
+    "validation": {
+      "count": 24,
+      "p50": 769,
+      "p90": 881,
+      "p95": 896,
+      "p99": 899,
+      "max": 900
+    },
+    "test": {
+      "count": 37,
+      "p50": 764,
+      "p90": 1435,
+      "p95": 1438,
+      "p99": 1445,
+      "max": 1446
+    },
+    "hard_test": {
+      "count": 12,
+      "p50": 919,
+      "p90": 1308,
+      "p95": 1312,
+      "p99": 1314,
+      "max": 1315
+    }
+  },
+  "input_tokens_by_split": {
+    "train": {
+      "count": 171,
+      "p50": 737,
+      "p90": 832,
+      "p95": 940,
+      "p99": 974,
+      "max": 974
+    },
+    "validation": {
+      "count": 24,
+      "p50": 707,
+      "p90": 764,
+      "p95": 768,
+      "p99": 771,
+      "max": 772
+    },
+    "test": {
+      "count": 37,
+      "p50": 715,
+      "p90": 1041,
+      "p95": 1042,
+      "p99": 1047,
+      "max": 1050
+    },
+    "hard_test": {
+      "count": 12,
+      "p50": 728,
+      "p90": 828,
+      "p95": 829,
+      "p99": 829,
+      "max": 829
+    }
+  },
+  "target_tokens_by_split": {
+    "train": {
+      "count": 171,
+      "p50": 67,
+      "p90": 618,
+      "p95": 643,
+      "p99": 664,
+      "max": 665
+    },
+    "validation": {
+      "count": 24,
+      "p50": 64,
+      "p90": 155,
+      "p95": 187,
+      "p99": 189,
+      "max": 189
+    },
+    "test": {
+      "count": 37,
+      "p50": 52,
+      "p90": 604,
+      "p95": 605,
+      "p99": 607,
+      "max": 607
+    },
+    "hard_test": {
+      "count": 12,
+      "p50": 148,
+      "p90": 565,
+      "p95": 565,
+      "p99": 565,
+      "max": 565
+    }
+  },
+  "total_tokens_by_output_type": {
+    "answer": {
+      "count": 77,
+      "p50": 777,
+      "p90": 889,
+      "p95": 896,
+      "p99": 903,
+      "max": 907
+    },
+    "clarification": {
+      "count": 69,
+      "p50": 782,
+      "p90": 1075,
+      "p95": 1277,
+      "p99": 1281,
+      "max": 1286
+    },
+    "proposal": {
+      "count": 60,
+      "p50": 1402,
+      "p90": 1443,
+      "p95": 1547,
+      "p99": 1551,
+      "max": 1555
+    },
+    "tool_call": {
+      "count": 32,
+      "p50": 802,
+      "p90": 1120,
+      "p95": 1123,
+      "p99": 1123,
+      "max": 1123
+    },
+    "unsupported": {
+      "count": 6,
+      "p50": 754,
+      "p90": 760,
+      "p95": 761,
+      "p99": 762,
+      "max": 762
+    }
+  },
+  "input_tokens_by_output_type": {
+    "answer": {
+      "count": 77,
+      "p50": 721,
+      "p90": 822,
+      "p95": 837,
+      "p99": 844,
+      "max": 848
+    },
+    "clarification": {
+      "count": 69,
+      "p50": 712,
+      "p90": 829,
+      "p95": 1041,
+      "p99": 1045,
+      "max": 1050
+    },
+    "proposal": {
+      "count": 60,
+      "p50": 786,
+      "p90": 839,
+      "p95": 941,
+      "p99": 948,
+      "max": 952
+    },
+    "tool_call": {
+      "count": 32,
+      "p50": 716,
+      "p90": 971,
+      "p95": 974,
+      "p99": 974,
+      "max": 974
+    },
+    "unsupported": {
+      "count": 6,
+      "p50": 704,
+      "p90": 710,
+      "p95": 711,
+      "p99": 712,
+      "max": 712
+    }
+  },
+  "target_tokens_by_output_type": {
+    "answer": {
+      "count": 77,
+      "p50": 56,
+      "p90": 82,
+      "p95": 82,
+      "p99": 83,
+      "max": 83
+    },
+    "clarification": {
+      "count": 69,
+      "p50": 59,
+      "p90": 238,
+      "p95": 263,
+      "p99": 275,
+      "max": 275
+    },
+    "proposal": {
+      "count": 60,
+      "p50": 603,
+      "p90": 662,
+      "p95": 663,
+      "p99": 665,
+      "max": 665
+    },
+    "tool_call": {
+      "count": 32,
+      "p50": 71,
+      "p90": 151,
+      "p95": 151,
+      "p99": 151,
+      "max": 151
+    },
+    "unsupported": {
+      "count": 6,
+      "p50": 50,
+      "p90": 50,
+      "p95": 50,
+      "p99": 50,
+      "max": 50
+    }
+  },
+  "max_total_tokens": 1555,
+  "cutoff_candidates": [
+    2048
+  ],
+  "cutoff_2048_fits_all": true,
+  "excluded_unassigned": 6,
+  "excluded_fin002": 0,
+  "frozen_hashes": {
+    "samples.json": "768916c8781dc2608ac8220588a0e85ffc043d8f16a45e9bd3497b87a214e562",
+    "scenarios.json": "b4ba7f406f017cd28c7c6885827717ae246b8f4dfb794a76fe00db5f9db59815",
+    "split_assignment.json": "e3e1599673b3227edeaad3bc62f04e0f3249dd886946f502664428939d8d3765",
+    "dataset_manifest.json": "7f8cc2ef70d1abedd49ea040826d93f4c3708a8cb5893e7e1fedcc488e2c2252"
+  },
+  "source_code_evidence": {
+    "sharegpt_converter": "LLaMA-Factory/src/llamafactory/data/converter.py:SharegptDatasetConverter",
+    "supervised_loss_mask": "LLaMA-Factory/src/llamafactory/data/processor/supervised.py:SupervisedDatasetProcessor._encode_data_example",
+    "qwen_template": "LLaMA-Factory/src/llamafactory/data/template.py:qwen3_5_nothink"
+  },
+  "qlora_config_unique_variable_check": {
+    "equivalent_after_path_replacement": true,
+    "permitted_path_changes": [
+      "dataset_dir",
+      "output_dir"
+    ],
+    "training_parameters_changed": 0
+  },
+  "counts": {
+    "train": 171,
+    "validation": 24,
+    "test": 37,
+    "hard_test": 12
+  },
+  "llamafactory_loader_rows": 244
+}
