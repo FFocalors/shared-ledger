@@ -1,0 +1,37 @@
+{
+  "status": "V0_3_AI_GATEWAY_BOUNDARY_PROTOTYPE_READY",
+  "unit_tests": {
+    "command": "python -m unittest scripts.ai_gateway_boundary_prototype.test_gateway -v",
+    "passed": 16,
+    "failed": 0
+  },
+  "old_fixture_integration": {
+    "fixture_vectors": 15,
+    "decisions": {
+      "deny": 12,
+      "read_noop": 1,
+      "noop_recorded": 2
+    },
+    "rpc_invocations": 0,
+    "by_phase": {
+      "model_l1_create_expense_valid_with_user_claim": 1,
+      "model_l2_void_transfer_valid_with_untrusted_external_claim": 1,
+      "model_output_extra_origin_confirmed_fields_common_reject": 1,
+      "model_output_valid_shape_cannot_use_untrusted_simulator_event": 1,
+      "model_read_get_debt_schema_scope_allowlisted": 1,
+      "trusted_ui_exact_current_operation": 2,
+      "unregistered_legacy_confirmation_attempt_rejected": 1,
+      "trusted_ui_cap_then_current_financial_version_changes": 1,
+      "fake_authority_entity_resolution_rejects_fixture_mismatch": 1,
+      "trusted_ui_cap_then_server_plan_payload_changes": 1,
+      "trusted_ui_cap_then_current_session_binding_changes": 1,
+      "frozen_d4_scope_rejects_before_confirmation": 1,
+      "trusted_ui_cap_then_server_plan_tool_intent_changes": 1,
+      "server_session_setup_rejects_missing_binding": 1
+    }
+  },
+  "frozen_and_prior_fixture_sources_unchanged": true,
+  "git_diff_check": "passed",
+  "model_training_or_inference": false,
+  "network_database_or_financial_rpc": false
+}

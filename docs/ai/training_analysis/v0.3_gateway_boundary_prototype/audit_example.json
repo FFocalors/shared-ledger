@@ -1,0 +1,45 @@
+{
+  "classification": "synthetic_noop_audit_example",
+  "events": [
+    {
+      "seq": 1,
+      "event": "session_open",
+      "decision": "allow",
+      "reason": null,
+      "source": "server_session_registry",
+      "binding_digest": "598b1cfe0b04ef312d54bf1bf4fe381df75047b43e32ba0cab19e9ef6de5331b"
+    },
+    {
+      "seq": 2,
+      "event": "proposal_stage",
+      "decision": "unconfirmed",
+      "reason": null,
+      "source": "gateway_registry",
+      "intent_id": "create_expense",
+      "tool": "create_expense",
+      "operation_digest": "6c7f78886803b1fd460e519610f22b4d041d7131309b77d5ad0363ca9645b66f",
+      "binding_digest": "598b1cfe0b04ef312d54bf1bf4fe381df75047b43e32ba0cab19e9ef6de5331b"
+    },
+    {
+      "seq": 3,
+      "event": "ui_confirmation",
+      "decision": "capability_issued",
+      "reason": null,
+      "source": "trusted_ui_callback",
+      "operation_digest": "6c7f78886803b1fd460e519610f22b4d041d7131309b77d5ad0363ca9645b66f",
+      "binding_digest": "598b1cfe0b04ef312d54bf1bf4fe381df75047b43e32ba0cab19e9ef6de5331b"
+    },
+    {
+      "seq": 4,
+      "event": "write_dispatch",
+      "decision": "noop_recorded",
+      "reason": null,
+      "source": "gateway_trusted_ui_capability",
+      "intent_id": "create_expense",
+      "tool": "create_expense",
+      "operation_digest": "6c7f78886803b1fd460e519610f22b4d041d7131309b77d5ad0363ca9645b66f",
+      "binding_digest": "598b1cfe0b04ef312d54bf1bf4fe381df75047b43e32ba0cab19e9ef6de5331b",
+      "rpc_invoked": false
+    }
+  ]
+}

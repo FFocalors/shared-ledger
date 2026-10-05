@@ -1,0 +1,771 @@
+{
+  "v1_cp33": {
+    "rows": 24,
+    "strict_json_rows": 24,
+    "extractable_json_rows": 24,
+    "schema_valid_rows": 13,
+    "type_correct_rows": 21,
+    "business_structure_match_rows": 11,
+    "field_facts_correct": 59,
+    "field_facts_total": 114,
+    "key_facts_correct": 57,
+    "key_facts_total": 90,
+    "unsafe_rows_counted_once": 11,
+    "overlapping_safety_flag_counts_not_rows": {
+      "intent_tool_call_not_enabled": 6,
+      "model_output_schema_invalid": 11,
+      "tool_not_mapped_to_intent": 6
+    },
+    "by_expected_output_type_for_raw_evaluator_reporting_only": {
+      "answer": {
+        "rows": 12,
+        "schema_valid": 11,
+        "type_correct": 12,
+        "business_structure_match": 11,
+        "unsafe_rows": 1,
+        "field_facts_correct": 28,
+        "field_facts_total": 30,
+        "key_facts_correct": 28,
+        "key_facts_total": 30
+      },
+      "clarification": {
+        "rows": 3,
+        "schema_valid": 2,
+        "type_correct": 3,
+        "business_structure_match": 0,
+        "unsafe_rows": 1,
+        "field_facts_correct": 10,
+        "field_facts_total": 12,
+        "key_facts_correct": 8,
+        "key_facts_total": 9
+      },
+      "proposal": {
+        "rows": 3,
+        "schema_valid": 0,
+        "type_correct": 0,
+        "business_structure_match": 0,
+        "unsafe_rows": 3,
+        "field_facts_correct": 3,
+        "field_facts_total": 48,
+        "key_facts_correct": 3,
+        "key_facts_total": 27
+      },
+      "tool_call": {
+        "rows": 6,
+        "schema_valid": 0,
+        "type_correct": 6,
+        "business_structure_match": 0,
+        "unsafe_rows": 6,
+        "field_facts_correct": 18,
+        "field_facts_total": 24,
+        "key_facts_correct": 18,
+        "key_facts_total": 24
+      }
+    },
+    "source_evaluator_results_preserved": true
+  },
+  "A_cp36": {
+    "rows": 24,
+    "strict_json_rows": 24,
+    "extractable_json_rows": 24,
+    "schema_valid_rows": 16,
+    "type_correct_rows": 21,
+    "business_structure_match_rows": 13,
+    "field_facts_correct": 62,
+    "field_facts_total": 114,
+    "key_facts_correct": 59,
+    "key_facts_total": 90,
+    "unsafe_rows_counted_once": 8,
+    "overlapping_safety_flag_counts_not_rows": {
+      "intent_tool_call_not_enabled": 6,
+      "model_output_schema_invalid": 8,
+      "tool_not_mapped_to_intent": 6,
+      "write_tool_call_instead_of_ground_truth_response": 1
+    },
+    "by_expected_output_type_for_raw_evaluator_reporting_only": {
+      "answer": {
+        "rows": 12,
+        "schema_valid": 12,
+        "type_correct": 12,
+        "business_structure_match": 12,
+        "unsafe_rows": 0,
+        "field_facts_correct": 30,
+        "field_facts_total": 30,
+        "key_facts_correct": 30,
+        "key_facts_total": 30
+      },
+      "clarification": {
+        "rows": 3,
+        "schema_valid": 2,
+        "type_correct": 3,
+        "business_structure_match": 1,
+        "unsafe_rows": 1,
+        "field_facts_correct": 11,
+        "field_facts_total": 12,
+        "key_facts_correct": 8,
+        "key_facts_total": 9
+      },
+      "proposal": {
+        "rows": 3,
+        "schema_valid": 2,
+        "type_correct": 0,
+        "business_structure_match": 0,
+        "unsafe_rows": 1,
+        "field_facts_correct": 3,
+        "field_facts_total": 48,
+        "key_facts_correct": 3,
+        "key_facts_total": 27
+      },
+      "tool_call": {
+        "rows": 6,
+        "schema_valid": 0,
+        "type_correct": 6,
+        "business_structure_match": 0,
+        "unsafe_rows": 6,
+        "field_facts_correct": 18,
+        "field_facts_total": 24,
+        "key_facts_correct": 18,
+        "key_facts_total": 24
+      }
+    },
+    "source_evaluator_results_preserved": true
+  },
+  "C_cp33": {
+    "rows": 24,
+    "strict_json_rows": 24,
+    "extractable_json_rows": 24,
+    "schema_valid_rows": 14,
+    "type_correct_rows": 20,
+    "business_structure_match_rows": 12,
+    "field_facts_correct": 64,
+    "field_facts_total": 114,
+    "key_facts_correct": 61,
+    "key_facts_total": 90,
+    "unsafe_rows_counted_once": 10,
+    "overlapping_safety_flag_counts_not_rows": {
+      "intent_tool_call_not_enabled": 2,
+      "model_output_schema_invalid": 10,
+      "tool_not_mapped_to_intent": 2,
+      "write_tool_call_instead_of_ground_truth_response": 1
+    },
+    "by_expected_output_type_for_raw_evaluator_reporting_only": {
+      "answer": {
+        "rows": 12,
+        "schema_valid": 11,
+        "type_correct": 11,
+        "business_structure_match": 11,
+        "unsafe_rows": 1,
+        "field_facts_correct": 29,
+        "field_facts_total": 30,
+        "key_facts_correct": 29,
+        "key_facts_total": 30
+      },
+      "clarification": {
+        "rows": 3,
+        "schema_valid": 3,
+        "type_correct": 3,
+        "business_structure_match": 1,
+        "unsafe_rows": 0,
+        "field_facts_correct": 12,
+        "field_facts_total": 12,
+        "key_facts_correct": 9,
+        "key_facts_total": 9
+      },
+      "proposal": {
+        "rows": 3,
+        "schema_valid": 0,
+        "type_correct": 0,
+        "business_structure_match": 0,
+        "unsafe_rows": 3,
+        "field_facts_correct": 2,
+        "field_facts_total": 48,
+        "key_facts_correct": 2,
+        "key_facts_total": 27
+      },
+      "tool_call": {
+        "rows": 6,
+        "schema_valid": 0,
+        "type_correct": 6,
+        "business_structure_match": 0,
+        "unsafe_rows": 6,
+        "field_facts_correct": 21,
+        "field_facts_total": 24,
+        "key_facts_correct": 21,
+        "key_facts_total": 24
+      }
+    },
+    "source_evaluator_results_preserved": true
+  },
+  "all_72": {
+    "rows": 72,
+    "strict_json_rows": 72,
+    "extractable_json_rows": 72,
+    "schema_valid_rows": 43,
+    "type_correct_rows": 62,
+    "business_structure_match_rows": 36,
+    "field_facts_correct": 185,
+    "field_facts_total": 342,
+    "key_facts_correct": 177,
+    "key_facts_total": 270,
+    "unsafe_rows_counted_once": 29,
+    "overlapping_safety_flag_counts_not_rows": {
+      "intent_tool_call_not_enabled": 14,
+      "model_output_schema_invalid": 29,
+      "tool_not_mapped_to_intent": 14,
+      "write_tool_call_instead_of_ground_truth_response": 2
+    },
+    "by_expected_output_type_for_raw_evaluator_reporting_only": {
+      "answer": {
+        "rows": 36,
+        "schema_valid": 34,
+        "type_correct": 35,
+        "business_structure_match": 34,
+        "unsafe_rows": 2,
+        "field_facts_correct": 87,
+        "field_facts_total": 90,
+        "key_facts_correct": 87,
+        "key_facts_total": 90
+      },
+      "clarification": {
+        "rows": 9,
+        "schema_valid": 7,
+        "type_correct": 9,
+        "business_structure_match": 2,
+        "unsafe_rows": 2,
+        "field_facts_correct": 33,
+        "field_facts_total": 36,
+        "key_facts_correct": 25,
+        "key_facts_total": 27
+      },
+      "proposal": {
+        "rows": 9,
+        "schema_valid": 2,
+        "type_correct": 0,
+        "business_structure_match": 0,
+        "unsafe_rows": 7,
+        "field_facts_correct": 8,
+        "field_facts_total": 144,
+        "key_facts_correct": 8,
+        "key_facts_total": 81
+      },
+      "tool_call": {
+        "rows": 18,
+        "schema_valid": 0,
+        "type_correct": 18,
+        "business_structure_match": 0,
+        "unsafe_rows": 18,
+        "field_facts_correct": 57,
+        "field_facts_total": 72,
+        "key_facts_correct": 57,
+        "key_facts_total": 72
+      }
+    },
+    "source_evaluator_results_preserved": true
+  },
+  "source_official_evaluator_summaries_full_verbatim_json": {
+    "v1_cp33": {
+      "path": "D:\\AI\\runs\\shared-ledger\\training_runs\\qlora-v0.1\\20260930-143013\\eval\\checkpoint-33-validation\\report.json",
+      "sha256": "d66a21393a71debaf2d74710445b96da5b837cef406c38ae0230935947178e56",
+      "summary": {
+        "records": 24,
+        "raw_json_rate": {
+          "count": 24,
+          "total": 24,
+          "rate": 1.0
+        },
+        "extractable_json_rate": {
+          "count": 24,
+          "total": 24,
+          "rate": 1.0
+        },
+        "exact_model_output_rate": {
+          "count": 0,
+          "total": 24,
+          "rate": 0.0
+        },
+        "normalized_json_structural_rate": {
+          "count": 0,
+          "total": 24,
+          "rate": 0.0
+        },
+        "schema_valid_rate": {
+          "count": 13,
+          "total": 24,
+          "rate": 0.5416666666666666
+        },
+        "type_accuracy": {
+          "count": 21,
+          "total": 24,
+          "rate": 0.875
+        },
+        "normalized_business_structure_accuracy": {
+          "count": 11,
+          "total": 24,
+          "rate": 0.4583333333333333
+        },
+        "field_fact_accuracy": {
+          "correct": 59,
+          "total": 114,
+          "rate": 0.5175438596491229
+        },
+        "contract_safe_rate": {
+          "count": 13,
+          "total": 24,
+          "rate": 0.5416666666666666
+        },
+        "duplicate_json_key_records": 0,
+        "safety_violation_counts": {
+          "intent_tool_call_not_enabled": 6,
+          "model_output_schema_invalid": 11,
+          "tool_not_mapped_to_intent": 6
+        },
+        "key_fact_accuracy": {
+          "correct": 57,
+          "total": 90,
+          "rate": 0.6333333333333333
+        },
+        "grouped": {
+          "split": {
+            "validation": {
+              "count": 24,
+              "schema_valid": 13,
+              "type_correct": 21,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 11,
+              "contract_unsafe": 11,
+              "extractable_json": 24
+            }
+          },
+          "output_type": {
+            "answer": {
+              "count": 12,
+              "schema_valid": 11,
+              "type_correct": 12,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 11,
+              "contract_unsafe": 1,
+              "extractable_json": 12
+            },
+            "clarification": {
+              "count": 3,
+              "schema_valid": 2,
+              "type_correct": 3,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 0,
+              "contract_unsafe": 1,
+              "extractable_json": 3
+            },
+            "proposal": {
+              "count": 3,
+              "schema_valid": 0,
+              "type_correct": 0,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 0,
+              "contract_unsafe": 3,
+              "extractable_json": 3
+            },
+            "tool_call": {
+              "count": 6,
+              "schema_valid": 0,
+              "type_correct": 6,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 0,
+              "contract_unsafe": 6,
+              "extractable_json": 6
+            }
+          },
+          "difficulty": {
+            "easy": {
+              "count": 6,
+              "schema_valid": 6,
+              "type_correct": 6,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 6,
+              "contract_unsafe": 0,
+              "extractable_json": 6
+            },
+            "hard": {
+              "count": 6,
+              "schema_valid": 5,
+              "type_correct": 6,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 5,
+              "contract_unsafe": 1,
+              "extractable_json": 6
+            },
+            "normal": {
+              "count": 12,
+              "schema_valid": 2,
+              "type_correct": 9,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 0,
+              "contract_unsafe": 10,
+              "extractable_json": 12
+            }
+          }
+        },
+        "type_confusion": {
+          "clarification": {
+            "clarification": 3
+          },
+          "tool_call": {
+            "tool_call": 6
+          },
+          "answer": {
+            "answer": 12
+          },
+          "proposal": {
+            "clarification": 3
+          }
+        },
+        "automated_metric_limitations": "Answer/summary/question/reason wording is not judged as semantically equivalent by string similarity. Clarification compares reason, missing_fields and candidates but not literal question text. Proposal compares tool arguments, kind, complete diff, confirmation and execution policy, but not summary wording. Results identify candidates for review and are not human business approval."
+      }
+    },
+    "A_cp36": {
+      "path": "D:\\AI\\runs\\shared-ledger\\training_runs\\qlora-v0.2-experiment-a-only\\20261002-0859\\eval\\checkpoint-36-validation\\report.json",
+      "sha256": "372711459c95ec6750272703ad0b92e19331ab21c6195ab775e185c8a9ae8e45",
+      "summary": {
+        "records": 24,
+        "raw_json_rate": {
+          "count": 24,
+          "total": 24,
+          "rate": 1.0
+        },
+        "extractable_json_rate": {
+          "count": 24,
+          "total": 24,
+          "rate": 1.0
+        },
+        "exact_model_output_rate": {
+          "count": 0,
+          "total": 24,
+          "rate": 0.0
+        },
+        "normalized_json_structural_rate": {
+          "count": 0,
+          "total": 24,
+          "rate": 0.0
+        },
+        "schema_valid_rate": {
+          "count": 16,
+          "total": 24,
+          "rate": 0.6666666666666666
+        },
+        "type_accuracy": {
+          "count": 21,
+          "total": 24,
+          "rate": 0.875
+        },
+        "normalized_business_structure_accuracy": {
+          "count": 13,
+          "total": 24,
+          "rate": 0.5416666666666666
+        },
+        "field_fact_accuracy": {
+          "correct": 62,
+          "total": 114,
+          "rate": 0.543859649122807
+        },
+        "contract_safe_rate": {
+          "count": 16,
+          "total": 24,
+          "rate": 0.6666666666666666
+        },
+        "duplicate_json_key_records": 0,
+        "safety_violation_counts": {
+          "intent_tool_call_not_enabled": 6,
+          "model_output_schema_invalid": 8,
+          "tool_not_mapped_to_intent": 6,
+          "write_tool_call_instead_of_ground_truth_response": 1
+        },
+        "key_fact_accuracy": {
+          "correct": 59,
+          "total": 90,
+          "rate": 0.6555555555555556
+        },
+        "grouped": {
+          "split": {
+            "validation": {
+              "count": 24,
+              "schema_valid": 16,
+              "type_correct": 21,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 13,
+              "contract_unsafe": 8,
+              "extractable_json": 24
+            }
+          },
+          "output_type": {
+            "answer": {
+              "count": 12,
+              "schema_valid": 12,
+              "type_correct": 12,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 12,
+              "contract_unsafe": 0,
+              "extractable_json": 12
+            },
+            "clarification": {
+              "count": 3,
+              "schema_valid": 2,
+              "type_correct": 3,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 1,
+              "contract_unsafe": 1,
+              "extractable_json": 3
+            },
+            "proposal": {
+              "count": 3,
+              "schema_valid": 2,
+              "type_correct": 0,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 0,
+              "contract_unsafe": 1,
+              "extractable_json": 3
+            },
+            "tool_call": {
+              "count": 6,
+              "schema_valid": 0,
+              "type_correct": 6,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 0,
+              "contract_unsafe": 6,
+              "extractable_json": 6
+            }
+          },
+          "difficulty": {
+            "easy": {
+              "count": 6,
+              "schema_valid": 6,
+              "type_correct": 6,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 6,
+              "contract_unsafe": 0,
+              "extractable_json": 6
+            },
+            "hard": {
+              "count": 6,
+              "schema_valid": 6,
+              "type_correct": 6,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 6,
+              "contract_unsafe": 0,
+              "extractable_json": 6
+            },
+            "normal": {
+              "count": 12,
+              "schema_valid": 4,
+              "type_correct": 9,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 1,
+              "contract_unsafe": 8,
+              "extractable_json": 12
+            }
+          }
+        },
+        "type_confusion": {
+          "clarification": {
+            "clarification": 3
+          },
+          "tool_call": {
+            "tool_call": 6
+          },
+          "answer": {
+            "answer": 12
+          },
+          "proposal": {
+            "tool_call": 1,
+            "clarification": 2
+          }
+        },
+        "automated_metric_limitations": "Answer/summary/question/reason wording is not judged as semantically equivalent by string similarity. Clarification compares reason, missing_fields and candidates but not literal question text. Proposal compares tool arguments, kind, complete diff, confirmation and execution policy, but not summary wording. Results identify candidates for review and are not human business approval."
+      }
+    },
+    "C_cp33": {
+      "path": "D:\\AI\\runs\\shared-ledger\\training_runs\\qlora-v0.2-experiment-c-only\\20261003-134314\\eval\\checkpoint-33-validation\\report.json",
+      "sha256": "a3552ddb4f2c28ce218d246a33a52a61f5e4cf10afe18948d4c7ccc505f7bd99",
+      "summary": {
+        "records": 24,
+        "raw_json_rate": {
+          "count": 24,
+          "total": 24,
+          "rate": 1.0
+        },
+        "extractable_json_rate": {
+          "count": 24,
+          "total": 24,
+          "rate": 1.0
+        },
+        "exact_model_output_rate": {
+          "count": 0,
+          "total": 24,
+          "rate": 0.0
+        },
+        "normalized_json_structural_rate": {
+          "count": 0,
+          "total": 24,
+          "rate": 0.0
+        },
+        "schema_valid_rate": {
+          "count": 14,
+          "total": 24,
+          "rate": 0.5833333333333334
+        },
+        "type_accuracy": {
+          "count": 20,
+          "total": 24,
+          "rate": 0.8333333333333334
+        },
+        "normalized_business_structure_accuracy": {
+          "count": 12,
+          "total": 24,
+          "rate": 0.5
+        },
+        "field_fact_accuracy": {
+          "correct": 64,
+          "total": 114,
+          "rate": 0.5614035087719298
+        },
+        "contract_safe_rate": {
+          "count": 14,
+          "total": 24,
+          "rate": 0.5833333333333334
+        },
+        "duplicate_json_key_records": 0,
+        "safety_violation_counts": {
+          "intent_tool_call_not_enabled": 2,
+          "model_output_schema_invalid": 10,
+          "tool_not_mapped_to_intent": 2,
+          "write_tool_call_instead_of_ground_truth_response": 1
+        },
+        "key_fact_accuracy": {
+          "correct": 61,
+          "total": 90,
+          "rate": 0.6777777777777778
+        },
+        "grouped": {
+          "split": {
+            "validation": {
+              "count": 24,
+              "schema_valid": 14,
+              "type_correct": 20,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 12,
+              "contract_unsafe": 10,
+              "extractable_json": 24
+            }
+          },
+          "output_type": {
+            "answer": {
+              "count": 12,
+              "schema_valid": 11,
+              "type_correct": 11,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 11,
+              "contract_unsafe": 1,
+              "extractable_json": 12
+            },
+            "clarification": {
+              "count": 3,
+              "schema_valid": 3,
+              "type_correct": 3,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 1,
+              "contract_unsafe": 0,
+              "extractable_json": 3
+            },
+            "proposal": {
+              "count": 3,
+              "schema_valid": 0,
+              "type_correct": 0,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 0,
+              "contract_unsafe": 3,
+              "extractable_json": 3
+            },
+            "tool_call": {
+              "count": 6,
+              "schema_valid": 0,
+              "type_correct": 6,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 0,
+              "contract_unsafe": 6,
+              "extractable_json": 6
+            }
+          },
+          "difficulty": {
+            "easy": {
+              "count": 6,
+              "schema_valid": 6,
+              "type_correct": 6,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 6,
+              "contract_unsafe": 0,
+              "extractable_json": 6
+            },
+            "hard": {
+              "count": 6,
+              "schema_valid": 5,
+              "type_correct": 5,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 5,
+              "contract_unsafe": 1,
+              "extractable_json": 6
+            },
+            "normal": {
+              "count": 12,
+              "schema_valid": 3,
+              "type_correct": 9,
+              "exact_model_output_match": 0,
+              "normalized_json_structural_match": 0,
+              "normalized_business_structure_match": 1,
+              "contract_unsafe": 9,
+              "extractable_json": 12
+            }
+          }
+        },
+        "type_confusion": {
+          "clarification": {
+            "clarification": 3
+          },
+          "tool_call": {
+            "tool_call": 6
+          },
+          "answer": {
+            "answer": 11,
+            "clarification": 1
+          },
+          "proposal": {
+            "unsupported": 1,
+            "clarification": 1,
+            "tool_call": 1
+          }
+        },
+        "automated_metric_limitations": "Answer/summary/question/reason wording is not judged as semantically equivalent by string similarity. Clarification compares reason, missing_fields and candidates but not literal question text. Proposal compares tool arguments, kind, complete diff, confirmation and execution policy, but not summary wording. Results identify candidates for review and are not human business approval."
+      }
+    }
+  }
+}

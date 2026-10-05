@@ -1,0 +1,27 @@
+{
+  "before": {
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\training_analysis\\v0.3_write_firewall_replay\\controls_non_training\\control_vectors.json": "42fc8deddf1fe4eed5e6e27b76fc350f445adabc945056a9879715b79730be6e",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\schema\\model_output.schema.json": "5ad944f7e1163c5b186cd4b9aea4b3ddf8c39910b9cbaf63554a7718af689bd9",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\schema\\tool_catalog.json": "e6f25251c6bdef6cd50f0ce01489adf9c0e6bb5efade5f789e847d86a7350744",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\schema\\intent_catalog.json": "5170f625130d706a4db95fa5e67ab8cc11c1d56aafc0c093692f9421d4d2e651",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\AI_MODEL_CONTRACT.md": "f6effbc7a4278d6e9b7f6a01298fc1644218be126f85d442da7d35acdf66100a",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\AI_SCOPE_FREEZE_V0.1.md": "e5808e18c7cd3eaffd446fc20bfa3eb90e1a08c17402e94dbe0c0f01600fd4fb",
+    "D:\\project\\Android\\shared-ledger\\scripts\\ai_training_evaluation\\evaluate_generation.py": "30c021a3e4fadbfbe03a079f8c59ad9180a7e7a2662e094c154b147f0f42d9fe",
+    "D:\\project\\Android\\shared-ledger\\scripts\\ai_write_firewall_replay\\replay.py": "50e84964f18132d3a19087fa4954452adebd5cf411479fd48154d35d39e02fe0",
+    "D:\\project\\Android\\shared-ledger\\scripts\\ai_write_firewall_replay\\test_replay.py": "ed0921e2c5e2173d635dbb467f6bc5a70ce92538582d61eabbd8ff37a0ff874b",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\training_analysis\\v0.2_synthesis\\ARCHITECTURE_REVIEW.md": "2eaa307d0fcf6d3c49a2ff9af23d885ba8ef5d13daee386350317ecdb2c7b219"
+  },
+  "after": {
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\training_analysis\\v0.3_write_firewall_replay\\controls_non_training\\control_vectors.json": "42fc8deddf1fe4eed5e6e27b76fc350f445adabc945056a9879715b79730be6e",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\schema\\model_output.schema.json": "5ad944f7e1163c5b186cd4b9aea4b3ddf8c39910b9cbaf63554a7718af689bd9",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\schema\\tool_catalog.json": "e6f25251c6bdef6cd50f0ce01489adf9c0e6bb5efade5f789e847d86a7350744",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\schema\\intent_catalog.json": "5170f625130d706a4db95fa5e67ab8cc11c1d56aafc0c093692f9421d4d2e651",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\AI_MODEL_CONTRACT.md": "f6effbc7a4278d6e9b7f6a01298fc1644218be126f85d442da7d35acdf66100a",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\AI_SCOPE_FREEZE_V0.1.md": "e5808e18c7cd3eaffd446fc20bfa3eb90e1a08c17402e94dbe0c0f01600fd4fb",
+    "D:\\project\\Android\\shared-ledger\\scripts\\ai_training_evaluation\\evaluate_generation.py": "30c021a3e4fadbfbe03a079f8c59ad9180a7e7a2662e094c154b147f0f42d9fe",
+    "D:\\project\\Android\\shared-ledger\\scripts\\ai_write_firewall_replay\\replay.py": "50e84964f18132d3a19087fa4954452adebd5cf411479fd48154d35d39e02fe0",
+    "D:\\project\\Android\\shared-ledger\\scripts\\ai_write_firewall_replay\\test_replay.py": "ed0921e2c5e2173d635dbb467f6bc5a70ce92538582d61eabbd8ff37a0ff874b",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\training_analysis\\v0.2_synthesis\\ARCHITECTURE_REVIEW.md": "2eaa307d0fcf6d3c49a2ff9af23d885ba8ef5d13daee386350317ecdb2c7b219"
+  },
+  "unchanged": true
+}

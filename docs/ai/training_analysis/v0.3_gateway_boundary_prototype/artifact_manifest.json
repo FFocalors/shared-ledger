@@ -1,0 +1,44 @@
+{
+  "status": "V0_3_AI_GATEWAY_BOUNDARY_PROTOTYPE_READY",
+  "frozen_and_prior_fixture_sources_unchanged": true,
+  "source_hashes_before": {
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\training_analysis\\v0.3_write_firewall_replay\\controls_non_training\\control_vectors.json": "42fc8deddf1fe4eed5e6e27b76fc350f445adabc945056a9879715b79730be6e",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\schema\\model_output.schema.json": "5ad944f7e1163c5b186cd4b9aea4b3ddf8c39910b9cbaf63554a7718af689bd9",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\schema\\tool_catalog.json": "e6f25251c6bdef6cd50f0ce01489adf9c0e6bb5efade5f789e847d86a7350744",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\schema\\intent_catalog.json": "5170f625130d706a4db95fa5e67ab8cc11c1d56aafc0c093692f9421d4d2e651",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\AI_MODEL_CONTRACT.md": "f6effbc7a4278d6e9b7f6a01298fc1644218be126f85d442da7d35acdf66100a",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\AI_SCOPE_FREEZE_V0.1.md": "e5808e18c7cd3eaffd446fc20bfa3eb90e1a08c17402e94dbe0c0f01600fd4fb",
+    "D:\\project\\Android\\shared-ledger\\scripts\\ai_training_evaluation\\evaluate_generation.py": "30c021a3e4fadbfbe03a079f8c59ad9180a7e7a2662e094c154b147f0f42d9fe",
+    "D:\\project\\Android\\shared-ledger\\scripts\\ai_write_firewall_replay\\replay.py": "50e84964f18132d3a19087fa4954452adebd5cf411479fd48154d35d39e02fe0",
+    "D:\\project\\Android\\shared-ledger\\scripts\\ai_write_firewall_replay\\test_replay.py": "ed0921e2c5e2173d635dbb467f6bc5a70ce92538582d61eabbd8ff37a0ff874b",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\training_analysis\\v0.2_synthesis\\ARCHITECTURE_REVIEW.md": "2eaa307d0fcf6d3c49a2ff9af23d885ba8ef5d13daee386350317ecdb2c7b219"
+  },
+  "source_hashes_after": {
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\training_analysis\\v0.3_write_firewall_replay\\controls_non_training\\control_vectors.json": "42fc8deddf1fe4eed5e6e27b76fc350f445adabc945056a9879715b79730be6e",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\schema\\model_output.schema.json": "5ad944f7e1163c5b186cd4b9aea4b3ddf8c39910b9cbaf63554a7718af689bd9",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\schema\\tool_catalog.json": "e6f25251c6bdef6cd50f0ce01489adf9c0e6bb5efade5f789e847d86a7350744",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\schema\\intent_catalog.json": "5170f625130d706a4db95fa5e67ab8cc11c1d56aafc0c093692f9421d4d2e651",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\AI_MODEL_CONTRACT.md": "f6effbc7a4278d6e9b7f6a01298fc1644218be126f85d442da7d35acdf66100a",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\AI_SCOPE_FREEZE_V0.1.md": "e5808e18c7cd3eaffd446fc20bfa3eb90e1a08c17402e94dbe0c0f01600fd4fb",
+    "D:\\project\\Android\\shared-ledger\\scripts\\ai_training_evaluation\\evaluate_generation.py": "30c021a3e4fadbfbe03a079f8c59ad9180a7e7a2662e094c154b147f0f42d9fe",
+    "D:\\project\\Android\\shared-ledger\\scripts\\ai_write_firewall_replay\\replay.py": "50e84964f18132d3a19087fa4954452adebd5cf411479fd48154d35d39e02fe0",
+    "D:\\project\\Android\\shared-ledger\\scripts\\ai_write_firewall_replay\\test_replay.py": "ed0921e2c5e2173d635dbb467f6bc5a70ce92538582d61eabbd8ff37a0ff874b",
+    "D:\\project\\Android\\shared-ledger\\docs\\ai\\training_analysis\\v0.2_synthesis\\ARCHITECTURE_REVIEW.md": "2eaa307d0fcf6d3c49a2ff9af23d885ba8ef5d13daee386350317ecdb2c7b219"
+  },
+  "artifact_sha256": {
+    "scripts/ai_gateway_boundary_prototype/gateway.py": "e4a12745e20df97b6bf7f1301f6c5f88b421ea3f770c53a90bd67fec5aa2f00a",
+    "scripts/ai_gateway_boundary_prototype/test_gateway.py": "9acaea6b69fe601edcd969a5a92c290938a488a86ac61f5c62366d4a1b337e47",
+    "scripts/ai_gateway_boundary_prototype/run_controls.py": "d2014c9deca7bfcdc98ebde1020790a82df6603bc5bed438cde4c7ad121f14f6",
+    "docs/ai/training_analysis/v0.3_gateway_boundary_prototype/README.md": "2d19195b37008782daab48cfc1164f25555b352c8320ec79f66e3c077f625684",
+    "docs/ai/training_analysis/v0.3_gateway_boundary_prototype/control_replay.json": "7d1924cad413624ea8d608614bef0fb7d307b2ecc5e91922f304be4f855e9f9d",
+    "docs/ai/training_analysis/v0.3_gateway_boundary_prototype/source_hashes.json": "e9cf5a1515df88b34c4f53ddd0d44f45193164ebc66d7c2fb589047d027e2777",
+    "docs/ai/training_analysis/v0.3_gateway_boundary_prototype/audit_example.json": "47758190607e378678c71d42d9fa518f74aeda5a599a71ebb155ee20d3ce2fd0",
+    "docs/ai/training_analysis/v0.3_gateway_boundary_prototype/verification_report.json": "7295c8b127dd45a338fc738b8a9d32c1704d50efc9a8630c26b3eec909b5cac3"
+  },
+  "control_fixture_vectors": 15,
+  "passing_tests": 16,
+  "actual_rpc_invocations": 0,
+  "no_model_training_or_inference": true,
+  "no_database_or_network": true,
+  "limitations": "Python identity objects and private callbacks protect against model/untrusted JSON inputs, not arbitrary hostile same-process Python code; FakeAuthority/FakeNoopAdapter are test doubles."
+}
