@@ -115,6 +115,18 @@ enum class FundRecordFilter(val label: String, val type: FundRecordType?) {
     REFUND("退款", FundRecordType.REFUND),
 }
 
+private val prepaymentFilters = setOf(
+    FundRecordFilter.PREPAYMENT,
+    FundRecordFilter.PREPAYMENT_RETURN,
+    FundRecordFilter.AUTO_PREPAYMENT_USAGE,
+)
+
+internal fun visibleFundRecordFilters(prepaymentEnabled: Boolean): List<FundRecordFilter> =
+    FundRecordFilter.entries.filter { prepaymentEnabled || it !in prepaymentFilters }
+
+internal fun effectiveFundRecordFilter(selected: FundRecordFilter, prepaymentEnabled: Boolean): FundRecordFilter =
+    selected.takeIf { prepaymentEnabled || it !in prepaymentFilters } ?: FundRecordFilter.ALL
+
 @Immutable
 sealed interface FundRecordsUiState {
     data object Loading : FundRecordsUiState
@@ -129,6 +141,7 @@ fun FundRecordsScreen(
     ledgerUnitId: String? = null,
     externalRefreshToken: Long = 0L,
     financialViewModel: FinancialReadViewModel? = null,
+    prepaymentEnabled: Boolean = false,
     repository: FinancialRecordRepository = remember { FinancialRecordRepositoryFactory.create() },
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
@@ -136,17 +149,21 @@ fun FundRecordsScreen(
     onPrepayment: (() -> Unit)? = null,
     onPrepaymentReturn: (() -> Unit)? = null,
 ) {
-    var selectedFilter by remember { mutableStateOf(FundRecordFilter.ALL) }
+    var selectedFilter by remember(activityId) { mutableStateOf(FundRecordFilter.ALL) }
+    val effectiveFilter = effectiveFundRecordFilter(selectedFilter, prepaymentEnabled)
+    LaunchedEffect(effectiveFilter) {
+        if (selectedFilter != effectiveFilter) selectedFilter = effectiveFilter
+    }
     var sortOrder by remember(activityId) { mutableStateOf(FundRecordSortOrder.NEWEST_FIRST) }
     var uiState by remember { mutableStateOf<FundRecordsUiState>(FundRecordsUiState.Loading) }
     var refreshToken by remember { mutableIntStateOf(0) }
     val financialState = financialViewModel?.let { it.recordsState(activityId).collectAsState().value }
-    LaunchedEffect(activityId, financialViewModel, selectedFilter, refreshToken, externalRefreshToken) {
+    LaunchedEffect(activityId, financialViewModel, effectiveFilter, refreshToken, externalRefreshToken) {
         if (financialViewModel != null) {
             financialViewModel.loadRecords(activityId, force = refreshToken > 0 || externalRefreshToken > 0)
         } else {
             uiState = FundRecordsUiState.Loading
-            uiState = when (val result = repository.list(activityId, selectedFilter.type)) {
+            uiState = when (val result = repository.list(activityId, effectiveFilter.type)) {
                 is FinancialReadResult.Success -> result.value.takeIf { it.isNotEmpty() }?.let(FundRecordsUiState::Content)
                     ?: FundRecordsUiState.Empty
                 is FinancialReadResult.Failure -> FundRecordsUiState.Error(result.message)
@@ -155,7 +172,7 @@ fun FundRecordsScreen(
     }
     val resolvedUiState = financialState?.let { state ->
         when {
-            state.data != null -> state.data.filter { selectedFilter.type == null || it.type == selectedFilter.type }
+            state.data != null -> state.data.filter { effectiveFilter.type == null || it.type == effectiveFilter.type }
                 .takeIf { it.isNotEmpty() }?.let(FundRecordsUiState::Content) ?: FundRecordsUiState.Empty
             state.isLoading -> FundRecordsUiState.Loading
             state.errorMessage != null -> FundRecordsUiState.Error(state.errorMessage)
@@ -164,7 +181,7 @@ fun FundRecordsScreen(
     } ?: uiState
     FundRecordsScreen(
         uiState = resolvedUiState,
-        selectedFilter = selectedFilter,
+        selectedFilter = effectiveFilter,
         sortOrder = sortOrder,
         modifier = modifier,
         dataSourceLabel = ledgerUnitId,
@@ -176,6 +193,7 @@ fun FundRecordsScreen(
         onRecordClick = onRecordClick,
         onPrepayment = onPrepayment,
         onPrepaymentReturn = onPrepaymentReturn,
+        prepaymentEnabled = prepaymentEnabled,
     )
 }
 
@@ -194,6 +212,7 @@ fun FundRecordsScreen(
     onRecordClick: ((record: FundRecord) -> Unit)? = null,
     onPrepayment: (() -> Unit)? = null,
     onPrepaymentReturn: (() -> Unit)? = null,
+    prepaymentEnabled: Boolean = false,
 ) {
     val hazeState = rememberSharedLedgerHazeState()
     Scaffold(
@@ -231,9 +250,15 @@ fun FundRecordsScreen(
                 verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
             ) {
                 item(key = "filters") {
-                    FilterSection(selectedFilter, onFilterSelected, sortOrder, onSortOrderChanged)
+                    FilterSection(
+                        effectiveFundRecordFilter(selectedFilter, prepaymentEnabled),
+                        onFilterSelected,
+                        sortOrder,
+                        onSortOrderChanged,
+                        prepaymentEnabled,
+                    )
                 }
-                if (onPrepayment != null || onPrepaymentReturn != null) {
+                if (prepaymentEnabled && (onPrepayment != null || onPrepaymentReturn != null)) {
                     item(key = "prepayment-actions") {
                         Row(horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
                             onPrepayment?.let { callback ->
@@ -277,6 +302,7 @@ private fun FilterSection(
     onSelected: ((FundRecordFilter) -> Unit)?,
     sortOrder: FundRecordSortOrder,
     onSortOrderChanged: ((FundRecordSortOrder) -> Unit)?,
+    prepaymentEnabled: Boolean,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(top = SharedLedgerSpacing.Small),
@@ -287,7 +313,7 @@ private fun FilterSection(
             horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
             verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.XSmall),
         ) {
-            FundRecordFilter.entries.forEach { filter ->
+            visibleFundRecordFilters(prepaymentEnabled).forEach { filter ->
                 FilterPill(filter, selected == filter, onSelected)
             }
         }

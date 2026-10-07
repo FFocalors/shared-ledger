@@ -38,6 +38,28 @@ class FundRecordsScreenTest {
         assertEquals("切换为时间从新到旧", FundRecordSortOrder.OLDEST_FIRST.nextActionLabel)
     }
 
+    @Test
+    fun ordinaryAndUnknownActivitiesHidePrepaymentFiltersAndResetLegacySelection() {
+        assertEquals(
+            listOf(
+                FundRecordFilter.ALL,
+                FundRecordFilter.SETTLEMENT,
+                FundRecordFilter.FINAL_SETTLEMENT,
+                FundRecordFilter.REFUND,
+            ),
+            visibleFundRecordFilters(prepaymentEnabled = false),
+        )
+        assertEquals(
+            FundRecordFilter.ALL,
+            effectiveFundRecordFilter(FundRecordFilter.PREPAYMENT_RETURN, prepaymentEnabled = false),
+        )
+        assertEquals(
+            FundRecordFilter.PREPAYMENT,
+            effectiveFundRecordFilter(FundRecordFilter.PREPAYMENT, prepaymentEnabled = true),
+        )
+        assertEquals(FundRecordFilter.entries, visibleFundRecordFilters(prepaymentEnabled = true))
+    }
+
     private fun record(id: String, occurredAt: String) = FundRecord(
         transferId = id,
         activityId = "activity",

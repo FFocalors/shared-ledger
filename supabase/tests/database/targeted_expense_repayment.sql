@@ -42,13 +42,14 @@ values
    'authenticated','authenticated','targeted.b@example.invalid',crypt('x',gen_salt('bf')),now(),'{}','{}',now(),now());
 
 insert into public.activities(id,join_code,name,type,base_currency,multi_currency_enabled,created_by)
-values ('f7000000-0000-0000-0000-000000000001','97000002','Targeted repayment','normal','CNY',true,
+values ('f7000000-0000-0000-0000-000000000001','97000002','Targeted repayment','large','CNY',true,
         'f7100000-0000-0000-0000-000000000001');
 insert into public.activity_members(activity_id,user_id)
 values ('f7000000-0000-0000-0000-000000000001','f7100000-0000-0000-0000-000000000001'),
        ('f7000000-0000-0000-0000-000000000001','f7100000-0000-0000-0000-000000000002');
 insert into public.ledger_units(id,activity_id,name,type)
-values ('f7200000-0000-0000-0000-000000000001','f7000000-0000-0000-0000-000000000001','Main','default');
+values ('f7200000-0000-0000-0000-000000000001','f7000000-0000-0000-0000-000000000001','Root','root'),
+       ('f7200000-0000-0000-0000-000000000002','f7000000-0000-0000-0000-000000000001','Bills','sub_activity');
 insert into public.participants(id,activity_id,name,participant_order)
 values ('f7300000-0000-0000-0000-000000000001','f7000000-0000-0000-0000-000000000001','A',0),
        ('f7300000-0000-0000-0000-000000000002','f7000000-0000-0000-0000-000000000001','B',1);
@@ -70,7 +71,7 @@ select * from pg_temp.create_prepayment_fixture(
 create temporary table targeted_ids(label text primary key, object_id uuid) on commit drop;
 with x as (
   select * from pg_temp.create_expense_fixture(
-    'f7200000-0000-0000-0000-000000000001','first bill',100,'CNY',1,
+    'f7200000-0000-0000-0000-000000000002','first bill',100,'CNY',1,
     'manual'::public.expense_split_method,
     '[{"participant_id":"f7300000-0000-0000-0000-000000000002","amount":"100"}]'::jsonb,
     '[{"participant_id":"f7300000-0000-0000-0000-000000000001","amount":"100"}]'::jsonb,
@@ -80,7 +81,7 @@ with x as (
 insert into targeted_ids select 'first',expense_id from x;
 with x as (
   select * from pg_temp.create_expense_fixture(
-    'f7200000-0000-0000-0000-000000000001','second bill',80,'CNY',1,
+    'f7200000-0000-0000-0000-000000000002','second bill',80,'CNY',1,
     'manual'::public.expense_split_method,
     '[{"participant_id":"f7300000-0000-0000-0000-000000000002","amount":"80"}]'::jsonb,
     '[{"participant_id":"f7300000-0000-0000-0000-000000000001","amount":"80"}]'::jsonb,
@@ -90,7 +91,7 @@ with x as (
 insert into targeted_ids select 'second',expense_id from x;
 with x as (
   select * from pg_temp.create_expense_fixture(
-    'f7200000-0000-0000-0000-000000000001','reverse bill',30,'CNY',1,
+    'f7200000-0000-0000-0000-000000000002','reverse bill',30,'CNY',1,
     'manual'::public.expense_split_method,
     '[{"participant_id":"f7300000-0000-0000-0000-000000000001","amount":"30"}]'::jsonb,
     '[{"participant_id":"f7300000-0000-0000-0000-000000000002","amount":"30"}]'::jsonb,

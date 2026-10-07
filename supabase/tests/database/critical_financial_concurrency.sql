@@ -26,7 +26,7 @@ select extensions.dblink_exec('cm_setup', $sql$
   insert into public.activities(id,join_code,name,type,base_currency,created_by) values
     ('c3000000-0000-0000-0000-000000000101','99100101','targeted race','normal','CNY','c3900000-0000-0000-0000-000000000001'),
     ('c3000000-0000-0000-0000-000000000102','99100102','refund race','normal','CNY','c3900000-0000-0000-0000-000000000001'),
-    ('c3000000-0000-0000-0000-000000000103','99100103','return and source void race','normal','CNY','c3900000-0000-0000-0000-000000000001'),
+    ('c3000000-0000-0000-0000-000000000103','99100103','return and source void race','large','CNY','c3900000-0000-0000-0000-000000000001'),
     ('c3000000-0000-0000-0000-000000000104','99100104','final and expense race','normal','CNY','c3900000-0000-0000-0000-000000000001'),
     ('c3000000-0000-0000-0000-000000000105','99100105','void and settlement race','normal','CNY','c3900000-0000-0000-0000-000000000001');
   insert into public.activity_members(activity_id,user_id)
@@ -35,7 +35,7 @@ select extensions.dblink_exec('cm_setup', $sql$
   insert into public.ledger_units(id,activity_id,name,type) values
     ('c3100000-0000-0000-0000-000000000101','c3000000-0000-0000-0000-000000000101','targeted','default'),
     ('c3100000-0000-0000-0000-000000000102','c3000000-0000-0000-0000-000000000102','refund','default'),
-    ('c3100000-0000-0000-0000-000000000103','c3000000-0000-0000-0000-000000000103','prepayment','default'),
+    ('c3100000-0000-0000-0000-000000000103','c3000000-0000-0000-0000-000000000103','prepayment root','root'),
     ('c3100000-0000-0000-0000-000000000104','c3000000-0000-0000-0000-000000000104','final','default'),
     ('c3100000-0000-0000-0000-000000000105','c3000000-0000-0000-0000-000000000105','settlement','default');
   insert into public.participants(id,activity_id,name,participant_order) values

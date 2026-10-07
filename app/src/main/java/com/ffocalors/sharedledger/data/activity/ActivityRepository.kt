@@ -12,6 +12,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
@@ -63,7 +64,7 @@ interface ActivityRepository {
     suspend fun claimParticipant(activityId: String, participantId: String): Result<Unit>
     suspend fun unclaimParticipant(activityId: String): Result<Unit>
     suspend fun deleteParticipant(participantId: String): Result<Unit>
-    suspend fun createSubActivity(activityId: String, name: String): Result<LedgerUnit>
+    suspend fun createSubActivity(activityId: String, name: String, participantIds: List<String>): Result<LedgerUnit>
     /** Returns active units by default; pass true for management/recovery views. */
     suspend fun listLedgerUnits(activityId: String, includeDeleted: Boolean = false): Result<List<LedgerUnit>> =
         getActivity(activityId).map { detail ->
@@ -115,6 +116,9 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
             val claims = claimsDeferred.await()
             val profiles = profilesDeferred.await()
             val units = unitsDeferred.await()
+            val scopes = if (units.any { it.participantScopeConfigured }) {
+                loadSubActivityParticipantScopes(activityId)
+            } else emptyMap()
             val financialStatus = financialStatusDeferred.await()
             val members = membersRows.map { member ->
                 val claim = claims.firstOrNull { it.userId == member.userId }
@@ -143,10 +147,10 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
                         avatarStyle = claim?.userId?.let { profiles[it]?.avatarStyle },
                     )
                 }.sortedBy { it.order },
-                ledgerUnits = units.filterNot { it.isDeleted }.map(::toLedgerUnit),
+                ledgerUnits = units.filterNot { it.isDeleted }.map { toLedgerUnit(it, scopes) },
                 currentUserRole = role,
                 permissions = ActivityPermissions.forRole(role),
-                deletedLedgerUnits = units.filter { it.isDeleted }.map(::toLedgerUnit),
+                deletedLedgerUnits = units.filter { it.isDeleted }.map { toLedgerUnit(it, scopes) },
             )
         }
     }.mapFailure()
@@ -194,12 +198,16 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
         Unit
     }.mapFailure()
 
-    override suspend fun createSubActivity(activityId: String, name: String): Result<LedgerUnit> = runCatching {
+    override suspend fun createSubActivity(activityId: String, name: String, participantIds: List<String>): Result<LedgerUnit> = runCatching {
+        require(participantIds.isNotEmpty()) { "至少选择一位子活动参与人" }
+        require(participantIds.size == participantIds.distinct().size) { "子活动参与人不能重复" }
         val result = client.postgrest.rpc("create_sub_activity", buildJsonObject {
             put("activity_id", activityId)
             put("name", name.trim())
+            put("participant_ids", buildJsonArray { participantIds.forEach { add(JsonPrimitive(it)) } })
         }).decodeSingle<CreateSubActivityRpcDto>()
-        LedgerUnit(result.ledgerUnitId, activityId, result.createdName, result.createdType)
+        LedgerUnit(result.ledgerUnitId, activityId, result.createdName, result.createdType,
+            participantScopeIds = participantIds.toSet(), participantScopeConfigured = true)
     }.mapFailure()
 
     override suspend fun deleteSubActivity(subActivityId: String): Result<SubActivityLifecycleResult> =
@@ -290,6 +298,13 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
         }
     }.decodeList<LedgerUnitRowDto>()
 
+    private suspend fun loadSubActivityParticipantScopes(activityId: String): Map<String, Set<String>> =
+        client.from("sub_activity_participants").select {
+            filter { eq("activity_id", activityId) }
+        }.decodeList<SubActivityParticipantScopeRowDto>()
+            .groupBy(SubActivityParticipantScopeRowDto::ledgerUnitId)
+            .mapValues { (_, rows) -> rows.mapTo(linkedSetOf(), SubActivityParticipantScopeRowDto::participantId) }
+
     private suspend fun loadLedgerUnit(subActivityId: String): LedgerUnitRowDto? = client.from("ledger_units").select {
         filter { eq("id", subActivityId) }
     }.decodeList<LedgerUnitRowDto>().firstOrNull()
@@ -342,7 +357,7 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
         )
     }.mapFailure()
 
-    private fun toLedgerUnit(row: LedgerUnitRowDto): LedgerUnit = LedgerUnit(
+    private fun toLedgerUnit(row: LedgerUnitRowDto, scopes: Map<String, Set<String>> = emptyMap()): LedgerUnit = LedgerUnit(
         id = row.id,
         activityId = row.activityId,
         name = row.name,
@@ -351,6 +366,8 @@ class SupabaseActivityRepository(private val client: SupabaseClient) : ActivityR
         isDeleted = row.isDeleted,
         deletedAt = row.deletedAt,
         deletedBy = row.deletedBy,
+        participantScopeIds = if (row.participantScopeConfigured) scopes[row.id].orEmpty() else null,
+        participantScopeConfigured = row.participantScopeConfigured,
     )
 
     private suspend fun loadProfiles(userIds: List<String>): Map<String, ProfileRowDto> {
@@ -451,7 +468,7 @@ class UnavailableActivityRepository : ActivityRepository {
     override suspend fun claimParticipant(activityId: String, participantId: String) = unavailable<Unit>()
     override suspend fun unclaimParticipant(activityId: String) = unavailable<Unit>()
     override suspend fun deleteParticipant(participantId: String) = unavailable<Unit>()
-    override suspend fun createSubActivity(activityId: String, name: String) = unavailable<LedgerUnit>()
+    override suspend fun createSubActivity(activityId: String, name: String, participantIds: List<String>) = unavailable<LedgerUnit>()
     override suspend fun deleteSubActivity(subActivityId: String) = unavailable<SubActivityLifecycleResult>()
     override suspend fun restoreSubActivity(subActivityId: String) = unavailable<SubActivityLifecycleResult>()
     override suspend fun updateSettings(activityId: String, name: String, baseCurrency: String, multiCurrencyEnabled: Boolean) = unavailable<Unit>()

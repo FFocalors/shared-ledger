@@ -72,6 +72,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.data.expense.ExpenseSplitMethod
+import com.ffocalors.sharedledger.data.activity.LedgerUnit
 import com.ffocalors.sharedledger.data.exchange.SupportedExchangeCurrency
 import com.ffocalors.sharedledger.data.exchange.ExchangeRate
 import com.ffocalors.sharedledger.ui.components.CurrencyFlag
@@ -125,6 +126,17 @@ private val PreviewParticipants = listOf(
     ExpenseFormParticipant("demo-li", "李四"),
     ExpenseFormParticipant("demo-wang", "王五"),
 )
+
+/** Null means the target unit is not resolved; a configured empty set stays empty and fails closed. */
+internal fun participantsForLedgerUnit(
+    participants: List<ExpenseFormParticipant>,
+    ledgerUnit: LedgerUnit?,
+): List<ExpenseFormParticipant>? {
+    if (ledgerUnit == null) return null
+    if (!ledgerUnit.participantScopeConfigured) return participants
+    val allowedIds = ledgerUnit.participantScopeIds.orEmpty()
+    return participants.filter { it.id in allowedIds }
+}
 
 private val ExpenseUiOffset = ZoneOffset.ofHours(8)
 
@@ -191,6 +203,9 @@ internal fun normalizedAutoPayerAmount(value: String): String? = value.trim().to
         if ('.' in plain) plain else "$plain.0"
     }
 
+internal fun singlePayerAmountForExpense(payerIds: List<String>, amount: String): Pair<String, String>? =
+    payerIds.singleOrNull()?.let { payerId -> normalizedAutoPayerAmount(amount)?.let { payerId to it } }
+
 internal fun allocateRefundPayerAmounts(
     totalValue: String,
     payerIds: List<String>,
@@ -240,6 +255,7 @@ fun NewExpenseScreen(
     modifier: Modifier = Modifier,
     ledgerUnitId: String = "",
     participants: List<ExpenseFormParticipant> = emptyList(),
+    participantScopeReady: Boolean = true,
     baseCurrency: String = "CNY",
     multiCurrencyEnabled: Boolean = false,
     currentParticipantId: String? = null,
@@ -264,6 +280,12 @@ fun NewExpenseScreen(
     isOffline: Boolean = false,
 ) {
     val safeParticipants = participants
+    val participantScopeMessage = when {
+        !participantScopeReady -> "正在确认此账本的参与人范围…"
+        safeParticipants.isEmpty() -> "此账本没有可用参与人，无法保存消费"
+        else -> null
+    }
+    val displayedErrorMessage = errorMessage ?: participantScopeMessage
     val seed = remember(mode, initialDraft, ledgerUnitId, safeParticipants, baseCurrency, currentParticipantId) {
         initialDraft ?: createDefaultExpenseDraft(
             ledgerUnitId = ledgerUnitId,
@@ -311,18 +333,20 @@ fun NewExpenseScreen(
             draft = draft.copy(currency = baseCurrency, fxRate = "1")
         }
     }
-    LaunchedEffect(mode, draft.amount, draft.payerIds, currentParticipantId) {
+    LaunchedEffect(mode, draft.amount, draft.payerIds, currentParticipantId, safeParticipants) {
         when (mode) {
             ExpenseFormMode.Create -> {
-                val currentPayer = currentParticipantId?.takeIf { draft.payerIds == listOf(it) }
-                val amountValue = normalizedAutoPayerAmount(draft.amount)
-                if (currentPayer != null && amountValue != null && draft.payerAmounts[currentPayer] != amountValue) {
-                    draft = draft.copy(payerAmounts = draft.payerAmounts + (currentPayer to amountValue))
+                val eligibleIds = safeParticipants.mapTo(hashSetOf(), ExpenseFormParticipant::id)
+                val singlePayerAmount = singlePayerAmountForExpense(draft.payerIds, draft.amount)
+                if (singlePayerAmount != null && singlePayerAmount.first in eligibleIds &&
+                    draft.payerAmounts[singlePayerAmount.first] != singlePayerAmount.second) {
+                    draft = draft.copy(payerAmounts = draft.payerAmounts + singlePayerAmount)
                 }
             }
             ExpenseFormMode.Refund -> {
-                val payerIds = draft.payerIds.ifEmpty {
-                    listOfNotNull(currentParticipantId ?: safeParticipants.firstOrNull()?.id)
+                val eligibleIds = safeParticipants.mapTo(hashSetOf(), ExpenseFormParticipant::id)
+                val payerIds = draft.payerIds.filter { it in eligibleIds }.ifEmpty {
+                    listOfNotNull(currentParticipantId?.takeIf { it in eligibleIds } ?: safeParticipants.firstOrNull()?.id)
                 }
                 val payerAmounts = allocateRefundPayerAmounts(draft.amount, payerIds, refundPayerWeights)
                 if (draft.payerIds != payerIds || draft.payerAmounts != payerAmounts) {
@@ -330,6 +354,17 @@ fun NewExpenseScreen(
                 }
             }
             ExpenseFormMode.Edit -> Unit
+        }
+    }
+    LaunchedEffect(participantScopeReady, safeParticipants) {
+        if (participantScopeReady) {
+            val eligibleIds = safeParticipants.mapTo(hashSetOf(), ExpenseFormParticipant::id)
+            draft = draft.copy(
+                payerIds = draft.payerIds.filter { it in eligibleIds },
+                payerAmounts = draft.payerAmounts.filterKeys { it in eligibleIds },
+                manualSplitAmounts = draft.manualSplitAmounts.filterKeys { it in eligibleIds },
+                aaParticipantIds = draft.aaParticipantIds.filter { it in eligibleIds },
+            )
         }
     }
     val title = when (mode) {
@@ -360,8 +395,8 @@ fun NewExpenseScreen(
     // field focus first so the custom keypad cannot cover the message, then
     // reveal that item with one smooth scroll. Keying this effect by the
     // message avoids re-scrolling on ordinary recompositions.
-    LaunchedEffect(errorMessage) {
-        if (!errorMessage.isNullOrBlank()) {
+    LaunchedEffect(errorMessage, participantScopeReady, safeParticipants.isEmpty()) {
+        if (!errorMessage.isNullOrBlank() || (participantScopeReady && safeParticipants.isEmpty())) {
             haptics.reject()
             focusManager.clearFocus(force = true)
             // The error item is added by the same recomposition that starts
@@ -401,7 +436,7 @@ fun NewExpenseScreen(
                             haptics.reject()
                         }
                     },
-                    enabled = !isSubmitting && onRefreshConfirmation == null && !isOffline && hasRateForSave,
+                    enabled = !isSubmitting && onRefreshConfirmation == null && !isOffline && hasRateForSave && participantScopeReady && safeParticipants.isNotEmpty(),
                     icon = Icons.Rounded.Save,
                 )
             }
@@ -824,10 +859,10 @@ fun NewExpenseScreen(
                     }
                 }
             }
-            if (!errorMessage.isNullOrBlank()) {
+            if (!displayedErrorMessage.isNullOrBlank()) {
                 item("error") {
                     Column(verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
-                        ErrorBanner(errorMessage)
+                        ErrorBanner(displayedErrorMessage)
                         onRefreshConfirmation?.let { callback ->
                             Row(
                                 modifier = Modifier

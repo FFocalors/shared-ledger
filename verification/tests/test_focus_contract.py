@@ -33,7 +33,7 @@ def scenario(**overrides) -> dict:
 
 
 def expense(*, ref="expense_1", amount="100.0", payments=None, splits=None, aa=None,
-            split_method=None, original_expense_ref=None, title="Shared"):
+            split_method=None, original_expense_ref=None, title="Shared", ledger_unit_ref=None):
     operation = {
         "type": "linked_refund" if original_expense_ref else "create_expense",
         "ref": ref,
@@ -44,6 +44,8 @@ def expense(*, ref="expense_1", amount="100.0", payments=None, splits=None, aa=N
     }
     if original_expense_ref:
         operation["original_expense_ref"] = original_expense_ref
+    if ledger_unit_ref is not None:
+        operation["ledger_unit_ref"] = ledger_unit_ref
     method = split_method or ("aa" if aa is not None else "manual")
     operation["split_method"] = method
     if method == "aa":
@@ -216,33 +218,48 @@ class FocusContractTests(unittest.TestCase):
         self.assertIn("at least 2 repayments", reason)
 
     def test_prepayment_before_debt_needs_the_owner_to_owe_afterwards(self):
-        good = scenario(operations=[
+        good = scenario(activity={"type": "large", "base_currency": "CNY", "multi_currency_enabled": False}, operations=[
+            {"type": "create_sub_activity", "ref": "sub_1", "name": "Bills"},
             {"type": "create_prepayment", "ref": "prepay_1", "owner_participant": "alice",
              "custodian_participant": "bob", "amount": "100.0", "currency": "CNY"},
-            expense(payments={"bob": "100.0"}, splits={"alice": "60.0", "bob": "40.0"}),
+            expense(payments={"bob": "100.0"}, splits={"alice": "60.0", "bob": "40.0"}, ledger_unit_ref="sub_1"),
         ])
         self.assertEqual(self.verdict(good, "prepayment_before_debt")[0], "FOCUS_VALID")
-        backwards = scenario(operations=[
+        backwards = scenario(activity=good["activity"], operations=[
+            {"type": "create_sub_activity", "ref": "sub_1", "name": "Bills"},
             {"type": "create_prepayment", "ref": "prepay_1", "owner_participant": "alice",
              "custodian_participant": "bob", "amount": "100.0", "currency": "CNY"},
-            expense(payments={"alice": "100.0"}, splits={"bob": "100.0"}),
+            expense(payments={"alice": "100.0"}, splits={"bob": "100.0"}, ledger_unit_ref="sub_1"),
         ])
         status, reason = self.verdict(backwards, "prepayment_before_debt")
         self.assertEqual(status, "FOCUS_MISMATCH")
         self.assertIn("owner", reason)
+        only_setup = scenario(
+            activity=good["activity"],
+            operations=[{"type": "create_sub_activity", "ref": "sub_1", "name": "Bills"}],
+        )
+        self.assertEqual(self.verdict(only_setup, "prepayment_before_debt")[0], "FOCUS_MISMATCH")
 
     def test_prepayment_after_debt_requires_the_expense_first(self):
-        good = scenario(operations=[
-            expense(payments={"bob": "100.0"}, splits={"alice": "60.0", "bob": "40.0"}),
+        good = scenario(activity={"type": "large", "base_currency": "CNY", "multi_currency_enabled": False}, operations=[
+            {"type": "create_sub_activity", "ref": "sub_1", "name": "Bills"},
+            expense(payments={"bob": "100.0"}, splits={"alice": "60.0", "bob": "40.0"}, ledger_unit_ref="sub_1"),
             {"type": "create_prepayment", "ref": "prepay_1", "owner_participant": "alice",
              "custodian_participant": "bob", "amount": "100.0", "currency": "CNY"},
         ])
         self.assertEqual(self.verdict(good, "prepayment_after_debt")[0], "FOCUS_VALID")
-        reordered = scenario(operations=list(reversed(good["operations"])))
+        reordered = scenario(activity=good["activity"], operations=[
+            good["operations"][0], good["operations"][2], good["operations"][1],
+        ])
         self.assertEqual(self.verdict(reordered, "prepayment_after_debt")[0], "FOCUS_MISMATCH")
+        only_setup = scenario(
+            activity=good["activity"],
+            operations=[{"type": "create_sub_activity", "ref": "sub_1", "name": "Bills"}],
+        )
+        self.assertEqual(self.verdict(only_setup, "prepayment_after_debt")[0], "FOCUS_MISMATCH")
 
     def test_prepayment_return_cannot_exceed_the_prepayment(self):
-        good = scenario(operations=[
+        good = scenario(activity={"type": "large", "base_currency": "CNY", "multi_currency_enabled": False}, operations=[
             {"type": "create_prepayment", "ref": "prepay_1", "owner_participant": "alice",
              "custodian_participant": "bob", "amount": "100.0", "currency": "CNY"},
             {"type": "return_prepayment", "ref": "return_1", "owner_participant": "alice",
@@ -311,23 +328,24 @@ class FocusContractTests(unittest.TestCase):
         self.assertIn("void_transfer", reason)
 
     def test_mixed_flow_needs_breadth(self):
-        good = scenario(operations=[
-            expense(payments={"alice": "100.0"}, splits={"bob": "60.0", "alice": "40.0"}),
+        good = scenario(activity={"type": "large", "base_currency": "CNY", "multi_currency_enabled": False}, operations=[
+            {"type": "create_sub_activity", "ref": "sub_1", "name": "Bills"},
+            expense(payments={"alice": "100.0"}, splits={"bob": "60.0", "alice": "40.0"}, ledger_unit_ref="sub_1"),
             {"type": "targeted_repayment", "ref": "repay_1", "from_participant": "bob",
              "to_participant": "alice", "amount": "30.0", "currency": "CNY",
              "target_expense_refs": ["expense_1"]},
             {"type": "create_prepayment", "ref": "prepay_1", "owner_participant": "carol",
              "custodian_participant": "alice", "amount": "50.0", "currency": "CNY"},
             expense(ref="refund_1", amount="-20.0", original_expense_ref="expense_1",
-                    payments={"carol": "-20.0"}, splits={"bob": "-20.0"}),
+                    payments={"carol": "-20.0"}, splits={"bob": "-20.0"}, ledger_unit_ref="sub_1"),
         ])
         self.assertEqual(self.verdict(good, "mixed_flow")[0], "FOCUS_VALID")
-        shallow = scenario(operations=good["operations"][:3])
+        shallow = scenario(activity=good["activity"], operations=good["operations"][:3])
         status, reason = self.verdict(shallow, "mixed_flow")
         self.assertEqual(status, "FOCUS_MISMATCH")
         self.assertIn("at least 4 operations", reason)
-        without_prepayment = scenario(operations=[
-            good["operations"][0], good["operations"][1], good["operations"][3],
+        without_prepayment = scenario(activity=good["activity"], operations=[
+            good["operations"][0], good["operations"][1], good["operations"][2], good["operations"][4],
             {"type": "fifo_repayment", "ref": "repay_2", "from_participant": "bob",
              "to_participant": "alice", "amount": "10.0", "currency": "CNY"},
         ])
@@ -339,13 +357,14 @@ class FocusContractTests(unittest.TestCase):
         aa = scenario(operations=[expense(
             amount="120.0", aa=["alice", "bob", "carol"], payments={"alice": "60.0", "bob": "60.0"})])
         self.assertEqual(self.verdict(aa, "expense_aa")[0], "FOCUS_VALID")
-        prepayment_refund = scenario(operations=[
+        prepayment_refund = scenario(activity={"type": "large", "base_currency": "CNY", "multi_currency_enabled": False}, operations=[
+            {"type": "create_sub_activity", "ref": "sub_1", "name": "Bills"},
             {"type": "create_prepayment", "ref": "prepay_1", "owner_participant": "alice",
              "custodian_participant": "bob", "amount": "50.0", "currency": "CNY"},
             expense(amount="120.0", payments={"alice": "120.0"},
-                    splits={"bob": "60.0", "carol": "60.0"}),
+                    splits={"bob": "60.0", "carol": "60.0"}, ledger_unit_ref="sub_1"),
             expense(ref="refund_1", amount="-30.0", original_expense_ref="expense_1",
-                    payments={"alice": "-30.0"}, splits={"alice": "-30.0"}),
+                    payments={"alice": "-30.0"}, splits={"alice": "-30.0"}, ledger_unit_ref="sub_1"),
         ])
         self.assertEqual(self.verdict(prepayment_refund, "prepayment_refund")[0], "FOCUS_VALID")
 

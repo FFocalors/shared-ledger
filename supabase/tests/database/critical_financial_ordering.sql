@@ -92,7 +92,15 @@ insert into ordering_activities values
   ('c2000000-0000-0000-0000-000000000108','96100108','c2300000-0000-0000-0000-000000000108','c2200000-0000-0000-0000-000000000801','c2200000-0000-0000-0000-000000000802');
 
 insert into public.activities(id,join_code,name,type,base_currency,multi_currency_enabled,created_by)
-select activity_id,join_code,'Financial ordering regression','normal','CNY',true,'c2100000-0000-0000-0000-000000000001'
+select activity_id,join_code,'Financial ordering regression',
+       case when activity_id in (
+         'c2000000-0000-0000-0000-000000000103',
+         'c2000000-0000-0000-0000-000000000104',
+         'c2000000-0000-0000-0000-000000000105',
+         'c2000000-0000-0000-0000-000000000106',
+         'c2000000-0000-0000-0000-000000000108'
+       ) then 'large'::public.activity_type else 'normal'::public.activity_type end,
+       'CNY',true,'c2100000-0000-0000-0000-000000000001'
 from ordering_activities;
 
 insert into public.activity_members(activity_id,user_id)
@@ -104,7 +112,22 @@ cross join (values
 ) as u(user_id);
 
 insert into public.ledger_units(id,activity_id,name,type)
-select ledger_unit_id,activity_id,'default','default' from ordering_activities;
+select ledger_unit_id,activity_id,'default',
+       case when activity_id in (
+         'c2000000-0000-0000-0000-000000000103',
+         'c2000000-0000-0000-0000-000000000104',
+         'c2000000-0000-0000-0000-000000000105',
+         'c2000000-0000-0000-0000-000000000106',
+         'c2000000-0000-0000-0000-000000000108'
+       ) then 'sub_activity'::public.ledger_unit_type else 'default'::public.ledger_unit_type end
+from ordering_activities;
+insert into public.ledger_units(id,activity_id,name,type)
+values
+ ('c2300000-0000-0000-0000-000000000203','c2000000-0000-0000-0000-000000000103','root','root'::public.ledger_unit_type),
+ ('c2300000-0000-0000-0000-000000000204','c2000000-0000-0000-0000-000000000104','root','root'::public.ledger_unit_type),
+ ('c2300000-0000-0000-0000-000000000205','c2000000-0000-0000-0000-000000000105','root','root'::public.ledger_unit_type),
+ ('c2300000-0000-0000-0000-000000000206','c2000000-0000-0000-0000-000000000106','root','root'::public.ledger_unit_type),
+ ('c2300000-0000-0000-0000-000000000208','c2000000-0000-0000-0000-000000000108','root','root'::public.ledger_unit_type);
 
 insert into public.participants(id,activity_id,name,participant_order)
 select debtor_id,activity_id,'Debtor',0 from ordering_activities

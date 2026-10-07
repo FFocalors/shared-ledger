@@ -10,9 +10,9 @@ select extensions.dblink_exec('p5_setup','begin');
 select extensions.dblink_exec('p5_setup',$sql$
  insert into auth.users(instance_id,id,aud,role,email,encrypted_password,email_confirmed_at,raw_app_meta_data,raw_user_meta_data,created_at,updated_at) values
  ('00000000-0000-0000-0000-000000000000','f7500000-0000-0000-0000-000000000001','authenticated','authenticated','p5a@example.invalid',crypt('x',gen_salt('bf')),now(),'{}','{}',now(),now());
- insert into public.activities(id,join_code,name,type,base_currency,created_by) values('f7600000-0000-0000-0000-000000000001','97000001','p5 concurrency','normal','CNY','f7500000-0000-0000-0000-000000000001');
+ insert into public.activities(id,join_code,name,type,base_currency,created_by) values('f7600000-0000-0000-0000-000000000001','97000001','p5 concurrency','large','CNY','f7500000-0000-0000-0000-000000000001');
  insert into public.activity_members(activity_id,user_id) values('f7600000-0000-0000-0000-000000000001','f7500000-0000-0000-0000-000000000001');
- insert into public.ledger_units(id,activity_id,name,type) values('f7700000-0000-0000-0000-000000000001','f7600000-0000-0000-0000-000000000001','p5','default');
+ insert into public.ledger_units(id,activity_id,name,type) values('f7700000-0000-0000-0000-000000000001','f7600000-0000-0000-0000-000000000001','p5 root','root');
  insert into public.participants(id,activity_id,name,participant_order) values('f7800000-0000-0000-0000-000000000001','f7600000-0000-0000-0000-000000000001','owner',0),('f7800000-0000-0000-0000-000000000002','f7600000-0000-0000-0000-000000000001','custodian',1);
  insert into public.participant_claims(activity_id,participant_id,user_id) values('f7600000-0000-0000-0000-000000000001','f7800000-0000-0000-0000-000000000002','f7500000-0000-0000-0000-000000000001');
  create function public.p5_return_attempt(p_request_id uuid) returns text language plpgsql volatile security invoker set search_path='' as $attempt$ begin perform * from public.create_prepayment_return_v2('f7600000-0000-0000-0000-000000000001','f7800000-0000-0000-0000-000000000001','f7800000-0000-0000-0000-000000000002',60,'CNY',now(),null,1,p_request_id); return 'ok'; exception when others then return sqlstate; end;$attempt$;

@@ -24,17 +24,19 @@ def _refund_scenario() -> dict:
     return {
         "schema_version": 1, "scenario_id": "generated_prepayment_refund",
         "description": "B prepays A before a shared expense and linked refund.",
-        "activity": {"type": "normal", "base_currency": "CNY", "multi_currency_enabled": False},
+        "activity": {"type": "large", "base_currency": "CNY", "multi_currency_enabled": False},
         "participants": ["A", "B", "C"],
         "operations": [
+            {"type": "create_sub_activity", "ref": "sub_1", "name": "Bills"},
             {"type": "create_prepayment", "ref": "prepayment_1", "owner_participant": "B",
              "custodian_participant": "A", "amount": "50.0", "currency": "CNY"},
             {"type": "create_expense", "ref": "expense_1", "title": "Meal", "amount": "120.0",
              "currency": "CNY", "payments": {"A": "120.0"}, "split_method": "manual",
-             "splits": {"B": "60.0", "C": "60.0"}},
+             "splits": {"B": "60.0", "C": "60.0"}, "ledger_unit_ref": "sub_1"},
             {"type": "linked_refund", "ref": "refund_1", "original_expense_ref": "expense_1",
              "title": "Meal refund", "amount": "-30.0", "currency": "CNY",
-             "payments": {"A": "-30.0"}, "split_method": "manual", "splits": {"B": "-30.0"}},
+             "payments": {"A": "-30.0"}, "split_method": "manual", "splits": {"B": "-30.0"},
+             "ledger_unit_ref": "sub_1"},
         ],
     }
 
@@ -53,7 +55,7 @@ class ProbeV2Tests(unittest.TestCase):
         self.assertEqual(set(targeted[1]["required"]), set(targeted[1]["properties"]))
         refund = _schema("prepayment_refund")["properties"]["operations"]["items"]["oneOf"]
         self.assertEqual([item["properties"]["type"]["const"] for item in refund],
-                         ["create_prepayment", "create_expense", "linked_refund"])
+                         ["create_sub_activity", "create_prepayment", "create_expense", "linked_refund"])
         for item in refund:
             self.assertEqual(set(item["required"]), set(item["properties"]))
             self.assertFalse(item["additionalProperties"])

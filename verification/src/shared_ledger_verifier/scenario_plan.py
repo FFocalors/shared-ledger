@@ -397,15 +397,23 @@ def _build_steps(
             f"creating a prepayment account owned by {owner}."
         )
         expense_step = (
-            f"create_expense: amount {total} CNY, split_method manual, {custodian} pays {total}, "
+            f"create_expense inside sub-activity sub_1 (set ledger_unit_ref sub_1): amount {total} CNY, split_method manual, {custodian} pays {total}, "
             f"splits {{ {owner}: {_one_decimal(debt)}, {custodian}: {_one_decimal(rest)} }}"
             + (f"; {', '.join(third)} bear nothing" if third else "")
             + f". This makes {owner} owe {custodian} exactly {_one_decimal(debt)}."
         )
         if focus == "prepayment_before_debt":
-            steps = [f"1. {prepay_step}", f"2. {expense_step}"]
+            steps = [
+                '1. create_sub_activity: ref sub_1, name "Shared bills".',
+                f"2. {prepay_step}",
+                f"3. {expense_step}",
+            ]
         else:
-            steps = [f"1. {expense_step}", f"2. {prepay_step}"]
+            steps = [
+                '1. create_sub_activity: ref sub_1, name "Shared bills".',
+                f"2. {expense_step}",
+                f"3. {prepay_step}",
+            ]
         return steps, [prepay, total, _one_decimal(debt), _one_decimal(rest)]
 
     if focus == "prepayment_return":
@@ -426,19 +434,20 @@ def _build_steps(
         if focus == "prepayment_refund":
             owner, custodian = participants[0], participants[1]
             prepay = Decimal(_one_decimal(amount))
+            steps.append('1. create_sub_activity: ref sub_1, name "Shared bills".')
             steps.append(
-                f"1. create_prepayment: owner {owner} pays {prepay} CNY to custodian {custodian}."
+                f"2. create_prepayment: owner {owner} pays {prepay} CNY to custodian {custodian}."
             )
             used.append(prepay)
             payer, bearer = custodian, participants[2] if len(participants) > 2 else owner
             share = Decimal(_one_decimal(amount))
             other = Decimal(_one_decimal(amount - share))
             steps.append(
-                f"2. create_expense: amount {total} CNY, split_method manual, {payer} pays {total}, "
+                f"3. create_expense inside sub-activity sub_1 (set ledger_unit_ref sub_1): amount {total} CNY, split_method manual, {payer} pays {total}, "
                 f"splits {{ {bearer}: {_one_decimal(share)}, {payer}: {_one_decimal(other)} }}."
             )
             used.extend([total, _one_decimal(share), _one_decimal(other)])
-            expense_index = 2
+            expense_index = 3
         else:
             share = Decimal(_one_decimal(amount))
             steps.append(
@@ -455,6 +464,7 @@ def _build_steps(
         steps.append(
             f"{expense_index + 1}. linked_refund of expense_{expense_index}: amount "
             f"-{_one_decimal(refund)} CNY, original_expense_ref expense_{expense_index}. "
+            f"{'Use ledger_unit_ref sub_1. ' if focus == 'prepayment_refund' else ''}"
             f"The refund is RECEIVED by {receiver} and BENEFITS {beneficiary} — these two "
             f"participants must be different. Its payments and manual splits are negative and "
             f"each sum to exactly -{_one_decimal(refund)}."
@@ -495,13 +505,15 @@ def _build_steps(
         prepay = Decimal(_one_decimal(amount))
         refund = Decimal(_one_decimal(max(Decimal("0.1"), prepay / 2)))
         steps = [
-            f"1. create_expense: amount {total} CNY, split_method manual, {creditor} pays {total}, "
+            '1. create_sub_activity: ref sub_1, name "Shared bills".',
+            f"2. create_expense inside sub-activity sub_1 (set ledger_unit_ref sub_1): amount {total} CNY, split_method manual, {creditor} pays {total}, "
             f"splits {{ {debtor}: {_one_decimal(debt)}, {creditor}: {_one_decimal(rest)} }}.",
-            f"2. targeted_repayment: {debtor} repays {creditor} {_one_decimal(part)} CNY against "
+            f"3. targeted_repayment: {debtor} repays {creditor} {_one_decimal(part)} CNY against "
             f"expense_1, strictly partial.",
-            f"3. create_prepayment: owner {saver} pays {prepay} CNY to custodian {creditor}.",
-            f"4. linked_refund of expense_1: amount -{_one_decimal(refund)} CNY, received by "
-            f"{saver} and benefiting {debtor}; its payments and manual splits are negative and "
+            f"4. create_prepayment: owner {saver} pays {prepay} CNY to custodian {creditor}.",
+            f"5. linked_refund of expense_1: amount -{_one_decimal(refund)} CNY, received by "
+            f"{saver} and benefiting {debtor}, inside sub-activity sub_1 (set ledger_unit_ref sub_1); "
+            f"its payments and manual splits are negative and "
             f"each sum to exactly -{_one_decimal(refund)}.",
         ]
         return steps, [total, _one_decimal(debt), _one_decimal(rest), _one_decimal(part),

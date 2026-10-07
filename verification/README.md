@@ -62,7 +62,7 @@ Each judgment is saved as `judge.json` in its run directory. The CLI prints each
 - `basic_single_payment.json`: A pays 100 CNY; B bears it.
 - `multi_payer_aa.json`: A and B both pay; A, B, and C split equally.
 - `targeted_partial_repayment.json`: B pays 40 CNY against the selected 100 CNY expense owed to A.
-- `prepayment_before_debt.json`: B prepays A 200 CNY before a later 100 CNY B-to-A debt.
+- `prepayment_before_debt.json`: a large Activity creates a sub-activity, then B prepays A 200 CNY before a later 100 CNY B-to-A debt in that sub-activity.
 - `linked_refund_after_settlement.json`: B settles the original debt, then a linked refund is received by B and benefits A.
 - `multiple_repayments.json`: B repays A's 100 CNY debt by FIFO installments of 30, 20, and 50.
 
@@ -118,7 +118,9 @@ because it exercises real business logic, but it is excluded from every coverage
 denominator. Both gates share the single permitted Compiler repair.
 
 `expense_aa`, `targeted_repayment` and `prepayment_refund` are the historical
-E2E smoke focuses and keep their original contracts. The formal coverage focuses
+E2E smoke focuses. `prepayment_refund` and all prepayment coverage focuses now
+require a large Activity; any expense or linked refund uses a previously created
+sub-activity ledger. The formal coverage focuses
 are `single_payer_aa`, `multi_payer_aa`, `aa_rounding`, `manual_split`,
 `fifo_repayment`, `targeted_repayment`, `multiple_repayments`,
 `prepayment_before_debt`, `prepayment_after_debt`, `prepayment_return`,

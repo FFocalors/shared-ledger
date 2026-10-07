@@ -32,7 +32,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import com.ffocalors.sharedledger.ui.components.ErrorBanner
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatar
-import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.SharedLedgerButton
 import com.ffocalors.sharedledger.ui.components.SharedLedgerCtaBottomBar
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTextField
@@ -48,6 +47,12 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
 import com.ffocalors.sharedledger.data.activity.ActivityDetail
 
+data class CreateSubActivityParticipant(
+    val id: String,
+    val name: String,
+    val avatarBackground: AvatarBackground,
+)
+
 /**
  * Form for creating a child activity. It owns local input state; the host
  * validates and persists the request after the user taps create.
@@ -55,28 +60,30 @@ import com.ffocalors.sharedledger.data.activity.ActivityDetail
 @Composable
 fun CreateSubActivityScreen(
     parentActivityName: String = "",
-    participants: List<ParticipantUiModel> = emptyList(),
+    participants: List<CreateSubActivityParticipant> = emptyList(),
     activity: ActivityDetail? = null,
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
-    onCreate: (String) -> Unit = {},
+    onCreate: (String, List<String>) -> Unit = { _, _ -> },
     isLoading: Boolean = false,
     errorMessage: String? = null,
 ) {
     val displayParentActivityName = activity?.summary?.name ?: parentActivityName
     val displayParticipants = activity?.participants?.map { participant ->
-        ParticipantUiModel(
-            participant.name,
+        CreateSubActivityParticipant(
+            id = participant.id,
+            name = participant.name,
+            avatarBackground =
             if (participant.claimedUserId != null) AvatarBackground.Bound(participant.avatarStyle, participant.claimedUserId)
             else AvatarBackground.Unbound(participant.id),
         )
     } ?: participants
     var activityName by rememberSaveable { mutableStateOf("") }
-    var selectedNamesCsv by rememberSaveable(displayParticipants.joinToString("|")) {
-        mutableStateOf(displayParticipants.joinToString("|") { it.name })
+    var selectedIdsCsv by rememberSaveable(displayParticipants.joinToString("|") { it.id }) {
+        mutableStateOf(displayParticipants.joinToString("|") { it.id })
     }
     val hazeState = rememberSharedLedgerHazeState()
-    val selectedNames = selectedNamesCsv.split("|").filter { it.isNotBlank() }.toSet()
+    val selectedIds = selectedIdsCsv.split("|").filter { it.isNotBlank() }.toSet()
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -94,8 +101,8 @@ fun CreateSubActivityScreen(
             SharedLedgerCtaBottomBar(backgroundColor = MaterialTheme.colorScheme.background, hazeState = hazeState) {
                 SharedLedgerButton(
                     text = "创建子活动",
-                    onClick = { onCreate(activityName.trim()) },
-                    enabled = activityName.isNotBlank() && !isLoading,
+                    onClick = { onCreate(activityName.trim(), displayParticipants.map { it.id }.filter { it in selectedIds }) },
+                    enabled = activityName.isNotBlank() && selectedIds.isNotEmpty() && !isLoading,
                     loading = isLoading,
                     loadingText = "正在创建",
                 )
@@ -157,26 +164,34 @@ fun CreateSubActivityScreen(
 
             FormSection(
                 title = "参与人",
-                trailing = "已选择 ${selectedNames.size} 人",
+                trailing = "已选择 ${selectedIds.size} 人",
             ) {                Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = SharedLedgerRadius.ExtraLarge,
                     color = MaterialTheme.colorScheme.surface,
                 ) {
                     Column(modifier = Modifier.padding(SharedLedgerSpacing.Small)) {
+                        if (displayParticipants.isEmpty()) {
+                            Text(
+                                text = "当前没有可用于子活动的参与人",
+                                modifier = Modifier.padding(SharedLedgerSpacing.Medium),
+                                style = SharedLedgerTextStyles.BodySecondary,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
                         displayParticipants.forEach { participant ->
-                            val selected = participant.name in selectedNames
+                            val selected = participant.id in selectedIds
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(SharedLedgerRadius.Medium)
                                     .clickable {
-                                        val nextNames = selectedNames.toMutableSet().apply {
-                                            if (selected) remove(participant.name) else add(participant.name)
+                                        val nextIds = selectedIds.toMutableSet().apply {
+                                            if (selected) remove(participant.id) else add(participant.id)
                                         }
-                                        selectedNamesCsv = displayParticipants
-                                            .map { it.name }
-                                            .filter { it in nextNames }
+                                        selectedIdsCsv = displayParticipants
+                                            .map { it.id }
+                                            .filter { it in nextIds }
                                             .joinToString("|")
                                     }
                                     .padding(
@@ -285,7 +300,9 @@ private fun CreateSubActivityScreenPreview() {
     SharedLedgerTheme {
         CreateSubActivityScreen(
             parentActivityName = "日本旅行",
-            participants = DemoData.japanTravel.participants,
+            participants = DemoData.japanTravel.participants.mapIndexed { index, participant ->
+                CreateSubActivityParticipant("preview-$index", participant.name, participant.avatarBackground)
+            },
         )
     }
 }

@@ -10,9 +10,9 @@
 
 | 状态 | 能力 |
 | --- | --- |
-| 已实现 | 普通/大型活动、参与人、Expense、Payment/Split、AA、服务端汇率快照、FIFO/TARGETED 还款、Activity 级预存和返还、负 Expense 退款、Final Settlement、归档、争议与图片附件。 |
+| 已实现 | 普通/大型活动、参与人、大型子活动 Participant 范围、Expense、Payment/Split、AA、服务端汇率快照、FIFO/TARGETED 还款、Activity 级预存和返还、负 Expense 退款、Final Settlement、归档、争议与图片附件。 |
 | 不支持 | 无现金多人债务环路冲销、跨币种日常债务抵销、LedgerUnit 级预存、任意 FX 客户端写入、手动完成/自动归档、Expense/Transfer 恢复、数学上全局最少转账笔数保证。 |
-| 未实现 | 子活动独立 Participant 名单、LedgerUnit 备注、任意文件/URL 附件、银行转账对账、汇兑损益。 |
+| 未实现 | 独立于 Activity Participant 主名单的子活动 Participant 身份维护、LedgerUnit 备注、任意文件/URL 附件、银行转账对账、汇兑损益。子活动范围只引用 Activity 内现有 Participant；迁移前既有子活动保持未限定，不回填历史选择。 |
 
 图片附件只支持产品限定的图像类型；附件不表示任意文件或链接能力。
 
@@ -20,11 +20,11 @@
 
 Activity 是财务边界，分普通和大型。普通 Activity 使用一个 root LedgerUnit；大型 Activity 有一个 root 和多个 sub-activity LedgerUnit。
 
-大型 Activity 的 root 是 Activity 级公共账目单元，可记录共同消费、退款、调整及不属于具体子活动的支出，不限于退款或调整。Expense 仍遵循普通 Payment、Split 和金额规则。参加人属于 Activity 总名单，子活动不设独立名单，Expense 从同 Activity 有效 Participant 中选择。
+大型 Activity 的 root 是 Activity 级公共账目单元，可记录共同消费、退款、调整及不属于具体子活动的支出，不限于退款或调整。Expense 仍遵循普通 Payment、Split 和金额规则。Participant 主数据属于 Activity 总名单；每个新创建的子活动可在创建时持久化所选的有效 Participant ID 子集，不另建独立 Participant 身份。该子活动 Expense 的付款人和每个 Split 承担人都必须属于已保存范围，付款人与承担人仍可不同。迁移前既有子活动通过 `participant_scope_configured=false` 保持 legacy-unscoped 行为，不伪造历史选择；兼容的两参数创建 RPC 为新子活动保存当前全部有效 Participant。root Expense 仍从 Activity 总名单选择。
 
-大型 Activity 的 sub-activity 可由成员软删除或恢复；存在真实 Transfer 来源历史时不能改变删除状态。root 不作为 sub-activity 删除。LedgerUnit 级备注和预存不支持。
+大型 Activity 的 sub-activity 可由成员软删除或恢复；软删除和恢复保留已配置的 Participant 范围，存在真实 Transfer 来源历史时不能改变删除状态。root 不作为 sub-activity 删除。LedgerUnit 级备注和预存不支持。
 
-实现依据：[Activity/LedgerUnit](../../supabase/migrations/20260830105311_activity_lifecycle_rpc.sql)、[子活动生命周期](../../supabase/migrations/20260913112306_sub_activity_delete_restore.sql)、[转账来源历史保护](../../supabase/migrations/20260920142942_immutable_transfer_delete_restore_contract.sql)。
+实现依据：[Activity/LedgerUnit](../../supabase/migrations/20260830105311_activity_lifecycle_rpc.sql)、[子活动 Participant 范围及账务校验](../../supabase/migrations/20261006142507_sub_activity_participant_scopes.sql)、[范围数据库回归](../../supabase/tests/database/sub_activity_participant_scopes.sql)、[子活动生命周期](../../supabase/migrations/20260913112306_sub_activity_delete_restore.sql)、[转账来源历史保护](../../supabase/migrations/20260920142942_immutable_transfer_delete_restore_contract.sql)。该范围迁移已通过本地完整数据库回归，并应用至 linked 后端；远端目录/RLS/ACL/trigger 与投影 wrapper 已只读核验。
 ## 3. Participant 与 User
 
 Participant 是账本中的人，User 是登录账号；访问成员 ActivityMember 与身份认领 ParticipantClaim 分离。无账号 Participant 也能参与账本。
@@ -115,23 +115,23 @@ Transfer 是实际资金事实，分为 settlement、prepayment、prepayment_ret
 
 Transfer 创建后资金字段和来源历史不可修改。生命周期只有 active→voided。作废必须填写原因；历史行保留，但从当前资金投影和可执行方案移除。voided 不可恢复，也不能再次作废。相关还款分配、final path 和预存事实保留为历史。
 
-Expense 与 Transfer 均不提供恢复 RPC。Expense 逻辑删除受创建者/Activity Creator 权限、Refund 来源和真实 Transfer 来源约束；Transfer 只能通过正式 void RPC 撤销当前效果。sub-activity 删除/恢复是组织结构生命周期，不恢复 Expense 或 Transfer。
+Expense 当前没有 API role 可调用的 restore RPC（旧函数已撤销 EXECUTE）；Transfer 也不提供恢复 RPC。Expense 逻辑删除受创建者/Activity Creator 权限、Refund 来源和真实 Transfer 来源约束；Transfer 只能通过正式 void RPC 撤销当前效果。sub-activity 删除/恢复是组织结构生命周期，不恢复 Expense 或 Transfer。
 
 实现依据：[Transfer lifecycle 与恢复撤权](../../supabase/migrations/20260920142942_immutable_transfer_delete_restore_contract.sql)、[作废实现](../../supabase/migrations/20260923022250_business_logic_finalization.sql)、[恢复授权契约](../../supabase/tests/database/transfer_restore_contract.sql)。
 
 ## 12. Prepayment
 
-Prepayment 是 Activity 级账户，维度为 Activity、Owner、Custodian、币种；普通与大型 Activity 共用，不支持 LedgerUnit 级预存。创建预存代表 Owner 向 Custodian 实际付款。
+Prepayment 是大型 Activity 级账户，维度为 Activity、Owner、Custodian、币种；不属于任何 LedgerUnit，普通 Activity 不支持预存，也不提供预存入口。普通 Activity 的预览、新增、返还请求都会整笔拒绝，返回 SQLSTATE `23514` 与“普通活动不支持预存”；不会将偿债部分转换成普通转账。大型 Activity 的预存本金和返还继续通过既有账务规则处理，子活动消费使用真实 `sub_activity` 账本。
 
 新预存先清偿 Owner 当前欠 Custodian 且可按付款币种结清的债务，剩余资金才进入预存账户。base 币付款按债务历史 base valuation 清偿；外币账户清偿同币外债。投影先扣有效真实 Settlement/Final allocation，再对同币反向债务抵销，之后才应用预存 Usage。相反方向的未结债务不能提前消费另一方向的预存。
 
 Usage 中同币外币账户优先；base 账户可按账单历史 FX 覆盖外币债务；一种外币预存不能清偿另一种外币债务。Refund 或债务变化可释放 Usage 并恢复账户余额。
 
-Prepayment Return 是 Custodian 实际返还 Owner 的钱，方向与原存入相反，使用账户原币，不作为普通债务抵销。只可返还当前可用余额。创建 Prepayment 和 Return 均要求 request_id 与 expected financial version。任一 Activity Member 可创建 Prepayment；Return 遵守第 4 节的 Participant actor 权限。
+Prepayment Return 是 Custodian 实际返还 Owner 的钱，方向与原存入相反，使用账户原币，不作为普通债务抵销。只可返还当前可用余额。创建 Prepayment 和 Return 均要求 request_id 与 expected financial version。大型 Activity Member 可创建 Prepayment；Return 遵守第 4 节的 Participant actor 权限。普通 Activity 的双边最终结算仍可预览和执行；其预存返还分支为空。
 
 作废预存来源前，服务端检查仍有效的 Return。若作废会使有效返还超过其他仍有效的同 Owner/Custodian/币种来源资金，则拒绝；先作废对应 Return 再作废来源。作废结果保留 Transfer 历史。
 
-实现依据：[多币种预存与返还](../../supabase/migrations/20260920142845_multi_currency_prepayment_final_settlement_core.sql)、[投影顺序及来源作废保护](../../supabase/migrations/20260923022250_business_logic_finalization.sql)、[预存边界测试](../../supabase/tests/database/phase5_prepayment_extended.sql)。
+实现依据：[多币种预存与返还](../../supabase/migrations/20260920142845_multi_currency_prepayment_final_settlement_core.sql)、[投影顺序及来源作废保护](../../supabase/migrations/20260923022250_business_logic_finalization.sql)、[大型活动预存限制](../../supabase/migrations/20261006025641_normal_activity_prepayment_restrictions.sql)、[普通活动拒绝测试](../../supabase/tests/database/normal_prepayment_restrictions.sql)、[预存边界测试](../../supabase/tests/database/phase5_prepayment_extended.sql)。
 
 ## 13. Refund
 

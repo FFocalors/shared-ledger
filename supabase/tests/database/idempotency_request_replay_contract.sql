@@ -15,12 +15,12 @@ values
  ('00000000-0000-0000-0000-000000000000','e6100000-0000-0000-0000-000000000001','authenticated','authenticated','replay.a@example.invalid',crypt('x',gen_salt('bf')),now(),'{}','{}',now(),now()),
  ('00000000-0000-0000-0000-000000000000','e6100000-0000-0000-0000-000000000002','authenticated','authenticated','replay.b@example.invalid',crypt('x',gen_salt('bf')),now(),'{}','{}',now(),now());
 insert into public.activities(id,join_code,name,type,base_currency,created_by)
-values ('e6000000-0000-0000-0000-000000000001','96000101','Request replay','normal','CNY','e6100000-0000-0000-0000-000000000001');
+values ('e6000000-0000-0000-0000-000000000001','96000101','Request replay','large','CNY','e6100000-0000-0000-0000-000000000001');
 insert into public.activity_members(activity_id,user_id) values
  ('e6000000-0000-0000-0000-000000000001','e6100000-0000-0000-0000-000000000001'),
  ('e6000000-0000-0000-0000-000000000001','e6100000-0000-0000-0000-000000000002');
 insert into public.ledger_units(id,activity_id,name,type)
-values ('e6200000-0000-0000-0000-000000000001','e6000000-0000-0000-0000-000000000001','default','default');
+values ('e6200000-0000-0000-0000-000000000001','e6000000-0000-0000-0000-000000000001','root','root');
 insert into public.participants(id,activity_id,name,participant_order) values
  ('e6300000-0000-0000-0000-000000000001','e6000000-0000-0000-0000-000000000001','A',0),
  ('e6300000-0000-0000-0000-000000000002','e6000000-0000-0000-0000-000000000001','B',1);

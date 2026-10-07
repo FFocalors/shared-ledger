@@ -450,7 +450,7 @@ class ActivityViewModelTest {
         assertTrue(state?.canArchiveActivity == false)
         assertTrue(state?.canUnarchiveActivity == true)
 
-        viewModel.createSubActivity("activity-1", "不应创建")
+        viewModel.createSubActivity("activity-1", "不应创建", listOf("participant-1"))
         advanceUntilIdle()
         assertEquals(0, repository.createSubActivityCalls.get())
 
@@ -644,9 +644,9 @@ class ActivityViewModelTest {
             deleteParticipantCalls.incrementAndGet()
             return Result.success(Unit)
         }
-        override suspend fun createSubActivity(activityId: String, name: String): Result<LedgerUnit> {
+        override suspend fun createSubActivity(activityId: String, name: String, participantIds: List<String>): Result<LedgerUnit> {
             createSubActivityCalls.incrementAndGet()
-            return Result.success(LedgerUnit("u2", activityId, name, "sub_activity"))
+            return Result.success(LedgerUnit("u2", activityId, name, "sub_activity", participantScopeIds = participantIds.toSet(), participantScopeConfigured = true))
         }
         override suspend fun updateSettings(activityId: String, name: String, baseCurrency: String, multiCurrencyEnabled: Boolean): Result<Unit> {
             lastUpdatedBaseCurrency = baseCurrency

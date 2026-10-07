@@ -1,6 +1,7 @@
 package com.ffocalors.sharedledger.ui.screens
 
 import com.ffocalors.sharedledger.data.exchange.SupportedExchangeCurrency
+import com.ffocalors.sharedledger.data.activity.LedgerUnit
 import com.ffocalors.sharedledger.ui.expense.ExpenseFormParticipant
 import java.math.BigDecimal
 import java.time.Instant
@@ -43,9 +44,54 @@ class NewExpenseDraftTest {
     }
 
     @Test
+    fun childScopeFiltersByStableIdsAndLegacyUnitsRemainUnscoped() {
+        val participants = listOf(
+            ExpenseFormParticipant("id-a", "同名"),
+            ExpenseFormParticipant("id-b", "同名"),
+        )
+
+        assertEquals(
+            listOf("id-b"),
+            participantsForLedgerUnit(
+                participants,
+                LedgerUnit("child", "activity", "child", "sub_activity", participantScopeIds = setOf("id-b"), participantScopeConfigured = true),
+            )?.map { it.id },
+        )
+        assertEquals(listOf("id-a", "id-b"), participantsForLedgerUnit(
+            participants,
+            LedgerUnit("legacy", "activity", "legacy", "sub_activity"),
+        )?.map { it.id })
+        assertTrue(participantsForLedgerUnit(
+            participants,
+            LedgerUnit("broken", "activity", "broken", "sub_activity", participantScopeIds = emptySet(), participantScopeConfigured = true),
+        ).orEmpty().isEmpty())
+        assertEquals(null, participantsForLedgerUnit(participants, null))
+    }
+
+    @Test
+    fun claimantOutsideChildScopeDefaultsToAnEligiblePayer() {
+        val selected = listOf(ExpenseFormParticipant("eligible", "已选参与人"))
+
+        val draft = createDefaultExpenseDraft(
+            ledgerUnitId = "child",
+            participants = selected,
+            baseCurrency = "CNY",
+            defaultPayerParticipantId = "claimant-outside-scope",
+        )
+
+        assertEquals(listOf("eligible"), draft.payerIds)
+    }
+
+    @Test
     fun integerTotalNormalizesAutomaticPayerAmountToOneDecimal() {
         assertEquals("300.0", normalizedAutoPayerAmount("300"))
         assertEquals("300.25", normalizedAutoPayerAmount("300.25"))
+    }
+
+    @Test
+    fun anySingleEligiblePayerCanFollowTheExpenseTotal() {
+        assertEquals("selected-payer" to "12.5", singlePayerAmountForExpense(listOf("selected-payer"), "12.5"))
+        assertEquals(null, singlePayerAmountForExpense(listOf("payer-a", "payer-b"), "12.5"))
     }
 
     @Test

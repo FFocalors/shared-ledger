@@ -577,15 +577,15 @@ class ActivityViewModel(
         }
     }
 
-    fun createSubActivity(activityId: String, name: String, onSuccess: () -> Unit = {}) {
-        if (name.isBlank() || _actionLoading.value) return
+    fun createSubActivity(activityId: String, name: String, participantIds: List<String>, onSuccess: () -> Unit = {}) {
+        if (name.isBlank() || participantIds.isEmpty() || _actionLoading.value) return
         if (isActivityArchived(activityId)) {
             _message.value = "活动已归档，当前为只读状态"
             return
         }
         viewModelScope.launch {
             _actionLoading.value = true
-            repository.createSubActivity(activityId, name).fold({ invalidateActivityCaches(activityId); loadDetail(activityId, true); _message.value = "子活动已创建"; onSuccess() }, { _message.value = messageFor(it) })
+            repository.createSubActivity(activityId, name, participantIds.distinct()).fold({ invalidateActivityCaches(activityId); loadDetail(activityId, true); _message.value = "子活动已创建"; onSuccess() }, { _message.value = messageFor(it) })
             _actionLoading.value = false
         }
     }

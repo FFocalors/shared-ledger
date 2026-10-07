@@ -339,6 +339,9 @@ object FinancialErrorMapper {
         if (text.contains("financial_version", true) || text.contains("expected financial version", true)) {
             return "当前资金版本已变化，请刷新预存预览后重试。"
         }
+        if (code == "23514" && text.contains("普通活动不支持预存")) {
+            return "普通活动不支持预存"
+        }
         return when (code) {
             "28000" -> "登录状态已失效，请重新登录"
             "42501" -> when {

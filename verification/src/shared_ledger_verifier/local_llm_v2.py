@@ -11,7 +11,7 @@ from typing import Any
 from .focus_contract import FocusDefinitionError, focus_sections
 from .loader import ScenarioValidationError, load_scenario
 from .local_llm import LocalLLMClient, LocalLLMError, _response_format
-from .models import CreateExpense, CreatePrepayment, LinkedRefund, TargetedRepayment
+from .models import CreateExpense, CreatePrepayment, CreateSubActivity, LinkedRefund, TargetedRepayment
 from .runner import _business_logic_commit
 from .supabase import verification_root
 
@@ -88,15 +88,16 @@ def _schema(focus: str) -> dict[str, Any]:
             }),
         ],
         "prepayment_refund": [
+            variant("create_sub_activity", {"name": {"type": "string"}}),
             variant("create_prepayment", {
                 **money_fields, "owner_participant": _REF, "custodian_participant": _REF,
             }),
-            variant("create_expense", manual),
-            variant("linked_refund", refund_fields),
+            variant("create_expense", {**manual, "ledger_unit_ref": _REF}),
+            variant("linked_refund", {**refund_fields, "ledger_unit_ref": _REF}),
         ],
     }[focus]
     operation = {"oneOf": variants}
-    count = {"expense_aa": 1, "targeted_repayment": 2, "prepayment_refund": 3}[focus]
+    count = {"expense_aa": 1, "targeted_repayment": 2, "prepayment_refund": 4}[focus]
     return {
         "type": "object", "additionalProperties": False,
         "properties": {
@@ -105,7 +106,7 @@ def _schema(focus: str) -> dict[str, Any]:
             "activity": {
                 "type": "object", "additionalProperties": False,
                 "properties": {
-                    "type": {"type": "string", "enum": ["normal"]},
+                    "type": {"type": "string", "enum": ["large"] if focus == "prepayment_refund" else ["normal"]},
                     "base_currency": {"type": "string", "enum": ["CNY"]},
                     "multi_currency_enabled": {"type": "boolean", "enum": [False]},
                 },
@@ -133,8 +134,9 @@ def _messages(focus: str, sections: str) -> list[dict[str, str]]:
             "partial repayment. Other participants may have no share."
         ),
         "prepayment_refund": (
-            "Use three or four participants. Exactly three operations in this order: "
-            "create_prepayment, create_expense, linked_refund. For example B may prepay A 50.0 CNY "
+            "Use three or four participants in a large Activity. Exactly four operations in this order: "
+            "create_sub_activity (ref sub_1), create_prepayment, create_expense in sub_1, linked_refund in sub_1. "
+            "For example B may prepay A 50.0 CNY "
             "(B owner, A custodian), A then pays 120.0 CNY for an expense split B 60.0 and C 60.0; "
             "a later 30.0 CNY refund paid back to A and benefiting B references that earlier expense. "
             "Represent linked_refund amount, payments and manual splits as negative decimal strings. "
@@ -144,7 +146,8 @@ def _messages(focus: str, sections: str) -> list[dict[str, str]]:
     }[focus]
     common = (
         "Generate exactly one NEW Scenario JSON v1 object. Use the envelope schema_version=1, "
-        "scenario_id, description, activity, participants, operations. Activity: type normal, "
+        "scenario_id, description, activity, participants, operations. Activity: type "
+        + ("large" if focus == "prepayment_refund" else "normal") + ", "
         "base_currency CNY, multi_currency_enabled false. All monetary values must be JSON strings "
         "with at most one fractional digit for CNY. Use unique short refs. For each expense, "
         "payments must sum exactly to its signed amount; manual splits must also sum exactly. "
@@ -158,9 +161,10 @@ def _messages(focus: str, sections: str) -> list[dict[str, str]]:
 
 
 def _focus_error(scenario: Any, focus: str) -> str | None:
-    if (scenario.activity.type != "normal" or scenario.activity.base_currency != "CNY"
+    expected_type = "large" if focus == "prepayment_refund" else "normal"
+    if (scenario.activity.type != expected_type or scenario.activity.base_currency != "CNY"
             or scenario.activity.multi_currency_enabled or not 3 <= len(scenario.participants) <= 4):
-        return "FOCUS_MISMATCH: expected normal CNY activity with 3-4 participants"
+        return f"FOCUS_MISMATCH: expected {expected_type} CNY activity with 3-4 participants"
     operations = scenario.operations
     if focus == "expense_aa":
         if len(scenario.participants) != 3 or len(operations) != 1 or not isinstance(operations[0], CreateExpense):
@@ -181,10 +185,14 @@ def _focus_error(scenario: Any, focus: str) -> str | None:
         if not 0 < repayment.amount < min(debtor_due, creditor_due):
             return "FOCUS_MISMATCH: repayment must be strictly partial against the selected debt"
     else:
-        if (len(operations) != 3 or not isinstance(operations[0], CreatePrepayment)
-                or not isinstance(operations[1], CreateExpense) or not isinstance(operations[2], LinkedRefund)):
-            return "FOCUS_MISMATCH: expected prepayment, expense, linked refund in order"
-        expense, refund = operations[1:]
+        if (len(operations) != 4 or not isinstance(operations[0], CreateSubActivity)
+                or not isinstance(operations[1], CreatePrepayment)
+                or not isinstance(operations[2], CreateExpense) or not isinstance(operations[3], LinkedRefund)):
+            return "FOCUS_MISMATCH: expected sub-activity, prepayment, expense, linked refund in order"
+        if (operations[2].ledger_unit_ref != operations[0].ref
+                or operations[3].ledger_unit_ref != operations[0].ref):
+            return "FOCUS_MISMATCH: expense and linked refund must use the created sub-activity"
+        expense, refund = operations[2:]
         if refund.original_expense_ref != expense.ref or -refund.amount > expense.amount:
             return "FOCUS_MISMATCH: refund must reference the preceding expense and stay within its amount"
     return None

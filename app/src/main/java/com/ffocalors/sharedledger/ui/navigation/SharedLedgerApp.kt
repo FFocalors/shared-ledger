@@ -77,6 +77,7 @@ import com.ffocalors.sharedledger.ui.screens.HomeScreen
 import com.ffocalors.sharedledger.ui.screens.LargeActivityScreen
 import com.ffocalors.sharedledger.ui.screens.LedgerUnitScreen
 import com.ffocalors.sharedledger.ui.screens.NewExpenseScreen
+import com.ffocalors.sharedledger.ui.screens.participantsForLedgerUnit
 import com.ffocalors.sharedledger.ui.screens.NormalActivityScreen
 import com.ffocalors.sharedledger.ui.screens.PersonalInfoScreen
 import com.ffocalors.sharedledger.ui.screens.TransferMode
@@ -760,7 +761,7 @@ private fun AuthenticatedNavHost(
                         navController.navigate(SharedLedgerRoutes.transfer(activityId, TransferRouteMode.RECEIVE))
                     }
                 } } else null,
-                onShowPrepayment = if (canWriteActivity) { {
+                onShowPrepayment = if (canWriteActivity && detailState.detail?.summary?.type == ActivityType.Large) { {
                     navController.navigate(SharedLedgerRoutes.prepayment(activityId, "fund"))
                 } } else null,
                 onFundRecords = if (activityId.isNotBlank()) {
@@ -794,8 +795,8 @@ private fun AuthenticatedNavHost(
                     isLoading = creating || detailState.isLoading,
                     errorMessage = message ?: detailState.errorMessage,
                     onBack = { navController.navigateUp() },
-                    onCreate = { name ->
-                        activityViewModel.createSubActivity(activityId, name) {
+                    onCreate = { name, participantIds ->
+                        activityViewModel.createSubActivity(activityId, name, participantIds) {
                             navController.navigateUp()
                         }
                     },
@@ -1112,10 +1113,17 @@ private fun AuthenticatedNavHost(
             val resolvedLedgerUnitId = routeLedgerUnitId
                 ?: detailExpenseState.detail?.ledgerUnit?.id
                 ?: activityDetail?.ledgerUnits?.firstOrNull { it.type.equals("default", true) || it.type.equals("root", true) }?.id
-            val participants = activityDetail?.participants?.map {
-                ExpenseFormParticipant(it.id, it.name, it.claimedUserId, it.avatarStyle)
+            val resolvedLedgerUnit = resolvedLedgerUnitId?.let { targetId ->
+                activityDetail?.let { detail ->
+                    (detail.ledgerUnits + detail.deletedLedgerUnits).firstOrNull { it.id == targetId }
+                }
             }
-                ?: detailExpenseState.detail?.participants?.map { ExpenseFormParticipant(it.id, it.name) }.orEmpty()
+            val allExpenseParticipants = activityDetail?.participants.orEmpty()
+                .map { ExpenseFormParticipant(it.id, it.name, it.claimedUserId, it.avatarStyle) }
+            val scopedParticipants = participantsForLedgerUnit(allExpenseParticipants, resolvedLedgerUnit)
+            val participantScopeReady = activityDetail != null && resolvedLedgerUnitId != null &&
+                resolvedLedgerUnit != null && !resolvedLedgerUnit.isDeleted && scopedParticipants != null
+            val participants = scopedParticipants.orEmpty()
             val currentParticipantId = activityDetail?.members
                 ?.firstOrNull { it.userId == currentUserId }
                 ?.claimedParticipantId
@@ -1181,6 +1189,7 @@ private fun AuthenticatedNavHost(
                 NewExpenseScreen(
                     ledgerUnitId = resolvedLedgerUnitId,
                     participants = participants,
+                    participantScopeReady = participantScopeReady,
                     baseCurrency = expenseBaseCurrency,
                     multiCurrencyEnabled = activityDetail?.summary?.multiCurrencyEnabled == true,
                     supportedCurrencies = supportedCurrencies,
@@ -1384,19 +1393,33 @@ private fun AuthenticatedNavHost(
                 ExpenseRouteStatus("活动路由参数缺失", onBack = { navController.navigateUp() })
             } else {
                 val ledgerUnitId = backStackEntry.arguments?.getString("ledgerUnitId")
+                val activityDetailState by activityViewModel.detail(activityId).collectAsState()
+                val prepaymentEnabled = activityDetailState.detail?.summary?.type == ActivityType.Large
+                androidx.compose.runtime.LaunchedEffect(activityId) {
+                    activityViewModel.loadDetail(activityId)
+                }
                 RefreshActivityOnResume(backStackEntry) {
+                    activityViewModel.loadDetail(activityId)
                     financialReadViewModel.loadRecords(activityId)
                 }
-                androidx.compose.runtime.LaunchedEffect(activityId, realtimeState.revisions.financial) {
+                androidx.compose.runtime.LaunchedEffect(
+                    activityId,
+                    realtimeState.revisions.activityIdentity,
+                    realtimeState.revisions.financial,
+                ) {
                     if (realtimeState.activeActivityId == activityId && realtimeState.revisions.financial > 0L) {
                         financialReadViewModel.invalidateActivity(activityId)
                         financialReadViewModel.loadRecords(activityId, force = true)
+                    }
+                    if (realtimeState.activeActivityId == activityId && realtimeState.revisions.activityIdentity > 0L) {
+                        activityViewModel.loadDetail(activityId, force = true)
                     }
                 }
                 FundRecordsScreen(
                     activityId = activityId,
                     ledgerUnitId = ledgerUnitId,
                     financialViewModel = financialReadViewModel,
+                    prepaymentEnabled = prepaymentEnabled,
                     onBack = { navController.navigateUp() },
                     onRecordClick = { record ->
                         if (record.source == com.ffocalors.sharedledger.domain.financial.FundRecordSource.REFUND_EXPENSE) {
@@ -1407,8 +1430,12 @@ private fun AuthenticatedNavHost(
                             }
                         }
                     },
-                    onPrepayment = { navController.navigate(SharedLedgerRoutes.prepayment(activityId, "fund")) },
-                    onPrepaymentReturn = { navController.navigate(SharedLedgerRoutes.prepayment(activityId, "return")) },
+                    onPrepayment = if (prepaymentEnabled) {
+                        { navController.navigate(SharedLedgerRoutes.prepayment(activityId, "fund")) }
+                    } else null,
+                    onPrepaymentReturn = if (prepaymentEnabled) {
+                        { navController.navigate(SharedLedgerRoutes.prepayment(activityId, "return")) }
+                    } else null,
                 )
             }
         }
@@ -1739,9 +1766,10 @@ private fun AuthenticatedNavHost(
             val activityId = backStackEntry.arguments?.getString("activityId").orEmpty()
             val mode = if (backStackEntry.arguments?.getString("mode") == "return") PrepaymentMode.RETURN else PrepaymentMode.FUND
             val activityDetailState by activityViewModel.detail(activityId).collectAsState()
+            val isLargeActivity = activityDetailState.detail?.summary?.type == ActivityType.Large
             // FUND is an activity-level operation; the selected payer/holder need not be
             // the current user's claimed participant. RETURN keeps the existing actor gate.
-            val financialWritesEnabled = if (mode == PrepaymentMode.FUND) {
+            val financialWritesEnabled = isLargeActivity && if (mode == PrepaymentMode.FUND) {
                 activityDetailState.detail?.let { it.summary.archivedAt == null } == true
             } else {
                 canPerformFinancialAction(activityDetailState.detail, currentUserId)
@@ -1754,16 +1782,29 @@ private fun AuthenticatedNavHost(
             androidx.compose.runtime.LaunchedEffect(activityId) {
                 if (activityId.isNotBlank()) {
                     activityViewModel.loadDetail(activityId)
+                }
+            }
+            androidx.compose.runtime.LaunchedEffect(activityId, isLargeActivity) {
+                if (activityId.isNotBlank() && isLargeActivity) {
                     financialReadViewModel.loadContext(activityId)
+                } else {
+                    prepaymentPreview = null
+                    actionError = null
                 }
             }
             RefreshActivityOnResume(backStackEntry) {
-                if (activityId.isNotBlank()) financialReadViewModel.loadContext(activityId)
+                if (activityId.isNotBlank()) activityViewModel.loadDetail(activityId, force = true)
+                if (activityId.isNotBlank() && isLargeActivity) financialReadViewModel.loadContext(activityId)
             }
-            androidx.compose.runtime.LaunchedEffect(activityId, realtimeState.revisions.financial) {
-                if (realtimeState.activeActivityId == activityId && realtimeState.revisions.financial > 0L) {
+            androidx.compose.runtime.LaunchedEffect(activityId, isLargeActivity, realtimeState.revisions.financial) {
+                if (isLargeActivity && realtimeState.activeActivityId == activityId && realtimeState.revisions.financial > 0L) {
                     financialReadViewModel.invalidateActivity(activityId)
                     financialReadViewModel.loadContext(activityId, force = true)
+                }
+            }
+            androidx.compose.runtime.LaunchedEffect(activityId, realtimeState.revisions.activityIdentity) {
+                if (realtimeState.activeActivityId == activityId && realtimeState.revisions.activityIdentity > 0L) {
+                    activityViewModel.loadDetail(activityId, force = true)
                 }
             }
             if (activityId.isBlank()) {
@@ -1772,6 +1813,10 @@ private fun AuthenticatedNavHost(
                 ExpenseRouteStatus("正在验证活动权限…", onBack = { navController.navigateUp() })
             } else if (activityDetailState.errorMessage != null) {
                 ExpenseRouteStatus(activityDetailState.errorMessage ?: "活动详情加载失败", onBack = { navController.navigateUp() })
+            } else if (activityDetailState.detail == null) {
+                ExpenseRouteStatus("正在验证活动权限…", onBack = { navController.navigateUp() })
+            } else if (!isLargeActivity) {
+                ExpenseRouteStatus("普通活动不支持预存", onBack = { navController.navigateUp() })
             } else if (!financialWritesEnabled) {
                 ExpenseRouteStatus("活动已归档或当前成员无权执行预存操作", onBack = { navController.navigateUp() })
             } else {

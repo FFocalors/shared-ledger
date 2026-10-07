@@ -86,6 +86,13 @@ data class LedgerUnitRowDto(
     @SerialName("created_at") val createdAt: String? = null,
     @SerialName("deleted_at") val deletedAt: String? = null,
     @SerialName("deleted_by") val deletedBy: String? = null,
+    @SerialName("participant_scope_configured") val participantScopeConfigured: Boolean = false,
+)
+
+@Serializable
+data class SubActivityParticipantScopeRowDto(
+    @SerialName("ledger_unit_id") val ledgerUnitId: String,
+    @SerialName("participant_id") val participantId: String,
 )
 
 @Serializable
@@ -231,6 +238,10 @@ data class LedgerUnit(
     val isDeleted: Boolean = false,
     val deletedAt: String? = null,
     val deletedBy: String? = null,
+    /** Null denotes a root or a pre-migration legacy-unscoped child. */
+    val participantScopeIds: Set<String>? = null,
+    /** True with an empty scope is treated as corrupt and must fail closed. */
+    val participantScopeConfigured: Boolean = false,
 )
 
 data class ActivityDetail(

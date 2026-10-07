@@ -89,6 +89,10 @@ class FinancialWriteResultTest {
     @Test
     fun financialConflictMessagesKeepCausesDistinct() {
         assertEquals(
+            "普通活动不支持预存",
+            FinancialErrorMapper.toUserMessage(RuntimeException("SQLSTATE 23514: 普通活动不支持预存")),
+        )
+        assertEquals(
             "预存余额不足，无法执行这笔返还，请刷新后查看最新状态。",
             FinancialErrorMapper.toUserMessage(RuntimeException("SQLSTATE 23514: prepayment return exceeds current available balance")),
         )

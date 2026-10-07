@@ -28,18 +28,20 @@ values
  ('00000000-0000-0000-0000-000000000000','f6300000-0000-0000-0000-000000000004','authenticated','authenticated','phase5.outsider@example.invalid',crypt('x',gen_salt('bf')),now(),'{}','{}',now(),now());
 
 insert into public.activities(id,join_code,name,type,base_currency,created_by) values
- ('f6000000-0000-0000-0000-000000000001','96000001','Phase 5 normal','normal','CNY','f6300000-0000-0000-0000-000000000001'),
- ('f6000000-0000-0000-0000-000000000002','96000002','Phase 5 refund','normal','CNY','f6300000-0000-0000-0000-000000000001'),
+ ('f6000000-0000-0000-0000-000000000001','96000001','Phase 5 large prepayment','large','CNY','f6300000-0000-0000-0000-000000000001'),
+ ('f6000000-0000-0000-0000-000000000002','96000002','Phase 5 large refund','large','CNY','f6300000-0000-0000-0000-000000000001'),
  ('f6000000-0000-0000-0000-000000000003','96000003','Phase 5 large','large','CNY','f6300000-0000-0000-0000-000000000001');
 insert into public.activity_members(activity_id,user_id)
 select a.id,u.id from public.activities a cross join auth.users u
 where a.id in ('f6000000-0000-0000-0000-000000000001','f6000000-0000-0000-0000-000000000002','f6000000-0000-0000-0000-000000000003')
 and u.id in ('f6300000-0000-0000-0000-000000000001','f6300000-0000-0000-0000-000000000002','f6300000-0000-0000-0000-000000000003');
 insert into public.ledger_units(id,activity_id,name,type) values
- ('f6100000-0000-0000-0000-000000000001','f6000000-0000-0000-0000-000000000001','normal','default'),
- ('f6100000-0000-0000-0000-000000000002','f6000000-0000-0000-0000-000000000002','refund','default'),
+ ('f6100000-0000-0000-0000-000000000001','f6000000-0000-0000-0000-000000000001','root','root'),
+ ('f6100000-0000-0000-0000-000000000002','f6000000-0000-0000-0000-000000000002','refund root','root'),
  ('f6100000-0000-0000-0000-000000000003','f6000000-0000-0000-0000-000000000003','root','root'),
- ('f6100000-0000-0000-0000-000000000004','f6000000-0000-0000-0000-000000000003','child','sub_activity');
+ ('f6100000-0000-0000-0000-000000000004','f6000000-0000-0000-0000-000000000003','child','sub_activity'),
+ ('f6100000-0000-0000-0000-000000000005','f6000000-0000-0000-0000-000000000001','prepayment expenses','sub_activity'),
+ ('f6100000-0000-0000-0000-000000000006','f6000000-0000-0000-0000-000000000002','refund expenses','sub_activity');
 insert into public.participants(id,activity_id,name,participant_order) values
  ('f6200000-0000-0000-0000-000000000011','f6000000-0000-0000-0000-000000000001','Custodian',0),('f6200000-0000-0000-0000-000000000012','f6000000-0000-0000-0000-000000000001','Owner',1),('f6200000-0000-0000-0000-000000000013','f6000000-0000-0000-0000-000000000001','Third',2),
  ('f6200000-0000-0000-0000-000000000021','f6000000-0000-0000-0000-000000000002','Refund custodian',0),('f6200000-0000-0000-0000-000000000022','f6000000-0000-0000-0000-000000000002','Refund owner',1),
@@ -64,9 +66,9 @@ select pg_temp.assert_true((select count(*)=1 from public.transfer_components wh
 
 -- Deterministic Usage consumes the owner-to-custodian ExpenseDebt, leaving no
 -- normal debt until the prepayment is exhausted.
-with x as (select * from pg_temp.create_expense_fixture('f6100000-0000-0000-0000-000000000001','first',60,'CNY',1,'manual','[{"participant_id":"f6200000-0000-0000-0000-000000000011","amount":"60"}]','[{"participant_id":"f6200000-0000-0000-0000-000000000012","amount":"60"}]','{}','2026-08-31 10:00+08',null,null)) insert into phase5_ids select 'first_expense',expense_id from x;
+with x as (select * from pg_temp.create_expense_fixture('f6100000-0000-0000-0000-000000000005','first',60,'CNY',1,'manual','[{"participant_id":"f6200000-0000-0000-0000-000000000011","amount":"60"}]','[{"participant_id":"f6200000-0000-0000-0000-000000000012","amount":"60"}]','{}','2026-08-31 10:00+08',null,null)) insert into phase5_ids select 'first_expense',expense_id from x;
 select pg_temp.assert_true((select balance=40 from public.prepayment_accounts where activity_id='f6000000-0000-0000-0000-000000000001') and (select sum(amount)=60 from public.prepayment_usages where activity_id='f6000000-0000-0000-0000-000000000001') and not exists(select 1 from public.bilateral_debts where activity_id='f6000000-0000-0000-0000-000000000001'), 'usage must automatically consume the oldest eligible debt before bilateral debt');
-with x as (select * from pg_temp.create_expense_fixture('f6100000-0000-0000-0000-000000000001','second',100,'CNY',1,'manual','[{"participant_id":"f6200000-0000-0000-0000-000000000011","amount":"100"}]','[{"participant_id":"f6200000-0000-0000-0000-000000000012","amount":"100"}]','{}','2026-08-31 11:00+08',null,null)) insert into phase5_ids select 'second_expense',expense_id from x;
+with x as (select * from pg_temp.create_expense_fixture('f6100000-0000-0000-0000-000000000005','second',100,'CNY',1,'manual','[{"participant_id":"f6200000-0000-0000-0000-000000000011","amount":"100"}]','[{"participant_id":"f6200000-0000-0000-0000-000000000012","amount":"100"}]','{}','2026-08-31 11:00+08',null,null)) insert into phase5_ids select 'second_expense',expense_id from x;
 select pg_temp.assert_true((select balance=0 from public.prepayment_accounts where activity_id='f6000000-0000-0000-0000-000000000001') and exists(select 1 from public.bilateral_debts where activity_id='f6000000-0000-0000-0000-000000000001' and debtor_participant_id='f6200000-0000-0000-0000-000000000012' and creditor_participant_id='f6200000-0000-0000-0000-000000000011' and amount=60), 'insufficient prepayment must leave exactly the residual ordinary debt');
 
 -- A prepayment first settles that existing direct debt, and only its remainder
@@ -90,8 +92,8 @@ select pg_temp.assert_true((select balance=20 from public.prepayment_accounts wh
 -- Linked refund restores only the original Usage.  Amount beyond the restored
 -- usage remains a normal negative Expense result.
 with x as (select * from pg_temp.create_prepayment_fixture('f6000000-0000-0000-0000-000000000002','f6200000-0000-0000-0000-000000000022','f6200000-0000-0000-0000-000000000021',100,'2026-08-31 15:00+08',null)) insert into phase5_ids select 'refund_prepayment',transfer_id from x;
-with x as (select * from pg_temp.create_expense_fixture('f6100000-0000-0000-0000-000000000002','original',50,'CNY',1,'manual','[{"participant_id":"f6200000-0000-0000-0000-000000000021","amount":"50"}]','[{"participant_id":"f6200000-0000-0000-0000-000000000022","amount":"50"}]','{}','2026-08-31 16:00+08',null,null)) insert into phase5_ids select 'refund_original',expense_id from x;
-with x as (select * from pg_temp.create_expense_fixture('f6100000-0000-0000-0000-000000000002','partial refund',-20,'CNY',1,'manual','[{"participant_id":"f6200000-0000-0000-0000-000000000021","amount":"-20"}]','[{"participant_id":"f6200000-0000-0000-0000-000000000022","amount":"-20"}]','{}','2026-08-31 17:00+08',null,(select object_id from phase5_ids where label='refund_original'))) insert into phase5_ids select 'linked_refund',expense_id from x;
+with x as (select * from pg_temp.create_expense_fixture('f6100000-0000-0000-0000-000000000006','original',50,'CNY',1,'manual','[{"participant_id":"f6200000-0000-0000-0000-000000000021","amount":"50"}]','[{"participant_id":"f6200000-0000-0000-0000-000000000022","amount":"50"}]','{}','2026-08-31 16:00+08',null,null)) insert into phase5_ids select 'refund_original',expense_id from x;
+with x as (select * from pg_temp.create_expense_fixture('f6100000-0000-0000-0000-000000000006','partial refund',-20,'CNY',1,'manual','[{"participant_id":"f6200000-0000-0000-0000-000000000021","amount":"-20"}]','[{"participant_id":"f6200000-0000-0000-0000-000000000022","amount":"-20"}]','{}','2026-08-31 17:00+08',null,(select object_id from phase5_ids where label='refund_original'))) insert into phase5_ids select 'linked_refund',expense_id from x;
 -- Refund reversal is applied before Usage is rebuilt, so the linked refund
 -- restores the original actual Usage exactly once.
 select pg_temp.assert_true((select balance=70 from public.prepayment_accounts where activity_id='f6000000-0000-0000-0000-000000000002') and (select amount=30 and gross_amount=50 from public.prepayment_usages where activity_id='f6000000-0000-0000-0000-000000000002'), 'linked refund must restore only original actual Usage');

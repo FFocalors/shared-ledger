@@ -197,8 +197,11 @@ def _contract_targeted_repayment(scenario: Scenario, spec: FocusSpec) -> str | N
 
 
 def _contract_prepayment_refund(scenario: Scenario, spec: FocusSpec) -> str | None:
-    """Historical smoke contract: prepayment, expense, linked refund, in order."""
-    operations = scenario.operations
+    """Large-activity smoke contract: prepayment, expense, linked refund, in order."""
+    ledger_error = _prepayment_ledger_error(scenario)
+    if ledger_error:
+        return ledger_error
+    operations = [op for op in scenario.operations if not isinstance(op, CreateSubActivity)]
     if (
         len(operations) != 3
         or not isinstance(operations[0], CreatePrepayment)
@@ -328,9 +331,29 @@ def _prepayment_pairs(scenario: Scenario) -> list[tuple[str, str, Decimal]]:
     ]
 
 
+def _prepayment_ledger_error(scenario: Scenario) -> str | None:
+    if scenario.activity.type != "large":
+        return "prepayment focuses require a large activity"
+    earlier_subactivities: set[str] = set()
+    for operation in scenario.operations:
+        if isinstance(operation, CreateSubActivity):
+            earlier_subactivities.add(operation.ref)
+        elif isinstance(operation, (CreateExpense, LinkedRefund)):
+            if operation.ledger_unit_ref is None:
+                return "large-activity expenses must use a sub-activity ledger"
+            if operation.ledger_unit_ref not in earlier_subactivities:
+                return "expense ledger_unit_ref must name an earlier sub-activity"
+    return None
+
+
 def _contract_prepayment_before_debt(scenario: Scenario, spec: FocusSpec) -> str | None:
     """Prepayment first, then an expense that makes the owner owe the custodian."""
-    operations = scenario.operations
+    ledger_error = _prepayment_ledger_error(scenario)
+    if ledger_error:
+        return ledger_error
+    operations = [op for op in scenario.operations if not isinstance(op, CreateSubActivity)]
+    if not operations:
+        return "expected a prepayment before an expense"
     if not isinstance(operations[0], CreatePrepayment):
         return "expected the prepayment to come first"
     if len(operations) < 2 or not isinstance(operations[1], CreateExpense):
@@ -347,7 +370,12 @@ def _contract_prepayment_before_debt(scenario: Scenario, spec: FocusSpec) -> str
 
 def _contract_prepayment_after_debt(scenario: Scenario, spec: FocusSpec) -> str | None:
     """An expense first creates owner-to-custodian debt, then the prepayment settles it."""
-    operations = scenario.operations
+    ledger_error = _prepayment_ledger_error(scenario)
+    if ledger_error:
+        return ledger_error
+    operations = [op for op in scenario.operations if not isinstance(op, CreateSubActivity)]
+    if not operations:
+        return "expected an expense before a prepayment"
     if not isinstance(operations[0], CreateExpense):
         return "expected the expense to come first"
     if len(operations) < 2 or not isinstance(operations[1], CreatePrepayment):
@@ -363,6 +391,9 @@ def _contract_prepayment_after_debt(scenario: Scenario, spec: FocusSpec) -> str 
 
 
 def _contract_prepayment_return(scenario: Scenario, spec: FocusSpec) -> str | None:
+    ledger_error = _prepayment_ledger_error(scenario)
+    if ledger_error:
+        return ledger_error
     payments = _prepayment_pairs(scenario)
     returns = [
         op for op in scenario.operations if isinstance(op, ReturnPrepayment)
@@ -440,7 +471,10 @@ def _contract_void_transfer(scenario: Scenario, spec: FocusSpec) -> str | None:
 
 
 def _contract_mixed_flow(scenario: Scenario, spec: FocusSpec) -> str | None:
-    operations = scenario.operations
+    ledger_error = _prepayment_ledger_error(scenario)
+    if ledger_error:
+        return ledger_error
+    operations = [op for op in scenario.operations if not isinstance(op, CreateSubActivity)]
     kinds = {op.type for op in operations}
     if len(operations) < 4:
         return f"expected at least 4 operations, found {len(operations)}"
@@ -647,10 +681,11 @@ _register(_spec(
 ))
 _register(_spec(
     "prepayment_refund", SMOKE_TIER, "预付款与原路退款（E2E smoke）", (5, 6, 8, 9, 11, 12, 13, 16),
-    (3, 4), (1,), ("divisible", "non_divisible", "decimal"), (3,),
+    (3, 4), (1,), ("divisible", "non_divisible", "decimal"), (4,),
     ("remaining_prepayment", "partial_repayment"),
     "A prepayment, then a shared expense, then a linked refund against that expense.",
     _contract_prepayment_refund,
+    activity_types=("large",),
 ))
 
 # ---- formal coverage focuses -------------------------------------------------
@@ -697,23 +732,26 @@ _register(_spec(
 ))
 _register(_spec(
     "prepayment_before_debt", COVERAGE_TIER, "先预存后产生债务", (5, 8, 9, 12, 16), (3, 5), (1,),
-    ("divisible", "non_divisible", "decimal"), (2,),
+    ("divisible", "non_divisible", "decimal"), (3,),
     ("remaining_prepayment",),
     "A prepayment is created first; a later expense makes the prepayment owner owe the custodian, "
     "so the account can be used against that debt.",
     _contract_prepayment_before_debt,
+    activity_types=("large",),
 ))
 _register(_spec(
     "prepayment_after_debt", COVERAGE_TIER, "先有债务后预存清偿", (5, 8, 9, 12, 16), (3, 5), (1,),
-    ("divisible", "non_divisible", "decimal"), (2,), ("full_settlement", "remaining_prepayment"),
+    ("divisible", "non_divisible", "decimal"), (3,), ("full_settlement", "remaining_prepayment"),
     "An expense first makes one participant owe another; a later prepayment settles that existing debt.",
     _contract_prepayment_after_debt,
+    activity_types=("large",),
 ))
 _register(_spec(
     "prepayment_return", COVERAGE_TIER, "预存返还", (5, 8, 11, 12, 16), (3, 5), (1,),
     ("divisible", "non_divisible", "decimal"), (2, 3), ("remaining_prepayment", "full_settlement"),
     "A prepayment is created and then partly or fully returned by the custodian to the owner.",
     _contract_prepayment_return,
+    activity_types=("large",),
 ))
 _register(_spec(
     "linked_refund", COVERAGE_TIER, "关联退款", (5, 6, 8, 13, 16), (3, 5), (1, 2),
@@ -735,10 +773,11 @@ _register(_spec(
 ))
 _register(_spec(
     "mixed_flow", COVERAGE_TIER, "混合流程", (5, 8, 9, 11, 12, 13, 16), (3, 5), (1, 2),
-    ("divisible", "non_divisible", "decimal"), (4, 5),
+    ("divisible", "non_divisible", "decimal"), (5, 6),
     ("partial_repayment", "remaining_prepayment", "multiple_creditors"),
     "A longer flow that combines a prepayment with a refund or a repayment in one activity.",
     _contract_mixed_flow,
+    activity_types=("large",),
 ))
 
 _register(_spec(

@@ -34,7 +34,8 @@ insert into public.ledger_units(id,activity_id,name,type) values
  ('f9710000-0000-0000-0000-000000000002','f9700000-0000-0000-0000-000000000002','root','root'),
  ('f9710000-0000-0000-0000-000000000003','f9700000-0000-0000-0000-000000000003','default','default');
 insert into public.participants(id,activity_id,name,participant_order) values
- ('f9720000-0000-0000-0000-000000000001','f9700000-0000-0000-0000-000000000003','Admin participant',0);
+ ('f9720000-0000-0000-0000-000000000001','f9700000-0000-0000-0000-000000000003','Admin participant',0),
+ ('f9720000-0000-0000-0000-000000000002','f9700000-0000-0000-0000-000000000002','Large participant',0);
 insert into public.exchange_rate_cache(base_currency,quote_currency,rate,observed_at,source)
 values ('CNY','USD',0.14,now(),'test');
 

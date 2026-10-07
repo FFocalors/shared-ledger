@@ -38,7 +38,7 @@ FOCUS_META: dict[str, dict[str, str]] = {
     },
     "prepayment_refund": {
         "title": "预付款与原路退款",
-        "description": "先存押金/预付款，后续用预付款核销消费，以及发生退款时原路返还",
+        "description": "大型活动内登记活动级预存，费用记入子活动账本，并验证关联退款",
     },
     "single_payer_aa": {
         "title": "单人付款 AA 均摊",
@@ -66,15 +66,15 @@ FOCUS_META: dict[str, dict[str, str]] = {
     },
     "prepayment_before_debt": {
         "title": "先预存，后产生债务",
-        "description": "先建立预存账户，之后产生的债务方向与账户一致，预存才真正被核销",
+        "description": "大型活动先建立活动级预存账户，后续子活动账单生成可核销债务",
     },
     "prepayment_after_debt": {
         "title": "先有债务，后预存清偿",
-        "description": "已有欠款时新预存先清偿欠款，剩余部分才进入预存账户",
+        "description": "大型活动已有子活动账单时，新预存先清偿欠款，余额再进入活动级账户",
     },
     "prepayment_return": {
         "title": "预存返还",
-        "description": "保管人按账户币种把预存余额返还给所有者，不进入普通债务图",
+        "description": "大型活动保管人按账户币种把余额返还给所有者，不进入普通债务图",
     },
     "linked_refund": {
         "title": "关联退款",
@@ -90,7 +90,7 @@ FOCUS_META: dict[str, dict[str, str]] = {
     },
     "mixed_flow": {
         "title": "混合流程",
-        "description": "一个活动内组合预存、还款与退款的多步骤流程",
+        "description": "大型活动内用子活动账本组合预存、还款与退款的多步骤流程",
     },
 }
 
