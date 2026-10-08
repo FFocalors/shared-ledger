@@ -1,0 +1,1134 @@
+{
+  "schema": "shared-ledger.step6-reproduction-index.v1",
+  "created_utc": "2026-10-08T14:16:24.6156984Z",
+  "run_root": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge",
+  "purpose": "Lightweight provenance index of existing execution records and small metadata.",
+  "verdict_scope": {
+    "overall_model_quality": "not asserted",
+    "numerical_or_bitwise_equivalence": "not asserted by this index",
+    "step5_lm_studio": "pending actual import/request/load-lifecycle evidence"
+  },
+  "hash_policy": {
+    "model_artifact_sha256_values_source": "Existing command stdout hash records and verified manifests only.",
+    "accidental_collection_note": "Two GGUF artifact paths were mistakenly included in one Get-FileHash command during collection. That exec call completed but returned no artifact hash values; this index does not use that call for model hashes. The call result does not establish whether any artifact bytes were read. All model hashes in this index come only from previously saved hash stdout records or verified manifests.",
+    "model_artifact_hash_values_added_from_direct_reads": false
+  },
+  "upstream": {
+    "repository": "D:\\AI\\tools\\llama.cpp-b9acf138a1e28ce1fc23b5a4fc4b12444b50f7ea",
+    "commit": "b9acf138a1e28ce1fc23b5a4fc4b12444b50f7ea",
+    "commit_source": "read-only git rev-parse HEAD",
+    "converter_source": {
+      "path": "D:\\AI\\tools\\llama.cpp-b9acf138a1e28ce1fc23b5a4fc4b12444b50f7ea\\convert_hf_to_gguf.py",
+      "sha256": "c2b8d1f31a9007be75d6850aa1db47dedcaedee0eeebe00aa978eac6f2cc89ad"
+    },
+    "quantizer_source": {
+      "path": "D:\\AI\\tools\\llama.cpp-b9acf138a1e28ce1fc23b5a4fc4b12444b50f7ea\\tools\\quantize\\quantize.cpp",
+      "sha256": "4e2c24585f9adbd97c94cbb56f906ddc83ed60ab82b94a931c52b3569a4bdf9d"
+    }
+  },
+  "environment": {
+    "hf_inference": {
+      "python": "D:\\AI\\.venv\\Scripts\\python.exe",
+      "torch": "2.6.0+cu126",
+      "transformers": "5.8.0",
+      "accelerate": "1.11.0",
+      "peft": "0.18.1",
+      "source_result": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\base_adapter-accelerate-v4-attempt1\\inference-result.json"
+    },
+    "merge_and_builder": {
+      "torch": "2.6.0+cu126",
+      "peft": "0.18.1",
+      "safetensors": "0.8.0",
+      "source_result": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\attempt-3\\evidence\\stream-merge-result.json"
+    },
+    "converter_and_compare": {
+      "python": "Python 3.11.15",
+      "python_path": "D:\\AI\\tools\\venvs\\llama-cpp-b9acf138a1e28ce1fc23b5a4fc4b12444b50f7ea\\Scripts\\python.exe",
+      "pip_freeze_record": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\pip-freeze-all.stdout.txt",
+      "pip_freeze_record_sha256": "f5d63975650184946141053dfb86f2fcb1bd713b44246a119baac411c602297f",
+      "selected_versions": [
+        "gguf==0.19.0",
+        "huggingface_hub==0.36.2",
+        "numpy==2.2.6",
+        "packaging==26.3",
+        "protobuf==4.25.9",
+        "regex==2026.9.29",
+        "safetensors==0.8.0",
+        "sentencepiece==0.2.2",
+        "tokenizers==0.22.2",
+        "torch==2.11.0+cpu",
+        "transformers==4.57.6"
+      ],
+      "cmake": "cmake version 4.2.3-msvc3\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).",
+      "cmake_record": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\cmake-version.stdout.txt"
+    }
+  },
+  "frozen_inputs": {
+    "cases_json": {
+      "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\cases.json",
+      "sha256": "cb65dd89ee1b9bd3e537090305b92a85046ef57b1f16b06490eb55ade920d93e",
+      "manifest_sha256_in_prompt_manifest": "cb65dd89ee1b9bd3e537090305b92a85046ef57b1f16b06490eb55ade920d93e"
+    },
+    "prompt_manifest": {
+      "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\prompts-manifest.json",
+      "sha256": "8b50180b29ce1e38f159471a7b0ea619907f3a318182c4d1bdcbabc3cb3f6282",
+      "tokenizer_class": "Qwen2Tokenizer",
+      "tokenizer_source": "D:\\AI\\models\\Qwen3.5-4B",
+      "template_options": {
+        "add_generation_prompt": true,
+        "enable_thinking": false
+      },
+      "eos_token_id": 248046,
+      "generation_eos_token_id": 248046,
+      "pad_token_id": 248044,
+      "cases": [
+        {
+          "case_id": "shared_ledger_explanation",
+          "prompt_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\shared_ledger_explanation\\prompt.json",
+          "prompt_sha256": "56a7294498158555b855d72680f10f4242cae23671efd21c8540349e7c437033",
+          "input_token_count": 34,
+          "input_ids_sha256_le_i64": "e4ffd64d68723cea316198ab5ee8499587a3494bb1560e76e9d8f4d48abf3781",
+          "max_new_tokens": 32,
+          "generation_eos_token_id": 248046
+        },
+        {
+          "case_id": "short_arithmetic",
+          "prompt_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\short_arithmetic\\prompt.json",
+          "prompt_sha256": "97dee9074222b32a50677e05b8b71b530b0c0f0cfe4a1ad81983136dde444318",
+          "input_token_count": 36,
+          "input_ids_sha256_le_i64": "12d55faf7004e219fce49a125d12ac0b350a906c5f9eae06bbff3b19bbdc0b3f",
+          "max_new_tokens": 16,
+          "generation_eos_token_id": 248046
+        },
+        {
+          "case_id": "agent_answerdecision_json",
+          "prompt_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\agent_answerdecision_json\\prompt.json",
+          "prompt_sha256": "612db8bb7dd194dc4c87d99eb62ed1068bf6c40989841b22276868e6a84d3a65",
+          "input_token_count": 69,
+          "input_ids_sha256_le_i64": "3d2d91f4f96806680d33be8bc40a925b4e6cfca2f259dbb2e68c58e8a5601996",
+          "max_new_tokens": 96,
+          "generation_eos_token_id": 248046
+        }
+      ]
+    }
+  },
+  "combined_builder": {
+    "source": {
+      "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\scripts\\build_combined_peft_checkpoint.py",
+      "sha256": "543d5af78718b1cb4de9cde11e615cc1f08391a2360e7472701f0d611d5102ce"
+    },
+    "execution": {
+      "command_record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\combined-peft-builder-attempt1-20261008-1635.command.txt",
+      "command_record_sha256": "4eab6c1bac5bc53334e0d41cee92e274f4c4f976bb6a32420b5bf6c948705b59",
+      "command": "D:\\AI\\.venv\\Scripts\\python.exe -B D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\scripts\\build_combined_peft_checkpoint.py\r\ncwd=D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge",
+      "metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\combined-peft-builder-attempt1-20261008-1635.meta.json",
+      "metadata_sha256": "b956eed8d7f7b9491a946a8bd676a54aeb724dde4c1387293ce5711aba558dbd",
+      "exit_code": 0,
+      "duration_seconds": 76.902,
+      "termination_verified": true,
+      "guard_reason": null,
+      "working_directory": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge",
+      "wrapper_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\run_heavy_guard_v2.ps1",
+      "wrapper_source_sha256": "c364b7cf5f706b86fddda9f7f6bfe34cf3faa18f6ce1427390ee9b617441f5d0",
+      "run_tree_end_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\combined-peft-builder-attempt1-20261008-1635.tree-end.json",
+      "run_tree_end_sha256": "696ea159ddce7a6f7e48fb47a795d4a43a6d3bbbebc3c07ceaa6bf08c9ee38b6"
+    },
+    "manifest": {
+      "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\combined-peft-attempt1\\combined-checkpoint-manifest.json",
+      "sha256": "db1b0da730e61046119b69b7443cd8e2890bea0a95651f381fd8bc5698ee9352",
+      "status": "RAW_COPY_COMBINED_PEFT_CHECKPOINT_PASS",
+      "output_dir": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\combined-peft-attempt1",
+      "base_tensor_count": 723,
+      "adapter_tensor_count": 496,
+      "total_tensor_count": 1219,
+      "total_payload_bytes": 9143468544,
+      "full_destination_reread_match": true,
+      "index_file_sha256": "c2337db719bae2efbfcd10d433019a836e539940f21b2dabc6fa4ff48486a198",
+      "input_sha256_before": {
+        "D:\\AI\\models\\Qwen3.5-4B\\model.safetensors-00001-of-00002.safetensors": "26a93f066e1916adb13453dae5a0c707c0fbc71299ed98779571a907b8e74c61",
+        "D:\\AI\\models\\Qwen3.5-4B\\model.safetensors-00002-of-00002.safetensors": "cb544bd9bfae93dc59b0f22b292f5933573854a7f9b97835c67060d7d910e188",
+        "D:\\AI\\runs\\shared-ledger\\training_runs\\qlora-v0.2-experiment-a-only\\20261002-0859\\checkpoints\\checkpoint-36\\adapter_model.safetensors": "2bd4458c59903af11dcdc78b1ad2a42dab06a00bc48ad2735e5ecc1e35eba8f9"
+      },
+      "input_sha256_after": {
+        "D:\\AI\\models\\Qwen3.5-4B\\model.safetensors-00001-of-00002.safetensors": "26a93f066e1916adb13453dae5a0c707c0fbc71299ed98779571a907b8e74c61",
+        "D:\\AI\\models\\Qwen3.5-4B\\model.safetensors-00002-of-00002.safetensors": "cb544bd9bfae93dc59b0f22b292f5933573854a7f9b97835c67060d7d910e188",
+        "D:\\AI\\runs\\shared-ledger\\training_runs\\qlora-v0.2-experiment-a-only\\20261002-0859\\checkpoints\\checkpoint-36\\adapter_model.safetensors": "2bd4458c59903af11dcdc78b1ad2a42dab06a00bc48ad2735e5ecc1e35eba8f9"
+      }
+    }
+  },
+  "streaming_merge_attempt3": {
+    "sources": [
+      {
+        "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\scripts\\stream_merge.py",
+        "sha256": "dcca4f2b029364d24d90eb52533cff14e35d96671bcceefc62fe4803c3161b68"
+      },
+      {
+        "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\scripts\\run-merge-attempt3.ps1",
+        "sha256": "ba67ff59f8e5f3561396cb06b85612f48c398eaa4890acaea650ed43f2b420a9"
+      }
+    ],
+    "execution": {
+      "launcher_metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\logs\\launch-merge-attempt3.meta.json",
+      "launcher_metadata_sha256": "f1d59ed92e5d5f35cb7bcef49dc880ee0bb4dbb8eadb45acf598b2d52985bd3f",
+      "launcher_command": "\"C:\\Program Files\\PowerShell\\7\\pwsh.exe\" -NoProfile -ExecutionPolicy Bypass -File \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\scripts\\run-merge-attempt3.ps1\"",
+      "launcher_exit_code": 0,
+      "worker_tree_start_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\logs\\merge-tree-v3.tree-start.json",
+      "worker_tree_start_sha256": "17322bee9b91b79840b078d38f9196ebae6e6167805748f2bcc0f7e2d849cc17",
+      "worker_python": "D:\\AI\\.venv\\Scripts\\python.exe",
+      "worker_args": "-B \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\scripts\\stream_merge.py\" --merge --run-root \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\" --output-name \"merged-hf-attempt3\" --evidence-subdir \"attempt-3\\evidence\"",
+      "worker_tree_end_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\logs\\merge-tree-v3.tree-end.json",
+      "worker_tree_end_sha256": "f5bc21136aa6223d575c69cd894b3352be07a61f02cb59d476a34ec217524bcb",
+      "worker_exit_code": 0,
+      "termination_verified": true
+    },
+    "evidence": {
+      "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\attempt-3\\evidence\\stream-merge-result.json",
+      "sha256": "a1c0942f69c53c8221602b95f38076639cc8f6b621b591e8603960530ee4c7a4",
+      "status": "PASS",
+      "output": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\merged-hf-attempt3",
+      "all_copy_through_payloads_byte_identical": true,
+      "all_updates_bitwise_reference_match": true,
+      "copy_through_count": 490,
+      "peft_update_count": 248,
+      "destination_payloads_re_read": 738,
+      "source_sha256_before": {
+        "D:\\AI\\models\\Qwen3.5-4B\\model.safetensors-00001-of-00002.safetensors": "26a93f066e1916adb13453dae5a0c707c0fbc71299ed98779571a907b8e74c61",
+        "D:\\AI\\models\\Qwen3.5-4B\\model.safetensors-00002-of-00002.safetensors": "cb544bd9bfae93dc59b0f22b292f5933573854a7f9b97835c67060d7d910e188",
+        "D:\\AI\\runs\\shared-ledger\\training_runs\\qlora-v0.2-experiment-a-only\\20261002-0859\\checkpoints\\checkpoint-36\\adapter_model.safetensors": "2bd4458c59903af11dcdc78b1ad2a42dab06a00bc48ad2735e5ecc1e35eba8f9"
+      },
+      "source_sha256_after": {
+        "D:\\AI\\models\\Qwen3.5-4B\\model.safetensors-00001-of-00002.safetensors": "26a93f066e1916adb13453dae5a0c707c0fbc71299ed98779571a907b8e74c61",
+        "D:\\AI\\models\\Qwen3.5-4B\\model.safetensors-00002-of-00002.safetensors": "cb544bd9bfae93dc59b0f22b292f5933573854a7f9b97835c67060d7d910e188",
+        "D:\\AI\\runs\\shared-ledger\\training_runs\\qlora-v0.2-experiment-a-only\\20261002-0859\\checkpoints\\checkpoint-36\\adapter_model.safetensors": "2bd4458c59903af11dcdc78b1ad2a42dab06a00bc48ad2735e5ecc1e35eba8f9"
+      },
+      "output_shard_sha256": {
+        "model.safetensors-00001-of-00002.safetensors": "9462882722b4b97c847f483877667dbd6b14c372c177bbfeb979f016e29f36ca",
+        "model.safetensors-00002-of-00002.safetensors": "63b8c849d60c8bbef69d54c21fc72a89c56032c5b65db54bb4cba876b911ebdf"
+      }
+    }
+  },
+  "f16_and_q4_artifacts": {
+    "f16_ready_prepare": {
+      "source": {
+        "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\tools\\prepare_f16ready_safetensors.py",
+        "sha256": "77f667b900698216907971fc5ffb114f5fe8f2d978bb124b45b88831259c8640"
+      },
+      "execution": {
+        "command_record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\attempt3-f16ready-embedding-conversion.command.txt",
+        "command_record_sha256": "d367c4eb41f59f871418ef9c5daf47fd701768e639a78794236f0e90f7f7748f",
+        "command": "D:\\AI\\tools\\venvs\\llama-cpp-b9acf138a1e28ce1fc23b5a4fc4b12444b50f7ea\\Scripts\\python.exe -B D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\tools\\prepare_f16ready_safetensors.py --source D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\merged-hf-attempt3 --destination D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\intermediate\\merged-hf-f16ready --chunk-bytes 67108864 --expected-embedding-bytes 1271398400 --expected-embedding-shape 248320 2560 --expected-tensor-count 738 --require-no-numeric-anomalies\r\ncwd=D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter",
+        "metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\attempt3-f16ready-embedding-conversion.meta.json",
+        "metadata_sha256": "f71868605de6f75575d20bf18d661a1e6bb1d987b301018cc637acc8a17da67c",
+        "exit_code": 0,
+        "duration_seconds": 62.993,
+        "termination_verified": true,
+        "guard_reason": null,
+        "working_directory": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter"
+      },
+      "output_dir": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\intermediate\\merged-hf-f16ready"
+    },
+    "converter_f16": {
+      "source": {
+        "path": "D:\\AI\\tools\\llama.cpp-b9acf138a1e28ce1fc23b5a4fc4b12444b50f7ea\\convert_hf_to_gguf.py",
+        "sha256": "c2b8d1f31a9007be75d6850aa1db47dedcaedee0eeebe00aa978eac6f2cc89ad"
+      },
+      "execution": {
+        "command_record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\attempt3-convert-f16-no-mtp.command.txt",
+        "command_record_sha256": "79f2265ea8958f8fbb4ef08b90d02fc031ec115dbbdb4147c965205d031f10ae",
+        "command": "D:\\AI\\tools\\venvs\\llama-cpp-b9acf138a1e28ce1fc23b5a4fc4b12444b50f7ea\\Scripts\\python.exe -B D:\\AI\\tools\\llama.cpp-b9acf138a1e28ce1fc23b5a4fc4b12444b50f7ea\\convert_hf_to_gguf.py --outtype f16 --no-mtp --outfile D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\artifacts-attempt3\\qwen3.5-4b-f16.gguf D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\intermediate\\merged-hf-f16ready\r\ncwd=D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter",
+        "metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\attempt3-convert-f16-no-mtp.meta.json",
+        "metadata_sha256": "1294cd6b05199dccc3eada55d1ac2a99888125b574f1cb6f4f6e84c73c4dd242",
+        "exit_code": 0,
+        "duration_seconds": 38.289,
+        "termination_verified": true,
+        "guard_reason": null,
+        "working_directory": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter"
+      },
+      "artifact": {
+        "record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\attempt3-hash-f16-gguf-v2.stdout.txt",
+        "record_sha256": "7939a58ceaf4c179ebfb3360a1375c20c9d595e686f1389e75855e2a30dc2b7a",
+        "artifact_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\artifacts-attempt3\\qwen3.5-4b-f16.gguf",
+        "bytes": 8424393600,
+        "sha256": "37fb4e8627a0076160429d26ef6454a1a20a6c824bdfd681c9695dece4d49f13"
+      }
+    },
+    "quantizer_q4_k_m": {
+      "source": {
+        "path": "D:\\AI\\tools\\llama.cpp-b9acf138a1e28ce1fc23b5a4fc4b12444b50f7ea\\tools\\quantize\\quantize.cpp",
+        "sha256": "4e2c24585f9adbd97c94cbb56f906ddc83ed60ab82b94a931c52b3569a4bdf9d"
+      },
+      "execution": {
+        "command_record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\attempt3-quantize-q4-k-m.command.txt",
+        "command_record_sha256": "40dff375b57d8fcddd9fc9cda1607dfe12002963fa019c04b1089f9aef042dab",
+        "command": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\build-sdk-ninja\\bin\\llama-quantize.exe --max-buffer-size 512 D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\artifacts-attempt3\\qwen3.5-4b-f16.gguf D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\artifacts-attempt3\\qwen3.5-4b-q4_k_m.gguf Q4_K_M 2\r\ncwd=D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter",
+        "metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\attempt3-quantize-q4-k-m.meta.json",
+        "metadata_sha256": "a93b393fb18463002ae43c4bdca62f29bfb8a1dc8e0fd5c873f0f7faa7421b9e",
+        "exit_code": 0,
+        "duration_seconds": 120.608,
+        "termination_verified": true,
+        "guard_reason": null,
+        "working_directory": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter"
+      },
+      "artifact": {
+        "record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\attempt3-hash-q4-gguf.stdout.txt",
+        "record_sha256": "1d8e706a62c334ee48fbe3df12fd0137f5840c7a20e0c24174818ca205f8feab",
+        "artifact_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\artifacts-attempt3\\qwen3.5-4b-q4_k_m.gguf",
+        "bytes": 2708804480,
+        "sha256": "acfd01df6cbd3c8e1fa4dbe144f5852290689851c4f92d4ab892707d08724b34"
+      }
+    }
+  },
+  "hf_v4": {
+    "wrapper_source": {
+      "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\scripts\\run-hf-inference-accelerate-v4-attempt1.ps1",
+      "sha256": "18bf908778be2294a0402839f47b5f4f830d2ba418515952baf0e64be7c6453f"
+    },
+    "runner_source": {
+      "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\scripts\\hf_inference_accelerate_v4.py",
+      "sha256": "182d20aaff46961762e3a937013eb95ba6baf8273e9023ad58843d8536eeb1f7"
+    },
+    "actual_worker_argv_recorded_in_tree_start": true,
+    "variants": [
+      {
+        "variant": "base_adapter",
+        "execution_status": "INFERENCE_CAPTURED",
+        "python": "D:\\AI\\.venv\\Scripts\\python.exe",
+        "actual_worker_args": "-B \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\scripts\\hf_inference_accelerate_v4.py\" --variant \"base_adapter\" --run-root \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\" --output-dir \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\base_adapter-accelerate-v4-attempt1\"",
+        "worker_start_record": {
+          "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\logs\\hf-base_adapter-accelerate-v4-attempt1.tree-start.json",
+          "sha256": "f291ace5c790fdb7f91e6b6d1ccdc6655424848f8951cebf39687c550a45c487"
+        },
+        "wrapper_source": {
+          "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\scripts\\run-hf-inference-accelerate-v4-attempt1.ps1",
+          "sha256": "18bf908778be2294a0402839f47b5f4f830d2ba418515952baf0e64be7c6453f"
+        },
+        "runner_source": {
+          "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\scripts\\hf_inference_accelerate_v4.py",
+          "sha256": "182d20aaff46961762e3a937013eb95ba6baf8273e9023ad58843d8536eeb1f7"
+        },
+        "output_dir": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\base_adapter-accelerate-v4-attempt1",
+        "inference_result_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\base_adapter-accelerate-v4-attempt1\\inference-result.json",
+        "inference_result_sha256": "662235fb643240e0e081f3c6075037cbbbedb597e70bd2feb1d370c7a2e068ca",
+        "prompt_manifest_sha256": "8b50180b29ce1e38f159471a7b0ea619907f3a318182c4d1bdcbabc3cb3f6282",
+        "preflight_record": {
+          "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\logs\\hf-base_adapter-accelerate-v4-attempt1-preflight.json",
+          "sha256": "8b460a31ae34f1d49a28c235b74d01338735b582c55880931bd5ad7ca4db06f1",
+          "status": "ready",
+          "available_ram_gib": 13.309,
+          "gpu_free_mib": 6297,
+          "required_start_available_ram_gib": 7.3,
+          "required_start_gpu_free_mib": 5632
+        },
+        "tree_end_record": {
+          "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\logs\\hf-base_adapter-accelerate-v4-attempt1.tree-end.json",
+          "sha256": "9a889b0a7264852e72e1751be684a88d1b16a04cb6ee8835792cbc98bb64033a",
+          "exit_code": 0,
+          "guard_reason": null,
+          "termination_verified": true
+        },
+        "loader": "accelerate.load_checkpoint_and_dispatch",
+        "checkpoint_input": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\combined-peft-attempt1",
+        "checkpoint_load_dtype": null,
+        "max_memory": {
+          "0": 4294967296,
+          "cpu": 1073741824
+        },
+        "offload_state_dict_effective": true,
+        "preload_module_classes": [
+          "Qwen3_5GatedDeltaNet"
+        ],
+        "skip_keys": "past_key_values",
+        "versions": {
+          "torch": "2.6.0+cu126",
+          "transformers": "5.8.0",
+          "accelerate": "1.11.0",
+          "peft": "0.18.1"
+        },
+        "cases": [
+          {
+            "case_id": "shared_ledger_explanation",
+            "prompt_json": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\shared_ledger_explanation\\prompt.json",
+            "prompt_json_sha256": "56a7294498158555b855d72680f10f4242cae23671efd21c8540349e7c437033",
+            "raw_logits_npy": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\base_adapter-accelerate-v4-attempt1\\shared_ledger_explanation\\raw_logits.npy",
+            "raw_logits_sha256": "18922e0acea1bc68853f25d0e4866c1df6ab2b2acbf3d355369a1c595cb00ed2",
+            "raw_logits_json": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\base_adapter-accelerate-v4-attempt1\\shared_ledger_explanation\\raw_logits.json",
+            "generation_json": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\base_adapter-accelerate-v4-attempt1\\shared_ledger_explanation\\generation.json",
+            "output_token_count": 28,
+            "stop_reason": "eos"
+          },
+          {
+            "case_id": "short_arithmetic",
+            "prompt_json": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\short_arithmetic\\prompt.json",
+            "prompt_json_sha256": "97dee9074222b32a50677e05b8b71b530b0c0f0cfe4a1ad81983136dde444318",
+            "raw_logits_npy": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\base_adapter-accelerate-v4-attempt1\\short_arithmetic\\raw_logits.npy",
+            "raw_logits_sha256": "2e016e42d2afd9c7f3c120643fc54c5c176da247e791e29e98655e6cd99bfb09",
+            "raw_logits_json": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\base_adapter-accelerate-v4-attempt1\\short_arithmetic\\raw_logits.json",
+            "generation_json": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\base_adapter-accelerate-v4-attempt1\\short_arithmetic\\generation.json",
+            "output_token_count": 3,
+            "stop_reason": "eos"
+          },
+          {
+            "case_id": "agent_answerdecision_json",
+            "prompt_json": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\agent_answerdecision_json\\prompt.json",
+            "prompt_json_sha256": "612db8bb7dd194dc4c87d99eb62ed1068bf6c40989841b22276868e6a84d3a65",
+            "raw_logits_npy": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\base_adapter-accelerate-v4-attempt1\\agent_answerdecision_json\\raw_logits.npy",
+            "raw_logits_sha256": "a8cb118bdd851141e6085761b62a2512109b4b6e871172afb634199253c00604",
+            "raw_logits_json": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\base_adapter-accelerate-v4-attempt1\\agent_answerdecision_json\\raw_logits.json",
+            "generation_json": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\base_adapter-accelerate-v4-attempt1\\agent_answerdecision_json\\generation.json",
+            "output_token_count": 23,
+            "stop_reason": "eos"
+          }
+        ]
+      },
+      {
+        "variant": "merged",
+        "execution_status": "INFERENCE_CAPTURED",
+        "python": "D:\\AI\\.venv\\Scripts\\python.exe",
+        "actual_worker_args": "-B \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\scripts\\hf_inference_accelerate_v4.py\" --variant \"merged\" --run-root \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\" --output-dir \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\merged-accelerate-v4-attempt1\"",
+        "worker_start_record": {
+          "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\logs\\hf-merged-accelerate-v4-attempt1.tree-start.json",
+          "sha256": "5ba33c5c13b92e0563cdbf5565b331a69454206c515e01347323988b5b52fc75"
+        },
+        "wrapper_source": {
+          "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\scripts\\run-hf-inference-accelerate-v4-attempt1.ps1",
+          "sha256": "18bf908778be2294a0402839f47b5f4f830d2ba418515952baf0e64be7c6453f"
+        },
+        "runner_source": {
+          "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\scripts\\hf_inference_accelerate_v4.py",
+          "sha256": "182d20aaff46961762e3a937013eb95ba6baf8273e9023ad58843d8536eeb1f7"
+        },
+        "output_dir": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\merged-accelerate-v4-attempt1",
+        "inference_result_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\merged-accelerate-v4-attempt1\\inference-result.json",
+        "inference_result_sha256": "75f1ad06046817bb66699cbf64c0492c58bf2ca64b214ebc3b3337ad12e186eb",
+        "prompt_manifest_sha256": "8b50180b29ce1e38f159471a7b0ea619907f3a318182c4d1bdcbabc3cb3f6282",
+        "preflight_record": {
+          "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\logs\\hf-merged-accelerate-v4-attempt1-preflight.json",
+          "sha256": "1bcdf6717689f7d08be28971667cea50147a2eb8b5ada0c537162cbea03cb00c",
+          "status": "ready",
+          "available_ram_gib": 13.43,
+          "gpu_free_mib": 6306,
+          "required_start_available_ram_gib": 7.3,
+          "required_start_gpu_free_mib": 5632
+        },
+        "tree_end_record": {
+          "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\logs\\hf-merged-accelerate-v4-attempt1.tree-end.json",
+          "sha256": "10f8824b6d39e568027a5d6c4a713032c014053df8efef9ca70aaa7f32c2233e",
+          "exit_code": 0,
+          "guard_reason": null,
+          "termination_verified": true
+        },
+        "loader": "accelerate.load_checkpoint_and_dispatch",
+        "checkpoint_input": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\merged-hf-attempt3",
+        "checkpoint_load_dtype": null,
+        "max_memory": {
+          "0": 4294967296,
+          "cpu": 1073741824
+        },
+        "offload_state_dict_effective": true,
+        "preload_module_classes": [
+          "Qwen3_5GatedDeltaNet"
+        ],
+        "skip_keys": "past_key_values",
+        "versions": {
+          "torch": "2.6.0+cu126",
+          "transformers": "5.8.0",
+          "accelerate": "1.11.0",
+          "peft": null
+        },
+        "cases": [
+          {
+            "case_id": "shared_ledger_explanation",
+            "prompt_json": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\shared_ledger_explanation\\prompt.json",
+            "prompt_json_sha256": "56a7294498158555b855d72680f10f4242cae23671efd21c8540349e7c437033",
+            "raw_logits_npy": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\merged-accelerate-v4-attempt1\\shared_ledger_explanation\\raw_logits.npy",
+            "raw_logits_sha256": "38e1efe6f08edaf0220cde520a7959a1fb04162c1295db48c0f1b5ca672b9a5d",
+            "raw_logits_json": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\merged-accelerate-v4-attempt1\\shared_ledger_explanation\\raw_logits.json",
+            "generation_json": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\merged-accelerate-v4-attempt1\\shared_ledger_explanation\\generation.json",
+            "output_token_count": 28,
+            "stop_reason": "eos"
+          },
+          {
+            "case_id": "short_arithmetic",
+            "prompt_json": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\short_arithmetic\\prompt.json",
+            "prompt_json_sha256": "97dee9074222b32a50677e05b8b71b530b0c0f0cfe4a1ad81983136dde444318",
+            "raw_logits_npy": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\merged-accelerate-v4-attempt1\\short_arithmetic\\raw_logits.npy",
+            "raw_logits_sha256": "fed8f3cba43ce21943958805c09c543a20bbcaeb26e7f45d4427c67b0b11776a",
+            "raw_logits_json": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\merged-accelerate-v4-attempt1\\short_arithmetic\\raw_logits.json",
+            "generation_json": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\merged-accelerate-v4-attempt1\\short_arithmetic\\generation.json",
+            "output_token_count": 3,
+            "stop_reason": "eos"
+          },
+          {
+            "case_id": "agent_answerdecision_json",
+            "prompt_json": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\agent_answerdecision_json\\prompt.json",
+            "prompt_json_sha256": "612db8bb7dd194dc4c87d99eb62ed1068bf6c40989841b22276868e6a84d3a65",
+            "raw_logits_npy": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\merged-accelerate-v4-attempt1\\agent_answerdecision_json\\raw_logits.npy",
+            "raw_logits_sha256": "71e4aabb86fb84eef8bd60812a14f8cb9342837d0381db91d02ab64417abbbd0",
+            "raw_logits_json": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\merged-accelerate-v4-attempt1\\agent_answerdecision_json\\raw_logits.json",
+            "generation_json": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\merged-accelerate-v4-attempt1\\agent_answerdecision_json\\generation.json",
+            "output_token_count": 23,
+            "stop_reason": "eos"
+          }
+        ]
+      }
+    ],
+    "comparison": {
+      "source": {
+        "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\scripts\\compare_hf_logits_accelerate_v4_attempt1.py",
+        "sha256": "bea1c65ba80fe22b2ef8e64adfa873ae771741c8ed3c91bfe2a77d7b0126673b"
+      },
+      "result_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\hf-model-comparison-accelerate-v4-attempt1.json",
+      "result_sha256": "b5ba3d1480591c63b07c6625923024650576d7ad53ebdb0c78c8778422102f7e",
+      "recorded_script_status": "PASS",
+      "interpretation": "Script output status only; the result contains raw-logit differences and is not an equality or quality verdict.",
+      "actual_argv_or_command_record": "Not present in retained command logs inspected; invocation is not reconstructed.",
+      "verification_metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\logs\\hf-merged-v4-attempt1-verification.json"
+    }
+  },
+  "c_api_cpu_runs": {
+    "source": {
+      "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf_compare.cpp",
+      "sha256": "38c25a30fc74dba149bd6fb8e38a083eb3a296b10078349a288ee8215c794597"
+    },
+    "runs": [
+      {
+        "format": "f16",
+        "case_id": "shared_ledger_explanation",
+        "execution": {
+          "command_record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\f16-attempt1-after-hf-v4-shared_ledger_explanation.command.txt",
+          "command_record_sha256": "e380dcf0a2d9bf5fedea9cc40b0b34d4aa66a84fadb79a567375add4146b065e",
+          "command": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\build-sdk-ninja\\t0_gguf_compare.exe D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\artifacts-attempt3\\qwen3.5-4b-f16.gguf D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\cases.json shared_ledger_explanation D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\shared_ledger_explanation\\prompt.json D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\f16-attempt1-after-hf-v4\\shared_ledger_explanation\r\ncwd=D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter",
+          "metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\f16-attempt1-after-hf-v4-shared_ledger_explanation.meta.json",
+          "metadata_sha256": "9621ec39ce81510141cf07fabf4321bed9942a9b06efb25f547904bdd71c87fb",
+          "exit_code": 0,
+          "duration_seconds": 80.573,
+          "termination_verified": true,
+          "guard_reason": null,
+          "working_directory": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter"
+        },
+        "source": {
+          "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf_compare.cpp",
+          "sha256": "38c25a30fc74dba149bd6fb8e38a083eb3a296b10078349a288ee8215c794597"
+        },
+        "executable": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\build-sdk-ninja\\t0_gguf_compare.exe",
+        "result_stdout_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\f16-attempt1-after-hf-v4-shared_ledger_explanation.stdout.txt",
+        "model_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\artifacts-attempt3\\qwen3.5-4b-f16.gguf",
+        "cases_manifest_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\cases.json",
+        "prompt_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\shared_ledger_explanation\\prompt.json",
+        "raw_logits_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\f16-attempt1-after-hf-v4\\shared_ledger_explanation\\raw_logits.npy",
+        "raw_logits_shape": [
+          248320
+        ],
+        "raw_logits_dtype": "float32 little-endian",
+        "raw_logits_all_finite": true,
+        "generated_token_ids_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\f16-attempt1-after-hf-v4\\shared_ledger_explanation\\generated_token_ids.json",
+        "max_new_tokens": 32,
+        "n_gpu_layers": 0,
+        "threads": 2
+      },
+      {
+        "format": "f16",
+        "case_id": "short_arithmetic",
+        "execution": {
+          "command_record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\f16-attempt1-after-hf-v4-short_arithmetic.command.txt",
+          "command_record_sha256": "b1fc05caf27fb7dd2eff9fc28a51e216ca9ff9ba72162c2a36ec262cf176dc6c",
+          "command": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\build-sdk-ninja\\t0_gguf_compare.exe D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\artifacts-attempt3\\qwen3.5-4b-f16.gguf D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\cases.json short_arithmetic D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\short_arithmetic\\prompt.json D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\f16-attempt1-after-hf-v4\\short_arithmetic\r\ncwd=D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter",
+          "metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\f16-attempt1-after-hf-v4-short_arithmetic.meta.json",
+          "metadata_sha256": "6510cf70ff47bc482bd5bfde59b753db06e5bb413e4abfe532cb8272d2302a09",
+          "exit_code": 0,
+          "duration_seconds": 46.801,
+          "termination_verified": true,
+          "guard_reason": null,
+          "working_directory": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter"
+        },
+        "source": {
+          "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf_compare.cpp",
+          "sha256": "38c25a30fc74dba149bd6fb8e38a083eb3a296b10078349a288ee8215c794597"
+        },
+        "executable": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\build-sdk-ninja\\t0_gguf_compare.exe",
+        "result_stdout_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\f16-attempt1-after-hf-v4-short_arithmetic.stdout.txt",
+        "model_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\artifacts-attempt3\\qwen3.5-4b-f16.gguf",
+        "cases_manifest_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\cases.json",
+        "prompt_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\short_arithmetic\\prompt.json",
+        "raw_logits_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\f16-attempt1-after-hf-v4\\short_arithmetic\\raw_logits.npy",
+        "raw_logits_shape": [
+          248320
+        ],
+        "raw_logits_dtype": "float32 little-endian",
+        "raw_logits_all_finite": true,
+        "generated_token_ids_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\f16-attempt1-after-hf-v4\\short_arithmetic\\generated_token_ids.json",
+        "max_new_tokens": 16,
+        "n_gpu_layers": 0,
+        "threads": 2
+      },
+      {
+        "format": "f16",
+        "case_id": "agent_answerdecision_json",
+        "execution": {
+          "command_record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\f16-attempt1-after-hf-v4-agent_answerdecision_json.command.txt",
+          "command_record_sha256": "f6c54961b8fd0a3fc27aa92e1d1d290632f04573d424165a4cbd235dd2b4b8ff",
+          "command": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\build-sdk-ninja\\t0_gguf_compare.exe D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\artifacts-attempt3\\qwen3.5-4b-f16.gguf D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\cases.json agent_answerdecision_json D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\agent_answerdecision_json\\prompt.json D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\f16-attempt1-after-hf-v4\\agent_answerdecision_json\r\ncwd=D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter",
+          "metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\f16-attempt1-after-hf-v4-agent_answerdecision_json.meta.json",
+          "metadata_sha256": "b1888c45f34cb1c6d9dd2baec6547ddfc32cc4b2b361d958de07a22330363229",
+          "exit_code": 0,
+          "duration_seconds": 110.257,
+          "termination_verified": true,
+          "guard_reason": null,
+          "working_directory": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter"
+        },
+        "source": {
+          "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf_compare.cpp",
+          "sha256": "38c25a30fc74dba149bd6fb8e38a083eb3a296b10078349a288ee8215c794597"
+        },
+        "executable": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\build-sdk-ninja\\t0_gguf_compare.exe",
+        "result_stdout_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\f16-attempt1-after-hf-v4-agent_answerdecision_json.stdout.txt",
+        "model_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\artifacts-attempt3\\qwen3.5-4b-f16.gguf",
+        "cases_manifest_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\cases.json",
+        "prompt_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\agent_answerdecision_json\\prompt.json",
+        "raw_logits_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\f16-attempt1-after-hf-v4\\agent_answerdecision_json\\raw_logits.npy",
+        "raw_logits_shape": [
+          248320
+        ],
+        "raw_logits_dtype": "float32 little-endian",
+        "raw_logits_all_finite": true,
+        "generated_token_ids_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\f16-attempt1-after-hf-v4\\agent_answerdecision_json\\generated_token_ids.json",
+        "max_new_tokens": 96,
+        "n_gpu_layers": 0,
+        "threads": 2
+      },
+      {
+        "format": "q4_k_m",
+        "case_id": "shared_ledger_explanation",
+        "execution": {
+          "command_record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\gguf-q4_k_m-shared_ledger_explanation.command.txt",
+          "command_record_sha256": "f42799adfca23884a87c64fb628826e9ecfe2a439defd513b3e0d8f978940b18",
+          "command": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\build-sdk-ninja\\t0_gguf_compare.exe D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\artifacts-attempt3\\qwen3.5-4b-q4_k_m.gguf D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\cases.json shared_ledger_explanation D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\shared_ledger_explanation\\prompt.json D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\q4_k_m\\shared_ledger_explanation\r\ncwd=D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter",
+          "metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\gguf-q4_k_m-shared_ledger_explanation.meta.json",
+          "metadata_sha256": "6743b4f4cf79c164949ce3ca80bb37cac4b1e24f48db9c02de2545b9c6fb06db",
+          "exit_code": 0,
+          "duration_seconds": 78.703,
+          "termination_verified": true,
+          "guard_reason": null,
+          "working_directory": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter"
+        },
+        "source": {
+          "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf_compare.cpp",
+          "sha256": "38c25a30fc74dba149bd6fb8e38a083eb3a296b10078349a288ee8215c794597"
+        },
+        "executable": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\build-sdk-ninja\\t0_gguf_compare.exe",
+        "result_stdout_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\gguf-q4_k_m-shared_ledger_explanation.stdout.txt",
+        "model_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\artifacts-attempt3\\qwen3.5-4b-q4_k_m.gguf",
+        "cases_manifest_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\cases.json",
+        "prompt_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\shared_ledger_explanation\\prompt.json",
+        "raw_logits_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\q4_k_m\\shared_ledger_explanation\\raw_logits.npy",
+        "raw_logits_shape": [
+          248320
+        ],
+        "raw_logits_dtype": "float32 little-endian",
+        "raw_logits_all_finite": true,
+        "generated_token_ids_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\q4_k_m\\shared_ledger_explanation\\generated_token_ids.json",
+        "max_new_tokens": 32,
+        "n_gpu_layers": 0,
+        "threads": 2
+      },
+      {
+        "format": "q4_k_m",
+        "case_id": "short_arithmetic",
+        "execution": {
+          "command_record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\gguf-q4_k_m-short_arithmetic.command.txt",
+          "command_record_sha256": "54295fd6804c5e10256e5011bef8a246b68aa350aaa0501d90422562076f4a03",
+          "command": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\build-sdk-ninja\\t0_gguf_compare.exe D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\artifacts-attempt3\\qwen3.5-4b-q4_k_m.gguf D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\cases.json short_arithmetic D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\short_arithmetic\\prompt.json D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\q4_k_m\\short_arithmetic\r\ncwd=D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter",
+          "metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\gguf-q4_k_m-short_arithmetic.meta.json",
+          "metadata_sha256": "b63a2bca82b1e1b0bd5a23e1bd7706fcdea89f6580b090c7f30fcd3639cabce6",
+          "exit_code": 0,
+          "duration_seconds": 39.671,
+          "termination_verified": true,
+          "guard_reason": null,
+          "working_directory": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter"
+        },
+        "source": {
+          "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf_compare.cpp",
+          "sha256": "38c25a30fc74dba149bd6fb8e38a083eb3a296b10078349a288ee8215c794597"
+        },
+        "executable": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\build-sdk-ninja\\t0_gguf_compare.exe",
+        "result_stdout_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\gguf-q4_k_m-short_arithmetic.stdout.txt",
+        "model_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\artifacts-attempt3\\qwen3.5-4b-q4_k_m.gguf",
+        "cases_manifest_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\cases.json",
+        "prompt_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\short_arithmetic\\prompt.json",
+        "raw_logits_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\q4_k_m\\short_arithmetic\\raw_logits.npy",
+        "raw_logits_shape": [
+          248320
+        ],
+        "raw_logits_dtype": "float32 little-endian",
+        "raw_logits_all_finite": true,
+        "generated_token_ids_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\q4_k_m\\short_arithmetic\\generated_token_ids.json",
+        "max_new_tokens": 16,
+        "n_gpu_layers": 0,
+        "threads": 2
+      },
+      {
+        "format": "q4_k_m",
+        "case_id": "agent_answerdecision_json",
+        "execution": {
+          "command_record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\gguf-q4_k_m-agent_answerdecision_json.command.txt",
+          "command_record_sha256": "04dcd92476e9b4d9b0898f72b40318db9a7ef3f76d19007fbc2bab573ab85d6f",
+          "command": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\build-sdk-ninja\\t0_gguf_compare.exe D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\artifacts-attempt3\\qwen3.5-4b-q4_k_m.gguf D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\cases.json agent_answerdecision_json D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\agent_answerdecision_json\\prompt.json D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\q4_k_m\\agent_answerdecision_json\r\ncwd=D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter",
+          "metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\gguf-q4_k_m-agent_answerdecision_json.meta.json",
+          "metadata_sha256": "89b189f6936db13f2adf44f070634ad10fbf9e7c6911f447177dd55cb9bede2a",
+          "exit_code": 0,
+          "duration_seconds": 81.861,
+          "termination_verified": true,
+          "guard_reason": null,
+          "working_directory": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter"
+        },
+        "source": {
+          "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf_compare.cpp",
+          "sha256": "38c25a30fc74dba149bd6fb8e38a083eb3a296b10078349a288ee8215c794597"
+        },
+        "executable": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\build-sdk-ninja\\t0_gguf_compare.exe",
+        "result_stdout_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\command-logs\\gguf-q4_k_m-agent_answerdecision_json.stdout.txt",
+        "model_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\artifacts-attempt3\\qwen3.5-4b-q4_k_m.gguf",
+        "cases_manifest_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\cases.json",
+        "prompt_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\prompts\\agent_answerdecision_json\\prompt.json",
+        "raw_logits_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\q4_k_m\\agent_answerdecision_json\\raw_logits.npy",
+        "raw_logits_shape": [
+          248320
+        ],
+        "raw_logits_dtype": "float32 little-endian",
+        "raw_logits_all_finite": true,
+        "generated_token_ids_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\q4_k_m\\agent_answerdecision_json\\generated_token_ids.json",
+        "max_new_tokens": 96,
+        "n_gpu_layers": 0,
+        "threads": 2
+      }
+    ]
+  },
+  "raw_logit_comparisons": {
+    "source": {
+      "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\tools\\compare_raw_logits.py",
+      "sha256": "c86b0ebfbb0c02a1368cee8ace6c937a29003c16773fec12c5d0760409032267"
+    },
+    "runs": [
+      {
+        "case_comparison": "agent_answerdecision_json-f16-vs-q4",
+        "command_record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\agent_answerdecision_json-f16-vs-q4.command.txt",
+        "command_record_sha256": "c5c2237d35c6de9b91fb8a19b466a5407701fd43ae995ee0415aa6dcdb4da86e",
+        "actual_command": "\"D:\\AI\\tools\\venvs\\llama-cpp-b9acf138a1e28ce1fc23b5a4fc4b12444b50f7ea\\Scripts\\python.exe\" -B \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\tools\\compare_raw_logits.py\" --reference \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\f16-attempt1-after-hf-v4\\agent_answerdecision_json\\raw_logits.npy\" --candidate \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\q4_k_m\\agent_answerdecision_json\\raw_logits.npy\" --case-id \"agent_answerdecision_json\" --top-k 10",
+        "metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\agent_answerdecision_json-f16-vs-q4.meta.json",
+        "metadata_sha256": "3c39c6d56ce841799b846ee3200d1383d013bb38900a7da45d6aefb44c4e3bdd",
+        "exit_code": 0,
+        "result_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\agent_answerdecision_json-f16-vs-q4.json",
+        "result_sha256": "96fdb673aedb00d9d03ebb50f8c2d46b69b1839aaca13de3ad0fc33c64c0f53e"
+      },
+      {
+        "case_comparison": "agent_answerdecision_json-hf-vs-f16",
+        "command_record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\agent_answerdecision_json-hf-vs-f16.command.txt",
+        "command_record_sha256": "dbdc92e612831e03b3cc68952d67122634f8677c2ecb61673b9dc0fada7da915",
+        "actual_command": "\"D:\\AI\\tools\\venvs\\llama-cpp-b9acf138a1e28ce1fc23b5a4fc4b12444b50f7ea\\Scripts\\python.exe\" -B \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\tools\\compare_raw_logits.py\" --reference \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\merged-accelerate-v4-attempt1\\agent_answerdecision_json\\raw_logits.npy\" --candidate \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\f16-attempt1-after-hf-v4\\agent_answerdecision_json\\raw_logits.npy\" --case-id \"agent_answerdecision_json\" --top-k 10",
+        "metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\agent_answerdecision_json-hf-vs-f16.meta.json",
+        "metadata_sha256": "0f99c7e76fb0b8dd2d8f35386c40cd5347149b21eb240425a6c9f36ea2965859",
+        "exit_code": 0,
+        "result_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\agent_answerdecision_json-hf-vs-f16.json",
+        "result_sha256": "462a667d1a10de5dbdfefe3e484f46e9881eb83fdde01acc2f95c5c48855464a"
+      },
+      {
+        "case_comparison": "agent_answerdecision_json-hf-vs-q4",
+        "command_record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\agent_answerdecision_json-hf-vs-q4.command.txt",
+        "command_record_sha256": "ba4d8208360b0549a58afd5dacb40d9f49531924ccf62b622742e5e465a17809",
+        "actual_command": "\"D:\\AI\\tools\\venvs\\llama-cpp-b9acf138a1e28ce1fc23b5a4fc4b12444b50f7ea\\Scripts\\python.exe\" -B \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\tools\\compare_raw_logits.py\" --reference \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\merged-accelerate-v4-attempt1\\agent_answerdecision_json\\raw_logits.npy\" --candidate \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\q4_k_m\\agent_answerdecision_json\\raw_logits.npy\" --case-id \"agent_answerdecision_json\" --top-k 10",
+        "metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\agent_answerdecision_json-hf-vs-q4.meta.json",
+        "metadata_sha256": "1493a2016a05150cf65e002bb534dd92a9a99b1977fdd6258ff78a199e867c79",
+        "exit_code": 0,
+        "result_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\agent_answerdecision_json-hf-vs-q4.json",
+        "result_sha256": "8ef42e29ef26d37bed390145159f2ee25ce36eadf9f335c352338f105125225c"
+      },
+      {
+        "case_comparison": "shared_ledger_explanation-f16-vs-q4",
+        "command_record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\shared_ledger_explanation-f16-vs-q4.command.txt",
+        "command_record_sha256": "c0fc1550224f395d7c878e2a91ae8713273cd17bfbccafd8906e565e20a77150",
+        "actual_command": "\"D:\\AI\\tools\\venvs\\llama-cpp-b9acf138a1e28ce1fc23b5a4fc4b12444b50f7ea\\Scripts\\python.exe\" -B \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\tools\\compare_raw_logits.py\" --reference \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\f16-attempt1-after-hf-v4\\shared_ledger_explanation\\raw_logits.npy\" --candidate \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\q4_k_m\\shared_ledger_explanation\\raw_logits.npy\" --case-id \"shared_ledger_explanation\" --top-k 10",
+        "metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\shared_ledger_explanation-f16-vs-q4.meta.json",
+        "metadata_sha256": "bdf451d029b02661175c2e721409e676cce00536986afb000864116931ec9f6b",
+        "exit_code": 0,
+        "result_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\shared_ledger_explanation-f16-vs-q4.json",
+        "result_sha256": "03007447adb02a051193efef90c90f494d71a4a937316cf26db8a30e6961f8fa"
+      },
+      {
+        "case_comparison": "shared_ledger_explanation-hf-vs-f16",
+        "command_record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\shared_ledger_explanation-hf-vs-f16.command.txt",
+        "command_record_sha256": "271c566c7e7c1676186c72ba8446febc567b91bf5912f8d95c0054860143d422",
+        "actual_command": "\"D:\\AI\\tools\\venvs\\llama-cpp-b9acf138a1e28ce1fc23b5a4fc4b12444b50f7ea\\Scripts\\python.exe\" -B \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\tools\\compare_raw_logits.py\" --reference \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\merged-accelerate-v4-attempt1\\shared_ledger_explanation\\raw_logits.npy\" --candidate \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\f16-attempt1-after-hf-v4\\shared_ledger_explanation\\raw_logits.npy\" --case-id \"shared_ledger_explanation\" --top-k 10",
+        "metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\shared_ledger_explanation-hf-vs-f16.meta.json",
+        "metadata_sha256": "283e1c038d7a2c121435d31f990d9ea500ae80d82c58932297899de0acc50e57",
+        "exit_code": 0,
+        "result_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\shared_ledger_explanation-hf-vs-f16.json",
+        "result_sha256": "65b3b81e7507cc5cd5c43c68f991358f9a735d4284e0698be40b64b98cb84b78"
+      },
+      {
+        "case_comparison": "shared_ledger_explanation-hf-vs-q4",
+        "command_record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\shared_ledger_explanation-hf-vs-q4.command.txt",
+        "command_record_sha256": "e88a3ef853709f5eb6da1ae25018d574147222542dd365bdaaa8633415736744",
+        "actual_command": "\"D:\\AI\\tools\\venvs\\llama-cpp-b9acf138a1e28ce1fc23b5a4fc4b12444b50f7ea\\Scripts\\python.exe\" -B \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\tools\\compare_raw_logits.py\" --reference \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\merged-accelerate-v4-attempt1\\shared_ledger_explanation\\raw_logits.npy\" --candidate \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\q4_k_m\\shared_ledger_explanation\\raw_logits.npy\" --case-id \"shared_ledger_explanation\" --top-k 10",
+        "metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\shared_ledger_explanation-hf-vs-q4.meta.json",
+        "metadata_sha256": "5f73d17a4f41a497defb8091edd2100f1c8cca8ca65646117bb8d404d3a5372c",
+        "exit_code": 0,
+        "result_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\shared_ledger_explanation-hf-vs-q4.json",
+        "result_sha256": "d264dd211b2adc36b0966fe2c7056e8145c700a8bafde536b6410706bd7af6fa"
+      },
+      {
+        "case_comparison": "short_arithmetic-f16-vs-q4",
+        "command_record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\short_arithmetic-f16-vs-q4.command.txt",
+        "command_record_sha256": "ec40afe7d7dd9fbc0402a38d9cb23b3d09aff559f8e10aa06de531735d3f0c3c",
+        "actual_command": "\"D:\\AI\\tools\\venvs\\llama-cpp-b9acf138a1e28ce1fc23b5a4fc4b12444b50f7ea\\Scripts\\python.exe\" -B \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\tools\\compare_raw_logits.py\" --reference \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\f16-attempt1-after-hf-v4\\short_arithmetic\\raw_logits.npy\" --candidate \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\q4_k_m\\short_arithmetic\\raw_logits.npy\" --case-id \"short_arithmetic\" --top-k 10",
+        "metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\short_arithmetic-f16-vs-q4.meta.json",
+        "metadata_sha256": "8e88b30f2625b7999edf57ff47c8548077b8d9ad726b58054a940b132f171cf8",
+        "exit_code": 0,
+        "result_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\short_arithmetic-f16-vs-q4.json",
+        "result_sha256": "69094b8bd74edfc5d01e3400d35ebaf4838cd8ea328587a582ce0ee277a7678f"
+      },
+      {
+        "case_comparison": "short_arithmetic-hf-vs-f16",
+        "command_record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\short_arithmetic-hf-vs-f16.command.txt",
+        "command_record_sha256": "c1e07516d96f2fc7a3df5ff1dc933af6c5cc51fdcb5110984ef18c31efe596f8",
+        "actual_command": "\"D:\\AI\\tools\\venvs\\llama-cpp-b9acf138a1e28ce1fc23b5a4fc4b12444b50f7ea\\Scripts\\python.exe\" -B \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\tools\\compare_raw_logits.py\" --reference \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\merged-accelerate-v4-attempt1\\short_arithmetic\\raw_logits.npy\" --candidate \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\f16-attempt1-after-hf-v4\\short_arithmetic\\raw_logits.npy\" --case-id \"short_arithmetic\" --top-k 10",
+        "metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\short_arithmetic-hf-vs-f16.meta.json",
+        "metadata_sha256": "2f0002010595f1bdd779f1326d70e709026b2fc9c2498aa2cb1683220b0c0e36",
+        "exit_code": 0,
+        "result_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\short_arithmetic-hf-vs-f16.json",
+        "result_sha256": "730373a43f0939b0c21e9be2cdfd9253e76b265aabef34b4ab529b40e48d41da"
+      },
+      {
+        "case_comparison": "short_arithmetic-hf-vs-q4",
+        "command_record_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\short_arithmetic-hf-vs-q4.command.txt",
+        "command_record_sha256": "8c457815c58ef821d20cf2fb22881c6b0913e498a997d4ea1ddb26da605d4ce6",
+        "actual_command": "\"D:\\AI\\tools\\venvs\\llama-cpp-b9acf138a1e28ce1fc23b5a4fc4b12444b50f7ea\\Scripts\\python.exe\" -B \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\tools\\compare_raw_logits.py\" --reference \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\hf-inference\\merged-accelerate-v4-attempt1\\short_arithmetic\\raw_logits.npy\" --candidate \"D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\q4_k_m\\short_arithmetic\\raw_logits.npy\" --case-id \"short_arithmetic\" --top-k 10",
+        "metadata_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\short_arithmetic-hf-vs-q4.meta.json",
+        "metadata_sha256": "92f6ff7abd5847bb54b434da940033f6406794a20d372e22ff599e223e2906dc",
+        "exit_code": 0,
+        "result_path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\short_arithmetic-hf-vs-q4.json",
+        "result_sha256": "882c5ea5a93866bae2644d0bc7548576e70bbb838b8c1124481e5b22d50e8af2"
+      }
+    ]
+  },
+  "comparison_report_artifacts": {
+    "json": {
+      "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\f16-q4-hf-v4-comparison-report.json",
+      "sha256": "af1f8481b6ac95b75cd231e20784d635205c12e44a28d57a910e0c81f01bc78e"
+    },
+    "markdown": {
+      "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\f16-q4-hf-v4-comparison-report.md",
+      "sha256": "6a1002bb6e448bdef899d76ebf9005805bceb7c7d9790a822d664c3980f508f6"
+    },
+    "source_v1": {
+      "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\build-report-v1.py",
+      "sha256": "0f9b94766e7a4109a8899529a1064de5a236be8e387320baef6eb650d9e03f1d"
+    },
+    "source_v2": {
+      "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\tri-format-comparison-v4-attempt1\\build-markdown-report-v2.py",
+      "sha256": "34cd3eb493beff030443ba27a24963c8cb223ea17cf4992e688ee738a752b579"
+    },
+    "invocation_record": "No report-builder command record found in the inspected run logs; not reconstructed.",
+    "agent_reports": [
+      {
+        "name": "step4_conversion",
+        "path": "D:\\project\\Android\\shared-ledger-agent\\agent\\docs\\t0\\runs\\20261008-step4-conversion.md",
+        "sha256": "2c594373900d536a47fd35278484fb9be7b8185fbffcbaaad0546b693a385452",
+        "status": "conversion and CPU comparison report; no quality/equivalence verdict implied"
+      },
+      {
+        "name": "f16_cpu_comparison",
+        "path": "D:\\project\\Android\\shared-ledger-agent\\agent\\docs\\t0\\runs\\20261008-f16-cpu-comparison.md",
+        "sha256": "8f31ddbfb5789d1aac34968daa74a3d7b96050e6cded38d92cb6dda2b47e9259",
+        "status": "final report"
+      },
+      {
+        "name": "lm_studio_q4_smoke",
+        "path": "D:\\project\\Android\\shared-ledger-agent\\agent\\docs\\t0\\runs\\20261008-lmstudio-q4-smoke.md",
+        "sha256": "118e53ffb2256080ed69cfc699ba9758ac9ec95bed9957276d338be7fb36aae5",
+        "status": "runtime and strict-JSON smoke only"
+      }
+    ],
+    "invocation_provenance": {
+      "historical_report_builder_argv": "not recorded",
+      "derived_reproduction_command": null,
+      "provenance": "No historical invocation was reconstructed; original source paths and hashes remain recorded."
+    }
+  },
+  "lm_studio_step5": {
+    "status": "completed_runtime_smoke",
+    "run_label": "step5-q4-cp36-runtime-20261008T1421Z",
+    "evidence_manifest": {
+      "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\logs\\step5-q4-cp36-runtime-20261008T1421Z-evidence-manifest.json",
+      "sha256": "503649db03de95960d3852c90bef9bc56d77e876c08331453802bcc61cb2f38d",
+      "bytes": 24567
+    },
+    "model": {
+      "publisher": "shared-ledger",
+      "catalog_key": "t0-cp36-20261007",
+      "display_name": "Qwen3.5 4B",
+      "quantization": "Q4_K_M",
+      "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\artifacts-attempt3\\qwen3.5-4b-q4_k_m.gguf",
+      "bytes": 2708804480,
+      "sha256": "acfd01df6cbd3c8e1fa4dbe144f5852290689851c4f92d4ab892707d08724b34",
+      "hardlink_destination": "D:\\computer\\LM_Models\\shared-ledger\\t0-cp36-20261007\\qwen3.5-4b-q4_k_m.gguf",
+      "ntfs_file_id": "0x000000000000000000040000001fc39f",
+      "same_ntfs_file_id": true,
+      "loaded_instance_id": "t0-cp36-step5-20261008-1421z"
+    },
+    "load": {
+      "cli_command": "C:\\Users\\zhy20\\.lmstudio\\bin\\lms.exe load t0-cp36-20261007 --identifier t0-cp36-step5-20261008-1421z --context-length 512 --gpu 0.5 --parallel 1 --no-speculative-draft-mtp",
+      "exit_code": 0,
+      "api_config": {
+        "context_length": 512,
+        "eval_batch_size": 2048,
+        "physical_batch_size": 512,
+        "parallel": 1,
+        "flash_attention": true,
+        "context_checkpoints": 32,
+        "reasoning_budget_message": "",
+        "speculative_draft_mtp": false,
+        "speculative_draft_simple": false,
+        "speculative_draft_model": "",
+        "speculative_draft_max_tokens": 3,
+        "speculative_draft_min_tokens": 0,
+        "speculative_draft_min_continue_probability": 0,
+        "offload_kv_cache_to_gpu": true
+      }
+    },
+    "requests": {
+      "shared_ledger_explanation": {
+        "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\step5-q4-cp36-runtime-20261008T1421Z\\requests\\shared_ledger_explanation.request.json",
+        "sha256": "1B6DF408D26384938A1A2C00C9C3009F2F1766E4DCA13B41EE9DD2C5A00AA41F"
+      },
+      "agent_answerdecision_json": {
+        "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\step5-q4-cp36-runtime-20261008T1421Z\\requests\\agent_answerdecision_json.request.json",
+        "sha256": "E991BD5FA72E1DA0493E8D668AA243C11AE8F71F142164ABAE60309AE85EB035"
+      },
+      "host_harness_result": {
+        "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\logs\\step5-q4-cp36-runtime-20261008T1421Z\\host-harness-result.json",
+        "sha256": "5245C5E0F7A01A0762DE283604CF1CF98057DE47B815BEA630856D8B8AEA3328",
+        "bytes": 1387
+      },
+      "host_harness_source": {
+        "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\scripts\\step5_harness_v2.py",
+        "sha256": "391b9bb91f6dce9e687d45def28b7e86a6fe8e2f612bb0e9f5f8489d0c0ee1ae"
+      },
+      "host_harness_argv": [
+        "-3.12",
+        "-B",
+        "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\scripts\\step5_harness_v2.py",
+        "host",
+        "--manifest",
+        "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\cases.json",
+        "--requests-dir",
+        "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\step5-q4-cp36-runtime-20261008T1421Z\\requests",
+        "--results-dir",
+        "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\step5-q4-cp36-runtime-20261008T1421Z\\host",
+        "--base-url",
+        "http://127.0.0.1:1234",
+        "--timeout-seconds",
+        "600",
+        "--expected-response-instance-id",
+        "t0-cp36-step5-20261008-1421z"
+      ],
+      "docker_launcher_result": {
+        "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\logs\\step5-q4-cp36-runtime-20261008T1421Z\\docker-launcher-v2-result.json",
+        "sha256": "5404C2EDB873BB0DD745A8B4C2C6554BF717D02F9852E7B1D81A596CC50A7934",
+        "bytes": 2255
+      },
+      "docker_command_record": {
+        "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\logs\\step5-q4-cp36-runtime-20261008T1421Z\\docker-launcher-v2\\docker-client.command.json",
+        "sha256": "22921CE2B618C2FAF32FB8EB99418EF973D8A1CC6ADDE148433A35E88AAC5E10",
+        "bytes": 979
+      },
+      "docker_script": {
+        "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\scripts\\docker-chat-smoke.sh",
+        "sha256": "7b3df7fd9ef427ef21f4219f1cddd90d3a2587c4b0b278c874fb86c9b72cf78a"
+      },
+      "cases": [
+        {
+          "transport": "host",
+          "case_id": "shared_ledger_explanation",
+          "response": {
+            "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\step5-q4-cp36-runtime-20261008T1421Z\\host\\shared_ledger_explanation.response.json",
+            "sha256": "3E24FE7F4EC87A9C93684F765DA75D78B7CE38F9176F7D618BAACD7C390C0EB4",
+            "bytes": 479
+          },
+          "http_status": 200,
+          "client_exit_code": 0,
+          "expected_instance_id": "t0-cp36-step5-20261008-1421z",
+          "actual_instance_id": "t0-cp36-step5-20261008-1421z",
+          "instance_match": true,
+          "input_tokens": 34,
+          "output_tokens": 28,
+          "format_check": {
+            "status": "not_applicable"
+          },
+          "response_body_sha256": "3E24FE7F4EC87A9C93684F765DA75D78B7CE38F9176F7D618BAACD7C390C0EB4",
+          "retry": false
+        },
+        {
+          "transport": "host",
+          "case_id": "agent_answerdecision_json",
+          "response": {
+            "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\step5-q4-cp36-runtime-20261008T1421Z\\host\\agent_answerdecision_json.response.json",
+            "sha256": "CFD3989B4460E6BC42D5B5659F0113E554754BD325FB508A7A0D6B98CC0D9D2D",
+            "bytes": 418
+          },
+          "http_status": 200,
+          "client_exit_code": 0,
+          "expected_instance_id": "t0-cp36-step5-20261008-1421z",
+          "actual_instance_id": "t0-cp36-step5-20261008-1421z",
+          "instance_match": true,
+          "input_tokens": 69,
+          "output_tokens": 23,
+          "format_check": {
+            "json_parse_pass": true,
+            "json_parse_error": null,
+            "schema_valid": true,
+            "schema_errors": [],
+            "exact_expected_object_match": true,
+            "status": "pass"
+          },
+          "response_body_sha256": "CFD3989B4460E6BC42D5B5659F0113E554754BD325FB508A7A0D6B98CC0D9D2D",
+          "retry": false
+        },
+        {
+          "transport": "docker",
+          "case_id": "shared_ledger_explanation",
+          "response": {
+            "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\step5-q4-cp36-runtime-20261008T1421Z\\docker\\shared_ledger_explanation.response.json",
+            "sha256": "3DE31D6B194C605C0D44D0C3770ADE1B46618A5583B9259F4A93145427450532",
+            "bytes": 480
+          },
+          "http_status": 200,
+          "client_exit_code": 0,
+          "expected_instance_id": "t0-cp36-step5-20261008-1421z",
+          "actual_instance_id": "t0-cp36-step5-20261008-1421z",
+          "instance_match": true,
+          "input_tokens": 34,
+          "output_tokens": 28,
+          "format_check": {
+            "status": "not_applicable"
+          },
+          "response_body_sha256": "3DE31D6B194C605C0D44D0C3770ADE1B46618A5583B9259F4A93145427450532",
+          "retry": false
+        },
+        {
+          "transport": "docker",
+          "case_id": "agent_answerdecision_json",
+          "response": {
+            "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step4-converter\\gguf-cpu-outputs\\step5-q4-cp36-runtime-20261008T1421Z\\docker\\agent_answerdecision_json.response.json",
+            "sha256": "38AFB978B4E5F55343C643883DBD41E89C0D58DA84742893FC8AE0456EF79D47",
+            "bytes": 419
+          },
+          "http_status": 200,
+          "client_exit_code": 0,
+          "expected_instance_id": "t0-cp36-step5-20261008-1421z",
+          "actual_instance_id": "t0-cp36-step5-20261008-1421z",
+          "instance_match": true,
+          "input_tokens": 69,
+          "output_tokens": 23,
+          "format_check": {
+            "json_parse_pass": true,
+            "json_parse_error": null,
+            "schema_valid": true,
+            "schema_errors": [],
+            "exact_expected_object_match": true,
+            "status": "pass"
+          },
+          "response_body_sha256": "38AFB978B4E5F55343C643883DBD41E89C0D58DA84742893FC8AE0456EF79D47",
+          "retry": false
+        }
+      ]
+    },
+    "lifecycle": {
+      "targeted_unload_pass": true,
+      "target_instance_remaining": 0,
+      "server_restored_stopped": true,
+      "d_log_bytes_delta": 19985,
+      "changed_log_after": {
+        "size_bytes": 22176,
+        "sha256": "E15741505DF01B53438A75EAFDD2B68BB24EB4C78298AFC66AA387F1086BB597",
+        "last_write_utc": "2026-10-08T14:35:16.6727163Z"
+      },
+      "history_archive_copy": {
+        "source": "C:\\Users\\zhy20\\.lmstudio\\server-logs.pre-t0-20261007-200705",
+        "archive": "D:\\AI\\runtime\\lmstudio\\server-log-history\\pre-t0-20261007-200705",
+        "file_count": 33,
+        "directory_count": 7,
+        "total_bytes": 19214214,
+        "source_stable_after_copy": true,
+        "archive_matches_source": true,
+        "per_file_comparisons": 33,
+        "archive_index": {
+          "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\evidence\\server-log-history-archive-20261008T144710Z\\archive-evidence-index.json",
+          "sha256": "8C0DA0B118EF45BADE111BFF1A7728C0A9CD68668BFD434CBC4F6364583F2544",
+          "bytes": 3322
+        },
+        "item_comparison": {
+          "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\evidence\\server-log-history-archive-20261008T144710Z\\item-comparison.json",
+          "sha256": "FC2D64DB83155A94083F723B5D3558FF9E22F659735CE18E0D115BECE6CADC88",
+          "bytes": 20652
+        }
+      },
+      "cleanup": {
+        "source_hold_exists_after": false,
+        "delete_command": "Remove-Item -LiteralPath C:\\Users\\zhy20\\.lmstudio\\server-logs.pre-t0-20261007-200705 -Recurse",
+        "logical_bytes_removed": 19214214,
+        "logical_mib_removed": 18.324,
+        "c_drive_free_delta_bytes_observed": 0,
+        "archive_matches_predelete": true,
+        "c_junction_intact": true,
+        "c_junction_target": "D:\\AI\\runtime\\lmstudio\\server-logs",
+        "d_live_files": 33,
+        "d_live_total_bytes": 19234155,
+        "server_still_stopped": true,
+        "cleanup_verification": {
+          "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\evidence\\server-log-history-archive-20261008T144710Z\\cleanup-verification.json",
+          "sha256": "25E315F94C53414C57CAFA0A493F5A6335A37E4F446616A40BEABC90B0E92146",
+          "bytes": 1721
+        }
+      },
+      "archive_index": {
+        "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\evidence\\server-log-history-archive-20261008T144710Z\\archive-evidence-index.json",
+        "sha256": "8C0DA0B118EF45BADE111BFF1A7728C0A9CD68668BFD434CBC4F6364583F2544",
+        "bytes": 3322
+      },
+      "cleanup_verification": {
+        "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\evidence\\server-log-history-archive-20261008T144710Z\\cleanup-verification.json",
+        "sha256": "25E315F94C53414C57CAFA0A493F5A6335A37E4F446616A40BEABC90B0E92146",
+        "bytes": 1721
+      },
+      "guard": {
+        "sample_count": 524,
+        "min_ram_free_gib": 9.798,
+        "min_gpu_free_mib": 4077,
+        "ram_floor_gib": 2.0,
+        "gpu_floor_mib": 512,
+        "floor_breach_count": 0,
+        "action": "observe-only; no process was killed or stopped"
+      }
+    },
+    "validation_scope": {
+      "host_and_docker_requests_http_200_exit_0_instance_match": true,
+      "strict_json_exact_object_match": true,
+      "semantic_quality_evaluated": false,
+      "cap_evaluated": false,
+      "numerical_or_logit_equivalence_evaluated": false,
+      "resource_guard_automatic_kill_tested": false,
+      "logical_c_bytes_removed": 19214214,
+      "c_drive_free_delta_bytes_observed": 0,
+      "note": "T0 runtime and strict-JSON smoke evidence only; semantic quality, CAP, business usefulness, and exact numerical/logit equivalence were not tested by this report. Does not satisfy T1 relabel/new-data prerequisites."
+    }
+  },
+  "final_update": {
+    "revision": 2,
+    "date": "2026-10-08",
+    "previous_index_backup": {
+      "path": "D:\\AI\\runs\\shared-ledger\\t0-deploy-smoke\\20261007-200705-step3-merge\\step6-reproduction-index-20261008\\reproduction-index.pre-step5-20261008.json",
+      "sha256": "a297ccb5561572851ef9d17626b39406915f7f41722161f4ea5e7775207452de"
+    },
+    "scope": "D-only reproduction index update; no model or GGUF content was read or hashed."
+  }
+}
