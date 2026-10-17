@@ -47,6 +47,10 @@ data class Expense(
     val fxRateObservedAt: String? = null,
     val iconKey: String = ExpenseIconKey.MONEY,
     val financialLocked: Boolean = false,
+    /** Distinct participants sharing this expense; null when the read did not include splits. */
+    val splitParticipantCount: Int? = null,
+    /** Payer names ordered by paid amount (largest first); null when the read did not include payments. */
+    val payerNames: List<String>? = null,
 )
 
 data class ExpenseLedgerUnit(

@@ -17,6 +17,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -24,9 +25,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ErrorOutline
+import androidx.compose.material.icons.rounded.Group
 import androidx.compose.material.icons.rounded.Inbox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -48,6 +51,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -64,6 +69,7 @@ import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTheme
 import com.ffocalors.sharedledger.ui.theme.WarmOrange
 import com.ffocalors.sharedledger.ui.theme.WarmOrangeContainer
+import com.ffocalors.sharedledger.ui.theme.sharedLedgerColors
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -516,6 +522,60 @@ fun EmptyState(
 }
 
 @Composable
+fun ParticipantSetupPrompt(
+    title: String,
+    description: String,
+    modifier: Modifier = Modifier,
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = SharedLedgerRadius.Large,
+        color = MaterialTheme.sharedLedgerColors.successContainer,
+        contentColor = MaterialTheme.sharedLedgerColors.onSuccessContainer,
+    ) {
+        Row(
+            modifier = Modifier.padding(SharedLedgerSpacing.Medium),
+            horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Group,
+                contentDescription = null,
+                tint = SageGreen,
+                modifier = Modifier.size(SharedLedgerDimens.IconMedium),
+            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small),
+            ) {
+                Text(
+                    text = title,
+                    style = SharedLedgerTextStyles.CardTitle,
+                    modifier = Modifier.semantics { heading() },
+                )
+                Text(
+                    text = description,
+                    style = SharedLedgerTextStyles.BodySecondary,
+                )
+                if (actionLabel != null && onAction != null) {
+                    // SharedLedgerButton 内部固定 fillMaxWidth，这里用固有宽度包裹，使按钮保持内容宽度。
+                    Box(modifier = Modifier.width(IntrinsicSize.Max)) {
+                        SharedLedgerButton(
+                            text = actionLabel,
+                            onClick = onAction,
+                            tone = SharedLedgerButtonTone.Inverted,
+                            modifier = Modifier.padding(top = SharedLedgerSpacing.XSmall),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun ErrorState(
     message: String,
     modifier: Modifier = Modifier,
@@ -669,6 +729,30 @@ private fun LoadingStateLargePreview() {
         LoadingState(
             message = "正在读取最新账单与债务…",
             size = LoadingSize.Large,
+        )
+    }
+}
+
+@Preview(name = "参与人引导 · 带操作", showBackground = true)
+@Composable
+private fun ParticipantSetupPromptWithActionPreview() {
+    SharedLedgerTheme {
+        ParticipantSetupPrompt(
+            title = "先添加参与人",
+            description = "账单要记在参与人名下。添加一起分摊的人后，就能记账、转账和结算。",
+            actionLabel = "添加参与人",
+            onAction = {},
+        )
+    }
+}
+
+@Preview(name = "参与人引导 · 无操作", showBackground = true)
+@Composable
+private fun ParticipantSetupPromptWithoutActionPreview() {
+    SharedLedgerTheme {
+        ParticipantSetupPrompt(
+            title = "等待添加参与人",
+            description = "创建者添加参与人后，你就可以选择自己的身份并开始记账。",
         )
     }
 }

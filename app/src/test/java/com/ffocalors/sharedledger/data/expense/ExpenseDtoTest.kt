@@ -84,6 +84,121 @@ class ExpenseDtoTest {
     }
 
     @Test
+    fun embeddedSplitsCountDistinctParticipants() {
+        val dto = Json.decodeFromString<ExpenseRowDto>(
+            """
+            {
+              "id":"expense-1","ledger_unit_id":"unit-1","title":"Dinner",
+              "original_amount":"10","original_currency":"CNY",
+              "fx_rate":"1","base_amount":"10",
+              "split_method":"aa","occurred_at":"2026-09-05T12:00:00Z",
+              "created_by":"user-1","updated_by":"user-1","version":1,
+              "splits":[{"participant_id":"p1"},{"participant_id":"p2"},{"participant_id":"p1"}]
+            }
+            """.trimIndent(),
+        )
+
+        assertEquals(2, ExpenseDtoMappers.expense(dto).splitParticipantCount)
+    }
+
+    @Test
+    fun missingEmbeddedSplitsLeavesParticipantCountUnknown() {
+        val dto = Json.decodeFromString<ExpenseRowDto>(
+            """
+            {
+              "id":"expense-1","ledger_unit_id":"unit-1","title":"Dinner",
+              "original_amount":"10","original_currency":"CNY",
+              "fx_rate":"1","base_amount":"10",
+              "split_method":"aa","occurred_at":"2026-09-05T12:00:00Z",
+              "created_by":"user-1","updated_by":"user-1","version":1
+            }
+            """.trimIndent(),
+        )
+
+        assertNull(ExpenseDtoMappers.expense(dto).splitParticipantCount)
+    }
+
+    @Test
+    fun embeddedPaymentsMapPayerNamesByLargestAmount() {
+        val dto = Json.decodeFromString<ExpenseRowDto>(
+            """
+            {
+              "id":"expense-1","ledger_unit_id":"unit-1","title":"Dinner",
+              "original_amount":"100","original_currency":"CNY",
+              "fx_rate":"1","base_amount":"100",
+              "split_method":"manual","occurred_at":"2026-09-05T12:00:00Z",
+              "created_by":"user-1","updated_by":"user-1","version":1,
+              "payments":[
+                {"participant_id":"p1","amount":30,"participants":{"name":"李四"}},
+                {"participant_id":"p2","amount":70,"participants":{"name":"张三"}}
+              ]
+            }
+            """.trimIndent(),
+        )
+
+        assertEquals(listOf("张三", "李四"), ExpenseDtoMappers.expense(dto).payerNames)
+    }
+
+    @Test
+    fun refundPaymentsOrderPayerNamesByAbsoluteAmount() {
+        val dto = Json.decodeFromString<ExpenseRowDto>(
+            """
+            {
+              "id":"expense-1","ledger_unit_id":"unit-1","title":"Refund",
+              "original_amount":"-100","original_currency":"CNY",
+              "fx_rate":"1","base_amount":"-100",
+              "split_method":"manual","occurred_at":"2026-09-05T12:00:00Z",
+              "created_by":"user-1","updated_by":"user-1","version":1,
+              "payments":[
+                {"participant_id":"p1","amount":-10,"participants":{"name":"李四"}},
+                {"participant_id":"p2","amount":-90,"participants":{"name":"张三"}}
+              ]
+            }
+            """.trimIndent(),
+        )
+
+        assertEquals(listOf("张三", "李四"), ExpenseDtoMappers.expense(dto).payerNames)
+    }
+
+    @Test
+    fun missingEmbeddedPaymentsLeavesPayerNamesUnknown() {
+        val dto = Json.decodeFromString<ExpenseRowDto>(
+            """
+            {
+              "id":"expense-1","ledger_unit_id":"unit-1","title":"Dinner",
+              "original_amount":"10","original_currency":"CNY",
+              "fx_rate":"1","base_amount":"10",
+              "split_method":"aa","occurred_at":"2026-09-05T12:00:00Z",
+              "created_by":"user-1","updated_by":"user-1","version":1
+            }
+            """.trimIndent(),
+        )
+
+        assertNull(ExpenseDtoMappers.expense(dto).payerNames)
+    }
+
+    @Test
+    fun paymentWithoutEmbeddedParticipantIsSkippedFromPayerNames() {
+        val dto = Json.decodeFromString<ExpenseRowDto>(
+            """
+            {
+              "id":"expense-1","ledger_unit_id":"unit-1","title":"Dinner",
+              "original_amount":"100","original_currency":"CNY",
+              "fx_rate":"1","base_amount":"100",
+              "split_method":"manual","occurred_at":"2026-09-05T12:00:00Z",
+              "created_by":"user-1","updated_by":"user-1","version":1,
+              "payments":[
+                {"participant_id":"p1","amount":80,"participants":null},
+                {"participant_id":"p2","amount":20,"participants":{"name":"张三"}}
+              ]
+            }
+            """.trimIndent(),
+        )
+
+        assertEquals(listOf("张三"), ExpenseDtoMappers.expense(dto).payerNames)
+    }
+
+    @Test
     fun activityCurrencyDtoMapsNormalizedBaseCurrency() {
         val dto = Json.decodeFromString<ExpenseActivityCurrencyRowDto>("""{"base_currency":"eur"}""")
 

@@ -36,11 +36,13 @@ import com.ffocalors.sharedledger.ui.components.ExpenseActionSheet
 import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatarGroup
+import com.ffocalors.sharedledger.ui.components.ParticipantSetupPrompt
 import com.ffocalors.sharedledger.ui.components.QuickActionItem
 import com.ffocalors.sharedledger.ui.components.SettlementStatistic
 import com.ffocalors.sharedledger.ui.components.SettlementSummaryCard
 import com.ffocalors.sharedledger.ui.components.SharedLedgerActionItemsRow
 import com.ffocalors.sharedledger.ui.components.SharedLedgerBottomActionBar
+import com.ffocalors.sharedledger.ui.components.SharedLedgerDialog
 import com.ffocalors.sharedledger.ui.components.SharedLedgerTopBar
 import com.ffocalors.sharedledger.ui.components.rememberSharedLedgerHazeState
 import com.ffocalors.sharedledger.ui.components.sharedLedgerHazeSource
@@ -107,6 +109,7 @@ fun NormalActivityScreen(
     onFinalSettlement: (() -> Unit)? = null,
     onFundRecords: () -> Unit = {},
     onManageActivity: (() -> Unit)? = null,
+    onAddParticipants: (() -> Unit)? = null,
     onExpenseClick: (String) -> Unit = {},
 ) {
     val displayTitle = activity?.summary?.name ?: activityTitle
@@ -129,7 +132,9 @@ fun NormalActivityScreen(
     } ?: emptyList()
     val displayCurrency = activity?.summary?.baseCurrency ?: "CNY"
     val outstandingDebt = activity?.summary?.totalDebt?.toBigDecimalOrNull()
+    val needsParticipants = activity != null && activity.participants.isEmpty() && activity.summary.archivedAt == null
     var expenseActionSheetVisible by remember { mutableStateOf(false) }
+    var participantRequiredDialogVisible by remember { mutableStateOf(false) }
     val hazeState = rememberSharedLedgerHazeState()
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -157,7 +162,11 @@ fun NormalActivityScreen(
                 onTransfer?.let { BottomActionItem("转账", Icons.Rounded.SwapHoriz, it) },
                 if (onNewExpense != null || onRefund != null) {
                     BottomActionItem("记一笔", Icons.Rounded.Edit) {
-                        expenseActionSheetVisible = true
+                        if (needsParticipants) {
+                            participantRequiredDialogVisible = true
+                        } else {
+                            expenseActionSheetVisible = true
+                        }
                     }
                 } else null,
                 onReceive?.let { BottomActionItem("收款", Icons.Rounded.RequestQuote, it) },
@@ -200,6 +209,25 @@ fun NormalActivityScreen(
                         )
                     }
                 } else {
+                    if (needsParticipants) {
+                        item(key = "participant-setup") {
+                            if (onAddParticipants != null) {
+                                ParticipantSetupPrompt(
+                                    title = "先添加参与人",
+                                    description = "账单要记在参与人名下。添加一起分摊的人后，就能记账、转账和结算。",
+                                    actionLabel = "添加参与人",
+                                    onAction = onAddParticipants,
+                                    modifier = Modifier.animateItem(),
+                                )
+                            } else {
+                                ParticipantSetupPrompt(
+                                    title = "等待添加参与人",
+                                    description = "创建者添加参与人后，你就可以选择自己的身份并开始记账。",
+                                    modifier = Modifier.animateItem(),
+                                )
+                            }
+                        }
+                    }
                     item(key = "summary") {
                         SettlementSummaryCard(
                             title = "实际消费",
@@ -252,7 +280,11 @@ fun NormalActivityScreen(
                         item(key = "expenses-empty") {
                             EmptyState(
                                 title = "暂无账单明细",
-                                description = "点击底部“记一笔”记录当前活动的消费或退款。",
+                                description = if (needsParticipants) {
+                                    "添加参与人后，账单会显示在这里。"
+                                } else {
+                                    "点击底部“记一笔”记录当前活动的消费或退款。"
+                                },
                             )
                         }
                     } else {
@@ -273,6 +305,26 @@ fun NormalActivityScreen(
             onDismiss = { expenseActionSheetVisible = false },
             onNewExpense = onNewExpense,
             onRefund = onRefund,
+        )
+    }
+    if (participantRequiredDialogVisible) {
+        if (onAddParticipants != null) SharedLedgerDialog(
+            onDismiss = { participantRequiredDialogVisible = false },
+            title = "先添加参与人",
+            text = "付款人和分摊人都要从参与人中选。添加参与人后就能记账。",
+            confirmText = "添加参与人",
+            onConfirm = {
+                participantRequiredDialogVisible = false
+                onAddParticipants()
+            },
+            dismissText = "取消",
+        ) else SharedLedgerDialog(
+            onDismiss = { participantRequiredDialogVisible = false },
+            title = "还不能记账",
+            text = "活动还没有参与人。创建者添加参与人后，你就可以记账。",
+            confirmText = "知道了",
+            onConfirm = { participantRequiredDialogVisible = false },
+            dismissText = null,
         )
     }
 }

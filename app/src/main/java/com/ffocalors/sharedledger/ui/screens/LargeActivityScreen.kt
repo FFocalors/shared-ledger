@@ -31,6 +31,7 @@ import com.ffocalors.sharedledger.ui.components.EmptyState
 import com.ffocalors.sharedledger.ui.components.ErrorState
 import com.ffocalors.sharedledger.ui.components.LoadingState
 import com.ffocalors.sharedledger.ui.components.ParticipantAvatarGroup
+import com.ffocalors.sharedledger.ui.components.ParticipantSetupPrompt
 import com.ffocalors.sharedledger.ui.components.ParticipantUiModel
 import com.ffocalors.sharedledger.ui.components.QuickActionItem
 import com.ffocalors.sharedledger.ui.components.SettlementStatistic
@@ -125,6 +126,7 @@ fun LargeActivityScreen(
     onFundRecords: () -> Unit = {},
     onShowPrepayment: (() -> Unit)? = null,
     onManageActivity: (() -> Unit)? = null,
+    onAddParticipants: (() -> Unit)? = null,
 ) {
     val displayTitle = activity?.summary?.name ?: activityTitle
     val displayParticipants = activity?.participants?.map { participant ->
@@ -163,6 +165,7 @@ fun LargeActivityScreen(
         )
     } ?: subActivities
     val outstandingDebt = activity?.summary?.totalDebt?.toBigDecimalOrNull()
+    val needsParticipants = activity != null && activity.participants.isEmpty() && activity.summary.archivedAt == null
     val hazeState = rememberSharedLedgerHazeState()
 
     Scaffold(
@@ -230,6 +233,25 @@ fun LargeActivityScreen(
                         )
                     }
                 } else {
+                    if (needsParticipants) {
+                        item(key = "participant-setup") {
+                            if (onAddParticipants != null) {
+                                ParticipantSetupPrompt(
+                                    title = "先添加参与人",
+                                    description = "子活动和账单都要从参与人中选人。添加一起参与的人后，就能创建子活动并记账。",
+                                    actionLabel = "添加参与人",
+                                    onAction = onAddParticipants,
+                                    modifier = Modifier.animateItem(),
+                                )
+                            } else {
+                                ParticipantSetupPrompt(
+                                    title = "等待添加参与人",
+                                    description = "创建者添加参与人后，你就可以选择自己的身份并开始记账。",
+                                    modifier = Modifier.animateItem(),
+                                )
+                            }
+                        }
+                    }
                     item(key = "summary") {
                         SettlementSummaryCard(
                             title = "实际消费",

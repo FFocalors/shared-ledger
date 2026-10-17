@@ -689,13 +689,19 @@ fun ExpenseCard(
                         }
                     }
                 }
-                Text(
-                    text = "${expense.payerName}付款 · ${expense.participantCount}人参与",
-                    style = SharedLedgerTextStyles.Label,
-                    color = MaterialTheme.colorScheme.outline,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                )
+                val subtitle = listOfNotNull(
+                    expense.payerName?.let { "${it}付款" },
+                    expense.participantCount?.let { "${it}人参与" },
+                ).joinToString(" · ")
+                if (subtitle.isNotEmpty()) {
+                    Text(
+                        text = subtitle,
+                        style = SharedLedgerTextStyles.Label,
+                        color = MaterialTheme.colorScheme.outline,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    )
+                }
                 expense.time?.let {
                     Text(
                         text = it,

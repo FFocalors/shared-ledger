@@ -600,6 +600,38 @@ class ExpenseViewModelTest {
         assertEquals("original-expense", repository.lastUpdate?.originalExpenseId)
     }
 
+    @Test
+    fun expenseCardParticipantCountComesFromSplitParticipantCount() {
+        val expense = Expense(
+            id = "expense-card", ledgerUnitId = "ledger", title = "晚餐",
+            originalAmount = BigDecimal("10"), originalCurrency = "CNY", fxRate = BigDecimal.ONE,
+            baseAmount = BigDecimal("10"), splitMethod = ExpenseSplitMethod.Manual,
+            occurredAt = "2026-09-05T12:00:00Z", note = null, originalExpenseId = null,
+            createdBy = "user-1", updatedBy = "user-1", createdAt = null, updatedAt = null,
+            version = 1, isDeleted = false,
+        )
+
+        assertEquals(2, expense.copy(splitParticipantCount = 2).toExpenseCardUiModel().participantCount)
+        assertNull(expense.toExpenseCardUiModel().participantCount)
+    }
+
+    @Test
+    fun expenseCardPayerNameSummarisesPayers() {
+        val expense = Expense(
+            id = "expense-payer", ledgerUnitId = "ledger", title = "晚餐",
+            originalAmount = BigDecimal("10"), originalCurrency = "CNY", fxRate = BigDecimal.ONE,
+            baseAmount = BigDecimal("10"), splitMethod = ExpenseSplitMethod.Manual,
+            occurredAt = "2026-09-05T12:00:00Z", note = null, originalExpenseId = null,
+            createdBy = "user-1", updatedBy = "user-1", createdAt = null, updatedAt = null,
+            version = 1, isDeleted = false,
+        )
+
+        assertEquals("张三", expense.copy(payerNames = listOf("张三")).toExpenseCardUiModel().payerName)
+        assertEquals("张三等2人", expense.copy(payerNames = listOf("张三", "李四")).toExpenseCardUiModel().payerName)
+        assertNull(expense.toExpenseCardUiModel().payerName)
+        assertNull(expense.copy(payerNames = emptyList()).toExpenseCardUiModel().payerName)
+    }
+
     private fun validDraft() = ExpenseFormDraft(
         ledgerUnitId = "ledger-real",
         title = "晚餐",

@@ -149,6 +149,7 @@ fun LedgerUnitScreen(
     onDeleteAttachment: ((attachmentId: String) -> Unit)? = null,
     onRetryAttachment: ((attachmentId: String) -> Unit)? = null,
     attachmentMessage: String? = null,
+    onAddParticipants: (() -> Unit)? = null,
 ) {
     val displayTitle = ledgerUnitTitle?.takeIf { it.isNotBlank() }
         ?: activity?.ledgerUnits?.firstOrNull { it.id == ledgerUnitId }?.name
@@ -162,6 +163,8 @@ fun LedgerUnitScreen(
         )
     } ?: emptyList()
     var expenseActionSheetVisible by remember { mutableStateOf(false) }
+    var participantRequiredDialogVisible by remember { mutableStateOf(false) }
+    val needsParticipants = activity != null && activity.participants.isEmpty() && activity.summary.archivedAt == null
     var deleteConfirmationVisible by remember { mutableStateOf(false) }
     val hazeState = rememberSharedLedgerHazeState()
     Scaffold(
@@ -192,7 +195,11 @@ fun LedgerUnitScreen(
                 onTransfer?.let { BottomActionItem("转账", Icons.Rounded.SwapHoriz, it) },
                 if (onNewExpense != null || onRefund != null) {
                     BottomActionItem("记一笔", Icons.Rounded.Edit) {
-                        expenseActionSheetVisible = true
+                        if (needsParticipants) {
+                            participantRequiredDialogVisible = true
+                        } else {
+                            expenseActionSheetVisible = true
+                        }
                     }
                 } else null,
                 onReceive?.let { BottomActionItem("收款", Icons.Rounded.RequestQuote, it) },
@@ -314,6 +321,26 @@ fun LedgerUnitScreen(
             onDismiss = { expenseActionSheetVisible = false },
             onNewExpense = onNewExpense,
             onRefund = onRefund,
+        )
+    }
+    if (participantRequiredDialogVisible) {
+        if (onAddParticipants != null) SharedLedgerDialog(
+            onDismiss = { participantRequiredDialogVisible = false },
+            title = "先添加参与人",
+            text = "付款人和分摊人都要从参与人中选。添加参与人后就能记账。",
+            confirmText = "添加参与人",
+            onConfirm = {
+                participantRequiredDialogVisible = false
+                onAddParticipants()
+            },
+            dismissText = "取消",
+        ) else SharedLedgerDialog(
+            onDismiss = { participantRequiredDialogVisible = false },
+            title = "还不能记账",
+            text = "活动还没有参与人。创建者添加参与人后，你就可以记账。",
+            confirmText = "知道了",
+            onConfirm = { participantRequiredDialogVisible = false },
+            dismissText = null,
         )
     }
     if (deleteConfirmationVisible && onDeleteSubActivity != null) {
