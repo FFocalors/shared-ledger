@@ -4,6 +4,7 @@ import com.ffocalors.sharedledger.data.supabase.SupabaseClientProvider
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.buildJsonObject
@@ -158,7 +159,7 @@ class SupabaseExpenseRepository(private val client: SupabaseClient) : ExpenseRep
         writeAndConfirm { refund(input) }
 
     private suspend fun loadRowsForLedgerUnit(ledgerUnitId: String, includeDeleted: Boolean): List<ExpenseRowDto> =
-        client.from("expenses").select {
+        client.from("expenses").select(columns = Columns.raw("*, splits(participant_id), payments(participant_id, amount, participants(name))")) {
             filter {
                 eq("ledger_unit_id", ledgerUnitId)
                 if (!includeDeleted) eq("is_deleted", false)

@@ -639,8 +639,14 @@ internal fun Expense.toExpenseCardUiModel(
     name = title,
     amount = amount,
     currencyCode = currencyCode,
-    payerName = "已记录付款",
-    participantCount = 0,
+    payerName = payerNames?.let { names ->
+        when (names.size) {
+            0 -> null
+            1 -> names.first()
+            else -> "${names.first()}等${names.size}人"
+        }
+    },
+    participantCount = splitParticipantCount,
     time = UiDateTimeFormatter.format(occurredAt),
     expenseId = id,
     amountAvailable = amountAvailable,

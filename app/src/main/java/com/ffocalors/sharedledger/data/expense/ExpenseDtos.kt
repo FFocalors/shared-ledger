@@ -27,6 +27,27 @@ data class ExpenseRowDto(
     @SerialName("fx_rate_observed_at") val fxRateObservedAt: String? = null,
     @SerialName("icon_key") val iconKey: String = ExpenseIconKey.MONEY,
     @SerialName("financial_locked") val financialLocked: Boolean = false,
+    /** Embedded `splits(participant_id)`; null when the read did not request splits. */
+    val splits: List<ExpenseSplitParticipantRowDto>? = null,
+    /** Embedded `payments(participant_id, amount, participants(name))`; null when the read did not request payments. */
+    val payments: List<ExpensePaymentPayerRowDto>? = null,
+)
+
+@Serializable
+data class ExpenseSplitParticipantRowDto(
+    @SerialName("participant_id") val participantId: String,
+)
+
+@Serializable
+data class ExpensePayerParticipantRowDto(
+    val name: String,
+)
+
+@Serializable
+data class ExpensePaymentPayerRowDto(
+    @SerialName("participant_id") val participantId: String,
+    val amount: JsonElement,
+    val participants: ExpensePayerParticipantRowDto? = null,
 )
 
 @Serializable

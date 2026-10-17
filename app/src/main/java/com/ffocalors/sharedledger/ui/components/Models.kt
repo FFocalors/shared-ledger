@@ -82,8 +82,10 @@ data class ExpenseCardUiModel(
     val name: String,
     val amount: BigDecimal,
     val currencyCode: String = "CNY",
-    val payerName: String,
-    val participantCount: Int,
+    /** Null when payers are unknown; the subtitle then omits the payer part. */
+    val payerName: String?,
+    /** Null when the participant count is unknown; the subtitle then omits it. */
+    val participantCount: Int?,
     val time: String? = null,
     val participants: List<ParticipantUiModel> = emptyList(),
     val expenseId: String = "",

@@ -661,6 +661,9 @@ private fun AuthenticatedNavHost(
                     navController.navigate(SharedLedgerRoutes.activityManagement(activityId))
                     }
                 } else null,
+                onAddParticipants = if (activityId.isNotBlank() && detailState.detail?.let { it.summary.archivedAt == null && it.permissions.canManageParticipants } == true) {
+                    { navController.navigate(SharedLedgerRoutes.activityManagement(activityId)) { launchSingleTop = true } }
+                } else null,
                 onExpenseClick = { expenseId ->
                     navController.navigate(SharedLedgerRoutes.expenseDetail(activityId, expenseId, defaultLedgerUnitId))
                 },
@@ -773,6 +776,9 @@ private fun AuthenticatedNavHost(
                     {
                     navController.navigate(SharedLedgerRoutes.activityManagement(activityId))
                     }
+                } else null,
+                onAddParticipants = if (activityId.isNotBlank() && detailState.detail?.let { it.summary.archivedAt == null && it.permissions.canManageParticipants } == true) {
+                    { navController.navigate(SharedLedgerRoutes.activityManagement(activityId)) { launchSingleTop = true } }
                 } else null,
             )
         }
@@ -1000,6 +1006,9 @@ private fun AuthenticatedNavHost(
                 } else null,
                 attachments = attachmentState.toLedgerUnitUiState { item -> canDeleteAttachment(item, detailState.detail, currentUserId) },
                 attachmentMessage = attachmentMessage ?: attachmentState.errorMessage,
+                onAddParticipants = if (activityId.isNotBlank() && detailState.detail?.let { it.summary.archivedAt == null && it.permissions.canManageParticipants } == true) {
+                    { navController.navigate(SharedLedgerRoutes.activityManagement(activityId)) { launchSingleTop = true } }
+                } else null,
                 onAddAttachment = if (activityWritable && attachmentState.items.size < MAX_CLIENT_ATTACHMENTS) attachmentInput.requestSourceChooser else null,
                 onAttachmentClick = { attachmentId ->
                     attachmentMessage = "正在加载附件…"

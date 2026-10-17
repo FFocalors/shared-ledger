@@ -29,6 +29,12 @@ internal object ExpenseDtoMappers {
         fxRateObservedAt = dto.fxRateObservedAt,
         iconKey = ExpenseIconKey.normalize(dto.iconKey),
         financialLocked = dto.financialLocked,
+        splitParticipantCount = dto.splits?.map { it.participantId }?.distinct()?.size,
+        payerNames = dto.payments?.let { rows ->
+            rows.distinctBy { it.participantId }
+                .sortedByDescending { decimalOrNull(it.amount)?.abs() ?: BigDecimal.ZERO }
+                .mapNotNull { it.participants?.name?.trim()?.takeIf(String::isNotEmpty) }
+        },
     )
 
     fun payment(dto: PaymentRowDto) = Payment(dto.id, dto.expenseId, dto.participantId,
