@@ -1,0 +1,1134 @@
+{
+  "review_status": "PASSED_LIMITED_P1_ENGINEERING",
+  "candidate_conclusion": "\u4e3b\u4f1a\u8bdd\u4e8e 2026-10-10 \u6279\u51c6\uff1aP1 \u5728\u5df2\u5b9a\u4e49\u9650\u5b9a\u5de5\u7a0b\u8303\u56f4\u5185\u901a\u8fc7\uff0cA01\u2013A11 \u65e0\u963b\u585e\u6027\u7f3a\u53e3\u3002\u4e0d\u5305\u62ec\u751f\u4ea7 Scope\u3001\u6a21\u578b\u8d28\u91cf\u3001\u4e1a\u52a1\u5199\u5165\u6216\u6574\u4e2a T1 \u7684\u901a\u8fc7\u7ed3\u8bba\u3002",
+  "scope": "\u672c\u6b21\u5b8c\u6210\u6574\u4f53\u8bc1\u636e\u7ec8\u5ba1\u53ca\u56db\u4efd\u6388\u6743\u6587\u6863\u540c\u6b65\uff1b\u672a\u4fee\u6539\u5b9e\u73b0\u3001\u5386\u53f2 evidence JSON\u3001T0/shared README/dev-status/\u6307\u5357\u3002\u65e2\u6709\u4e1a\u52a1\u6587\u4ef6\u672a\u4fee\u6539\uff1b\u9996\u6b21\u6c47\u603b\u6587\u4ef6\u8bef\u5199\u5165\u4e1a\u52a1 checkout \u7684\u4e24\u4e2a\u5019\u9009\u6587\u6863\u5df2\u7cbe\u786e\u79fb\u81f3 Agent checkout\uff0c\u6700\u7ec8 main clean\u3002\u6ca1\u6709\u6267\u884c Supabase\u3001\u6a21\u578b\u3001\u8bad\u7ec3\u3001\u91cd\u6807\u3001P2/P3/P4\u3001stage/commit/push\u64cd\u4f5c\u3002",
+  "checkout": {
+    "agent": "D:/project/Android/shared-ledger-agent",
+    "branch": "agent",
+    "head": "1a80a0f29e1ea432a60b95e7437af23d51182938",
+    "origin_agent_local_tracking_ref": "1a80a0f29e1ea432a60b95e7437af23d51182938",
+    "p1_files": "untracked/unstaged, not committed or pushed",
+    "business": "D:/project/Android/shared-ledger",
+    "branch_main_head": "3f938ee6114b763e6cd3dbd10792a78c691eb526",
+    "business_status": "clean after moving only the two accidentally misplaced candidate documents; existing business files unchanged",
+    "t0_commit_user_confirmed_pushed": true,
+    "p1_absent_from_t0_commit": true,
+    "remote_verification": "local tracking ref only; no live ls-remote"
+  },
+  "checks": {
+    "first_attempt": {
+      "status": "ATTEMPTED_NO_RESULT",
+      "counted_as_pass": false,
+      "detail": "\u7b2c\u4e00\u8f6e\u542f\u52a8\u4f46nested exec output/metadata\u672a\u7559\u5b58\uff1b\u4e0d\u8ba1PASS\uff0c\u4e0d\u4f5c\u4e3a\u6700\u7ec8\u5931\u8d25\u3002"
+    },
+    "pytest": {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "& 'D:\\project\\Android\\shared-ledger-agent\\agent\\.venv\\Scripts\\python.exe' -m pytest agent\\tests -q -p no:cacheprovider",
+      "summary": "126 passed in 34.25s",
+      "started_at": "2026-10-10T01:45:32.2344036+08:00",
+      "finished_at": "2026-10-10T01:46:08.2870081+08:00",
+      "outer_wall_seconds": 36.04,
+      "working_directory": "D:/project/Android/shared-ledger-agent"
+    },
+    "export_contracts": {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "& 'D:\\project\\Android\\shared-ledger-agent\\agent\\.venv\\Scripts\\python.exe' -m agent.app.export_contracts --check",
+      "summary": "contract snapshot matches manifest",
+      "started_at": "2026-10-10T01:45:32.5658734+08:00",
+      "finished_at": "2026-10-10T01:45:34.0997146+08:00",
+      "duration_seconds": 1.52,
+      "working_directory": "D:/project/Android/shared-ledger-agent"
+    },
+    "uv_lock": {
+      "status": "PASS",
+      "exit_code": 0,
+      "command": "D:\\computer\\Hermes\\uv\\bin\\uv.exe lock --check --offline --project agent",
+      "summary": "Resolved 32 packages",
+      "started_at": "2026-10-10T01:45:33.0446097+08:00",
+      "finished_at": "2026-10-10T01:45:33.1339030+08:00",
+      "duration_seconds": 0.08,
+      "working_directory": "D:/project/Android/shared-ledger-agent"
+    }
+  },
+  "phase_handoffs": [
+    {
+      "phase": "P1-01",
+      "status": "\u9650\u5b9a\u534f\u8bae\u8303\u56f4\u5b8c\u6210",
+      "history": "11 passed\uff1bschema/OpenAPI/\u56db\u6761mock traces\uff1b\u6839\u4e3b\u5ba1",
+      "evidence": [
+        {
+          "path": "agent/docs/p1/PROTOCOL_FREEZE.md",
+          "sha256": "eedc8203f023da0806bfbe4403be9205bb13217d7d7c387eddc1a0c189a2cbb3"
+        }
+      ],
+      "limitation": "\u79bb\u7ebf\u5951\u7ea6\u4e0d\u4ee3\u8868API/DB/\u6574\u4e2aT1"
+    },
+    {
+      "phase": "P1-02",
+      "status": "\u9650\u5b9a\u670d\u52a1\u9aa8\u67b6\u5b8c\u6210",
+      "history": "25 cumulative (11 protocol+14 service)\uff1bcompile/export/lock pass",
+      "evidence": [
+        {
+          "path": "agent/docs/p1/SERVICE_SKELETON.md",
+          "sha256": "e6d38bb56048832877d283e2c5743fc2f725137f802e67c202868a7080b77499"
+        }
+      ],
+      "limitation": "\u5f53\u65f6\u4ec5health surface"
+    },
+    {
+      "phase": "P1-03",
+      "status": "\u9650\u5b9aSQLite\u6301\u4e45\u5316\u5b8c\u6210",
+      "history": "39 passed\uff1bcompileall/export/32-package lock pass",
+      "evidence": [
+        {
+          "path": "agent/docs/p1/PERSISTENCE.md",
+          "sha256": "7e63543758b972e35a78467a4f42c8f6e51969e0c9d95a5165598d5c3381899d"
+        }
+      ],
+      "limitation": "\u672c\u5730SQLite\uff0c\u4e0d\u662f\u4e91\u7aef\u6267\u884c"
+    },
+    {
+      "phase": "P1-04",
+      "status": "\u6a21\u62df\u8eab\u4efd/API\u4e0e\u771f\u5b9eAuth\u6b63\u5411\u8865\u9a8c\u6536\u5b8c\u6210",
+      "history": "45 focused\u300184 cumulative\u5386\u53f2\uff1b\u6700\u65b0Auth29/29",
+      "evidence": [
+        {
+          "path": "agent/docs/p1/IDENTITY_API.md",
+          "sha256": "33446fde39dcd388b926b22f8ba011abb0a995c095b902362222aa960166d935"
+        },
+        {
+          "path": "agent/docs/p1/REAL_AUTH_SMOKE.md",
+          "sha256": "4272d4ba2c59d7a380efbea7f455b50102e8aa7447dd14444438e34757f4ad01"
+        },
+        {
+          "path": "agent/docs/p1/evidence/P1-04-RealAuthSmoke-20261010-013323.json",
+          "sha256": "1846cb701837e51ad0a71aec5882b07aa717756124748e37eca9194ab9658142"
+        }
+      ],
+      "limitation": "\u81ea\u7136\u8fc7\u671ftoken\u672a\u6d4b\uff1b\u751f\u4ea7Scope\u672a\u4ea4\u4ed8"
+    },
+    {
+      "phase": "P1-05",
+      "status": "\u9650\u5b9aMock Runtime\u5b8c\u6210",
+      "history": "115/23.52s (21 core+10 API+84 prior)\uff1b\u5386\u53f2126/26.48s\uff1b\u5f53\u524d126/34.25s",
+      "evidence": [
+        {
+          "path": "agent/docs/p1/MOCK_RUNTIME.md",
+          "sha256": "6bb83c57e4b1604123a5defb9335c0d4a912022c80424eea7308fb35e32b4356"
+        },
+        {
+          "path": "agent/docs/p1/evidence/P1-06-HostStatic-20261009.json",
+          "sha256": "ced37b7c45302239986e74dca57640ca4c82687c267eccff03ec1cdbde50d0d2"
+        }
+      ],
+      "limitation": "\u65e0\u771f\u5b9eprovider\u63a8\u7406"
+    },
+    {
+      "phase": "P1-06",
+      "status": "\u9650\u5b9a\u90e8\u7f72/\u6062\u590d\u5b8c\u6210",
+      "history": "10/09 HostStatic\uff1b10/09 Docker precheck FAIL\uff1b10/10 004200 PASS\uff1b\u6700\u65b0004731 PASS",
+      "evidence": [
+        {
+          "path": "agent/docs/p1/evidence/P1-06-HostStatic-20261009.json",
+          "sha256": "ced37b7c45302239986e74dca57640ca4c82687c267eccff03ec1cdbde50d0d2"
+        },
+        {
+          "path": "agent/docs/p1/evidence/P1-06-Docker-20261009-114423-637306fb1414.json",
+          "sha256": "51731b9be49333acda74bc93431522e3c1838eb0766c353f5a210703931f30c6"
+        },
+        {
+          "path": "agent/docs/p1/evidence/P1-06-Docker-20261010-004200-2131f17081c9.json",
+          "sha256": "fe3be27183291537975243916c6065c7aeacd2554729be21244e3ef4cda70871"
+        },
+        {
+          "path": "agent/docs/p1/evidence/P1-06-Docker-20261010-004731-c10d607729c2.json",
+          "sha256": "af89de2432ab102c40002043fa69342ba3c60ec483266214665e510ce97c79a0"
+        },
+        {
+          "path": "agent/docs/p1/DEPLOYMENT_RECOVERY.md",
+          "sha256": "ef498160f127b39cd84b9e5300e58bcd6b606e3209244e2e912acaef3e5d1203"
+        }
+      ],
+      "limitation": "simulation fixture\uff1bVector\u91cd\u542f\u4f8b\u5916"
+    }
+  ],
+  "acceptance_matrix": [
+    {
+      "item": "A01",
+      "expected": "A/B owner\u9694\u79bb\uff0c\u4f2a\u9020actor/role/scope\u65e0\u6548",
+      "tests": [
+        "test_routes_are_authenticated_owner_scoped_and_errors_are_frozen",
+        "test_api_owner_boundary_covers_events_cards_and_all_mutations"
+      ],
+      "commands": [
+        "& 'D:\\project\\Android\\shared-ledger-agent\\agent\\.venv\\Scripts\\python.exe' -m pytest agent\\tests -q -p no:cacheprovider",
+        "pytest -q agent\\tests\\test_identity_api.py agent\\tests\\test_auth_verifier.py"
+      ],
+      "types": [
+        "pytest",
+        "Mock API",
+        "\u771f\u5b9eSupabase Auth/Agent HTTP"
+      ],
+      "evidence": [
+        {
+          "path": "agent/docs/p1/IDENTITY_API.md",
+          "sha256": "33446fde39dcd388b926b22f8ba011abb0a995c095b902362222aa960166d935"
+        },
+        {
+          "path": "agent/docs/p1/DEPLOYMENT_RECOVERY.md",
+          "sha256": "ef498160f127b39cd84b9e5300e58bcd6b606e3209244e2e912acaef3e5d1203"
+        },
+        {
+          "path": "agent/docs/p1/evidence/P1-04-RealAuthSmoke-20261010-013323.json",
+          "sha256": "1846cb701837e51ad0a71aec5882b07aa717756124748e37eca9194ab9658142"
+        }
+      ],
+      "scope": "fixture\u8986\u76d6sessions/turns/proposals\uff1b\u771f\u5b9eAuth A\u5efa\u8bfbsession\u3001B\u7a7a\u5217\u8868/\u8de8owner 404\u3001\u7f3a\u5931/\u65e0\u6548token 401\u3002",
+      "limits": [
+        "\u751f\u4ea7activity Scope\u4ecdfail-closed\u3002"
+      ],
+      "gate": "\u6ee1\u8db3"
+    },
+    {
+      "item": "A02",
+      "expected": "\u5e42\u7b49\u539f\u56de\u6267\uff1b\u540c\u952e\u4e0d\u540c\u6b63\u6587/context\u51b2\u7a81\uff1bresume\u53bb\u91cd",
+      "tests": [
+        "test_idempotency_hashes_context_and_replays_original_typed_response",
+        "test_different_store_connections_serialize_global_submit_idempotency",
+        "test_clarification_accepts_verbatim_input_replays_before_disable_and_rejects_changed_key"
+      ],
+      "commands": [
+        "& 'D:\\project\\Android\\shared-ledger-agent\\agent\\.venv\\Scripts\\python.exe' -m pytest agent\\tests -q -p no:cacheprovider",
+        "pytest -q agent\\tests"
+      ],
+      "types": [
+        "pytest",
+        "SQLite\u591a\u8fde\u63a5",
+        "Mock API"
+      ],
+      "evidence": [
+        {
+          "path": "agent/docs/p1/PROTOCOL_FREEZE.md",
+          "sha256": "eedc8203f023da0806bfbe4403be9205bb13217d7d7c387eddc1a0c189a2cbb3"
+        },
+        {
+          "path": "agent/docs/p1/PERSISTENCE.md",
+          "sha256": "7e63543758b972e35a78467a4f42c8f6e51969e0c9d95a5165598d5c3381899d"
+        },
+        {
+          "path": "agent/docs/p1/DEPLOYMENT_RECOVERY.md",
+          "sha256": "ef498160f127b39cd84b9e5300e58bcd6b606e3209244e2e912acaef3e5d1203"
+        }
+      ],
+      "scope": "\u534f\u8baehash\u3001SQLite\u552f\u4e00\u952e\u3001\u539f\u54cd\u5e94\u91cd\u653e\u4e0eresume\u53bb\u91cd\u3002",
+      "limits": [
+        "\u4e0d\u8bc1\u660e\u4e91\u7aef\u4e1a\u52a1RPC\u5e42\u7b49\u3002"
+      ],
+      "gate": "\u6ee1\u8db3"
+    },
+    {
+      "item": "A03",
+      "expected": "\u4e2d\u65ad\u540e\u72b6\u6001/\u4e8b\u4ef6\u6062\u590d\uff0c\u5f85\u786e\u8ba4\u4e0d\u6267\u884c",
+      "tests": [
+        "test_process_exit_before_and_after_commit_recovers_atomic_turn_and_event",
+        "test_api_auth_required_survives_restart_then_http_auth_resume_requeues_turn",
+        "exercise.py before-restart/offline-recovery/after-restart"
+      ],
+      "commands": [
+        "& 'D:\\project\\Android\\shared-ledger-agent\\agent\\.venv\\Scripts\\python.exe' -m pytest agent\\tests -q -p no:cacheprovider",
+        "pytest -q agent\\tests",
+        "& .\\agent\\deploy\\scripts\\Test-Agent.ps1"
+      ],
+      "types": [
+        "SQLite\u6545\u969c\u6ce8\u5165pytest",
+        "MockRuntime restart/close",
+        "Docker simulation fixture stop/start/recreate"
+      ],
+      "evidence": [
+        {
+          "path": "agent/docs/p1/PERSISTENCE.md",
+          "sha256": "7e63543758b972e35a78467a4f42c8f6e51969e0c9d95a5165598d5c3381899d"
+        },
+        {
+          "path": "agent/docs/p1/MOCK_RUNTIME.md",
+          "sha256": "6bb83c57e4b1604123a5defb9335c0d4a912022c80424eea7308fb35e32b4356"
+        },
+        {
+          "path": "agent/docs/p1/DEPLOYMENT_RECOVERY.md",
+          "sha256": "ef498160f127b39cd84b9e5300e58bcd6b606e3209244e2e912acaef3e5d1203"
+        },
+        {
+          "path": "agent/docs/p1/evidence/P1-06-Docker-20261010-004731-c10d607729c2.json",
+          "sha256": "af89de2432ab102c40002043fa69342ba3c60ec483266214665e510ce97c79a0"
+        }
+      ],
+      "scope": "\u63d0\u4ea4\u524d\u540e\u9000\u51fa\u6a21\u62df\u3001AuthWait/Runtime\u6062\u590d\uff1bDocker fixture stop/start\u3001\u65b0\u5377restore\u4e0erecreate\u3002",
+      "limits": [
+        "\u6ca1\u6709\u5ba3\u79f0\u6bcf\u4e2acheckpoint\u771f\u5b9e\u65ad\u7535/\u786c\u6740\uff1bDocker\u5bf9\u8c61\u4e3a\u6a21\u62dffixture\u3002"
+      ],
+      "gate": "\u6ee1\u8db3"
+    },
+    {
+      "item": "A04",
+      "expected": "\u8fc7\u671f/\u7f3a\u5931\u51ed\u8bc1\u6682\u505c\u5e76\u6062\u590d\u539fcheckpoint\uff1bexecution key\u4fdd\u6301",
+      "tests": [
+        "test_auth_resume_restores_planning_confirmation_and_same_execution_checkpoint",
+        "test_unknown_execution_recovery_keeps_key_and_does_not_starve_queued_turn",
+        "test_untrusted_or_ineligible_user_claims_are_rejected"
+      ],
+      "commands": [
+        "& 'D:\\project\\Android\\shared-ledger-agent\\agent\\.venv\\Scripts\\python.exe' -m pytest agent\\tests -q -p no:cacheprovider",
+        "pytest -q agent\\tests\\test_identity_api.py agent\\tests\\test_auth_verifier.py"
+      ],
+      "types": [
+        "\u6a21\u62dfexp claim pytest",
+        "Mock AuthWait/resume",
+        "\u771f\u5b9e\u6b63\u5411Auth"
+      ],
+      "evidence": [
+        {
+          "path": "agent/docs/p1/IDENTITY_API.md",
+          "sha256": "33446fde39dcd388b926b22f8ba011abb0a995c095b902362222aa960166d935"
+        },
+        {
+          "path": "agent/docs/p1/MOCK_RUNTIME.md",
+          "sha256": "6bb83c57e4b1604123a5defb9335c0d4a912022c80424eea7308fb35e32b4356"
+        },
+        {
+          "path": "agent/docs/p1/REAL_AUTH_SMOKE.md",
+          "sha256": "4272d4ba2c59d7a380efbea7f455b50102e8aa7447dd14444438e34757f4ad01"
+        },
+        {
+          "path": "agent/docs/p1/evidence/P1-04-RealAuthSmoke-20261010-013323.json",
+          "sha256": "1846cb701837e51ad0a71aec5882b07aa717756124748e37eca9194ab9658142"
+        }
+      ],
+      "scope": "exp=1\u548cAuthWait\u903b\u8f91\u901a\u8fc7\uff1b\u771f\u5b9e\u65b0\u7528\u6237Auth\u6b63\u5411smoke\u901a\u8fc7\u3002",
+      "limits": [
+        "\u771f\u5b9eAuth\u81ea\u7136\u8fc7\u671ftoken NOT_TESTED\uff1bP1\u8981\u6c42\u8fc7\u671f\u903b\u8f91\u6d4b\u8bd5\uff0c\u4e0d\u8981\u6c42\u7b49\u771f\u5b9etoken\u8fc7\u671f\uff1b\u62ab\u9732\u4e14\u975e\u963b\u585e\u3002"
+      ],
+      "gate": "\u6ee1\u8db3\uff08\u62ab\u9732\u9650\u5236\uff09"
+    },
+    {
+      "item": "A05",
+      "expected": "typed refs\u8de8\u91cd\u6392/\u6f84\u6e05/\u91cd\u542f\u4fdd\u6301\u7ed1\u5b9a\uff0c\u8de8Turn\u4e0d\u590d\u7528",
+      "tests": [
+        "test_model_context_refs_and_evidence_resolve_to_persisted_turn_bindings",
+        "test_checkpoint_reference_and_read_result_bindings_are_append_only_across_restart"
+      ],
+      "commands": [
+        "& 'D:\\project\\Android\\shared-ledger-agent\\agent\\.venv\\Scripts\\python.exe' -m pytest agent\\tests -q -p no:cacheprovider",
+        "pytest -q agent\\tests"
+      ],
+      "types": [
+        "pytest",
+        "Pydantic contract",
+        "SQLite"
+      ],
+      "evidence": [
+        {
+          "path": "agent/docs/p1/PROTOCOL_FREEZE.md",
+          "sha256": "eedc8203f023da0806bfbe4403be9205bb13217d7d7c387eddc1a0c189a2cbb3"
+        },
+        {
+          "path": "agent/docs/p1/PERSISTENCE.md",
+          "sha256": "7e63543758b972e35a78467a4f42c8f6e51969e0c9d95a5165598d5c3381899d"
+        },
+        {
+          "path": "agent/docs/p1/DEPLOYMENT_RECOVERY.md",
+          "sha256": "ef498160f127b39cd84b9e5300e58bcd6b606e3209244e2e912acaef3e5d1203"
+        }
+      ],
+      "scope": "\u9759\u6001binding\u548cSQLite append-only\u5f15\u7528\u8de8\u91cd\u542f\u3002",
+      "limits": [
+        "\u975e\u771f\u5b9e\u4e1a\u52a1\u4e8b\u5b9e\u5f15\u7528\u3002"
+      ],
+      "gate": "\u6ee1\u8db3"
+    },
+    {
+      "item": "A06",
+      "expected": "pending proposal\u4e0d\u88ab\u67e5\u8be2\u8986\u76d6\uff1bCAS\u5355\u8d62\u5bb6\uff1b\u5173\u95ed\u786e\u8ba4\u65e0\u6210\u529f\u56de\u6267",
+      "tests": [
+        "test_api_adjustment_auth_pause_resumes_and_retries_the_same_reserved_input",
+        "test_injected_adjust_preparer_rotates_nonce_and_confirm_gates_expiry_and_disable_revision",
+        "test_late_planning_output_loses_to_cancel_state_revision_cas"
+      ],
+      "commands": [
+        "& 'D:\\project\\Android\\shared-ledger-agent\\agent\\.venv\\Scripts\\python.exe' -m pytest agent\\tests -q -p no:cacheprovider",
+        "MockRuntime/API\u5b9a\u5411pytest",
+        "Docker acceptance runner"
+      ],
+      "types": [
+        "pytest Mock API/SQLite CAS",
+        "Docker simulation HTTP"
+      ],
+      "evidence": [
+        {
+          "path": "agent/docs/p1/IDENTITY_API.md",
+          "sha256": "33446fde39dcd388b926b22f8ba011abb0a995c095b902362222aa960166d935"
+        },
+        {
+          "path": "agent/docs/p1/MOCK_RUNTIME.md",
+          "sha256": "6bb83c57e4b1604123a5defb9335c0d4a912022c80424eea7308fb35e32b4356"
+        },
+        {
+          "path": "agent/docs/p1/DEPLOYMENT_RECOVERY.md",
+          "sha256": "ef498160f127b39cd84b9e5300e58bcd6b606e3209244e2e912acaef3e5d1203"
+        },
+        {
+          "path": "agent/docs/p1/evidence/P1-06-Docker-20261010-004731-c10d607729c2.json",
+          "sha256": "af89de2432ab102c40002043fa69342ba3c60ec483266214665e510ce97c79a0"
+        }
+      ],
+      "scope": "revision/nonce/expiry/CAS\u6d4b\u8bd5\uff1bDocker confirm\u5173\u95ed\u3001proposal\u4fdd\u7559\u3001\u65e0execution result\u3002",
+      "limits": [
+        "\u771f\u5b9e\u6267\u884cadapter\u5c5eP3\uff1bP1\u95e8\u8981\u6c42\u4e1a\u52a1\u5199\u5173\u95ed\u3002"
+      ],
+      "gate": "\u6ee1\u8db3"
+    },
+    {
+      "item": "A07",
+      "expected": "\u8d85\u65f6/\u8fdf\u5230\u8f93\u51fa/\u8d44\u6e90\u9650\u5236/\u53d6\u6d88\u7ed3\u679c\u6709\u754c",
+      "tests": [
+        "test_model_timeout_keeps_gate_until_provider_finishes_and_discards_late_output",
+        "test_global_queue_limit_is_atomic_across_connections_and_rejected_key_can_retry",
+        "test_api_admission_429_has_no_receipt_and_exact_request_retries_when_capacity_frees"
+      ],
+      "commands": [
+        "& 'D:\\project\\Android\\shared-ledger-agent\\agent\\.venv\\Scripts\\python.exe' -m pytest agent\\tests -q -p no:cacheprovider",
+        "pytest agent\\tests\\test_mock_runtime.py",
+        "pytest agent\\tests\\test_mock_runtime_api.py"
+      ],
+      "types": [
+        "pytest deterministic Mock Provider/SQLite"
+      ],
+      "evidence": [
+        {
+          "path": "agent/docs/p1/MOCK_RUNTIME.md",
+          "sha256": "6bb83c57e4b1604123a5defb9335c0d4a912022c80424eea7308fb35e32b4356"
+        },
+        {
+          "path": "agent/docs/p1/DEPLOYMENT_RECOVERY.md",
+          "sha256": "ef498160f127b39cd84b9e5300e58bcd6b606e3209244e2e912acaef3e5d1203"
+        }
+      ],
+      "scope": "Mock provider timeout\u3001queue\u548clate result\u3002",
+      "limits": [
+        "\u65e0\u771f\u5b9e\u6a21\u578b\u6027\u80fd\u7ed3\u8bba\u3002"
+      ],
+      "gate": "\u6ee1\u8db3"
+    },
+    {
+      "item": "A08",
+      "expected": "\u5173\u95ed\u540e\u53ef\u8bfb/\u8865\u8ba4\u8bc1/\u53d6\u6d88\uff0c\u62d2\u7edd\u65b0\u89c4\u5212/\u786e\u8ba4\uff0c\u91cd\u5f00\u4f7f\u65e7\u63d0\u6848\u5931\u6548",
+      "tests": [
+        "test_api_disabled_gate_preserves_metadata_and_cancel_then_reopen_stales_old_proposal",
+        "test_agent_gate_replay_and_backend_disable_revision_scope"
+      ],
+      "commands": [
+        "& 'D:\\project\\Android\\shared-ledger-agent\\agent\\.venv\\Scripts\\python.exe' -m pytest agent\\tests -q -p no:cacheprovider",
+        "pytest agent\\tests\\test_mock_runtime_api.py",
+        "pytest agent\\tests\\test_identity_api.py"
+      ],
+      "types": [
+        "pytest Mock gate",
+        "Docker disabled simulation recovery"
+      ],
+      "evidence": [
+        {
+          "path": "agent/docs/p1/MOCK_RUNTIME.md",
+          "sha256": "6bb83c57e4b1604123a5defb9335c0d4a912022c80424eea7308fb35e32b4356"
+        },
+        {
+          "path": "agent/docs/p1/IDENTITY_API.md",
+          "sha256": "33446fde39dcd388b926b22f8ba011abb0a995c095b902362222aa960166d935"
+        },
+        {
+          "path": "agent/docs/p1/evidence/P1-06-Docker-20261010-004731-c10d607729c2.json",
+          "sha256": "af89de2432ab102c40002043fa69342ba3c60ec483266214665e510ce97c79a0"
+        }
+      ],
+      "scope": "\u5173\u95edrevision\u4e0edisabled recovery/cancel HTTP\u3002",
+      "limits": [
+        "\u751f\u4ea7\u504f\u597d\u5b58\u50a8\u548c\u8de8\u8bbe\u5907\u540c\u6b65\u672a\u4ea4\u4ed8\u3002"
+      ],
+      "gate": "\u6ee1\u8db3"
+    },
+    {
+      "item": "A09",
+      "expected": "\u51ed\u8bc1/nonce\u4e0d\u8fdbevents/model inputs/logs/receipt body\uff1b\u8bca\u65ad\u8131\u654f",
+      "tests": [
+        "test_remote_http_statuses_are_sanitized_and_http_errors_are_closed",
+        "test_network_failures_are_dependency_errors_not_invalid_identity",
+        "test_cli_has_documented_exit_codes_and_sanitized_diagnostics",
+        "exercise.py scan-database/scan-text"
+      ],
+      "commands": [
+        "& 'D:\\project\\Android\\shared-ledger-agent\\agent\\.venv\\Scripts\\python.exe' -m pytest agent\\tests -q -p no:cacheprovider",
+        "Test-Agent.ps1 scan phases",
+        "real_auth_smoke.py temporary SQLite credential scan"
+      ],
+      "types": [
+        "pytest",
+        "Docker simulation DB/log scan",
+        "Auth\u4e34\u65f6SQLite scan"
+      ],
+      "evidence": [
+        {
+          "path": "agent/docs/p1/DEPLOYMENT_RECOVERY.md",
+          "sha256": "ef498160f127b39cd84b9e5300e58bcd6b606e3209244e2e912acaef3e5d1203"
+        },
+        {
+          "path": "agent/docs/p1/evidence/P1-06-Docker-20261010-004731-c10d607729c2.json",
+          "sha256": "af89de2432ab102c40002043fa69342ba3c60ec483266214665e510ce97c79a0"
+        },
+        {
+          "path": "agent/docs/p1/REAL_AUTH_SMOKE.md",
+          "sha256": "4272d4ba2c59d7a380efbea7f455b50102e8aa7447dd14444438e34757f4ad01"
+        },
+        {
+          "path": "agent/docs/p1/evidence/P1-04-RealAuthSmoke-20261010-013323.json",
+          "sha256": "1846cb701837e51ad0a71aec5882b07aa717756124748e37eca9194ab9658142"
+        }
+      ],
+      "scope": "Docker fixture restore\u5e935\u8868/30\u884c\u3001\u8fd0\u884c\u5e93\u4e24\u6b215\u8868/36\u884c\uff1blogs 362/1045/362 bytes\u3002Auth\u4e34\u65f6SQLite\u65e0credential values\u3002",
+      "limits": [
+        "nonce\u5141\u8bb8\u5b58\u5728proposals\u884c\uff1b\u7981\u6b62events/logs/model inputs/receipt body\u3002Auth helper DEVNULL\u3001\u672a\u626b\u63cfruntime log\uff1bDocker logs\u4e3asimulation fixture\u3002"
+      ],
+      "gate": "\u6ee1\u8db3\uff08\u8fb9\u754c\u62ab\u9732\uff09"
+    },
+    {
+      "item": "A10",
+      "expected": "Docker lifecycle/online backup/\u65b0\u5377restore\uff1bdisabled\u4e0b\u53ef\u6062\u590d\u53d6\u6d88\u4e14\u65e0\u771f\u5b9e\u5199",
+      "tests": [
+        "Test-Agent.ps1",
+        "exercise.py before-restart/offline-recovery/after-restart",
+        "test_online_wal_backup_restores_real_store_and_concurrent_commits",
+        "test_large_valid_database_uses_volume_tmp_for_verify"
+      ],
+      "commands": [
+        "& .\\agent\\deploy\\scripts\\Test-Agent.ps1",
+        "container python -m agent.app.export_contracts --check"
+      ],
+      "types": [
+        "PowerShell AST/Compose static",
+        "pytest SQLite backup",
+        "\u771f\u5b9eDocker"
+      ],
+      "evidence": [
+        {
+          "path": "agent/docs/p1/evidence/P1-06-HostStatic-20261009.json",
+          "sha256": "ced37b7c45302239986e74dca57640ca4c82687c267eccff03ec1cdbde50d0d2"
+        },
+        {
+          "path": "agent/docs/p1/evidence/P1-06-Docker-20261009-114423-637306fb1414.json",
+          "sha256": "51731b9be49333acda74bc93431522e3c1838eb0766c353f5a210703931f30c6"
+        },
+        {
+          "path": "agent/docs/p1/evidence/P1-06-Docker-20261010-004200-2131f17081c9.json",
+          "sha256": "fe3be27183291537975243916c6065c7aeacd2554729be21244e3ef4cda70871"
+        },
+        {
+          "path": "agent/docs/p1/evidence/P1-06-Docker-20261010-004731-c10d607729c2.json",
+          "sha256": "af89de2432ab102c40002043fa69342ba3c60ec483266214665e510ce97c79a0"
+        },
+        {
+          "path": "agent/docs/p1/DEPLOYMENT_RECOVERY.md",
+          "sha256": "ef498160f127b39cd84b9e5300e58bcd6b606e3209244e2e912acaef3e5d1203"
+        }
+      ],
+      "scope": "\u6700\u65b0004731 PASS\u300196/96 hash match\u3001131830-byte backup\u6062\u590d\u65b0\u5377\u3001recreate\u4fdd\u7559state\u3001\u771f\u5b9e\u5199\u5173\u95ed\u3002",
+      "limits": [
+        "10/09 FAIL\u5386\u53f2\u4fdd\u7559\uff1b004200\u8f83\u65e9PASS\u3002Vector RestartCount 23\u219225\uff0cstate_unchanged=false/resources_preserved=true\u3002"
+      ],
+      "gate": "\u6ee1\u8db3\uff08\u6709\u754c\u4f8b\u5916\uff09"
+    },
+    {
+      "item": "A11",
+      "expected": "\u79bb\u7ebf\u534f\u8bae\u3001\u56db\u8bed\u4e49\u3001\u8f68\u8ff9\u53ca\u975e\u6cd5\u8f93\u5165\u62d2\u7edd",
+      "tests": [
+        "test_all_mock_trajectories_pass_json_schema_and_source_protocol",
+        "test_semantic_boundary_is_closed_and_money_is_decimal_text",
+        "test_capability_registry_and_openapi_are_complete_and_interoperable"
+      ],
+      "commands": [
+        "& 'D:\\project\\Android\\shared-ledger-agent\\agent\\.venv\\Scripts\\python.exe' -m pytest agent\\tests -q -p no:cacheprovider",
+        "python -m agent.app.export_contracts --check",
+        "pytest agent/tests/test_protocol_contracts.py -q -p no:cacheprovider"
+      ],
+      "types": [
+        "JSON Schema/OpenAPI static",
+        "pytest Pydantic+fixtures"
+      ],
+      "evidence": [
+        {
+          "path": "agent/docs/p1/PROTOCOL_FREEZE.md",
+          "sha256": "eedc8203f023da0806bfbe4403be9205bb13217d7d7c387eddc1a0c189a2cbb3"
+        },
+        {
+          "path": "agent/docs/p1/DEPLOYMENT_RECOVERY.md",
+          "sha256": "ef498160f127b39cd84b9e5300e58bcd6b606e3209244e2e912acaef3e5d1203"
+        }
+      ],
+      "scope": "\u5f53\u524d\u5408\u540c\u5bfc\u51fasnapshot matches manifest\uff1b\u534f\u8bae\u6d4b\u8bd5\u5728\u5168\u91cf\u5185\u3002",
+      "limits": [
+        "\u4e0d\u662f\u6574\u4e2aT1\u5b8c\u6210\u7ed3\u8bba\u3002"
+      ],
+      "gate": "\u6ee1\u8db3"
+    }
+  ],
+  "evidence_history": [
+    {
+      "path": "agent/docs/p1/evidence/P1-06-Docker-20261009-114423-637306fb1414.json",
+      "sha256": "51731b9be49333acda74bc93431522e3c1838eb0766c353f5a210703931f30c6",
+      "status": "FAIL",
+      "meaning": "10/09 engine unavailable before phases; historical only."
+    },
+    {
+      "path": "agent/docs/p1/evidence/P1-06-HostStatic-20261009.json",
+      "sha256": "ced37b7c45302239986e74dca57640ca4c82687c267eccff03ec1cdbde50d0d2",
+      "status": "HOST_STATIC_CHECKS_PASS_DOCKER_CONTAINER_ACCEPTANCE_BLOCKED",
+      "meaning": "Static only; 28 hashes/25 current; three deployment paths superseded."
+    },
+    {
+      "path": "agent/docs/p1/evidence/P1-06-Docker-20261010-004200-2131f17081c9.json",
+      "sha256": "fe3be27183291537975243916c6065c7aeacd2554729be21244e3ef4cda70871",
+      "status": "PASS",
+      "meaning": "Earlier Docker pass; final selection is 004731."
+    },
+    {
+      "path": "agent/docs/p1/evidence/P1-06-Docker-20261010-004731-c10d607729c2.json",
+      "sha256": "af89de2432ab102c40002043fa69342ba3c60ec483266214665e510ce97c79a0",
+      "status": "PASS",
+      "meaning": "Latest Docker; 96/96 source hashes match; recorded_at not finish time."
+    },
+    {
+      "path": "agent/docs/p1/evidence/P1-04-RealAuthSmoke-20261010-013024.json",
+      "sha256": "60ee89933d8f85a85a96f50b9f2544938e3a5466bc33c10a0d3dee19d53ee60a",
+      "status": "PASS",
+      "meaning": "Earlier Auth pass."
+    },
+    {
+      "path": "agent/docs/p1/evidence/P1-04-RealAuthSmoke-20261010-013323.json",
+      "sha256": "1846cb701837e51ad0a71aec5882b07aa717756124748e37eca9194ab9658142",
+      "status": "PASS",
+      "meaning": "Latest Auth 29/29; source digest before/after/current matches; helper sha a2fbfdc785f4d96e3ef428e46ec2464fa0d590ad89c084b7a0811f2253dacf87."
+    }
+  ],
+  "source_verification": {
+    "docker": {
+      "total_hashes": 96,
+      "current_matches": 96,
+      "mismatches": 0,
+      "evidence": {
+        "path": "agent/docs/p1/evidence/P1-06-Docker-20261010-004731-c10d607729c2.json",
+        "sha256": "af89de2432ab102c40002043fa69342ba3c60ec483266214665e510ce97c79a0"
+      }
+    },
+    "real_auth": {
+      "checks": 29,
+      "passed": 29,
+      "failed": 0,
+      "expired_token": "NOT_TESTED",
+      "source_digest": "224c2da71c128fef35cd20b6f193fb052dd467c1bbc188ba74ce0e1884e57501",
+      "helper_sha": "a2fbfdc785f4d96e3ef428e46ec2464fa0d590ad89c084b7a0811f2253dacf87"
+    },
+    "host_static": {
+      "historical_hashes": 28,
+      "current_matches": 25,
+      "superseded": [
+        "agent/deploy/README.md",
+        "agent/deploy/scripts/Deploy.Common.ps1",
+        "agent/deploy/scripts/Test-Agent.ps1"
+      ],
+      "superseded_by": "10/10 Docker hashes"
+    }
+  },
+  "t0_index": {
+    "status": "\u516d\u6b65\u5b8c\u6210\u5e76\u7ecf\u6839\u4e3b\u5ba1\uff1b\u7528\u6237\u786e\u8ba4 `1a80a0f` \u5df2\u63d0\u4ea4\u5e76\u63a8\u9001",
+    "facts": [
+      "4B host/Docker smoke passed; model unloaded",
+      "HF merge\u53caF16/Q4\u56fa\u5b9a\u8f93\u5165\u5bf9\u7167\u5b8c\u6210",
+      "D\u76d8\u5f52\u6863/C\u76d8\u4e34\u65f6 hold\u6e05\u7406\u5b8c\u6210\uff1bcleanup-verification SHA-256 25e315f94c53414c57cafa0a493f5a6335a37e4f446616a40beabc90b0e92146"
+    ],
+    "git": "`1a80a0f` 16 T0/shared document paths; local HEAD equals origin/agent tracking ref; commit tree has no P1 paths; no live ls-remote",
+    "limits": [
+      "\u672a\u91cd\u8dd1 T0 \u6216\u91cd\u54c8\u5e0c\u6743\u91cd\uff1b\u6709\u9650 synthetic \u6bd4\u8f83\u4e0d\u8bc1\u660e\u6a21\u578b\u8d28\u91cf"
+    ]
+  },
+  "t1_status": {
+    "p1_01": "API/semantic/tools/trajectory protocol and version manifest frozen as a limited protocol slice",
+    "whole_t1": "NOT_COMPLETE: train/validation/sealed dataset freeze, legacy relabel, Teacher availability and formal model/business quality gates remain pending"
+  },
+  "source_manifest": {
+    "file_count": 107,
+    "aggregate_algorithm": "SHA256 UTF-8 of ordinal-sorted relative path NUL sha256hex LF",
+    "aggregate_sha256": "294238ae26508634226b5cc7e732ab9c06aac2574cc96bde9bc979d21fa6fd54",
+    "included_roots": [
+      "agent/app",
+      "agent/tests",
+      "agent/contracts",
+      "agent/migrations",
+      "agent/deploy"
+    ],
+    "included_config": [
+      "agent/.dockerignore",
+      "agent/.env.example",
+      "agent/.gitignore",
+      "agent/pyproject.toml",
+      "agent/uv.lock",
+      "agent/requirements-contracts.txt",
+      "agent/toolchain-contracts.json"
+    ],
+    "excluded": [
+      "FINAL_REVIEW.md",
+      "FINAL_REVIEW_SUMMARY.json",
+      "agent/docs/**",
+      "__pycache__",
+      "*.pyc"
+    ],
+    "files": [
+      {
+        "path": "agent/.dockerignore",
+        "sha256": "53e0d1b93f1cf066d7c143bbaaeb6adcf6f2045f8c556de8dda4697b81fcde43"
+      },
+      {
+        "path": "agent/.env.example",
+        "sha256": "51c910b5b6a07c838c97a09e5b2c1b70efdd9a45aa9830ef50c3ac1b29fe30a3"
+      },
+      {
+        "path": "agent/.gitignore",
+        "sha256": "bd5a6eb208ee08f13073dc5eeb9729d7a9decc51a6f093dafcce284184799de8"
+      },
+      {
+        "path": "agent/app/__init__.py",
+        "sha256": "8aa8ce6c1a477e0fd8938eb445ad1d65fb9ae367d3547af9fc179da85c1d457f"
+      },
+      {
+        "path": "agent/app/api.py",
+        "sha256": "d31fea0b3093f876503168c076b3abad52f2f3cca27af726766027803ed10635"
+      },
+      {
+        "path": "agent/app/auth.py",
+        "sha256": "db0c88be1be15222c43b936fa5556175916c273c8262ed081aa133c593cec712"
+      },
+      {
+        "path": "agent/app/backend.py",
+        "sha256": "0d76021508a3b976b3755e3b94712e66d9da7c0742a717ca6946522a2e06abde"
+      },
+      {
+        "path": "agent/app/backup.py",
+        "sha256": "0d98879a145e296b7ff4dc4b7af3c968d8ad8c5ee13b13a2022a14fe4accdce3"
+      },
+      {
+        "path": "agent/app/components.py",
+        "sha256": "e89af3921f85f930c0b9d56a17b87cf354e1ebdcac292f68dcb0111819bb8e3f"
+      },
+      {
+        "path": "agent/app/contracts.py",
+        "sha256": "9fd214d9d8eb43c6f5b03b1d7e95b2bef274dbf9e8be495f536f495b48a5bf2d"
+      },
+      {
+        "path": "agent/app/export_contracts.py",
+        "sha256": "46ab93fb37223b08031665e1f3eab5a8602006b7cb91d97e34051994c0186b18"
+      },
+      {
+        "path": "agent/app/gateway.py",
+        "sha256": "903e441b9220df5df0558f9ef06802a7ebda260d3d634a742c2713e6c02a28c3"
+      },
+      {
+        "path": "agent/app/harness.py",
+        "sha256": "e334275b89f9a29a4f3d4b88db56c734bf6bbee80e5e5a933ce12d763cd6e2f3"
+      },
+      {
+        "path": "agent/app/main.py",
+        "sha256": "35e0c6941e92eac1c5cc6f6fa3359403e21ba953f5cd8d9334c417868fa11f12"
+      },
+      {
+        "path": "agent/app/mock_fixtures.py",
+        "sha256": "f2275b8df771ce65fa3a753d5b7aa0bc58e4d5353473fd2dfb18841a99527dcc"
+      },
+      {
+        "path": "agent/app/model_provider.py",
+        "sha256": "7c29229b6508796297439594e82e097d6e89912685cd862adf6b105a6505c042"
+      },
+      {
+        "path": "agent/app/ports.py",
+        "sha256": "c71a78fd4e42be21f1654b174e5764720c8ee5b4f1f3dab051293c57107496ac"
+      },
+      {
+        "path": "agent/app/runtime.py",
+        "sha256": "dc370cf61e8c91f950da3a414f95bd638ee54869936ad9e542f1a594d920dc1d"
+      },
+      {
+        "path": "agent/app/settings.py",
+        "sha256": "84778d4a4098ac6e4d464237113f5550d332bd483e1daa6ea27b7dc50b06b839"
+      },
+      {
+        "path": "agent/app/store.py",
+        "sha256": "77ccf4dc950b145fd68696a67485e9f6b4b880c17f67cc51e98fb218e66608f6"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/capability-registry.json",
+        "sha256": "e444a702326923899704cdf1c8dc5ae13b05f140fe127ee1e855eb65a1fb03e8"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/manifest.json",
+        "sha256": "9d2d5938373681ab60ccdeb42a10190dd5b136615bce2026e29c94864a9dbca3"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/mock_traces/clarify_auth_cancel_reference_stability.json",
+        "sha256": "473d527c32ec1533e957edb93a461a124303aef566b65c3111201065b7348b8e"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/mock_traces/four_semantics.json",
+        "sha256": "b441b85d6bdb53920ca3a20d2674887834e39d69cfcff5798d2f7ed311fbd2f8"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/mock_traces/propose_wait_confirm_confirm_disabled.json",
+        "sha256": "b366986095e3287d61a074d8d3b6dd07c554437c154326002e779257d53e041f"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/mock_traces/read_then_answer.json",
+        "sha256": "d51d99505225d1b7bd16f4ccfe09a6261a484299a739c0acb4ca471eff142261"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/openapi.json",
+        "sha256": "2ae0f297a72cc6ae39c69c92892325faf3718687cde2a061bf64f6ea5f4c021c"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/AnswerDecision.schema.json",
+        "sha256": "8bdfc7371f2de42532b955d89855717a326d01531084b83754394c2f8a9685b1"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ApiErrorResponse.schema.json",
+        "sha256": "5aa077387b7ae2733451a6b07e74988e0e89eab6d3b111fb9413132cfac792c7"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/CancelTurnRequest.schema.json",
+        "sha256": "001849d9d441f79d1d01fc2ea79c01e0726cf28e51c3acd4f27e52a8b27d19eb"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/CancelTurnResponse.schema.json",
+        "sha256": "1685042eb0f51d11d698ffb01807c1cc36b210d92f43a63cfc203b399c64f3f2"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ClarificationEvent.schema.json",
+        "sha256": "4d67c0668ecf0843e984bc11c0500eb75c941b51b92a4b161e6105fd08b01cd2"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ClarifyDecision.schema.json",
+        "sha256": "e733d65d9a240c9e426ed5accc72927f6dd737019c43da47959a154a8b550da0"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ClientProtocolVersions.schema.json",
+        "sha256": "44bf7343b6a4b6244fba61c6638b58a4d08b09492cc08142affe8b47e7ffb77f"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ConfirmProposalRequest.schema.json",
+        "sha256": "1c696f4bdb997d491977e20a533213f965b72f6271bf60f8531c5f51e58263b9"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ConfirmableProposalCard.schema.json",
+        "sha256": "dacd73511ba92753052995e9f855df77e13720be9956816797a4b917504090fe"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ConfirmationUnavailableResponse.schema.json",
+        "sha256": "dda09996777191d5441439e6e42f94ccefdc5bf873f6a746bf0fc5e3f356d55c"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/CreateSessionRequest.schema.json",
+        "sha256": "e01b15de5a4fce428ffa89907b1cc95c31d12acece4cdcfa5d285d0d1436579e"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/CreateSessionResponse.schema.json",
+        "sha256": "1f32d3434a5dfef7b583a749b84beb0e252339d12b18af3bd7c3d8ea2a048706"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ErrorEvent.schema.json",
+        "sha256": "0b81a19b1d4ccc3c63dea11afb1163e691d1faf3a118f9b1e04e2278afcf2320"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/EventPollQuery.schema.json",
+        "sha256": "ed5e39184e7fe77a395ba565854ff2e46eaa25932696b684c5d5a12c4e2e730a"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ExecutionResultEvent.schema.json",
+        "sha256": "ddf56cdc59e03986ffbacba5382bb66ba56e0163232a168bf18cd9ec9a97f4b4"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ExpensePreview.schema.json",
+        "sha256": "6b8bce74234f4312749418d5eeeb3b082d9999f5f3218934608f8fba5c8e8d76"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/FixedExpenseCreateCommand.schema.json",
+        "sha256": "5ba42bfed842ea6c851950d7b50ea0c59856e4b7e31fe142e995dc153b4a09d3"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/FixedExpensePresentationCommand.schema.json",
+        "sha256": "4fce607884c36d30565658f374c6536a98170d7302673a727fcd94b783f98829"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/FixedExpenseUpdateCommand.schema.json",
+        "sha256": "71a24a067f37f44d52fe12f32abf6aa9f6e78853fb000034d4c9405771d5b096"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/InactiveProposalCard.schema.json",
+        "sha256": "f26c3608a0e03b528002d6577ca4aff7276d0b90effc3abbf3177cb70966b193"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ListSessionsResponse.schema.json",
+        "sha256": "ab7479044c3b3669f03d31230aaae4903eb70620c36ce5797a1e93eac2dce9bf"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/MessageEvent.schema.json",
+        "sha256": "6777af7de4c4ebf21e5b67feb84132d5b7836916e7d2427c426295e2feb3cafd"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/MockTrajectory.schema.json",
+        "sha256": "920ec6ec73cea108fa6628b89e5bef2e02c9990a7044cabfbb2f2b63a140cbd1"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ModelContext.schema.json",
+        "sha256": "9a8cb2b8fc7b060fa91a4b760f09f064c7c696a92dc23aa5c3289335f3da1fae"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/OperationRegistryEntry.schema.json",
+        "sha256": "02a185653fbb3d6d7f9ad72f8e9f449e2f7c4821d73d677f657d506b8f9766ab"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/PollEventsResponse.schema.json",
+        "sha256": "83d5232fc126f615065ede5310061401e48e4212f693a82013f47dd38ef01ef7"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ProposalEvent.schema.json",
+        "sha256": "69c4b0399f9b33b0db46cce7c6b2cdfe63273f1479578ae39419b42e0d5e35b7"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ProposalRecord.schema.json",
+        "sha256": "80696d5ecb3a4105736c1daa0e5c41154cce49110f9362ea1fc31ae44c67695b"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ProposeDecision.schema.json",
+        "sha256": "06388582266b225fe027fcbbe567126ff4bcd35ea3f4d9e87877dba7b54e5f2a"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ProtocolVersions.schema.json",
+        "sha256": "3f6cd8b258adef9d79ec317f66e297f756dd0956b8336d24d20b1e8ef75ce975"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ReadDecision.schema.json",
+        "sha256": "3a6d3d9d5787f0348a25e7acbe4879cc03c55dacfefeb9b23ea4f39ddd1ca2b6"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/RequestReceipt.schema.json",
+        "sha256": "a45f39f4fd7a5af21943de25d4e120b75dbcb484faa02e2548f6047b2e658721"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ResumeAuthRequest.schema.json",
+        "sha256": "74c27ccd1b84079b4efa7ab7118d164077b6ef3bc513aa7c78e3eedbf537d575"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ResumeClarificationRequest.schema.json",
+        "sha256": "0a4371cec8ccebc79d19543be5e00f5c78447fd01480cdc3066c2e0a62e885e0"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ResumeProposalAdjustRequest.schema.json",
+        "sha256": "9694ae22968650ca7e587c3f8d6a0eff1ef4af7b93be8bfa0d3bffdfc07a6865"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/SessionDetailResponse.schema.json",
+        "sha256": "37bf3ca4ec2e0cd12aee38bf0fdad6eb7a6e311f30584fa59c032d791e4a881c"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/SessionListQuery.schema.json",
+        "sha256": "ab8262caefe2140a5aebfb0c021d064363e8dc8e6b685bbcf1896f8a3f80d2f7"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/SessionRecord.schema.json",
+        "sha256": "5b7b61085b72673a7d3e5dacd8cf4a7f23b3e17ba576107971974f40c3b03411"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/SimulationProposalCard.schema.json",
+        "sha256": "964a30b418a5e88a637dcaa316af7a3dcd58692edd140459dec51c04974f77a5"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/StateTransitionStep.schema.json",
+        "sha256": "b66ff8e33ede86528219520555ef3525f293ab46bb4406b5907d520432d811d3"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/StatusEvent.schema.json",
+        "sha256": "1d3d00358166926055b6839c0ad331535b31b6f4ce0b2154b033cc946fec9b94"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/SubmitTurnAccepted.schema.json",
+        "sha256": "816132db527a51e027d5422636bda5f1ec7bab0c89200967585736546a9195d6"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/SubmitTurnRequest.schema.json",
+        "sha256": "60474405f970e3b8f3fdcb5bdf5d9e6126eccb6b9fbf7a8e0aedacfc26d81f16"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/ToolReadResult.schema.json",
+        "sha256": "849a1bfc9ad01ec5b84cd9163b21c65995c460dae42aa5d3375d229b6642ca5f"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/TurnRecord.schema.json",
+        "sha256": "dd75f6b772c147a05cf9fc9a9e145a2cf95dd0eb302aa03d61cdf545cc46bcfd"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/TurnStateSnapshot.schema.json",
+        "sha256": "7d50fcde07258d2ed68179859b9c92b7d5ba827847b38d87ba568f0c69e414dc"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/schemas/UIContext.schema.json",
+        "sha256": "bb866b16904005f7d1a7be374f5b29da5cfec8f26e7323426e20eac5a840a851"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/state-transitions.json",
+        "sha256": "43d400eade0226bd6ee1acd840869a9c19033508e8e951e2c9b5859ffbbd483f"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/validation-layers.json",
+        "sha256": "57062fd7c86e85b2bd64dd6477497fb8bf5167cde7b94bcb218fa6098a7acb52"
+      },
+      {
+        "path": "agent/deploy/.gitignore",
+        "sha256": "cec0bac385cac4714b81f0eb9011be8adc3f180cfa428a2fd5bddd00d5e5fba4"
+      },
+      {
+        "path": "agent/deploy/Dockerfile",
+        "sha256": "a475cd75881629c4ab2dc55e409b14f63ba351fe1d66bb88e38d9188b9cfbd5f"
+      },
+      {
+        "path": "agent/deploy/README.md",
+        "sha256": "827ad6f60c607ec34ca06a1212314966006d0a63055453e9c040cc2380a1b95a"
+      },
+      {
+        "path": "agent/deploy/acceptance/README.md",
+        "sha256": "ff8313375594e358d7626a53bb9fd10a829a2b84d8ef4a198233b1bb454d0418"
+      },
+      {
+        "path": "agent/deploy/acceptance/exercise.py",
+        "sha256": "3e6d00e1c8dac61646659f58ace05cf572a6a34d352a30b37c6b9643e1cc695b"
+      },
+      {
+        "path": "agent/deploy/acceptance/fixture_app.py",
+        "sha256": "f73a1c4ae2f38b3969190234d03ede6c660f4dea3bd8e161efa57447092200b4"
+      },
+      {
+        "path": "agent/deploy/acceptance/real_auth_smoke.py",
+        "sha256": "a2fbfdc785f4d96e3ef428e46ec2464fa0d590ad89c084b7a0811f2253dacf87"
+      },
+      {
+        "path": "agent/deploy/compose.acceptance.yaml",
+        "sha256": "5f7b09f32d1c461b6aaf3f2151aca0fd4e8c9d8e88c99c53e51e6f9f5e8ec091"
+      },
+      {
+        "path": "agent/deploy/compose.offline.yaml",
+        "sha256": "fa1aad8c677c979a57116f168dac6699124eea745052dce2f03080cea2e5e615"
+      },
+      {
+        "path": "agent/deploy/compose.yaml",
+        "sha256": "26313434ec0eb801c6d7c20c01c122a0ae43e688d537556e2ffb5b5a4de469ce"
+      },
+      {
+        "path": "agent/deploy/deploy.env.example",
+        "sha256": "ee24d9dec8ce265560212c111e8f0502919044dacee303462d73f8590906d94a"
+      },
+      {
+        "path": "agent/deploy/scripts/Backup-Agent.ps1",
+        "sha256": "3da027abbeea33fc7905f63589014fcb7457249991378b0588a782f0d47a57b0"
+      },
+      {
+        "path": "agent/deploy/scripts/Deploy.Common.ps1",
+        "sha256": "e6c73646123d8b031597063ecd755571a949d8da0f88969870f31cad0f6acf4f"
+      },
+      {
+        "path": "agent/deploy/scripts/Get-AgentStatus.ps1",
+        "sha256": "6a8720978158227af7e85984db0be946a015ba9f5e4382a57d3ea0117bad08b3"
+      },
+      {
+        "path": "agent/deploy/scripts/Restore-Agent.ps1",
+        "sha256": "4336bf03270170eae6c77a0934142b1018bd600964cf9d44e87e102e9a9fe67f"
+      },
+      {
+        "path": "agent/deploy/scripts/Start-Agent.ps1",
+        "sha256": "e3a8f7ab248f6832bd7a0bf0e05676f8470d46feb80adc484d07dfbae22e8e2e"
+      },
+      {
+        "path": "agent/deploy/scripts/Stop-Agent.ps1",
+        "sha256": "1feb80074e6ca795c80eeb0ef46f1cf3803285aefb973251ae0ae3d19be680c9"
+      },
+      {
+        "path": "agent/deploy/scripts/Test-Agent.ps1",
+        "sha256": "d50bfeaf1156495f7b41b4ab57696e68ffd925b38de884ba754825d8304cfbf3"
+      },
+      {
+        "path": "agent/migrations/001_initial.sql",
+        "sha256": "75436c0fe069081f034e2cb82211bc74f6780a68f7020e9de20d5c0a4a57637b"
+      },
+      {
+        "path": "agent/pyproject.toml",
+        "sha256": "e76597bbf692ebf2b649123335f5bfa92966e6626577897bb40dba9e969a65dd"
+      },
+      {
+        "path": "agent/requirements-contracts.txt",
+        "sha256": "ea5236e6063198756ba490ff6fbc032edfbe685f22e5e801103c569dd1f17fb4"
+      },
+      {
+        "path": "agent/tests/test_auth_verifier.py",
+        "sha256": "7f6f77a524a108f1369da40c4559a72e62f9d14e449abe7d7345c9998c67d6f1"
+      },
+      {
+        "path": "agent/tests/test_backup_restore.py",
+        "sha256": "0abe65dd06ac2f411f1f4bca3658b1d58ffe8b00bc1ba49c2ee503ab94c5598a"
+      },
+      {
+        "path": "agent/tests/test_identity_api.py",
+        "sha256": "7cd1d5412566b3da5fc12d03a5c40b698ee8a5a1401da458e8d3b1d750807823"
+      },
+      {
+        "path": "agent/tests/test_mock_runtime.py",
+        "sha256": "a4dbe82ea817cf009e8625c8fb8841a22a6e0a64456a84e027f324d9f951e5c7"
+      },
+      {
+        "path": "agent/tests/test_mock_runtime_api.py",
+        "sha256": "fd032a48928d6e4b0df29fa541caf1228babc4c4473dfff439a399759b4e562f"
+      },
+      {
+        "path": "agent/tests/test_protocol_contracts.py",
+        "sha256": "f669c05d7b79bb66081e632a836ee50e67301db8a7a1e22d682424c08a39b6a0"
+      },
+      {
+        "path": "agent/tests/test_service_skeleton.py",
+        "sha256": "06ad79c003d23ea6c4374152ca877bc4ec52f828215bdcd84022c3918a592970"
+      },
+      {
+        "path": "agent/tests/test_sqlite_persistence.py",
+        "sha256": "5284395eacf963ed0ea8943f3e64250256eac855667bdc1feea4159ed9611a49"
+      },
+      {
+        "path": "agent/toolchain-contracts.json",
+        "sha256": "2235f7dcf2f1a77d1709538e54077ab2617b1b47f96c85e81dc75d65ec287c2a"
+      },
+      {
+        "path": "agent/uv.lock",
+        "sha256": "0486d2570f46dbe0cf20a84649dbdb01c71f39d90f7de7930d38e62ec4399a9d"
+      }
+    ],
+    "captured_at": null,
+    "verified_at": "2026-10-10T02:05:23+08:00"
+  },
+  "self_hash_note": "Manifest includes app/tests/contracts/migrations/deploy and listed config files. Excludes both final review files, docs/evidence, caches and bytecode to avoid self-hash cycles.",
+  "document_references": {
+    "agent/docs/p1/P1_DEVELOPMENT_PLAN.md": {
+      "sha256": "fa0685c0fcc6b4c8618bf1449e341015fec5ff5d0ec49638a631569334d901dd"
+    },
+    "agent/docs/p1/DEPLOYMENT_RECOVERY.md": {
+      "sha256": "ef498160f127b39cd84b9e5300e58bcd6b606e3209244e2e912acaef3e5d1203"
+    }
+  }
+}

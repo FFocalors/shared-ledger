@@ -1,0 +1,8 @@
+# Local P1 runtime state and isolated Python environment.
+.venv/
+.cache/
+data/
+.env
+__pycache__/
+.pytest_cache/
+*.py[cod]

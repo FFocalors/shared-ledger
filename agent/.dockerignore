@@ -1,0 +1,16 @@
+# The build context is agent/. Exclude everything, then allow only locked,
+# runtime, and frozen-contract inputs. Local environments/data/tests stay out.
+**
+!app/
+!app/*.py
+!contracts/
+!contracts/**
+!migrations/
+!migrations/*.sql
+!pyproject.toml
+!uv.lock
+!requirements-contracts.txt
+!toolchain-contracts.json
+!.env.example
+!deploy/
+!deploy/Dockerfile

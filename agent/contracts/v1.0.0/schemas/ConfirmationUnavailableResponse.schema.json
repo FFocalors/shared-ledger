@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "api_version": {
+      "const": "1.0.0",
+      "default": "1.0.0",
+      "title": "Api Version",
+      "type": "string"
+    },
+    "business_write_performed": {
+      "const": false,
+      "default": false,
+      "title": "Business Write Performed",
+      "type": "boolean"
+    },
+    "code": {
+      "const": "execution_capability_unavailable",
+      "title": "Code",
+      "type": "string"
+    },
+    "execution_enabled": {
+      "const": false,
+      "default": false,
+      "title": "Execution Enabled",
+      "type": "boolean"
+    },
+    "message": {
+      "maxLength": 240,
+      "minLength": 1,
+      "title": "Message",
+      "type": "string"
+    }
+  },
+  "required": [
+    "code",
+    "message"
+  ],
+  "title": "ConfirmationUnavailableResponse",
+  "type": "object"
+}

@@ -1,0 +1,57 @@
+{
+    "run_id":  "637306fb141448dd945f45b6b531451b",
+    "recorded_at":  "2026-10-09T11:44:23.7173584+08:00",
+    "timezone":  "China Standard Time",
+    "host":  {
+                 "powershell":  "5.1.26100.9596",
+                 "python":  "Python 3.12.0",
+                 "docker":  "Docker version 29.8.2, build 7fc2dff",
+                 "docker_server":  "unavailable",
+                 "compose":  "5.5.1",
+                 "context":  "desktop-linux"
+             },
+    "projects":  {
+                     "simulation":  "p1-06-accept-637306fb1414",
+                     "offline_restore":  "p1-06-restore-637306fb1414"
+                 },
+    "loopback_ports":  {
+                           "simulation":  50767,
+                           "offline_restore":  50768
+                       },
+    "production_defaults":  null,
+    "image":  null,
+    "deployment_hashes":  {
+                              "agent/.dockerignore":  "53e0d1b93f1cf066d7c143bbaaeb6adcf6f2045f8c556de8dda4697b81fcde43",
+                              "agent/deploy/.gitignore":  "cec0bac385cac4714b81f0eb9011be8adc3f180cfa428a2fd5bddd00d5e5fba4",
+                              "agent/deploy/Dockerfile":  "a475cd75881629c4ab2dc55e409b14f63ba351fe1d66bb88e38d9188b9cfbd5f",
+                              "agent/deploy/compose.yaml":  "26313434ec0eb801c6d7c20c01c122a0ae43e688d537556e2ffb5b5a4de469ce",
+                              "agent/deploy/compose.acceptance.yaml":  "5f7b09f32d1c461b6aaf3f2151aca0fd4e8c9d8e88c99c53e51e6f9f5e8ec091",
+                              "agent/deploy/compose.offline.yaml":  "fa1aad8c677c979a57116f168dac6699124eea745052dce2f03080cea2e5e615",
+                              "agent/deploy/deploy.env.example":  "ee24d9dec8ce265560212c111e8f0502919044dacee303462d73f8590906d94a",
+                              "agent/deploy/README.md":  "4eea80a777b19e4a100af92fda958f0efc23c5b133dc95edc8d490e4612c77a4",
+                              "agent/deploy/acceptance/fixture_app.py":  "f73a1c4ae2f38b3969190234d03ede6c660f4dea3bd8e161efa57447092200b4",
+                              "agent/deploy/acceptance/exercise.py":  "3e6d00e1c8dac61646659f58ace05cf572a6a34d352a30b37c6b9643e1cc695b",
+                              "agent/deploy/scripts/Deploy.Common.ps1":  "944400bdd96e0c16a2a84a2aed18a2c75ac83a6c28f9e69762e6c5d9e0308d80",
+                              "agent/deploy/scripts/Start-Agent.ps1":  "e3a8f7ab248f6832bd7a0bf0e05676f8470d46feb80adc484d07dfbae22e8e2e",
+                              "agent/deploy/scripts/Stop-Agent.ps1":  "1feb80074e6ca795c80eeb0ef46f1cf3803285aefb973251ae0ae3d19be680c9",
+                              "agent/deploy/scripts/Get-AgentStatus.ps1":  "6a8720978158227af7e85984db0be946a015ba9f5e4382a57d3ea0117bad08b3",
+                              "agent/deploy/scripts/Backup-Agent.ps1":  "3da027abbeea33fc7905f63589014fcb7457249991378b0588a782f0d47a57b0",
+                              "agent/deploy/scripts/Restore-Agent.ps1":  "4336bf03270170eae6c77a0934142b1018bd600964cf9d44e87e102e9a9fe67f",
+                              "agent/deploy/scripts/Test-Agent.ps1":  "5afd89627dd76d308333d3a56119510a6ca70082004a846bafdadf9917b63a28",
+                              "agent/docs/p1/DEPLOYMENT_RECOVERY.md":  "449decaf250d3addac8acb297ac99805a47adc80c41dd8add246ff8aa190cdc1"
+                          },
+    "backup":  null,
+    "phases":  {
+
+               },
+    "preexisting_resources_before":  null,
+    "preexisting_resources_after_cleanup":  null,
+    "preexisting_state_unchanged":  null,
+    "project_resources_after_cleanup":  {
+
+                                        },
+    "result":  "FAIL",
+    "failure":  "Docker operation failed with exit code 1. Check Docker Desktop and the command\u0027s scoped resources.",
+    "host_temp_cleanup":  "removed",
+    "environment_restored":  true
+}

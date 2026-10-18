@@ -1,0 +1,10 @@
+{
+  "purpose": "P1-01 offline protocol contract generation and tests",
+  "python": ">=3.9",
+  "dependencies": {
+    "pydantic": "2.13.4",
+    "jsonschema": "4.25.1",
+    "pytest": "8.4.2"
+  },
+  "scope": "Exact top-level dependency pins for this isolated protocol contract toolchain; not a service, training, or system-environment lockfile."
+}

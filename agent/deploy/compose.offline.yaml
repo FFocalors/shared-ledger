@@ -1,0 +1,20 @@
+services:
+  agent:
+    environment:
+      P1_06_TEST_FIXTURE: "1"
+      P1_06_APP_ROOT: /srv
+      P1_06_FIXTURE_MODE: offline-recovery
+      AGENT_PROVIDER_MODE: disabled
+      AGENT_AGENT_ENABLED: "false"
+      AGENT_SUPABASE_AUTH_BASE_URL: ""
+      AGENT_SUPABASE_API_KEY: ""
+      AGENT_CURSOR_SIGNING_SECRET: "p1-06-isolated-fixture-cursor-secret-32-bytes-minimum"
+    volumes:
+      - type: bind
+        source: ./acceptance/fixture_app.py
+        target: /opt/p1-06-acceptance/fixture_app.py
+        read_only: true
+      - type: bind
+        source: ./acceptance/exercise.py
+        target: /opt/p1-06-acceptance/exercise.py
+        read_only: true

@@ -1,0 +1,11 @@
+deploy.env
+.env
+.env.*
+!.env.example
+*.local.env
+*.private.env
+*.secret.env
+*.zip
+*.sqlite*
+evidence/
+logs/

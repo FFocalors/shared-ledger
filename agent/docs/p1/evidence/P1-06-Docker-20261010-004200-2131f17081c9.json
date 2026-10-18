@@ -1,0 +1,1782 @@
+{
+  "run_id": "2131f17081c94f2fa6098f46ab9fe903",
+  "recorded_at": "2026-10-10T00:42:00.6849286+08:00",
+  "timezone": "China Standard Time",
+  "host": {
+    "powershell": "7.6.6",
+    "python": "Python 3.12.0",
+    "docker": "Docker version 29.8.2, build 7fc2dff",
+    "docker_server": "29.8.2",
+    "compose": "5.5.1",
+    "context": "desktop-linux"
+  },
+  "projects": {
+    "simulation": "p1-06-accept-2131f17081c9",
+    "offline_restore": "p1-06-restore-2131f17081c9"
+  },
+  "loopback_ports": {
+    "simulation": 63357,
+    "offline_restore": 63358
+  },
+  "production_defaults": {
+    "provider_disabled": true,
+    "agent_disabled": true,
+    "single_worker": true,
+    "non_root": true,
+    "host_loopback_only": true,
+    "configurable_host_port": true
+  },
+  "image": "sha256:c6c9b7c206a971cc51a6a25ffd3e155e6b8ab378bc1732cb6a57f96b778905d9|[\"shared-ledger-agent@sha256:c6c9b7c206a971cc51a6a25ffd3e155e6b8ab378bc1732cb6a57f96b778905d9\"]",
+  "deployment_hashes": {
+    "agent/.dockerignore": "53e0d1b93f1cf066d7c143bbaaeb6adcf6f2045f8c556de8dda4697b81fcde43",
+    "agent/deploy/.gitignore": "cec0bac385cac4714b81f0eb9011be8adc3f180cfa428a2fd5bddd00d5e5fba4",
+    "agent/deploy/Dockerfile": "a475cd75881629c4ab2dc55e409b14f63ba351fe1d66bb88e38d9188b9cfbd5f",
+    "agent/deploy/compose.yaml": "26313434ec0eb801c6d7c20c01c122a0ae43e688d537556e2ffb5b5a4de469ce",
+    "agent/deploy/compose.acceptance.yaml": "5f7b09f32d1c461b6aaf3f2151aca0fd4e8c9d8e88c99c53e51e6f9f5e8ec091",
+    "agent/deploy/compose.offline.yaml": "fa1aad8c677c979a57116f168dac6699124eea745052dce2f03080cea2e5e615",
+    "agent/deploy/deploy.env.example": "ee24d9dec8ce265560212c111e8f0502919044dacee303462d73f8590906d94a",
+    "agent/deploy/README.md": "29db6d02d037d8ca2ff67580b6aa6c8604a1f7586604a0f0a1c23a476b01db7d",
+    "agent/deploy/acceptance/fixture_app.py": "f73a1c4ae2f38b3969190234d03ede6c660f4dea3bd8e161efa57447092200b4",
+    "agent/deploy/acceptance/exercise.py": "3e6d00e1c8dac61646659f58ace05cf572a6a34d352a30b37c6b9643e1cc695b",
+    "agent/deploy/scripts/Deploy.Common.ps1": "e6c73646123d8b031597063ecd755571a949d8da0f88969870f31cad0f6acf4f",
+    "agent/deploy/scripts/Start-Agent.ps1": "e3a8f7ab248f6832bd7a0bf0e05676f8470d46feb80adc484d07dfbae22e8e2e",
+    "agent/deploy/scripts/Stop-Agent.ps1": "1feb80074e6ca795c80eeb0ef46f1cf3803285aefb973251ae0ae3d19be680c9",
+    "agent/deploy/scripts/Get-AgentStatus.ps1": "6a8720978158227af7e85984db0be946a015ba9f5e4382a57d3ea0117bad08b3",
+    "agent/deploy/scripts/Backup-Agent.ps1": "3da027abbeea33fc7905f63589014fcb7457249991378b0588a782f0d47a57b0",
+    "agent/deploy/scripts/Restore-Agent.ps1": "4336bf03270170eae6c77a0934142b1018bd600964cf9d44e87e102e9a9fe67f",
+    "agent/deploy/scripts/Test-Agent.ps1": "ac417948c15413f27a22f0fea74af6b37bc45b4dd64f080a547ba7c294f396f7",
+    "agent/docs/p1/DEPLOYMENT_RECOVERY.md": "5d2915228ebd6a80addfc0db80c815668609de833ecd14de4f2370b39dfd0f91"
+  },
+  "preflight": {
+    "inventory_comparison_stub": {
+      "passed": true,
+      "scenarios": {
+        "unchanged_control": true,
+        "baseline_auto_restart_bounded_drift": true,
+        "stable_container_restart_rejected": true,
+        "container_addition_rejected": true,
+        "volume_addition_and_removal_rejected": true,
+        "network_addition_rejected": true,
+        "out_of_bounds_restart_state_rejected": true,
+        "running_status_requires_running_flag": true,
+        "restart_count_name_and_policy_regressions_rejected": true
+      }
+    },
+    "build_context_allowlist": {
+      "verified": true,
+      "allowlist_sha256": "53e0d1b93f1cf066d7c143bbaaeb6adcf6f2045f8c556de8dda4697b81fcde43",
+      "approved_patterns": [
+        "**",
+        "!app/",
+        "!app/*.py",
+        "!contracts/",
+        "!contracts/**",
+        "!migrations/",
+        "!migrations/*.sql",
+        "!pyproject.toml",
+        "!uv.lock",
+        "!requirements-contracts.txt",
+        "!toolchain-contracts.json",
+        "!.env.example",
+        "!deploy/",
+        "!deploy/Dockerfile"
+      ],
+      "included_file_count": 80,
+      "included_files": [
+        ".env.example",
+        "app/__init__.py",
+        "app/api.py",
+        "app/auth.py",
+        "app/backend.py",
+        "app/backup.py",
+        "app/components.py",
+        "app/contracts.py",
+        "app/export_contracts.py",
+        "app/gateway.py",
+        "app/harness.py",
+        "app/main.py",
+        "app/mock_fixtures.py",
+        "app/model_provider.py",
+        "app/ports.py",
+        "app/runtime.py",
+        "app/settings.py",
+        "app/store.py",
+        "contracts/v1.0.0/capability-registry.json",
+        "contracts/v1.0.0/manifest.json",
+        "contracts/v1.0.0/mock_traces/clarify_auth_cancel_reference_stability.json",
+        "contracts/v1.0.0/mock_traces/four_semantics.json",
+        "contracts/v1.0.0/mock_traces/propose_wait_confirm_confirm_disabled.json",
+        "contracts/v1.0.0/mock_traces/read_then_answer.json",
+        "contracts/v1.0.0/openapi.json",
+        "contracts/v1.0.0/schemas/AnswerDecision.schema.json",
+        "contracts/v1.0.0/schemas/ApiErrorResponse.schema.json",
+        "contracts/v1.0.0/schemas/CancelTurnRequest.schema.json",
+        "contracts/v1.0.0/schemas/CancelTurnResponse.schema.json",
+        "contracts/v1.0.0/schemas/ClarificationEvent.schema.json",
+        "contracts/v1.0.0/schemas/ClarifyDecision.schema.json",
+        "contracts/v1.0.0/schemas/ClientProtocolVersions.schema.json",
+        "contracts/v1.0.0/schemas/ConfirmableProposalCard.schema.json",
+        "contracts/v1.0.0/schemas/ConfirmationUnavailableResponse.schema.json",
+        "contracts/v1.0.0/schemas/ConfirmProposalRequest.schema.json",
+        "contracts/v1.0.0/schemas/CreateSessionRequest.schema.json",
+        "contracts/v1.0.0/schemas/CreateSessionResponse.schema.json",
+        "contracts/v1.0.0/schemas/ErrorEvent.schema.json",
+        "contracts/v1.0.0/schemas/EventPollQuery.schema.json",
+        "contracts/v1.0.0/schemas/ExecutionResultEvent.schema.json",
+        "contracts/v1.0.0/schemas/ExpensePreview.schema.json",
+        "contracts/v1.0.0/schemas/FixedExpenseCreateCommand.schema.json",
+        "contracts/v1.0.0/schemas/FixedExpensePresentationCommand.schema.json",
+        "contracts/v1.0.0/schemas/FixedExpenseUpdateCommand.schema.json",
+        "contracts/v1.0.0/schemas/InactiveProposalCard.schema.json",
+        "contracts/v1.0.0/schemas/ListSessionsResponse.schema.json",
+        "contracts/v1.0.0/schemas/MessageEvent.schema.json",
+        "contracts/v1.0.0/schemas/MockTrajectory.schema.json",
+        "contracts/v1.0.0/schemas/ModelContext.schema.json",
+        "contracts/v1.0.0/schemas/OperationRegistryEntry.schema.json",
+        "contracts/v1.0.0/schemas/PollEventsResponse.schema.json",
+        "contracts/v1.0.0/schemas/ProposalEvent.schema.json",
+        "contracts/v1.0.0/schemas/ProposalRecord.schema.json",
+        "contracts/v1.0.0/schemas/ProposeDecision.schema.json",
+        "contracts/v1.0.0/schemas/ProtocolVersions.schema.json",
+        "contracts/v1.0.0/schemas/ReadDecision.schema.json",
+        "contracts/v1.0.0/schemas/RequestReceipt.schema.json",
+        "contracts/v1.0.0/schemas/ResumeAuthRequest.schema.json",
+        "contracts/v1.0.0/schemas/ResumeClarificationRequest.schema.json",
+        "contracts/v1.0.0/schemas/ResumeProposalAdjustRequest.schema.json",
+        "contracts/v1.0.0/schemas/SessionDetailResponse.schema.json",
+        "contracts/v1.0.0/schemas/SessionListQuery.schema.json",
+        "contracts/v1.0.0/schemas/SessionRecord.schema.json",
+        "contracts/v1.0.0/schemas/SimulationProposalCard.schema.json",
+        "contracts/v1.0.0/schemas/StateTransitionStep.schema.json",
+        "contracts/v1.0.0/schemas/StatusEvent.schema.json",
+        "contracts/v1.0.0/schemas/SubmitTurnAccepted.schema.json",
+        "contracts/v1.0.0/schemas/SubmitTurnRequest.schema.json",
+        "contracts/v1.0.0/schemas/ToolReadResult.schema.json",
+        "contracts/v1.0.0/schemas/TurnRecord.schema.json",
+        "contracts/v1.0.0/schemas/TurnStateSnapshot.schema.json",
+        "contracts/v1.0.0/schemas/UIContext.schema.json",
+        "contracts/v1.0.0/state-transitions.json",
+        "contracts/v1.0.0/validation-layers.json",
+        "deploy/Dockerfile",
+        "migrations/001_initial.sql",
+        "pyproject.toml",
+        "requirements-contracts.txt",
+        "toolchain-contracts.json",
+        "uv.lock"
+      ],
+      "excluded_file_count": 3428,
+      "known_exclusions": [
+        {
+          "path": "tests/test_backup_restore.py",
+          "present_in_checkout": true,
+          "excluded_by_allowlist": true
+        },
+        {
+          "path": "deploy/acceptance/fixture_app.py",
+          "present_in_checkout": true,
+          "excluded_by_allowlist": true
+        },
+        {
+          "path": "deploy/acceptance/exercise.py",
+          "present_in_checkout": true,
+          "excluded_by_allowlist": true
+        },
+        {
+          "path": "deploy/deploy.env",
+          "present_in_checkout": false,
+          "excluded_by_allowlist": true
+        },
+        {
+          "path": ".venv/Scripts/python.exe",
+          "present_in_checkout": true,
+          "excluded_by_allowlist": true
+        }
+      ]
+    },
+    "docker_baseline_control": {
+      "self_comparison_passed": true,
+      "baseline_auto_restarting_count": 1,
+      "vector": {
+        "id": "669eed4eb20f9fbdf8510c160ee460e40192d0581105a6d5486010fc77d21d4c",
+        "name": "/supabase_vector_shared-ledger",
+        "state_status": "restarting",
+        "state_running": true,
+        "started_at": "2026-10-09T16:41:32.789303821Z",
+        "finished_at": "2026-10-09T16:41:33.201900487Z",
+        "exit_code": 0,
+        "restart_count": 18,
+        "restart_policy": "unless-stopped"
+      }
+    }
+  },
+  "backup": {
+    "sha256": "c1cd102be7c2bf5f0769c77ef56544797a54ea5e76b27e63ea48634ca18c8c00",
+    "bytes": 131830,
+    "verified": true,
+    "source": "live SQLite connection.backup before any restore exercise"
+  },
+  "phases": {
+    "production_entrypoint": {
+      "ordinary_compose": true,
+      "health": {
+        "live": "live",
+        "ready": "ready",
+        "storage_substrate_ready": true,
+        "schema_initialized": true,
+        "business_api_available": false,
+        "runtime_available": false,
+        "provider": "disabled",
+        "inference_available": false
+      },
+      "agent_disabled_by_environment": true,
+      "auth_probe_http_status": 503,
+      "auth_probe_rejected": true,
+      "image_contents": {
+        "forbidden_paths_absent": true,
+        "runtime_inputs_present": true,
+        "forbidden_path_count": 0,
+        "runtime_input_count": 5
+      }
+    },
+    "simulation_start": {
+      "live": "live",
+      "ready": "ready",
+      "storage_substrate_ready": true,
+      "schema_initialized": true,
+      "business_api_available": true,
+      "runtime_available": true,
+      "provider": "simulation",
+      "inference_available": false
+    },
+    "image_contract_check": {
+      "passed": true,
+      "result": "contract snapshot matches manifest"
+    },
+    "before_restart": {
+      "fixture": "p1-06-container-acceptance-v1",
+      "session_id": "26930555-0a47-4a80-960e-6774c0c93e00",
+      "read_turn_id": "de7a09da-5594-49d1-b7fd-a141082a684d",
+      "proposal_turn_id": "0ad5f639-618f-48e1-b6e7-df33c08c5181",
+      "proposal_id": "4ca8fa19-8cee-4504-a113-db5108929fae",
+      "cancel_turn_id": "7c4b88cf-838c-42ad-a674-bca888ac9f1e",
+      "auth_wait_turn_id": "06964063-dabe-4c4a-9ec8-fdab18c6fe72",
+      "hold_turn_id": "cd4ad4a8-0dd6-4ece-965b-70b1c0450902",
+      "proposal_revision": 1,
+      "proposal_waiting": true,
+      "auth_wait": true,
+      "hold_running": true
+    },
+    "stop": "stopped; endpoint unavailable; named volume retained",
+    "start": {
+      "live": "live",
+      "ready": "ready",
+      "storage_substrate_ready": true,
+      "schema_initialized": true,
+      "business_api_available": true,
+      "runtime_available": true,
+      "provider": "simulation",
+      "inference_available": false
+    },
+    "offline_restore_start": {
+      "live": "live",
+      "ready": "ready",
+      "storage_substrate_ready": true,
+      "schema_initialized": true,
+      "business_api_available": true,
+      "runtime_available": false,
+      "provider": "disabled",
+      "inference_available": false
+    },
+    "offline_recovery": {
+      "ok": true,
+      "phase": "offline-recovery",
+      "fixture": "p1-06-container-acceptance-v1",
+      "session_id": "26930555-0a47-4a80-960e-6774c0c93e00",
+      "read_turn_id": "de7a09da-5594-49d1-b7fd-a141082a684d",
+      "proposal_turn_id": "0ad5f639-618f-48e1-b6e7-df33c08c5181",
+      "proposal_id": "4ca8fa19-8cee-4504-a113-db5108929fae",
+      "cancel_turn_id": "7c4b88cf-838c-42ad-a674-bca888ac9f1e",
+      "auth_wait_turn_id": "06964063-dabe-4c4a-9ec8-fdab18c6fe72",
+      "restored": {
+        "read_state": "COMPLETED",
+        "read_eventseq": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "proposal_state": "WAIT_CONFIRM",
+        "proposal_eventseq": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "auth_resume_state": "QUEUED",
+        "auth_resume_eventseq": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "cancel_state": "CANCELLED",
+        "provider_status": "disabled"
+      },
+      "offline_controls": {
+        "auth_resume_accepted": true,
+        "resume_queued_without_execution": true,
+        "cancel_accepted": true,
+        "confirm_http_status": 409,
+        "confirm_error": "agent_disabled",
+        "confirm_wrote": false,
+        "proposal_still_waiting": true
+      }
+    },
+    "offline_database_scan": {
+      "ok": true,
+      "phase": "scan-database",
+      "tables_checked": 5,
+      "rows_checked": 30,
+      "sentinels_absent": true
+    },
+    "offline_logs_scan": {
+      "ok": true,
+      "phase": "scan-text",
+      "bytes_checked": 362,
+      "sentinels_absent": true
+    },
+    "simulation_after_restart": {
+      "ok": true,
+      "phase": "after-restart",
+      "fixture": "p1-06-container-acceptance-v1",
+      "session_id": "26930555-0a47-4a80-960e-6774c0c93e00",
+      "read_turn_id": "de7a09da-5594-49d1-b7fd-a141082a684d",
+      "proposal_turn_id": "0ad5f639-618f-48e1-b6e7-df33c08c5181",
+      "proposal_id": "4ca8fa19-8cee-4504-a113-db5108929fae",
+      "cancel_turn_id": "7c4b88cf-838c-42ad-a674-bca888ac9f1e",
+      "hold_turn_id": "cd4ad4a8-0dd6-4ece-965b-70b1c0450902",
+      "restored": {
+        "read_state": "COMPLETED",
+        "proposal_state": "WAIT_CONFIRM",
+        "proposal_eventseq": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "cancel_state": "CANCELLED",
+        "hold_auth_wait_state": "WAIT_INPUT",
+        "hold_auth_resume_state": "COMPLETED",
+        "owner_boundary": {
+          "owner_b_session_count": 0,
+          "cross_owner_session_status": 404
+        }
+      },
+      "execution": {
+        "http_status": 501,
+        "enabled": false,
+        "business_write_performed": false,
+        "proposal_still_pending": true
+      }
+    },
+    "simulation_database_scan": {
+      "ok": true,
+      "phase": "scan-database",
+      "tables_checked": 5,
+      "rows_checked": 36,
+      "sentinels_absent": true
+    },
+    "simulation_logs_scan_before_recreate": {
+      "ok": true,
+      "phase": "scan-text",
+      "bytes_checked": 1045,
+      "sentinels_absent": true
+    },
+    "simulation_recreate_ready": {
+      "live": "live",
+      "ready": "ready",
+      "storage_substrate_ready": true,
+      "schema_initialized": true,
+      "business_api_available": true,
+      "runtime_available": true,
+      "provider": "simulation",
+      "inference_available": false
+    },
+    "read_after_recreate": {
+      "session_id_read": true,
+      "read_turn_state": "COMPLETED",
+      "read_turn_events": 4,
+      "proposal_turn_state": "WAIT_CONFIRM",
+      "proposal_turn_events": 7,
+      "proposal_id": "4ca8fa19-8cee-4504-a113-db5108929fae",
+      "proposal_revision": 1,
+      "execution_result_present": false
+    },
+    "simulation_database_scan_after_recreate": {
+      "ok": true,
+      "phase": "scan-database",
+      "tables_checked": 5,
+      "rows_checked": 36,
+      "sentinels_absent": true
+    },
+    "simulation_logs_scan_after_recreate": {
+      "ok": true,
+      "phase": "scan-text",
+      "bytes_checked": 362,
+      "sentinels_absent": true
+    }
+  },
+  "preexisting_resources_before": {
+    "containers": [
+      {
+        "id": "0527c50c028fe4d044bcc3223dfd9685f542ea02b16afa78f07d1d750e8d5129",
+        "name": "/supabase_kong_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.067051295Z",
+        "finished_at": "2026-10-09T16:32:20.844621903Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "089f220b2adbdc4118d3ba684ee3bb5ebbba773fc2f2493df432ba243426056f",
+        "name": "/supabase_analytics_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.115669037Z",
+        "finished_at": "2026-10-09T16:32:20.835140982Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "1a386d9c5056a9390d27a2d599a5e634c428ca03b4f3b404938c66badd550a73",
+        "name": "/supabase_storage_sl-dbtest-aa-v11",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.098539701Z",
+        "finished_at": "2026-10-09T16:32:20.837353471Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "20406d2e7b3484c58f66b610bdda783c560024e4dabf779975d6ad78d59894bf",
+        "name": "/supabase_db_sl-dbtest-aa-v11",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.083133696Z",
+        "finished_at": "2026-10-09T16:32:20.845480005Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "32cd600740c3ef27ca444139cae904f3e1ae8f2364dae77482ace8e6d950795e",
+        "name": "/supabase_rest_shared-ledger-smoke-aa-v11-819ffb61",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.111742168Z",
+        "finished_at": "2026-10-09T16:32:20.837480039Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "3432dd34d4295a5b6c14fb821b06536f592e8b7113f3de1cc8e2ee7963e956a9",
+        "name": "/supabase_kong_shared-ledger-smoke-aa-v11-819ffb61",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.059906849Z",
+        "finished_at": "2026-10-09T16:32:20.835260338Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "35cf2e560437c1c76d99aa8e314f07c6b87e10fd2e4af13b702facb6beeb8f42",
+        "name": "/supabase_realtime_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.108302241Z",
+        "finished_at": "2026-10-09T16:32:20.837468291Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "3a399eb6cefa1d50704a154e62a21edefce0957958b858a86dfaee0d4582d7e7",
+        "name": "/supabase_studio_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.105379475Z",
+        "finished_at": "2026-10-09T16:32:20.837395166Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "49580d48faddf57b94ef613ed8a64c7693b813fb8b06b3a7ef9c0808d065ce92",
+        "name": "/supabase_db_sl-dbtest-8111550fa0",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.037910106Z",
+        "finished_at": "2026-10-09T16:32:20.838107157Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "669eed4eb20f9fbdf8510c160ee460e40192d0581105a6d5486010fc77d21d4c",
+        "name": "/supabase_vector_shared-ledger",
+        "state_status": "restarting",
+        "state_running": true,
+        "started_at": "2026-10-09T16:41:32.789303821Z",
+        "finished_at": "2026-10-09T16:41:33.201900487Z",
+        "exit_code": 0,
+        "restart_count": 18,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "6e7a43bd96d4af7d1f926f5651c668aa088d10f6d226c751ae58ae43b0569e31",
+        "name": "/supabase_edge_runtime_shared-ledger",
+        "state_status": "exited",
+        "state_running": false,
+        "started_at": "2026-09-08T01:41:36.648938852Z",
+        "finished_at": "2026-09-08T11:15:32.386395478Z",
+        "exit_code": 255,
+        "restart_count": 0,
+        "restart_policy": "no"
+      },
+      {
+        "id": "7d5ffaa3a9e14a19153cb6c45d661a95e7cee0f0e8a834cc833430090b64e820",
+        "name": "/supabase_db_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.089573949Z",
+        "finished_at": "2026-10-09T16:32:20.838414396Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "7edda8a6520b8c9b513754c51f5b85c81da3c50c71d6196ad39d1852e9108958",
+        "name": "/supabase_auth_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:30.980585512Z",
+        "finished_at": "2026-10-09T16:32:29.311631333Z",
+        "exit_code": 0,
+        "restart_count": 5,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "aa16f78b541a0378142b2744c93cb4f3f1450a17d1d84e26ae0f3e8acd4fe08b",
+        "name": "/supabase_storage_sl-dbtest-8111550fa0",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.06195068Z",
+        "finished_at": "2026-10-09T16:32:20.837697743Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "b34dab0f0471ff5e1dab6c0b941e7b799d548fd94d8fd8b505087019db9473d5",
+        "name": "/supabase_pg_meta_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.045339285Z",
+        "finished_at": "2026-10-09T16:32:20.837552343Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "b932c116a9d949928a420d0c7c5c6a6c66a06787a4001cde84ba0e6d10e01cca",
+        "name": "/supabase_rest_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:22.99511226Z",
+        "finished_at": "2026-10-09T16:32:20.838181857Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "c197bdbd0bd5f539dfac2026472b2d0d6f95fb4fcee104b09913d68a5bce61b2",
+        "name": "/supabase_db_shared-ledger-smoke-aa-v11-819ffb61",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.023219399Z",
+        "finished_at": "2026-10-09T16:32:20.835174481Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "e57740e7388c553037ca45d9a59080d76e19e7de9d197b7052eccf5e6e5a955d",
+        "name": "/supabase_inbucket_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.018247031Z",
+        "finished_at": "2026-10-09T16:32:20.837424846Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "e81ba112d300aac2bf807002d575f87c31be54288b5fca14b472b2ffadb3ae45",
+        "name": "/supabase_auth_shared-ledger-smoke-aa-v11-819ffb61",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:28.545677834Z",
+        "finished_at": "2026-10-09T16:32:27.669463736Z",
+        "exit_code": 0,
+        "restart_count": 4,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "fd9cb090b0e97c57d5bf1d364dee4c202682f0e95d5350172a8345bce58d2f6c",
+        "name": "/supabase_storage_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.080183336Z",
+        "finished_at": "2026-10-09T16:32:20.835179168Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      }
+    ],
+    "volumes": [
+      {
+        "id": "supabase_db_shared-ledger",
+        "name": "supabase_db_shared-ledger",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_db_shared-ledger-isolated-dbtests",
+        "name": "supabase_db_shared-ledger-isolated-dbtests",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_db_shared-ledger-runner-isolated-20260923",
+        "name": "supabase_db_shared-ledger-runner-isolated-20260923",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_db_shared-ledger-smoke-aa-v11-819ffb61",
+        "name": "supabase_db_shared-ledger-smoke-aa-v11-819ffb61",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_db_sl-dbtest-8111550fa0",
+        "name": "supabase_db_sl-dbtest-8111550fa0",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_db_sl-dbtest-aa-v11",
+        "name": "supabase_db_sl-dbtest-aa-v11",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_db_slv-smoke-db2c1f30",
+        "name": "supabase_db_slv-smoke-db2c1f30",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_edge_runtime_shared-ledger",
+        "name": "supabase_edge_runtime_shared-ledger",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_edge_runtime_shared-ledger-isolated-dbtests",
+        "name": "supabase_edge_runtime_shared-ledger-isolated-dbtests",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_edge_runtime_shared-ledger-runner-isolated-20260923",
+        "name": "supabase_edge_runtime_shared-ledger-runner-isolated-20260923",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_edge_runtime_slv-smoke-db2c1f30",
+        "name": "supabase_edge_runtime_slv-smoke-db2c1f30",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_storage_shared-ledger",
+        "name": "supabase_storage_shared-ledger",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_storage_shared-ledger-isolated-dbtests",
+        "name": "supabase_storage_shared-ledger-isolated-dbtests",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_storage_shared-ledger-runner-isolated-20260923",
+        "name": "supabase_storage_shared-ledger-runner-isolated-20260923",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_storage_sl-dbtest-8111550fa0",
+        "name": "supabase_storage_sl-dbtest-8111550fa0",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_storage_sl-dbtest-aa-v11",
+        "name": "supabase_storage_sl-dbtest-aa-v11",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_storage_slv-smoke-db2c1f30",
+        "name": "supabase_storage_slv-smoke-db2c1f30",
+        "driver": "local"
+      }
+    ],
+    "networks": [
+      {
+        "id": "3e7c59ff53426c3a6b8e835ce79e11009907f2300e9ddd189e4ce9750d543ce3",
+        "name": "supabase_network_shared-ledger-smoke-aa-v11-819ffb61",
+        "driver": "bridge"
+      },
+      {
+        "id": "67783ac7de7a9f701ed4958e503cf5b4c81444b6f03c912ef5270dda43faf7d1",
+        "name": "none",
+        "driver": "null"
+      },
+      {
+        "id": "6e672be76733bdb615fe3b7efa59b718e511cdc0a2a5255122b37703aefe24c0",
+        "name": "supabase_network_sl-dbtest-aa-v11",
+        "driver": "bridge"
+      },
+      {
+        "id": "ab0804d968003684ecde1f0f5586a0e0daac12565f65b35026aad706cf7a16fa",
+        "name": "supabase_network_shared-ledger",
+        "driver": "bridge"
+      },
+      {
+        "id": "ae7bbf06efb9a3f78d167952cd3eebdb6aab0a4b83f2bf0ce5809c9e64978f61",
+        "name": "supabase_network_sl-dbtest-8111550fa0",
+        "driver": "bridge"
+      },
+      {
+        "id": "c4aac657080d554201d306b2c7b8a2bcd5326d00b43e7ba78ab89d8dfe871def",
+        "name": "host",
+        "driver": "host"
+      },
+      {
+        "id": "f5235e2102b2af136f1b63f44fbe3b6ca5613fc4848a1efb91cc0da091865f16",
+        "name": "bridge",
+        "driver": "bridge"
+      }
+    ]
+  },
+  "preexisting_resources_after_cleanup": {
+    "containers": [
+      {
+        "id": "0527c50c028fe4d044bcc3223dfd9685f542ea02b16afa78f07d1d750e8d5129",
+        "name": "/supabase_kong_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.067051295Z",
+        "finished_at": "2026-10-09T16:32:20.844621903Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "089f220b2adbdc4118d3ba684ee3bb5ebbba773fc2f2493df432ba243426056f",
+        "name": "/supabase_analytics_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.115669037Z",
+        "finished_at": "2026-10-09T16:32:20.835140982Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "1a386d9c5056a9390d27a2d599a5e634c428ca03b4f3b404938c66badd550a73",
+        "name": "/supabase_storage_sl-dbtest-aa-v11",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.098539701Z",
+        "finished_at": "2026-10-09T16:32:20.837353471Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "20406d2e7b3484c58f66b610bdda783c560024e4dabf779975d6ad78d59894bf",
+        "name": "/supabase_db_sl-dbtest-aa-v11",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.083133696Z",
+        "finished_at": "2026-10-09T16:32:20.845480005Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "32cd600740c3ef27ca444139cae904f3e1ae8f2364dae77482ace8e6d950795e",
+        "name": "/supabase_rest_shared-ledger-smoke-aa-v11-819ffb61",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.111742168Z",
+        "finished_at": "2026-10-09T16:32:20.837480039Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "3432dd34d4295a5b6c14fb821b06536f592e8b7113f3de1cc8e2ee7963e956a9",
+        "name": "/supabase_kong_shared-ledger-smoke-aa-v11-819ffb61",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.059906849Z",
+        "finished_at": "2026-10-09T16:32:20.835260338Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "35cf2e560437c1c76d99aa8e314f07c6b87e10fd2e4af13b702facb6beeb8f42",
+        "name": "/supabase_realtime_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.108302241Z",
+        "finished_at": "2026-10-09T16:32:20.837468291Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "3a399eb6cefa1d50704a154e62a21edefce0957958b858a86dfaee0d4582d7e7",
+        "name": "/supabase_studio_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.105379475Z",
+        "finished_at": "2026-10-09T16:32:20.837395166Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "49580d48faddf57b94ef613ed8a64c7693b813fb8b06b3a7ef9c0808d065ce92",
+        "name": "/supabase_db_sl-dbtest-8111550fa0",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.037910106Z",
+        "finished_at": "2026-10-09T16:32:20.838107157Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "669eed4eb20f9fbdf8510c160ee460e40192d0581105a6d5486010fc77d21d4c",
+        "name": "/supabase_vector_shared-ledger",
+        "state_status": "restarting",
+        "state_running": true,
+        "started_at": "2026-10-09T16:44:36.790809012Z",
+        "finished_at": "2026-10-09T16:44:40.838750457Z",
+        "exit_code": 0,
+        "restart_count": 21,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "6e7a43bd96d4af7d1f926f5651c668aa088d10f6d226c751ae58ae43b0569e31",
+        "name": "/supabase_edge_runtime_shared-ledger",
+        "state_status": "exited",
+        "state_running": false,
+        "started_at": "2026-09-08T01:41:36.648938852Z",
+        "finished_at": "2026-09-08T11:15:32.386395478Z",
+        "exit_code": 255,
+        "restart_count": 0,
+        "restart_policy": "no"
+      },
+      {
+        "id": "7d5ffaa3a9e14a19153cb6c45d661a95e7cee0f0e8a834cc833430090b64e820",
+        "name": "/supabase_db_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.089573949Z",
+        "finished_at": "2026-10-09T16:32:20.838414396Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "7edda8a6520b8c9b513754c51f5b85c81da3c50c71d6196ad39d1852e9108958",
+        "name": "/supabase_auth_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:30.980585512Z",
+        "finished_at": "2026-10-09T16:32:29.311631333Z",
+        "exit_code": 0,
+        "restart_count": 5,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "aa16f78b541a0378142b2744c93cb4f3f1450a17d1d84e26ae0f3e8acd4fe08b",
+        "name": "/supabase_storage_sl-dbtest-8111550fa0",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.06195068Z",
+        "finished_at": "2026-10-09T16:32:20.837697743Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "b34dab0f0471ff5e1dab6c0b941e7b799d548fd94d8fd8b505087019db9473d5",
+        "name": "/supabase_pg_meta_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.045339285Z",
+        "finished_at": "2026-10-09T16:32:20.837552343Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "b932c116a9d949928a420d0c7c5c6a6c66a06787a4001cde84ba0e6d10e01cca",
+        "name": "/supabase_rest_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:22.99511226Z",
+        "finished_at": "2026-10-09T16:32:20.838181857Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "c197bdbd0bd5f539dfac2026472b2d0d6f95fb4fcee104b09913d68a5bce61b2",
+        "name": "/supabase_db_shared-ledger-smoke-aa-v11-819ffb61",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.023219399Z",
+        "finished_at": "2026-10-09T16:32:20.835174481Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "e57740e7388c553037ca45d9a59080d76e19e7de9d197b7052eccf5e6e5a955d",
+        "name": "/supabase_inbucket_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.018247031Z",
+        "finished_at": "2026-10-09T16:32:20.837424846Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "e81ba112d300aac2bf807002d575f87c31be54288b5fca14b472b2ffadb3ae45",
+        "name": "/supabase_auth_shared-ledger-smoke-aa-v11-819ffb61",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:28.545677834Z",
+        "finished_at": "2026-10-09T16:32:27.669463736Z",
+        "exit_code": 0,
+        "restart_count": 4,
+        "restart_policy": "unless-stopped"
+      },
+      {
+        "id": "fd9cb090b0e97c57d5bf1d364dee4c202682f0e95d5350172a8345bce58d2f6c",
+        "name": "/supabase_storage_shared-ledger",
+        "state_status": "running",
+        "state_running": true,
+        "started_at": "2026-10-09T16:32:23.080183336Z",
+        "finished_at": "2026-10-09T16:32:20.835179168Z",
+        "exit_code": 0,
+        "restart_count": 0,
+        "restart_policy": "unless-stopped"
+      }
+    ],
+    "volumes": [
+      {
+        "id": "supabase_db_shared-ledger",
+        "name": "supabase_db_shared-ledger",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_db_shared-ledger-isolated-dbtests",
+        "name": "supabase_db_shared-ledger-isolated-dbtests",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_db_shared-ledger-runner-isolated-20260923",
+        "name": "supabase_db_shared-ledger-runner-isolated-20260923",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_db_shared-ledger-smoke-aa-v11-819ffb61",
+        "name": "supabase_db_shared-ledger-smoke-aa-v11-819ffb61",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_db_sl-dbtest-8111550fa0",
+        "name": "supabase_db_sl-dbtest-8111550fa0",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_db_sl-dbtest-aa-v11",
+        "name": "supabase_db_sl-dbtest-aa-v11",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_db_slv-smoke-db2c1f30",
+        "name": "supabase_db_slv-smoke-db2c1f30",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_edge_runtime_shared-ledger",
+        "name": "supabase_edge_runtime_shared-ledger",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_edge_runtime_shared-ledger-isolated-dbtests",
+        "name": "supabase_edge_runtime_shared-ledger-isolated-dbtests",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_edge_runtime_shared-ledger-runner-isolated-20260923",
+        "name": "supabase_edge_runtime_shared-ledger-runner-isolated-20260923",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_edge_runtime_slv-smoke-db2c1f30",
+        "name": "supabase_edge_runtime_slv-smoke-db2c1f30",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_storage_shared-ledger",
+        "name": "supabase_storage_shared-ledger",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_storage_shared-ledger-isolated-dbtests",
+        "name": "supabase_storage_shared-ledger-isolated-dbtests",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_storage_shared-ledger-runner-isolated-20260923",
+        "name": "supabase_storage_shared-ledger-runner-isolated-20260923",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_storage_sl-dbtest-8111550fa0",
+        "name": "supabase_storage_sl-dbtest-8111550fa0",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_storage_sl-dbtest-aa-v11",
+        "name": "supabase_storage_sl-dbtest-aa-v11",
+        "driver": "local"
+      },
+      {
+        "id": "supabase_storage_slv-smoke-db2c1f30",
+        "name": "supabase_storage_slv-smoke-db2c1f30",
+        "driver": "local"
+      }
+    ],
+    "networks": [
+      {
+        "id": "3e7c59ff53426c3a6b8e835ce79e11009907f2300e9ddd189e4ce9750d543ce3",
+        "name": "supabase_network_shared-ledger-smoke-aa-v11-819ffb61",
+        "driver": "bridge"
+      },
+      {
+        "id": "67783ac7de7a9f701ed4958e503cf5b4c81444b6f03c912ef5270dda43faf7d1",
+        "name": "none",
+        "driver": "null"
+      },
+      {
+        "id": "6e672be76733bdb615fe3b7efa59b718e511cdc0a2a5255122b37703aefe24c0",
+        "name": "supabase_network_sl-dbtest-aa-v11",
+        "driver": "bridge"
+      },
+      {
+        "id": "ab0804d968003684ecde1f0f5586a0e0daac12565f65b35026aad706cf7a16fa",
+        "name": "supabase_network_shared-ledger",
+        "driver": "bridge"
+      },
+      {
+        "id": "ae7bbf06efb9a3f78d167952cd3eebdb6aab0a4b83f2bf0ce5809c9e64978f61",
+        "name": "supabase_network_sl-dbtest-8111550fa0",
+        "driver": "bridge"
+      },
+      {
+        "id": "c4aac657080d554201d306b2c7b8a2bcd5326d00b43e7ba78ab89d8dfe871def",
+        "name": "host",
+        "driver": "host"
+      },
+      {
+        "id": "f5235e2102b2af136f1b63f44fbe3b6ca5613fc4848a1efb91cc0da091865f16",
+        "name": "bridge",
+        "driver": "bridge"
+      }
+    ]
+  },
+  "preexisting_inventory_comparison": {
+    "passed": true,
+    "preexisting_resources_preserved": true,
+    "preexisting_state_unchanged": false,
+    "container_ids_unchanged": true,
+    "volume_ids_unchanged": true,
+    "network_ids_unchanged": true,
+    "volume_metadata_unchanged": true,
+    "network_metadata_unchanged": true,
+    "stable_container_states_unchanged": true,
+    "restart_exception_constraints_passed": true,
+    "container_comparisons": [
+      {
+        "id": "0527c50c028fe4d044bcc3223dfd9685f542ea02b16afa78f07d1d750e8d5129",
+        "classification": "stable_exact",
+        "exact_state_unchanged": true,
+        "preservation_check_passed": true,
+        "changed_fields": [],
+        "before": {
+          "id": "0527c50c028fe4d044bcc3223dfd9685f542ea02b16afa78f07d1d750e8d5129",
+          "name": "/supabase_kong_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.067051295Z",
+          "finished_at": "2026-10-09T16:32:20.844621903Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "0527c50c028fe4d044bcc3223dfd9685f542ea02b16afa78f07d1d750e8d5129",
+          "name": "/supabase_kong_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.067051295Z",
+          "finished_at": "2026-10-09T16:32:20.844621903Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        }
+      },
+      {
+        "id": "089f220b2adbdc4118d3ba684ee3bb5ebbba773fc2f2493df432ba243426056f",
+        "classification": "stable_exact",
+        "exact_state_unchanged": true,
+        "preservation_check_passed": true,
+        "changed_fields": [],
+        "before": {
+          "id": "089f220b2adbdc4118d3ba684ee3bb5ebbba773fc2f2493df432ba243426056f",
+          "name": "/supabase_analytics_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.115669037Z",
+          "finished_at": "2026-10-09T16:32:20.835140982Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "089f220b2adbdc4118d3ba684ee3bb5ebbba773fc2f2493df432ba243426056f",
+          "name": "/supabase_analytics_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.115669037Z",
+          "finished_at": "2026-10-09T16:32:20.835140982Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        }
+      },
+      {
+        "id": "1a386d9c5056a9390d27a2d599a5e634c428ca03b4f3b404938c66badd550a73",
+        "classification": "stable_exact",
+        "exact_state_unchanged": true,
+        "preservation_check_passed": true,
+        "changed_fields": [],
+        "before": {
+          "id": "1a386d9c5056a9390d27a2d599a5e634c428ca03b4f3b404938c66badd550a73",
+          "name": "/supabase_storage_sl-dbtest-aa-v11",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.098539701Z",
+          "finished_at": "2026-10-09T16:32:20.837353471Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "1a386d9c5056a9390d27a2d599a5e634c428ca03b4f3b404938c66badd550a73",
+          "name": "/supabase_storage_sl-dbtest-aa-v11",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.098539701Z",
+          "finished_at": "2026-10-09T16:32:20.837353471Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        }
+      },
+      {
+        "id": "20406d2e7b3484c58f66b610bdda783c560024e4dabf779975d6ad78d59894bf",
+        "classification": "stable_exact",
+        "exact_state_unchanged": true,
+        "preservation_check_passed": true,
+        "changed_fields": [],
+        "before": {
+          "id": "20406d2e7b3484c58f66b610bdda783c560024e4dabf779975d6ad78d59894bf",
+          "name": "/supabase_db_sl-dbtest-aa-v11",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.083133696Z",
+          "finished_at": "2026-10-09T16:32:20.845480005Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "20406d2e7b3484c58f66b610bdda783c560024e4dabf779975d6ad78d59894bf",
+          "name": "/supabase_db_sl-dbtest-aa-v11",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.083133696Z",
+          "finished_at": "2026-10-09T16:32:20.845480005Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        }
+      },
+      {
+        "id": "32cd600740c3ef27ca444139cae904f3e1ae8f2364dae77482ace8e6d950795e",
+        "classification": "stable_exact",
+        "exact_state_unchanged": true,
+        "preservation_check_passed": true,
+        "changed_fields": [],
+        "before": {
+          "id": "32cd600740c3ef27ca444139cae904f3e1ae8f2364dae77482ace8e6d950795e",
+          "name": "/supabase_rest_shared-ledger-smoke-aa-v11-819ffb61",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.111742168Z",
+          "finished_at": "2026-10-09T16:32:20.837480039Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "32cd600740c3ef27ca444139cae904f3e1ae8f2364dae77482ace8e6d950795e",
+          "name": "/supabase_rest_shared-ledger-smoke-aa-v11-819ffb61",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.111742168Z",
+          "finished_at": "2026-10-09T16:32:20.837480039Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        }
+      },
+      {
+        "id": "3432dd34d4295a5b6c14fb821b06536f592e8b7113f3de1cc8e2ee7963e956a9",
+        "classification": "stable_exact",
+        "exact_state_unchanged": true,
+        "preservation_check_passed": true,
+        "changed_fields": [],
+        "before": {
+          "id": "3432dd34d4295a5b6c14fb821b06536f592e8b7113f3de1cc8e2ee7963e956a9",
+          "name": "/supabase_kong_shared-ledger-smoke-aa-v11-819ffb61",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.059906849Z",
+          "finished_at": "2026-10-09T16:32:20.835260338Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "3432dd34d4295a5b6c14fb821b06536f592e8b7113f3de1cc8e2ee7963e956a9",
+          "name": "/supabase_kong_shared-ledger-smoke-aa-v11-819ffb61",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.059906849Z",
+          "finished_at": "2026-10-09T16:32:20.835260338Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        }
+      },
+      {
+        "id": "35cf2e560437c1c76d99aa8e314f07c6b87e10fd2e4af13b702facb6beeb8f42",
+        "classification": "stable_exact",
+        "exact_state_unchanged": true,
+        "preservation_check_passed": true,
+        "changed_fields": [],
+        "before": {
+          "id": "35cf2e560437c1c76d99aa8e314f07c6b87e10fd2e4af13b702facb6beeb8f42",
+          "name": "/supabase_realtime_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.108302241Z",
+          "finished_at": "2026-10-09T16:32:20.837468291Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "35cf2e560437c1c76d99aa8e314f07c6b87e10fd2e4af13b702facb6beeb8f42",
+          "name": "/supabase_realtime_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.108302241Z",
+          "finished_at": "2026-10-09T16:32:20.837468291Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        }
+      },
+      {
+        "id": "3a399eb6cefa1d50704a154e62a21edefce0957958b858a86dfaee0d4582d7e7",
+        "classification": "stable_exact",
+        "exact_state_unchanged": true,
+        "preservation_check_passed": true,
+        "changed_fields": [],
+        "before": {
+          "id": "3a399eb6cefa1d50704a154e62a21edefce0957958b858a86dfaee0d4582d7e7",
+          "name": "/supabase_studio_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.105379475Z",
+          "finished_at": "2026-10-09T16:32:20.837395166Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "3a399eb6cefa1d50704a154e62a21edefce0957958b858a86dfaee0d4582d7e7",
+          "name": "/supabase_studio_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.105379475Z",
+          "finished_at": "2026-10-09T16:32:20.837395166Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        }
+      },
+      {
+        "id": "49580d48faddf57b94ef613ed8a64c7693b813fb8b06b3a7ef9c0808d065ce92",
+        "classification": "stable_exact",
+        "exact_state_unchanged": true,
+        "preservation_check_passed": true,
+        "changed_fields": [],
+        "before": {
+          "id": "49580d48faddf57b94ef613ed8a64c7693b813fb8b06b3a7ef9c0808d065ce92",
+          "name": "/supabase_db_sl-dbtest-8111550fa0",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.037910106Z",
+          "finished_at": "2026-10-09T16:32:20.838107157Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "49580d48faddf57b94ef613ed8a64c7693b813fb8b06b3a7ef9c0808d065ce92",
+          "name": "/supabase_db_sl-dbtest-8111550fa0",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.037910106Z",
+          "finished_at": "2026-10-09T16:32:20.838107157Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        }
+      },
+      {
+        "id": "669eed4eb20f9fbdf8510c160ee460e40192d0581105a6d5486010fc77d21d4c",
+        "classification": "baseline_auto_restarting_bounded_state_drift",
+        "exact_state_unchanged": false,
+        "preservation_check_passed": true,
+        "changed_fields": [
+          "started_at",
+          "finished_at",
+          "restart_count"
+        ],
+        "before": {
+          "id": "669eed4eb20f9fbdf8510c160ee460e40192d0581105a6d5486010fc77d21d4c",
+          "name": "/supabase_vector_shared-ledger",
+          "state_status": "restarting",
+          "state_running": true,
+          "started_at": "2026-10-09T16:41:32.789303821Z",
+          "finished_at": "2026-10-09T16:41:33.201900487Z",
+          "exit_code": 0,
+          "restart_count": 18,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "669eed4eb20f9fbdf8510c160ee460e40192d0581105a6d5486010fc77d21d4c",
+          "name": "/supabase_vector_shared-ledger",
+          "state_status": "restarting",
+          "state_running": true,
+          "started_at": "2026-10-09T16:44:36.790809012Z",
+          "finished_at": "2026-10-09T16:44:40.838750457Z",
+          "exit_code": 0,
+          "restart_count": 21,
+          "restart_policy": "unless-stopped"
+        }
+      },
+      {
+        "id": "6e7a43bd96d4af7d1f926f5651c668aa088d10f6d226c751ae58ae43b0569e31",
+        "classification": "stable_exact",
+        "exact_state_unchanged": true,
+        "preservation_check_passed": true,
+        "changed_fields": [],
+        "before": {
+          "id": "6e7a43bd96d4af7d1f926f5651c668aa088d10f6d226c751ae58ae43b0569e31",
+          "name": "/supabase_edge_runtime_shared-ledger",
+          "state_status": "exited",
+          "state_running": false,
+          "started_at": "2026-09-08T01:41:36.648938852Z",
+          "finished_at": "2026-09-08T11:15:32.386395478Z",
+          "exit_code": 255,
+          "restart_count": 0,
+          "restart_policy": "no"
+        },
+        "after": {
+          "id": "6e7a43bd96d4af7d1f926f5651c668aa088d10f6d226c751ae58ae43b0569e31",
+          "name": "/supabase_edge_runtime_shared-ledger",
+          "state_status": "exited",
+          "state_running": false,
+          "started_at": "2026-09-08T01:41:36.648938852Z",
+          "finished_at": "2026-09-08T11:15:32.386395478Z",
+          "exit_code": 255,
+          "restart_count": 0,
+          "restart_policy": "no"
+        }
+      },
+      {
+        "id": "7d5ffaa3a9e14a19153cb6c45d661a95e7cee0f0e8a834cc833430090b64e820",
+        "classification": "stable_exact",
+        "exact_state_unchanged": true,
+        "preservation_check_passed": true,
+        "changed_fields": [],
+        "before": {
+          "id": "7d5ffaa3a9e14a19153cb6c45d661a95e7cee0f0e8a834cc833430090b64e820",
+          "name": "/supabase_db_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.089573949Z",
+          "finished_at": "2026-10-09T16:32:20.838414396Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "7d5ffaa3a9e14a19153cb6c45d661a95e7cee0f0e8a834cc833430090b64e820",
+          "name": "/supabase_db_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.089573949Z",
+          "finished_at": "2026-10-09T16:32:20.838414396Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        }
+      },
+      {
+        "id": "7edda8a6520b8c9b513754c51f5b85c81da3c50c71d6196ad39d1852e9108958",
+        "classification": "stable_exact",
+        "exact_state_unchanged": true,
+        "preservation_check_passed": true,
+        "changed_fields": [],
+        "before": {
+          "id": "7edda8a6520b8c9b513754c51f5b85c81da3c50c71d6196ad39d1852e9108958",
+          "name": "/supabase_auth_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:30.980585512Z",
+          "finished_at": "2026-10-09T16:32:29.311631333Z",
+          "exit_code": 0,
+          "restart_count": 5,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "7edda8a6520b8c9b513754c51f5b85c81da3c50c71d6196ad39d1852e9108958",
+          "name": "/supabase_auth_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:30.980585512Z",
+          "finished_at": "2026-10-09T16:32:29.311631333Z",
+          "exit_code": 0,
+          "restart_count": 5,
+          "restart_policy": "unless-stopped"
+        }
+      },
+      {
+        "id": "aa16f78b541a0378142b2744c93cb4f3f1450a17d1d84e26ae0f3e8acd4fe08b",
+        "classification": "stable_exact",
+        "exact_state_unchanged": true,
+        "preservation_check_passed": true,
+        "changed_fields": [],
+        "before": {
+          "id": "aa16f78b541a0378142b2744c93cb4f3f1450a17d1d84e26ae0f3e8acd4fe08b",
+          "name": "/supabase_storage_sl-dbtest-8111550fa0",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.06195068Z",
+          "finished_at": "2026-10-09T16:32:20.837697743Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "aa16f78b541a0378142b2744c93cb4f3f1450a17d1d84e26ae0f3e8acd4fe08b",
+          "name": "/supabase_storage_sl-dbtest-8111550fa0",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.06195068Z",
+          "finished_at": "2026-10-09T16:32:20.837697743Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        }
+      },
+      {
+        "id": "b34dab0f0471ff5e1dab6c0b941e7b799d548fd94d8fd8b505087019db9473d5",
+        "classification": "stable_exact",
+        "exact_state_unchanged": true,
+        "preservation_check_passed": true,
+        "changed_fields": [],
+        "before": {
+          "id": "b34dab0f0471ff5e1dab6c0b941e7b799d548fd94d8fd8b505087019db9473d5",
+          "name": "/supabase_pg_meta_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.045339285Z",
+          "finished_at": "2026-10-09T16:32:20.837552343Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "b34dab0f0471ff5e1dab6c0b941e7b799d548fd94d8fd8b505087019db9473d5",
+          "name": "/supabase_pg_meta_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.045339285Z",
+          "finished_at": "2026-10-09T16:32:20.837552343Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        }
+      },
+      {
+        "id": "b932c116a9d949928a420d0c7c5c6a6c66a06787a4001cde84ba0e6d10e01cca",
+        "classification": "stable_exact",
+        "exact_state_unchanged": true,
+        "preservation_check_passed": true,
+        "changed_fields": [],
+        "before": {
+          "id": "b932c116a9d949928a420d0c7c5c6a6c66a06787a4001cde84ba0e6d10e01cca",
+          "name": "/supabase_rest_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:22.99511226Z",
+          "finished_at": "2026-10-09T16:32:20.838181857Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "b932c116a9d949928a420d0c7c5c6a6c66a06787a4001cde84ba0e6d10e01cca",
+          "name": "/supabase_rest_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:22.99511226Z",
+          "finished_at": "2026-10-09T16:32:20.838181857Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        }
+      },
+      {
+        "id": "c197bdbd0bd5f539dfac2026472b2d0d6f95fb4fcee104b09913d68a5bce61b2",
+        "classification": "stable_exact",
+        "exact_state_unchanged": true,
+        "preservation_check_passed": true,
+        "changed_fields": [],
+        "before": {
+          "id": "c197bdbd0bd5f539dfac2026472b2d0d6f95fb4fcee104b09913d68a5bce61b2",
+          "name": "/supabase_db_shared-ledger-smoke-aa-v11-819ffb61",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.023219399Z",
+          "finished_at": "2026-10-09T16:32:20.835174481Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "c197bdbd0bd5f539dfac2026472b2d0d6f95fb4fcee104b09913d68a5bce61b2",
+          "name": "/supabase_db_shared-ledger-smoke-aa-v11-819ffb61",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.023219399Z",
+          "finished_at": "2026-10-09T16:32:20.835174481Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        }
+      },
+      {
+        "id": "e57740e7388c553037ca45d9a59080d76e19e7de9d197b7052eccf5e6e5a955d",
+        "classification": "stable_exact",
+        "exact_state_unchanged": true,
+        "preservation_check_passed": true,
+        "changed_fields": [],
+        "before": {
+          "id": "e57740e7388c553037ca45d9a59080d76e19e7de9d197b7052eccf5e6e5a955d",
+          "name": "/supabase_inbucket_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.018247031Z",
+          "finished_at": "2026-10-09T16:32:20.837424846Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "e57740e7388c553037ca45d9a59080d76e19e7de9d197b7052eccf5e6e5a955d",
+          "name": "/supabase_inbucket_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.018247031Z",
+          "finished_at": "2026-10-09T16:32:20.837424846Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        }
+      },
+      {
+        "id": "e81ba112d300aac2bf807002d575f87c31be54288b5fca14b472b2ffadb3ae45",
+        "classification": "stable_exact",
+        "exact_state_unchanged": true,
+        "preservation_check_passed": true,
+        "changed_fields": [],
+        "before": {
+          "id": "e81ba112d300aac2bf807002d575f87c31be54288b5fca14b472b2ffadb3ae45",
+          "name": "/supabase_auth_shared-ledger-smoke-aa-v11-819ffb61",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:28.545677834Z",
+          "finished_at": "2026-10-09T16:32:27.669463736Z",
+          "exit_code": 0,
+          "restart_count": 4,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "e81ba112d300aac2bf807002d575f87c31be54288b5fca14b472b2ffadb3ae45",
+          "name": "/supabase_auth_shared-ledger-smoke-aa-v11-819ffb61",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:28.545677834Z",
+          "finished_at": "2026-10-09T16:32:27.669463736Z",
+          "exit_code": 0,
+          "restart_count": 4,
+          "restart_policy": "unless-stopped"
+        }
+      },
+      {
+        "id": "fd9cb090b0e97c57d5bf1d364dee4c202682f0e95d5350172a8345bce58d2f6c",
+        "classification": "stable_exact",
+        "exact_state_unchanged": true,
+        "preservation_check_passed": true,
+        "changed_fields": [],
+        "before": {
+          "id": "fd9cb090b0e97c57d5bf1d364dee4c202682f0e95d5350172a8345bce58d2f6c",
+          "name": "/supabase_storage_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.080183336Z",
+          "finished_at": "2026-10-09T16:32:20.835179168Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "fd9cb090b0e97c57d5bf1d364dee4c202682f0e95d5350172a8345bce58d2f6c",
+          "name": "/supabase_storage_shared-ledger",
+          "state_status": "running",
+          "state_running": true,
+          "started_at": "2026-10-09T16:32:23.080183336Z",
+          "finished_at": "2026-10-09T16:32:20.835179168Z",
+          "exit_code": 0,
+          "restart_count": 0,
+          "restart_policy": "unless-stopped"
+        }
+      }
+    ],
+    "auto_restart_observations": [
+      {
+        "id": "669eed4eb20f9fbdf8510c160ee460e40192d0581105a6d5486010fc77d21d4c",
+        "classification": "baseline_auto_restarting_bounded_state_drift",
+        "exact_state_unchanged": false,
+        "preservation_check_passed": true,
+        "changed_fields": [
+          "started_at",
+          "finished_at",
+          "restart_count"
+        ],
+        "before": {
+          "id": "669eed4eb20f9fbdf8510c160ee460e40192d0581105a6d5486010fc77d21d4c",
+          "name": "/supabase_vector_shared-ledger",
+          "state_status": "restarting",
+          "state_running": true,
+          "started_at": "2026-10-09T16:41:32.789303821Z",
+          "finished_at": "2026-10-09T16:41:33.201900487Z",
+          "exit_code": 0,
+          "restart_count": 18,
+          "restart_policy": "unless-stopped"
+        },
+        "after": {
+          "id": "669eed4eb20f9fbdf8510c160ee460e40192d0581105a6d5486010fc77d21d4c",
+          "name": "/supabase_vector_shared-ledger",
+          "state_status": "restarting",
+          "state_running": true,
+          "started_at": "2026-10-09T16:44:36.790809012Z",
+          "finished_at": "2026-10-09T16:44:40.838750457Z",
+          "exit_code": 0,
+          "restart_count": 21,
+          "restart_policy": "unless-stopped"
+        }
+      }
+    ]
+  },
+  "preexisting_state_unchanged": false,
+  "preexisting_resources_preserved": true,
+  "project_resources_after_cleanup": {
+    "p1-06-accept-2131f17081c9": {
+      "containers": [],
+      "volumes": [],
+      "networks": []
+    },
+    "p1-06-restore-2131f17081c9": {
+      "containers": [],
+      "volumes": [],
+      "networks": []
+    }
+  },
+  "result": "PASS",
+  "failure": null,
+  "host_temp_cleanup": "removed",
+  "environment_restored": true
+}

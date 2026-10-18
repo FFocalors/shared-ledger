@@ -1,0 +1,59 @@
+name: shared-ledger-agent-p1-06
+
+services:
+  agent:
+    image: shared-ledger-agent:p1-06
+    command: ["--workers", "1"]
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    environment:
+      AGENT_STORAGE_PATH: /var/lib/shared-ledger-agent/agent.sqlite3
+      AGENT_LISTEN_HOST: 0.0.0.0
+      AGENT_LISTEN_PORT: "8765"
+      AGENT_PROVIDER_MODE: ${AGENT_PROVIDER_MODE:-disabled}
+      AGENT_AGENT_ENABLED: ${AGENT_AGENT_ENABLED:-false}
+      AGENT_DISABLE_REVISION: ${AGENT_DISABLE_REVISION:-1}
+      AGENT_SUPABASE_AUTH_BASE_URL: ${AGENT_SUPABASE_AUTH_BASE_URL:-}
+      AGENT_SUPABASE_API_KEY: ${AGENT_SUPABASE_API_KEY:-}
+      AGENT_ALLOW_INSECURE_LOOPBACK_AUTH_HTTP: ${AGENT_ALLOW_INSECURE_LOOPBACK_AUTH_HTTP:-false}
+      AGENT_CURSOR_SIGNING_SECRET: ${AGENT_CURSOR_SIGNING_SECRET:-}
+      AGENT_MAX_REQUEST_BYTES: ${AGENT_MAX_REQUEST_BYTES:-65536}
+      AGENT_API_REQUESTS_PER_MINUTE: ${AGENT_API_REQUESTS_PER_MINUTE:-120}
+      AGENT_MODEL_CONCURRENCY: "1"
+      AGENT_RUNTIME_TASK_CONCURRENCY: "4"
+      AGENT_MOCK_MODEL_TIMEOUT_SECONDS: "2.0"
+      AGENT_RUNTIME_SHUTDOWN_TIMEOUT_SECONDS: "2.0"
+    ports:
+      - "127.0.0.1:${AGENT_HOST_PORT:-8765}:8765"
+    volumes:
+      - agent-data:/var/lib/shared-ledger-agent
+    user: "10001:10001"
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    stop_grace_period: 15s
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/health/ready', timeout=2).read()"
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  agent-data:

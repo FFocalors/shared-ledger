@@ -1,0 +1,392 @@
+{
+  "evidence_type": "p1-06-host-and-static-checks",
+  "recorded_at": "2026-10-09T11:54:23+08:00",
+  "overall_status": "HOST_STATIC_CHECKS_PASS_DOCKER_CONTAINER_ACCEPTANCE_BLOCKED",
+  "scope_note": "This file is host/static evidence only and is not a Docker or P1 acceptance PASS.",
+  "checkout": {
+    "path": "D:\\project\\Android\\shared-ledger-agent",
+    "branch": "agent",
+    "head": "1a80a0f29e1ea432a60b95e7437af23d51182938",
+    "tracked_modifications": 0,
+    "staged_changes": 0,
+    "untracked_status_roots": [
+      "agent/.dockerignore",
+      "agent/.env.example",
+      "agent/.gitignore",
+      "agent/app/",
+      "agent/contracts/",
+      "agent/deploy/",
+      "agent/docs/p1/",
+      "agent/migrations/",
+      "agent/pyproject.toml",
+      "agent/requirements-contracts.txt",
+      "agent/tests/",
+      "agent/toolchain-contracts.json",
+      "agent/uv.lock"
+    ],
+    "status_clean": false
+  },
+  "business_main": {
+    "path": "D:\\project\\Android\\shared-ledger",
+    "branch": "main",
+    "head": "3f938ee6114b763e6cd3dbd10792a78c691eb526",
+    "clean": true,
+    "status_short": []
+  },
+  "source_freeze": {
+    "note": "SHA-256 values are for frozen source/config inputs; this list intentionally excludes DEPLOYMENT_RECOVERY.md, P1_DEVELOPMENT_PLAN.md, and evidence JSON to avoid self-reference.",
+    "file_count": 28,
+    "files": [
+      {
+        "path": "agent/.dockerignore",
+        "sha256": "53e0d1b93f1cf066d7c143bbaaeb6adcf6f2045f8c556de8dda4697b81fcde43"
+      },
+      {
+        "path": "agent/.env.example",
+        "sha256": "51c910b5b6a07c838c97a09e5b2c1b70efdd9a45aa9830ef50c3ac1b29fe30a3"
+      },
+      {
+        "path": "agent/.gitignore",
+        "sha256": "bd5a6eb208ee08f13073dc5eeb9729d7a9decc51a6f093dafcce284184799de8"
+      },
+      {
+        "path": "agent/app/backup.py",
+        "sha256": "0d98879a145e296b7ff4dc4b7af3c968d8ad8c5ee13b13a2022a14fe4accdce3"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/manifest.json",
+        "sha256": "9d2d5938373681ab60ccdeb42a10190dd5b136615bce2026e29c94864a9dbca3"
+      },
+      {
+        "path": "agent/deploy/.gitignore",
+        "sha256": "cec0bac385cac4714b81f0eb9011be8adc3f180cfa428a2fd5bddd00d5e5fba4"
+      },
+      {
+        "path": "agent/deploy/acceptance/exercise.py",
+        "sha256": "3e6d00e1c8dac61646659f58ace05cf572a6a34d352a30b37c6b9643e1cc695b"
+      },
+      {
+        "path": "agent/deploy/acceptance/fixture_app.py",
+        "sha256": "f73a1c4ae2f38b3969190234d03ede6c660f4dea3bd8e161efa57447092200b4"
+      },
+      {
+        "path": "agent/deploy/acceptance/README.md",
+        "sha256": "ff8313375594e358d7626a53bb9fd10a829a2b84d8ef4a198233b1bb454d0418"
+      },
+      {
+        "path": "agent/deploy/compose.acceptance.yaml",
+        "sha256": "5f7b09f32d1c461b6aaf3f2151aca0fd4e8c9d8e88c99c53e51e6f9f5e8ec091"
+      },
+      {
+        "path": "agent/deploy/compose.offline.yaml",
+        "sha256": "fa1aad8c677c979a57116f168dac6699124eea745052dce2f03080cea2e5e615"
+      },
+      {
+        "path": "agent/deploy/compose.yaml",
+        "sha256": "26313434ec0eb801c6d7c20c01c122a0ae43e688d537556e2ffb5b5a4de469ce"
+      },
+      {
+        "path": "agent/deploy/deploy.env.example",
+        "sha256": "ee24d9dec8ce265560212c111e8f0502919044dacee303462d73f8590906d94a"
+      },
+      {
+        "path": "agent/deploy/Dockerfile",
+        "sha256": "a475cd75881629c4ab2dc55e409b14f63ba351fe1d66bb88e38d9188b9cfbd5f"
+      },
+      {
+        "path": "agent/deploy/README.md",
+        "sha256": "4eea80a777b19e4a100af92fda958f0efc23c5b133dc95edc8d490e4612c77a4"
+      },
+      {
+        "path": "agent/deploy/scripts/Backup-Agent.ps1",
+        "sha256": "3da027abbeea33fc7905f63589014fcb7457249991378b0588a782f0d47a57b0"
+      },
+      {
+        "path": "agent/deploy/scripts/Deploy.Common.ps1",
+        "sha256": "8d04ea703bea94d0fa272a32547174dfebe9dd36e0b2efc540c0cf5858ded62b"
+      },
+      {
+        "path": "agent/deploy/scripts/Get-AgentStatus.ps1",
+        "sha256": "6a8720978158227af7e85984db0be946a015ba9f5e4382a57d3ea0117bad08b3"
+      },
+      {
+        "path": "agent/deploy/scripts/Restore-Agent.ps1",
+        "sha256": "4336bf03270170eae6c77a0934142b1018bd600964cf9d44e87e102e9a9fe67f"
+      },
+      {
+        "path": "agent/deploy/scripts/Start-Agent.ps1",
+        "sha256": "e3a8f7ab248f6832bd7a0bf0e05676f8470d46feb80adc484d07dfbae22e8e2e"
+      },
+      {
+        "path": "agent/deploy/scripts/Stop-Agent.ps1",
+        "sha256": "1feb80074e6ca795c80eeb0ef46f1cf3803285aefb973251ae0ae3d19be680c9"
+      },
+      {
+        "path": "agent/deploy/scripts/Test-Agent.ps1",
+        "sha256": "5afd89627dd76d308333d3a56119510a6ca70082004a846bafdadf9917b63a28"
+      },
+      {
+        "path": "agent/migrations/001_initial.sql",
+        "sha256": "75436c0fe069081f034e2cb82211bc74f6780a68f7020e9de20d5c0a4a57637b"
+      },
+      {
+        "path": "agent/pyproject.toml",
+        "sha256": "e76597bbf692ebf2b649123335f5bfa92966e6626577897bb40dba9e969a65dd"
+      },
+      {
+        "path": "agent/requirements-contracts.txt",
+        "sha256": "ea5236e6063198756ba490ff6fbc032edfbe685f22e5e801103c569dd1f17fb4"
+      },
+      {
+        "path": "agent/tests/test_backup_restore.py",
+        "sha256": "0abe65dd06ac2f411f1f4bca3658b1d58ffe8b00bc1ba49c2ee503ab94c5598a"
+      },
+      {
+        "path": "agent/toolchain-contracts.json",
+        "sha256": "2235f7dcf2f1a77d1709538e54077ab2617b1b47f96c85e81dc75d65ec287c2a"
+      },
+      {
+        "path": "agent/uv.lock",
+        "sha256": "0486d2570f46dbe0cf20a84649dbdb01c71f39d90f7de7930d38e62ec4399a9d"
+      }
+    ]
+  },
+  "verification": {
+    "python_test_suite": {
+      "passed": 126,
+      "duration_seconds": 26.48,
+      "source": "independent main-session full-suite verification",
+      "docker_evidence": false
+    },
+    "contract_export": {
+      "passed": true,
+      "result": "contract snapshot matches manifest: D:\\project\\Android\\shared-ledger-agent\\agent\\contracts\\v1.0.0"
+    },
+    "uv_lock": {
+      "passed": true,
+      "packages": 32,
+      "exit_code": 0,
+      "output": ""
+    },
+    "powershell_ast": {
+      "file_count": 7,
+      "all_passed": true,
+      "files": [
+        {
+          "path": "Backup-Agent.ps1",
+          "passed": true,
+          "error_count": 0
+        },
+        {
+          "path": "Deploy.Common.ps1",
+          "passed": true,
+          "error_count": 0
+        },
+        {
+          "path": "Get-AgentStatus.ps1",
+          "passed": true,
+          "error_count": 0
+        },
+        {
+          "path": "Restore-Agent.ps1",
+          "passed": true,
+          "error_count": 0
+        },
+        {
+          "path": "Start-Agent.ps1",
+          "passed": true,
+          "error_count": 0
+        },
+        {
+          "path": "Stop-Agent.ps1",
+          "passed": true,
+          "error_count": 0
+        },
+        {
+          "path": "Test-Agent.ps1",
+          "passed": true,
+          "error_count": 0
+        }
+      ]
+    },
+    "compose_config": {
+      "variants": [
+        {
+          "variant": "production",
+          "passed": true,
+          "context": "D:\\project\\Android\\shared-ledger-agent\\agent",
+          "dockerfile": "deploy/Dockerfile",
+          "user": "10001:10001",
+          "command": [
+            "--workers",
+            "1"
+          ],
+          "published_host_ip": "127.0.0.1",
+          "published_target_port": 8765,
+          "provider_mode": "disabled",
+          "agent_enabled": "false",
+          "fixture_mode": null,
+          "readonly_acceptance_bind_mounts": 0
+        },
+        {
+          "variant": "simulation",
+          "passed": true,
+          "context": "D:\\project\\Android\\shared-ledger-agent\\agent",
+          "dockerfile": "deploy/Dockerfile",
+          "user": "10001:10001",
+          "command": [
+            "--workers",
+            "1"
+          ],
+          "published_host_ip": "127.0.0.1",
+          "published_target_port": 8765,
+          "provider_mode": "mock",
+          "agent_enabled": "true",
+          "fixture_mode": "simulation",
+          "readonly_acceptance_bind_mounts": 2
+        },
+        {
+          "variant": "offline-recovery",
+          "passed": true,
+          "context": "D:\\project\\Android\\shared-ledger-agent\\agent",
+          "dockerfile": "deploy/Dockerfile",
+          "user": "10001:10001",
+          "command": [
+            "--workers",
+            "1"
+          ],
+          "published_host_ip": "127.0.0.1",
+          "published_target_port": 8765,
+          "provider_mode": "disabled",
+          "agent_enabled": "false",
+          "fixture_mode": "offline-recovery",
+          "readonly_acceptance_bind_mounts": 2
+        }
+      ],
+      "all_passed": true
+    },
+    "python_ast": {
+      "files": [
+        "agent/app/backup.py",
+        "agent/tests/test_backup_restore.py",
+        "agent/deploy/acceptance/fixture_app.py",
+        "agent/deploy/acceptance/exercise.py"
+      ],
+      "passed": true,
+      "source": "independent main-session AST checks"
+    },
+    "deploy_env_ignore": {
+      "passed": true,
+      "matched_rule": "agent/deploy/.gitignore:1:deploy.env\t\"agent\\\\deploy\\\\deploy.env\""
+    },
+    "output_boundary": {
+      "passed": true,
+      "empty_single_multi_counts": [
+        0,
+        1,
+        2
+      ],
+      "source": "PowerShell stub check"
+    },
+    "powershell_native_args_compatibility": {
+      "passed": true,
+      "daemon_used": false,
+      "inspect_command": "docker --context desktop-linux inspect <container-id>",
+      "nested_go_template_argument_used": false,
+      "output_includes_config_or_environment": false,
+      "sentinel_in_output": false,
+      "windows_powershell": {
+        "version": "5.1.26100.9596",
+        "exit_code": 0,
+        "result": "container=container-id-001"
+      },
+      "powershell_7": {
+        "version": "7.6.6",
+        "exit_code": 0,
+        "result": "container=container-id-001"
+      },
+      "harness": "Native executable stub returned a private JSON inspect payload with Labels, State and an Env sentinel; exact inspect argv accepted in both shells.",
+      "independent_root_checks": {
+        "same_owner_returned": true,
+        "cross_project_label_rejected": true,
+        "offline_switch_passthrough": true,
+        "environment_sentinel_not_printed": true
+      }
+    }
+  },
+  "docker_precheck": {
+    "status": "BLOCKED_BEFORE_DOCKER_RESOURCES",
+    "attempted": "D:\\project\\Android\\shared-ledger-agent\\agent\\docs\\p1\\evidence\\P1-06-Docker-20261009-114423-637306fb1414.json",
+    "raw_runner_result": "FAIL",
+    "server_version": "unavailable",
+    "docker_client": "Docker version 29.8.2, build 7fc2dff",
+    "compose_cli": "5.5.1",
+    "failure_reason": "Docker Desktop Linux engine named pipe is absent; Docker Server is unavailable.",
+    "phases": {},
+    "baseline_enumerated": false,
+    "preexisting_before": null,
+    "preexisting_after": null,
+    "host_temp_cleanup": "removed",
+    "environment_restored": true,
+    "resources_created": false,
+    "containers_built": false,
+    "containers_started": false,
+    "volume_backup_restore_run": false,
+    "container_log_scan_run": false,
+    "overall_interpretation": "The runner preflight was attempted, but the real container stage did not run. Raw runner FAIL is environmental and does not count as Docker PASS."
+  },
+  "docker_host_readonly": {
+    "engine_pipe_present": false,
+    "service_status": "Stopped",
+    "desktop_or_backend_processes": [],
+    "early_desktop_launcher_attempted": true,
+    "early_attempt_timestamp": "not retained",
+    "early_attempt_result": "Desktop/launcher did not start the engine; the failure identified a missing logging parent directory.",
+    "post_settings_diagnosis_start_attempted": false,
+    "post_diagnosis_settings_store_write_attempted": false,
+    "settings_store_present": false,
+    "missing_log_directories_created": [
+      {
+        "path": "D:\\computer\\Docker\\data\\host\\Roaming-Docker",
+        "created_at": "2026-10-09T11:17:56+08:00"
+      },
+      {
+        "path": "D:\\computer\\Docker\\data\\host\\Roaming-Docker-Desktop",
+        "created_at": "2026-10-09T11:17:56+08:00"
+      },
+      {
+        "path": "D:\\computer\\Docker\\data\\host\\Local-Docker",
+        "created_at": "2026-10-09T11:17:56+08:00"
+      },
+      {
+        "path": "D:\\computer\\Docker\\data\\host\\Local-Docker\\log\\host",
+        "created_at": "2026-10-09T11:19:17+08:00"
+      }
+    ],
+    "logged_backend_state_failure": {
+      "time_utc": "2026-10-09T03:35:17.0195772Z",
+      "time_local": "2026-10-09T11:35:17.0195772+08:00",
+      "reason": "backend-state pipe not found"
+    },
+    "existing_wsl_main_vhdx_bytes": 100663296,
+    "existing_separate_data_vhdx_bytes": 16670261248,
+    "existing_data_disks_modified_or_unregistered": false,
+    "note": "An early Desktop/launcher attempt did fail. After the settings-store and existing disk-layout diagnosis, no further Desktop start and no guessed settings write were attempted. Exact early attempt and diagnosis timestamps were not retained.",
+    "test_agent_preflight_evidence": "D:\\project\\Android\\shared-ledger-agent\\agent\\docs\\p1\\evidence\\P1-06-Docker-20261009-114423-637306fb1414.json",
+    "test_agent_preflight_recorded_at": "2026-10-09T11:44:23.7173584+08:00"
+  },
+  "authentication": {
+    "real_supabase_positive_auth": "NOT_VERIFIED",
+    "known_local_seed_result": "upstream HTTP 500; confirmation_token NULL",
+    "credentials_acquired": false,
+    "users_reset": false
+  },
+  "unchanged_scope": {
+    "business_checkout_modified": false,
+    "shared_readme_modified": false,
+    "root_docs_modified": false,
+    "commit_created": false,
+    "push_performed": false,
+    "git_add_reset_or_clean_performed": false
+  }
+}

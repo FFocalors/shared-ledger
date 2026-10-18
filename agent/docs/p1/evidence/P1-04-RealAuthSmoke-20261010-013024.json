@@ -1,0 +1,193 @@
+{
+  "schema": "shared-ledger-agent/p1-real-auth-smoke/v1",
+  "started_at": "2026-10-09T17:30:24.011298+00:00",
+  "scope": {
+    "auth_endpoint": "local_loopback_only",
+    "agent_http": "127.0.0.1_only",
+    "agent_storage": "temporary_isolated_sqlite",
+    "provider_mode": "disabled",
+    "agent_enabled": false
+  },
+  "checks": [
+    {
+      "name": "auth.local_health",
+      "status": "PASS",
+      "http_status": 200,
+      "auth_version": "v2.195.0"
+    },
+    {
+      "name": "auth.signup_A",
+      "status": "PASS",
+      "http_status": 200
+    },
+    {
+      "name": "auth.signup_session_logout_A",
+      "status": "PASS",
+      "http_status": 204
+    },
+    {
+      "name": "auth.password_login_A",
+      "status": "PASS",
+      "http_status": 200
+    },
+    {
+      "name": "auth.user_endpoint_A",
+      "status": "PASS",
+      "http_status": 200,
+      "user_id_matches": true,
+      "user_id": "d1220661-d883-48d3-9f66-480f32ea01ef"
+    },
+    {
+      "name": "auth.signup_B",
+      "status": "PASS",
+      "http_status": 200
+    },
+    {
+      "name": "auth.signup_session_logout_B",
+      "status": "PASS",
+      "http_status": 204
+    },
+    {
+      "name": "auth.password_login_B",
+      "status": "PASS",
+      "http_status": 200
+    },
+    {
+      "name": "auth.user_endpoint_B",
+      "status": "PASS",
+      "http_status": 200,
+      "user_id_matches": true,
+      "user_id": "4f48f109-b724-4b47-bd88-6c5e759db21c"
+    },
+    {
+      "name": "agent.health_and_configuration",
+      "status": "PASS",
+      "live_status": 200,
+      "ready_status": 200,
+      "provider_status": 200,
+      "provider_mode": "disabled",
+      "inference_available": false
+    },
+    {
+      "name": "agent.missing_token_rejected",
+      "status": "PASS",
+      "http_status": 401,
+      "error_code": "unauthenticated"
+    },
+    {
+      "name": "agent.invalid_token_rejected",
+      "status": "PASS",
+      "http_status": 401,
+      "error_code": "unauthenticated"
+    },
+    {
+      "name": "agent.session_create_A",
+      "status": "PASS",
+      "http_status": 201,
+      "session_id": "4c0a3e5c-3dbe-4aac-93d8-01421c0a5db8"
+    },
+    {
+      "name": "agent.session_list_A",
+      "status": "PASS",
+      "http_status": 200,
+      "item_count": 1,
+      "owner_A_session_found": true
+    },
+    {
+      "name": "agent.session_get_A",
+      "status": "PASS",
+      "http_status": 200
+    },
+    {
+      "name": "agent.owner_B_list_isolated",
+      "status": "PASS",
+      "http_status": 200,
+      "item_count": 0
+    },
+    {
+      "name": "agent.owner_B_get_isolated",
+      "status": "PASS",
+      "http_status": 404,
+      "error_code": "not_found"
+    },
+    {
+      "name": "agent.planning_disabled",
+      "status": "PASS",
+      "http_status": 409,
+      "error_code": "agent_disabled"
+    },
+    {
+      "name": "agent.denied_plan_not_persisted",
+      "status": "PASS",
+      "http_status": 200,
+      "turn_count": 0
+    },
+    {
+      "name": "agent.nonexistent_confirmation_rejected",
+      "status": "PASS",
+      "http_status": 404,
+      "error_code": "not_found",
+      "proposal_existed": false,
+      "business_write_performed": false
+    },
+    {
+      "name": "agent_process_stopped_check",
+      "status": "PASS"
+    },
+    {
+      "name": "agent_sqlite_credential_scan",
+      "status": "PASS",
+      "credential_values_absent": true
+    },
+    {
+      "name": "auth.password_session_logout_A",
+      "status": "PASS",
+      "http_status": 204
+    },
+    {
+      "name": "auth.password_session_logout_B",
+      "status": "PASS",
+      "http_status": 204
+    },
+    {
+      "name": "auth.test_user_deleted_A",
+      "status": "PASS",
+      "http_status": 200,
+      "user_id": "d1220661-d883-48d3-9f66-480f32ea01ef"
+    },
+    {
+      "name": "auth.test_user_deleted_B",
+      "status": "PASS",
+      "http_status": 200,
+      "user_id": "4f48f109-b724-4b47-bd88-6c5e759db21c"
+    },
+    {
+      "name": "agent_temp_removed_check",
+      "status": "PASS"
+    },
+    {
+      "name": "frozen_source_unchanged",
+      "status": "PASS",
+      "source_digest": "224c2da71c128fef35cd20b6f193fb052dd467c1bbc188ba74ce0e1884e57501"
+    },
+    {
+      "name": "credential_non_disclosure",
+      "status": "PASS",
+      "no_secret_values": true,
+      "jwt_like_value_absent": true
+    }
+  ],
+  "expired_token": {
+    "status": "NOT_TESTED",
+    "reason": "no safely Auth-issued expired token available without changing Auth settings or waiting for token expiry"
+  },
+  "supabase_origin": "http://127.0.0.1:54321",
+  "agent_api_key_kind": "anon",
+  "agent_process_stopped": true,
+  "agent_sqlite_contains_no_credentials": true,
+  "agent_temp_removed": true,
+  "source_digest_before": "224c2da71c128fef35cd20b6f193fb052dd467c1bbc188ba74ce0e1884e57501",
+  "source_digest_after": "224c2da71c128fef35cd20b6f193fb052dd467c1bbc188ba74ce0e1884e57501",
+  "finished_at": "2026-10-09T17:30:35.221734+00:00",
+  "overall": "PASS"
+}

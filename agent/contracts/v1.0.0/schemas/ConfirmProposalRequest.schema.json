@@ -1,0 +1,67 @@
+{
+  "$defs": {
+    "ClientProtocolVersions": {
+      "additionalProperties": false,
+      "description": "Versions negotiated by API clients; trajectory schema is offline-only.",
+      "properties": {
+        "api": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Api",
+          "type": "string"
+        },
+        "operations": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Operations",
+          "type": "string"
+        },
+        "semantic": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Semantic",
+          "type": "string"
+        }
+      },
+      "title": "ClientProtocolVersions",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "client_request_id": {
+      "format": "uuid",
+      "title": "Client Request Id",
+      "type": "string"
+    },
+    "command_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Command Digest",
+      "type": "string"
+    },
+    "confirmation_nonce": {
+      "pattern": "^[A-Za-z0-9_-]{32,128}$",
+      "title": "Confirmation Nonce",
+      "type": "string",
+      "writeOnly": true,
+      "x-never-model-event-or-log": true
+    },
+    "expected_proposal_revision": {
+      "minimum": 1,
+      "title": "Expected Proposal Revision",
+      "type": "integer"
+    },
+    "versions": {
+      "$ref": "#/$defs/ClientProtocolVersions"
+    }
+  },
+  "required": [
+    "client_request_id",
+    "expected_proposal_revision",
+    "command_digest",
+    "confirmation_nonce"
+  ],
+  "title": "ConfirmProposalRequest",
+  "type": "object"
+}

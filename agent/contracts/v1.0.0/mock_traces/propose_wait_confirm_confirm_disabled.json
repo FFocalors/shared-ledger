@@ -1,0 +1,356 @@
+{
+  "scenario": "propose_wait_confirm_confirm_disabled",
+  "simulation": true,
+  "steps": [
+    {
+      "context": {
+        "available_permissions": [
+          "read.activities",
+          "read.expenses",
+          "read.debts",
+          "propose.expense.create",
+          "propose.expense.update",
+          "propose.expense.presentation.update"
+        ],
+        "bound_references": [
+          {
+            "kind": "activity",
+            "ref": "activity_1"
+          },
+          {
+            "kind": "expense",
+            "ref": "expense_1"
+          },
+          {
+            "kind": "ledger_unit",
+            "ref": "ledger_unit_1"
+          },
+          {
+            "kind": "participant",
+            "ref": "participant_1"
+          },
+          {
+            "kind": "participant",
+            "ref": "participant_2"
+          }
+        ],
+        "context_version": 1,
+        "input_text": "查一下这笔消费并记录午餐",
+        "pending_slots": [],
+        "policy_evidence": [
+          {
+            "evidence_ref": "policy_fact_1",
+            "observed_at": "2026-10-07T00:00:00Z",
+            "rule": "execution_requires_confirmation",
+            "source": "development_guide_v0_4_2",
+            "text": "写入提议必须由用户确认；模型不能确认或直接写入。",
+            "version": "guide-v0.4.2"
+          }
+        ],
+        "read_results": [
+          {
+            "body": {
+              "items": [
+                {
+                  "activity_kind": "normal",
+                  "activity_ref": "activity_1",
+                  "base_currency": "CNY",
+                  "context_version": 1,
+                  "evidence_ref": "fact_activity_1",
+                  "kind": "activity",
+                  "name": "Trip",
+                  "observed_at": "2026-10-07T00:00:00Z",
+                  "status": "active"
+                }
+              ],
+              "kind": "activities"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.activities",
+            "result_ref": "read_result_1",
+            "simulation": true
+          },
+          {
+            "body": {
+              "items": [
+                {
+                  "context_version": 1,
+                  "evidence_ref": "fact_expense_1",
+                  "expense_ref": "expense_1",
+                  "expense_version": "1",
+                  "financial_locked": false,
+                  "kind": "expense",
+                  "observed_at": "2026-10-07T00:00:00Z",
+                  "occurred_at": "2026-10-07T00:00:00Z",
+                  "original_amount": "12.50",
+                  "original_currency": "CNY",
+                  "participant_refs": [
+                    "participant_2",
+                    "participant_1"
+                  ],
+                  "title": "Lunch"
+                }
+              ],
+              "kind": "expenses"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.expenses",
+            "result_ref": "read_result_2",
+            "simulation": true
+          },
+          {
+            "body": {
+              "items": [
+                {
+                  "amount": "6.25",
+                  "context_version": 1,
+                  "creditor_ref": "participant_1",
+                  "currency": "CNY",
+                  "debtor_ref": "participant_2",
+                  "evidence_ref": "fact_debt_1",
+                  "kind": "debt",
+                  "observed_at": "2026-10-07T00:00:00Z"
+                }
+              ],
+              "kind": "debts"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.debts",
+            "result_ref": "read_result_3",
+            "simulation": true
+          }
+        ],
+        "recent_messages": [],
+        "verified_scope": {
+          "activity_ref": "activity_1",
+          "kind": "activity",
+          "permissions": [
+            "read.activities",
+            "read.expenses",
+            "read.debts",
+            "propose.expense.create",
+            "propose.expense.update",
+            "propose.expense.presentation.update"
+          ]
+        }
+      },
+      "decision": {
+        "fields": {
+          "kind": "expense.create",
+          "ledger_unit_ref": "ledger_unit_1",
+          "note": null,
+          "occurred_at": "2026-10-07T00:00:00Z",
+          "original_amount": "12.50",
+          "original_currency": "CNY",
+          "payment_allocations": [
+            {
+              "amount": "12.50",
+              "participant_ref": "participant_2"
+            }
+          ],
+          "split": {
+            "mode": "equal",
+            "participant_refs": [
+              "participant_2",
+              "participant_1"
+            ]
+          },
+          "title": "Lunch"
+        },
+        "kind": "propose",
+        "operation": "expense.create"
+      },
+      "kind": "model_decision"
+    },
+    {
+      "after": {
+        "context_version": 1,
+        "execution": null,
+        "execution_resolution": null,
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": null,
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "WAIT_CONFIRM",
+        "state_revision": 2,
+        "step": "awaiting_user",
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f",
+        "wait_reason": "confirm_required"
+      },
+      "before": {
+        "context_version": 1,
+        "execution": null,
+        "execution_resolution": null,
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": null,
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "RUNNING",
+        "state_revision": 1,
+        "step": "prepare_proposal",
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f",
+        "wait_reason": null
+      },
+      "expected_state_revision": 1,
+      "kind": "state_transition"
+    },
+    {
+      "event": {
+        "occurred_at": "2026-10-07T00:00:00Z",
+        "payload": {
+          "resume_state": null,
+          "state": "WAIT_CONFIRM",
+          "state_revision": 2,
+          "step": "awaiting_user",
+          "wait_reason": "confirm_required"
+        },
+        "seq": 1,
+        "simulation": true,
+        "type": "status"
+      },
+      "kind": "event",
+      "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f"
+    },
+    {
+      "event": {
+        "occurred_at": "2026-10-07T00:00:00Z",
+        "payload": {
+          "operation": "expense.create",
+          "proposal_id": "8bbb5b01-80ea-5996-9a00-1537b736a7df",
+          "revision": 1
+        },
+        "seq": 2,
+        "simulation": true,
+        "type": "proposal"
+      },
+      "kind": "event",
+      "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f"
+    },
+    {
+      "card": {
+        "card_kind": "simulation_pending",
+        "confirmation_enabled": false,
+        "mode": "simulation",
+        "operation": "expense.create",
+        "preview": {
+          "activity_financial_version": "0",
+          "after": {
+            "base_amount": "12.50",
+            "expense_version": "1",
+            "financial_locked": false,
+            "fx_snapshot": null,
+            "icon_key": null,
+            "ledger_unit_id": "d509605c-f599-54cc-9187-9fd40283f8f8",
+            "note": null,
+            "occurred_at": "2026-10-07T00:00:00Z",
+            "original_amount": "12.50",
+            "original_currency": "CNY",
+            "payment_allocations": [
+              {
+                "amount": "12.50",
+                "participant_id": "279a1dde-c45b-5c26-a00b-0ca57129cb7b"
+              }
+            ],
+            "split": {
+              "mode": "equal",
+              "participant_ids": [
+                "279a1dde-c45b-5c26-a00b-0ca57129cb7b",
+                "148c4cfb-4f09-55af-84d8-5008c08fa829"
+              ]
+            },
+            "title": "Lunch"
+          },
+          "before": null,
+          "changes": [
+            {
+              "after": "Lunch",
+              "before": null,
+              "field": "title"
+            },
+            {
+              "after": "12.50",
+              "before": null,
+              "field": "original_amount"
+            },
+            {
+              "after": "12.50",
+              "before": null,
+              "field": "base_amount"
+            },
+            {
+              "after": "CNY",
+              "before": null,
+              "field": "original_currency"
+            },
+            {
+              "after": "d509605c-f599-54cc-9187-9fd40283f8f8",
+              "before": null,
+              "field": "ledger_unit_id"
+            },
+            {
+              "after": [
+                {
+                  "amount": "12.50",
+                  "participant_id": "279a1dde-c45b-5c26-a00b-0ca57129cb7b"
+                }
+              ],
+              "before": null,
+              "field": "payment_allocations"
+            },
+            {
+              "after": {
+                "mode": "equal",
+                "participant_ids": [
+                  "279a1dde-c45b-5c26-a00b-0ca57129cb7b",
+                  "148c4cfb-4f09-55af-84d8-5008c08fa829"
+                ]
+              },
+              "before": null,
+              "field": "split"
+            },
+            {
+              "after": "2026-10-07T00:00:00Z",
+              "before": null,
+              "field": "occurred_at"
+            }
+          ],
+          "generated_at": "2026-10-07T00:00:00Z",
+          "kind": "expense",
+          "simulation": true,
+          "summary": "新增午餐消费 12.50 CNY"
+        },
+        "proposal_id": "8bbb5b01-80ea-5996-9a00-1537b736a7df",
+        "revision": 1,
+        "simulation": true,
+        "status": "pending"
+      },
+      "kind": "proposal_card",
+      "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f"
+    },
+    {
+      "kind": "confirm_disabled",
+      "proposal_id": "8bbb5b01-80ea-5996-9a00-1537b736a7df",
+      "request": {
+        "client_request_id": "5f3eaa7c-8302-5dbc-98bf-1337fb8389d7",
+        "command_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "confirmation_nonce": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+        "expected_proposal_revision": 1,
+        "versions": {
+          "api": "1.0.0",
+          "operations": "1.0.0",
+          "semantic": "1.0.0"
+        }
+      },
+      "response": {
+        "api_version": "1.0.0",
+        "business_write_performed": false,
+        "code": "execution_capability_unavailable",
+        "execution_enabled": false,
+        "message": "P1-01 does not enable confirmation or business execution."
+      },
+      "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f"
+    }
+  ],
+  "trajectory_version": "1.0.0"
+}

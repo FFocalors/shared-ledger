@@ -1,0 +1,67 @@
+{
+  "$defs": {
+    "ClientProtocolVersions": {
+      "additionalProperties": false,
+      "description": "Versions negotiated by API clients; trajectory schema is offline-only.",
+      "properties": {
+        "api": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Api",
+          "type": "string"
+        },
+        "operations": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Operations",
+          "type": "string"
+        },
+        "semantic": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Semantic",
+          "type": "string"
+        }
+      },
+      "title": "ClientProtocolVersions",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Client sends adjustment text; Harness must re-interpret and regenerate preview.",
+  "properties": {
+    "client_request_id": {
+      "format": "uuid",
+      "title": "Client Request Id",
+      "type": "string"
+    },
+    "expected_proposal_revision": {
+      "minimum": 1,
+      "title": "Expected Proposal Revision",
+      "type": "integer"
+    },
+    "expected_state_revision": {
+      "minimum": 1,
+      "title": "Expected State Revision",
+      "type": "integer"
+    },
+    "text": {
+      "maxLength": 4000,
+      "minLength": 1,
+      "title": "Text",
+      "type": "string"
+    },
+    "versions": {
+      "$ref": "#/$defs/ClientProtocolVersions"
+    }
+  },
+  "required": [
+    "client_request_id",
+    "expected_state_revision",
+    "expected_proposal_revision",
+    "text"
+  ],
+  "title": "ResumeProposalAdjustRequest",
+  "type": "object"
+}

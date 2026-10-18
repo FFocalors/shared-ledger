@@ -1,0 +1,587 @@
+{
+  "$defs": {
+    "EqualSplitIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "const": "equal",
+          "title": "Mode",
+          "type": "string"
+        },
+        "participant_refs": {
+          "items": {
+            "enum": [
+              "participant_selected",
+              "participant_1",
+              "participant_2",
+              "participant_3",
+              "participant_4",
+              "participant_5",
+              "participant_6",
+              "participant_7",
+              "participant_8",
+              "participant_9",
+              "participant_10",
+              "participant_11",
+              "participant_12",
+              "participant_13",
+              "participant_14",
+              "participant_15",
+              "participant_16",
+              "participant_17",
+              "participant_18",
+              "participant_19",
+              "participant_20",
+              "participant_21",
+              "participant_22",
+              "participant_23",
+              "participant_24",
+              "participant_25",
+              "participant_26",
+              "participant_27",
+              "participant_28",
+              "participant_29",
+              "participant_30",
+              "participant_31",
+              "participant_32"
+            ],
+            "title": "ParticipantRef",
+            "type": "string"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "Participant Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "mode",
+        "participant_refs"
+      ],
+      "title": "EqualSplitIntent",
+      "type": "object"
+    },
+    "ExpenseCreateIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "expense.create",
+          "title": "Kind",
+          "type": "string"
+        },
+        "ledger_unit_ref": {
+          "enum": [
+            "ledger_unit_selected",
+            "ledger_unit_1",
+            "ledger_unit_2",
+            "ledger_unit_3",
+            "ledger_unit_4",
+            "ledger_unit_5",
+            "ledger_unit_6",
+            "ledger_unit_7",
+            "ledger_unit_8",
+            "ledger_unit_9",
+            "ledger_unit_10",
+            "ledger_unit_11",
+            "ledger_unit_12",
+            "ledger_unit_13",
+            "ledger_unit_14",
+            "ledger_unit_15",
+            "ledger_unit_16"
+          ],
+          "title": "LedgerUnitRef",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "occurred_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Occurred At"
+        },
+        "original_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Original Amount",
+          "type": "string"
+        },
+        "original_currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Original Currency",
+          "type": "string"
+        },
+        "payment_allocations": {
+          "items": {
+            "$ref": "#/$defs/PaymentAllocation"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "Payment Allocations",
+          "type": "array"
+        },
+        "split": {
+          "discriminator": {
+            "mapping": {
+              "equal": "#/$defs/EqualSplitIntent",
+              "manual": "#/$defs/ManualSplitIntent"
+            },
+            "propertyName": "mode"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/EqualSplitIntent"
+            },
+            {
+              "$ref": "#/$defs/ManualSplitIntent"
+            }
+          ],
+          "title": "Split"
+        },
+        "title": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "ledger_unit_ref",
+        "title",
+        "original_amount",
+        "original_currency",
+        "payment_allocations",
+        "split"
+      ],
+      "title": "ExpenseCreateIntent",
+      "type": "object"
+    },
+    "ExpensePresentationUpdateIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "expense_ref": {
+          "enum": [
+            "expense_selected",
+            "expense_1",
+            "expense_2",
+            "expense_3",
+            "expense_4",
+            "expense_5",
+            "expense_6",
+            "expense_7",
+            "expense_8",
+            "expense_9",
+            "expense_10",
+            "expense_11",
+            "expense_12",
+            "expense_13",
+            "expense_14",
+            "expense_15",
+            "expense_16"
+          ],
+          "title": "ExpenseRef",
+          "type": "string"
+        },
+        "icon_key": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9_]{1,48}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Icon Key"
+        },
+        "kind": {
+          "const": "expense.presentation.update",
+          "title": "Kind",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        }
+      },
+      "required": [
+        "kind",
+        "expense_ref"
+      ],
+      "title": "ExpensePresentationUpdateIntent",
+      "type": "object"
+    },
+    "ExpenseUpdateIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "expense_ref": {
+          "enum": [
+            "expense_selected",
+            "expense_1",
+            "expense_2",
+            "expense_3",
+            "expense_4",
+            "expense_5",
+            "expense_6",
+            "expense_7",
+            "expense_8",
+            "expense_9",
+            "expense_10",
+            "expense_11",
+            "expense_12",
+            "expense_13",
+            "expense_14",
+            "expense_15",
+            "expense_16"
+          ],
+          "title": "ExpenseRef",
+          "type": "string"
+        },
+        "kind": {
+          "const": "expense.update",
+          "title": "Kind",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "occurred_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Occurred At"
+        },
+        "original_amount": {
+          "anyOf": [
+            {
+              "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Original Amount"
+        },
+        "original_currency": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z]{3}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Original Currency"
+        },
+        "payment_allocations": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/PaymentAllocation"
+              },
+              "maxItems": 32,
+              "minItems": 1,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Payment Allocations"
+        },
+        "split": {
+          "anyOf": [
+            {
+              "discriminator": {
+                "mapping": {
+                  "equal": "#/$defs/EqualSplitIntent",
+                  "manual": "#/$defs/ManualSplitIntent"
+                },
+                "propertyName": "mode"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/EqualSplitIntent"
+                },
+                {
+                  "$ref": "#/$defs/ManualSplitIntent"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Split"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        }
+      },
+      "required": [
+        "kind",
+        "expense_ref"
+      ],
+      "title": "ExpenseUpdateIntent",
+      "type": "object"
+    },
+    "ManualSplitAllocation": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Amount",
+          "type": "string"
+        },
+        "participant_ref": {
+          "enum": [
+            "participant_selected",
+            "participant_1",
+            "participant_2",
+            "participant_3",
+            "participant_4",
+            "participant_5",
+            "participant_6",
+            "participant_7",
+            "participant_8",
+            "participant_9",
+            "participant_10",
+            "participant_11",
+            "participant_12",
+            "participant_13",
+            "participant_14",
+            "participant_15",
+            "participant_16",
+            "participant_17",
+            "participant_18",
+            "participant_19",
+            "participant_20",
+            "participant_21",
+            "participant_22",
+            "participant_23",
+            "participant_24",
+            "participant_25",
+            "participant_26",
+            "participant_27",
+            "participant_28",
+            "participant_29",
+            "participant_30",
+            "participant_31",
+            "participant_32"
+          ],
+          "title": "ParticipantRef",
+          "type": "string"
+        }
+      },
+      "required": [
+        "participant_ref",
+        "amount"
+      ],
+      "title": "ManualSplitAllocation",
+      "type": "object"
+    },
+    "ManualSplitIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "allocations": {
+          "items": {
+            "$ref": "#/$defs/ManualSplitAllocation"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "Allocations",
+          "type": "array"
+        },
+        "mode": {
+          "const": "manual",
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "mode",
+        "allocations"
+      ],
+      "title": "ManualSplitIntent",
+      "type": "object"
+    },
+    "PaymentAllocation": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Amount",
+          "type": "string"
+        },
+        "participant_ref": {
+          "enum": [
+            "participant_selected",
+            "participant_1",
+            "participant_2",
+            "participant_3",
+            "participant_4",
+            "participant_5",
+            "participant_6",
+            "participant_7",
+            "participant_8",
+            "participant_9",
+            "participant_10",
+            "participant_11",
+            "participant_12",
+            "participant_13",
+            "participant_14",
+            "participant_15",
+            "participant_16",
+            "participant_17",
+            "participant_18",
+            "participant_19",
+            "participant_20",
+            "participant_21",
+            "participant_22",
+            "participant_23",
+            "participant_24",
+            "participant_25",
+            "participant_26",
+            "participant_27",
+            "participant_28",
+            "participant_29",
+            "participant_30",
+            "participant_31",
+            "participant_32"
+          ],
+          "title": "ParticipantRef",
+          "type": "string"
+        }
+      },
+      "required": [
+        "participant_ref",
+        "amount"
+      ],
+      "title": "PaymentAllocation",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "fields": {
+      "discriminator": {
+        "mapping": {
+          "expense.create": "#/$defs/ExpenseCreateIntent",
+          "expense.presentation.update": "#/$defs/ExpensePresentationUpdateIntent",
+          "expense.update": "#/$defs/ExpenseUpdateIntent"
+        },
+        "propertyName": "kind"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ExpenseCreateIntent"
+        },
+        {
+          "$ref": "#/$defs/ExpenseUpdateIntent"
+        },
+        {
+          "$ref": "#/$defs/ExpensePresentationUpdateIntent"
+        }
+      ],
+      "title": "Fields"
+    },
+    "kind": {
+      "const": "propose",
+      "title": "Kind",
+      "type": "string"
+    },
+    "operation": {
+      "enum": [
+        "expense.create",
+        "expense.update",
+        "expense.presentation.update"
+      ],
+      "title": "Operation",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "operation",
+    "fields"
+  ],
+  "title": "ProposeDecision",
+  "type": "object"
+}
