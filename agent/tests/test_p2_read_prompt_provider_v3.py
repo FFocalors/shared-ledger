@@ -35,7 +35,7 @@ from app.p2_read_prompt_v3 import (
     p2_v3_decision_json_schema,
 )
 from app.p2_read_provider_v3 import P2V3ReadProvider
-from app.p2_read_native_provider_v3 import P2V3NativeCandidateReadProvider
+from app.p2_read_native_provider_v3 import P2V3NativeCandidateReadProvider, _DIRECT_DECISION_HINT_R3
 from app.p2_v3_sent_guard import validate_sent_p2_v3_decision
 from app.p2_schema_wire import P2_SCHEMA_PROMPT_VERSION, P2_SCHEMA_PROVIDER_VERSION, P2SchemaWireSelection
 from app.p2_token_budget import P2TokenBudgetMeasurement
@@ -49,9 +49,18 @@ LEDGER_UNIT = "ref_" + "B" * 22
 PARTICIPANT = "ref_" + "C" * 22
 EXPENSE = "ref_" + "D" * 22
 QEV = "qev_" + "E" * 22
-GOLDEN_NORMAL_REQUEST_SHA256 = "5db9b7452fd3622ca115c2517444af75e3e71faea378535b5a2acffe1dc56b07"
-GOLDEN_REPAIR_REQUEST_SHA256 = "a72a4175f1b2769f9394aba3384dd42f082df6d21b640f96ef6c4c6c712a9d36"
-GOLDEN_SCHEMA_SHA256 = "426c3a27dc07fe7735fe2026e2377fd7e4b3d7962e5e206f70056fd73845de5a"
+# Exact goldens for the expense context pair, re-baselined 2026-10-18 against
+# the current pinned source. The previous values predated two deliberate
+# production changes in p2_read_prompt_v3: the per-turn schema now drops the
+# P2ReadContinueRequest branch when the context carries no continuation hint,
+# and `_drop_unreachable_schema_definitions` prunes $defs to those reachable
+# from the selected branches (16 defs / 5 branches unfiltered; 5 defs / 1
+# branch without a continuation). Both changes alter the embedded schema and
+# therefore both request digests. Re-baseline these only for a reviewed prompt
+# or schema change, never to silence a failure.
+GOLDEN_NORMAL_REQUEST_SHA256 = "7f93de996ffb4e12c0ef45eca15665a548a404dc41e3638b87e5b15188e609d6"
+GOLDEN_REPAIR_REQUEST_SHA256 = "d8cba0090699b32fb73b0dec4a187dbac95f623fddf5583fd8a67a91aeda0f4d"
+GOLDEN_SCHEMA_SHA256 = "78ea9dc784c256e751f60c9d135b75304d363d1fbce0138f47372bb33395373b"
 
 
 def ref(number: int) -> str:
@@ -243,6 +252,37 @@ def _expense_context_pair() -> tuple[c.P2ModelContext, c.P2IntentContext]:
     return public, private
 
 
+def _expense_continuation_context_pair() -> tuple[c.P2ModelContext, c.P2IntentContext]:
+    """The same expense context, but with fresh evidence and one continuation hint.
+
+    A continuation hint is only legal when it binds to a fresh receipt ref, so
+    the guard has to expose the same query evidence the hint points at.
+    """
+    public, private = _expense_context_pair()
+    evidence = public.query_evidence[0]
+    # A continuation is only legal when the evidence really has another page.
+    paged = evidence.model_copy(
+        update={
+            "model_projection_complete": False,
+            "page": evidence.page.model_copy(update={
+                "has_more": True,
+                "model_projection_complete": False,
+            }),
+        },
+    )
+    hint = c.P2ContinuationHint(
+        query_evidence_ref=paged.query_evidence_ref,
+        query_ref=paged.query_ref,
+        next_page_ref=ref(91),
+    )
+    guard = public.guard.model_copy(
+        update={"fresh_receipt_refs": (paged.query_evidence_ref,)},
+    )
+    return public.model_copy(
+        update={"continuations": (hint,), "guard": guard, "query_evidence": (paged,)},
+    ), private
+
+
 def _zero_evidence_context_pair(
     classification: str,
 ) -> tuple[c.P2ModelContext, c.P2IntentContext]:
@@ -410,7 +450,11 @@ def test_per_turn_schema_is_narrowed_from_validated_server_decision_allowlist() 
     cases = (
         (_public_non_business(), _private_non_business(), {"#/$defs/P2AnswerDecision"}),
         (_public_pending_scope(), _private_pending_scope(), {"#/$defs/P2ClarifyDecision"}),
-        (*_expense_context_pair(), {"#/$defs/P2ReadQueryRequest", "#/$defs/P2ReadContinueRequest"}),
+        # A first read with no continuation hint must not offer the continue
+        # branch; the same context carrying an authorized hint must offer both.
+        (*_expense_context_pair(), {"#/$defs/P2ReadQueryRequest"}),
+        (*_expense_continuation_context_pair(),
+         {"#/$defs/P2ReadQueryRequest", "#/$defs/P2ReadContinueRequest"}),
         (*_proposal_context_pair(), {"#/$defs/P2ProposalRecognition"}),
     )
     for public, private, expected_refs in cases:
@@ -879,7 +923,12 @@ def test_native_candidate_rebuilds_counted_wire_and_keeps_strict_sent_guard() ->
     assert wire["system_prompt"] == request.messages[0].content
     assert wire["reasoning"] == "off" and wire["store"] is False and wire["stream"] is False
     assert wire["context_length"] == 8192 and wire["max_output_tokens"] == 1536
-    assert request.messages[0].content.endswith("该 MIME 描述不属于答案。")
+    # The native system prompt is the prepared system text plus the isolated
+    # schema hint plus the pinned direct-decision-hint-r3 block, which is now
+    # the exact tail. The MIME/field guard is still carried verbatim inside it.
+    system_prompt = request.messages[0].content
+    assert "该 MIME 描述不属于答案。" in system_prompt
+    assert system_prompt.endswith(_DIRECT_DECISION_HINT_R3)
     assert observed_hashes == [hashlib.sha256(wire_bytes).hexdigest()]
     assert observed_hashes[0] != prepared.request_sha256
     with pytest.raises(ValidationError):

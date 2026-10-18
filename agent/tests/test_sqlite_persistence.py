@@ -101,7 +101,12 @@ def _proposal(owner: uuid.UUID, session_id: uuid.UUID, turn_id: uuid.UUID, *, ba
     return c.ProposalRecord(proposal_id=uuid.uuid4(), owner_user_id=owner, session_id=session_id, turn_id=turn_id,
         revision=revision, operation="expense.create", mode=mode, status=c.ProposalStatus.PENDING, intent=intent,
         canonical_command=command, preview=preview, preconditions=preconditions, command_digest=digest,
-        confirmation_nonce=confirmation_nonce, policy_version="p1-test", expires_at=NOW + timedelta(days=5),
+        confirmation_nonce=confirmation_nonce, policy_version="p1-test",
+        # The API and Store compare expiry against the real clock, so a fixed
+        # NOW-based deadline rots: this fixture's proposals silently became
+        # expired on 2026-10-13. Keep the other fixture timestamps frozen for
+        # deterministic event ordering, but make the deadline live-relative.
+        expires_at=datetime.now(timezone.utc) + timedelta(days=5),
         execution=None, request_receipts=receipts or [])
 
 

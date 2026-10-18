@@ -444,8 +444,10 @@ def test_first_read_public_kind_and_operation_are_checked_before_private_fullpar
     with pytest.raises(P2V3SentGuardError, match="decision kind"):
         _run(kind_denied, granted_private, request)
 
+    # A guard that allowlists "read" must still allowlist at least one read operation for
+    # the sent context to be renderable; EXPENSES stays absent so the sent operation is denied.
     operation_denied = _public_context(
-        allowed_kinds=("read",), read_operations=(), source_free=False,
+        allowed_kinds=("read",), read_operations=(c.P2ReadOperation.DEBTS,), source_free=False,
     )
     assert isinstance(c.parse_p2_decision(request, granted_private), c.P2ReadQueryRequest)
     with pytest.raises(P2V3SentGuardError, match="read operation"):

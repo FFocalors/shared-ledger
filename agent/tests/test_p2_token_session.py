@@ -36,6 +36,46 @@ API_HOST = "http://127.0.0.1:1234"
 ARTIFACT_HASH = hashlib.sha256(b"session-fixture-model-bytes").hexdigest()
 
 
+class _TypedHistorySurface:
+    """LM Studio SDK typed-history classes the token counter builds against.
+
+    The counter constructs a typed ``ChatHistoryData``, checks its exact public
+    serialization, and only then calls ``Chat.from_history``. A fake SDK that
+    omits these classes fails that stage, and the session's generic error arm
+    reports it as ``counter_unavailable`` rather than the real reason.
+    """
+
+    class TextData:
+        def __init__(self, *, text: str) -> None:
+            self.text = text
+
+        def as_dict(self) -> dict[str, str]:
+            return {"type": "text", "text": self.text}
+
+    class _TypedMessage:
+        role = ""
+
+        def __init__(self, *, content: list["_TypedHistorySurface.TextData"]) -> None:
+            self.content = content
+
+        def as_dict(self) -> dict[str, object]:
+            return {"role": self.role, "content": [item.as_dict() for item in self.content]}
+
+    class SystemPrompt(_TypedMessage):
+        role = "system"
+
+    class UserMessage(_TypedMessage):
+        role = "user"
+
+    class ChatHistoryData:
+        def __init__(self, *, messages: list["_TypedHistorySurface._TypedMessage"]) -> None:
+            self.messages = messages
+
+        def to_dict(self) -> dict[str, object]:
+            return {"messages": [message.as_dict() for message in self.messages]}
+
+
+
 def _binding_payload() -> dict[str, object]:
     return {
         "model_key": MODEL_KEY,
@@ -227,7 +267,7 @@ def test_fake_sdk_session_keeps_one_client_and_freshly_binds_before_and_after_ea
             calls.append("list")
             return [model]
 
-    class FakeLMStudio:
+    class FakeLMStudio(_TypedHistorySurface):
         Client = FakeClient
         Chat = type("Chat", (), {"from_history": staticmethod(lambda _history: object())})
 
@@ -592,7 +632,7 @@ def test_fake_sdk_rejects_path_or_context_change_before_admitting_counts(
             assert namespace == "llm"
             return [model]
 
-    class FakeLMStudio:
+    class FakeLMStudio(_TypedHistorySurface):
         Client = FakeClient
         Chat = type("Chat", (), {"from_history": staticmethod(lambda _history: object())})
 

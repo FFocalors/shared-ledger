@@ -261,7 +261,9 @@ def test_v4_database_upgrades_append_only_to_v5_without_rewriting_old_ledger(
     try:
         store.start()
         with store._connection() as connection:
-            assert connection.execute("PRAGMA user_version").fetchone()[0] == 5
+            # Starting from a v4 bootstrap, the store applies every later
+            # migration; rows 1-4 must be preserved exactly (asserted below).
+            assert connection.execute("PRAGMA user_version").fetchone()[0] == 6
             after = tuple(tuple(row) for row in connection.execute(
                 "SELECT version,name,checksum,applied_at FROM schema_migrations WHERE version<=4 ORDER BY version"
             ))

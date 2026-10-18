@@ -156,7 +156,8 @@ def _make_proposal(
         command_digest=digest,
         confirmation_nonce=confirmation_nonce,
         policy_version="backup-test",
-        expires_at=NOW + timedelta(days=5),
+        # Live-relative deadline; see the same note in test_sqlite_persistence.
+        expires_at=datetime.now(timezone.utc) + timedelta(days=5),
         execution=None,
         request_receipts=[],
     )

@@ -610,6 +610,14 @@ def test_store_issues_and_accepts_one_scoped_continuation_with_terminal_output(
             fact.model_copy(update={"query_evidence_ref": terminal_qev.query_evidence_ref})
             for fact in accepted0.historical.page.items + accepted1.historical.page.items
         )
+        # The accepted admission metadata is the only legal source of a public
+        # answer's labels and actor: the Store commit binds this answer to that
+        # durable acceptance projection, so the test must carry it verbatim
+        # rather than inventing metadata.
+        accepted_projection = accepted1._registry.accepted_metadata_projection_or_none(
+            identity=admission.identity, admission_id=accepted1._admission_id,
+        )
+        assert accepted_projection is not None
         output = pe.P2V3HistoricalAnswer(
             history_only=True,
             profile_id=pc.P2_V3_CANDIDATE_PROFILE_ID,
@@ -628,8 +636,8 @@ def test_store_issues_and_accepts_one_scoped_continuation_with_terminal_output(
             citations=(terminal_qev.query_evidence_ref,),
             query_evidence=(terminal_qev,),
             fact_cards=all_cards,
-            source_labels=(),
-            current_actor=None,
+            source_labels=tuple(accepted_projection.source_labels),
+            current_actor=accepted_projection.current_actor,
         )
         aggregate = store.get_turn(OWNER, turn_id)
         before = aggregate.record.turn

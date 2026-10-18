@@ -269,6 +269,28 @@ class FakeLocator:
         self.continuations: dict[tuple[str, str], codec.V3ContinuationProof] = {}
         self.query_sequence = 0
         self.query_for_logical: dict[str, str] = {}
+        self._configured_source_origin: tuple[str, str] | None = None
+
+    def bind_configured_source_origin(self, project_url: str) -> None:
+        """Mirror the Store registry's write-once HTTPS origin pin.
+
+        The adapter requires this port before the first query GET, and the
+        acceptance path reads ``_configured_source_origin`` back, so the fake
+        has to validate and retain the same normalized tuple.
+        """
+        if type(project_url) is not str or len(project_url) > 2048:
+            raise backend.P2ReadBackendError("invalid_auth_context")
+        parts = urlsplit(project_url)
+        if (
+            parts.scheme != "https" or not parts.hostname or parts.username is not None
+            or parts.password is not None or parts.query or parts.fragment
+            or parts.path not in ("", "/")
+        ):
+            raise backend.P2ReadBackendError("invalid_auth_context")
+        origin = (parts.scheme, parts.netloc.lower())
+        if self._configured_source_origin is not None and self._configured_source_origin != origin:
+            raise backend.P2ReadBackendError("invalid_auth_context")
+        self._configured_source_origin = origin
 
     @staticmethod
     def ref(seed: str) -> str:
@@ -669,8 +691,18 @@ def test_expenses_17_facts_pending_page_keeps_source_captures_without_capability
         assert first.projection.historical.page.has_more is True
         assert len(first.bootstrap_captures) == 6
         assert len(first.query_captures) == 18
-        assert sum(page.witness.binding_kind == "admission" for page in first.query_captures) == 12
-        assert sum(page.witness.binding_kind == "query_attempt" for page in first.query_captures) == 6
+        # Every query GET is dispatched under this query attempt, so all 18
+        # query captures are attempt-bound at page 0 and carry no admission id.
+        # Admission-bound metadata GETs live in bootstrap_captures instead.
+        assert all(page.witness.binding_kind == "query_attempt" for page in first.query_captures)
+        assert all(
+            page.witness.admission_id is None
+            and page.witness.logical_query_id == logical_id
+            and page.witness.query_attempt_id == "expense-attempt-1"
+            and page.witness.page_index == 0
+            for page in first.query_captures
+        )
+        assert all(page.witness.binding_kind == "admission" for page in first.bootstrap_captures)
         assert all(page.raw_body and page.request_url and page.witness.capture_id for page in first.bootstrap_captures + first.query_captures)
         assert not locator.continuations
         pending_repr = repr(first)

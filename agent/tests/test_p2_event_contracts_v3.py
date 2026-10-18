@@ -38,6 +38,7 @@ from app.p2_event_contracts_v3 import (
     P2V3HistoricalAnswer,
     P2V3HistoricalClarification,
     P2V3HistoricalProposalIntent,
+    P2V3HistoricalReadPayload,
     P2V3HistoricalReadResult,
     P2V3PrivateFactRowBinding,
     P2V3PrivateMetadataProofBinding,
@@ -1291,7 +1292,15 @@ def test_r4_scoped_activities_qev_financial_version_round_trips_and_rejects_fore
     assert evidence.financial_versions[0].financial_version == 7
     assert evidence.financial_versions[0].activity_ref == fact.activity_ref
 
-    projected = project_live_p2_read_result_for_history(live)
+    # The v3 adapter now returns private pending state, not a live DTO: the
+    # Store must independently accept the attempt first. Its only display-shaped
+    # projection is already the capability-free historical payload, so the
+    # history round trip starts there.
+    assert isinstance(live, source_test.backend.P2V3PendingSourceAttempt)
+    assert not hasattr(live, "model_copy")
+    projected = live.projection.historical
+    assert isinstance(projected, P2V3HistoricalReadPayload)
+    assert not hasattr(projected.page, "next_page_ref")
     base_fields = _base_output_fields(read_epoch=1)
     base_fields["observed_at"] = evidence.observed_at
     output = P2V3HistoricalReadResult(
@@ -1331,8 +1340,10 @@ def test_r4_scoped_activities_qev_financial_version_round_trips_and_rejects_fore
             ),
         ),
     })
-    foreign_live = live.model_copy(update={"query_evidence": foreign_evidence})
-    foreign_projected = project_live_p2_read_result_for_history(foreign_live)
+    foreign_live = projected.model_copy(update={"query_evidence": foreign_evidence})
+    foreign_projected = P2V3HistoricalReadPayload.model_validate_json(
+        foreign_live.model_dump_json(), strict=True,
+    )
     foreign_output = output.model_copy(update={"result": foreign_projected})
     foreign_proof = _private_qev_proof(
         foreign_evidence,

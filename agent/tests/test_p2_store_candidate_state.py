@@ -288,12 +288,16 @@ def test_agent_app_migration_upgrades_valid_v1_ledger_without_touching_initial()
     store.close()
     connection = sqlite3.connect(path)
     try:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 2
+        # Upgrading a valid v1 ledger must keep row 1 byte-identical and append
+        # every later migration in order, up to the current head.
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 6
         ledger = connection.execute("SELECT version,name,checksum FROM schema_migrations ORDER BY version").fetchall()
-        assert ledger == [
-            (1, "initial", initial_hash),
-            (2, "p2_read_candidate", hashlib.sha256((root / "agent" / "app" / "p2_read_store_migration.sql").read_bytes()).hexdigest()),
-        ]
+        assert ledger[0] == (1, "initial", initial_hash)
+        assert ledger[1] == (
+            2, "p2_read_candidate",
+            hashlib.sha256((root / "agent" / "app" / "p2_read_store_migration.sql").read_bytes()).hexdigest(),
+        )
+        assert [row[0] for row in ledger] == [1, 2, 3, 4, 5, 6]
         assert connection.execute("SELECT count(*) FROM p2_candidate_turns").fetchone()[0] == 0
     finally:
         connection.close()
