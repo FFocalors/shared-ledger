@@ -10,7 +10,7 @@ Private-v3/native 默认关闭；当前 source/config manifest SHA-256 为 `5df9
 - **真实模型闭环：3 次 Turn 中 1 次 COMPLETED**；另 2 次因答案根对象多出 4 个契约未声明字段（`source_query_complete` 等）被严格 sent guard 拒绝——**模型侧未遵循既有契约，不是实现缺陷**；1/3 不是通过率结论，质量仍为 `INSUFFICIENT_SAMPLE`。
 - **真实身份恢复：机制可用但发现缺陷**。故障在查询描述符绑定之前时，恢复只能重新规划并撞模型额度 → 终态 `RATE_LIMITED`；故障在描述符已绑定之后时，恢复确实复用原逻辑查询（单查询 id）、以新 attempt 从 page 0 重读、且逻辑读取与模型调用额度不增加，但随后第 2 次规划任务被取消，回合被遗弃为 `RUNNING`（仍持有 claim、无终态或暂停事件）。**该项修复前不应把身份恢复记为 P2 通过。**
 
-v3 candidate 的裁决现状见 [v3 profile 状态](p2/P2_V3_PROFILE_STATUS.md)：只有「disabled CPU candidate foundation」范围的 root 接受，没有把它作为基线的裁决。分项边界另见 [P2 交付状态 R3](p2/P2_DELIVERY_R3.md)、[R2 当前状态](p2/R2_STATUS.md) 和 [P2 配置示例](p2/P2_CONFIGURATION_EXAMPLE.md)。
+v3 candidate 的裁决现状见 [v3 profile 状态](p2/P2_V3_PROFILE_STATUS.md)：只有「disabled CPU candidate foundation」范围的 root 接受，没有把它作为基线的裁决。**注意 pin 时点**：manifest `5df93c7f…` 绑定的是分页改动前的源码（截至 `aaf9fc3`），本次分页改动落在其固定组件 `app/p2_runtime.py` 上，已使该 pin 与当前树不再匹配（逐组件复核恰好 1 处 mismatch）；后续任何 live 运行须先重新生成 manifest，且新 pin 在重新出证据前没有真机证据，见 [页窗口 R1](p2/P2_PAGE_WINDOW_R1.md)。分项边界另见 [P2 交付状态 R3](p2/P2_DELIVERY_R3.md)、[R2 当前状态](p2/R2_STATUS.md) 和 [P2 配置示例](p2/P2_CONFIGURATION_EXAMPLE.md)。
 
 日期：2026-10-12
 当前阶段：**P0 工程核查通过；T0 六步部署链验收通过；P1 限定工程范围通过；T1 protocol v1.1.0 离线协议冻结已批准；release-v2 数据准入及训练仍未完成，genuine human receipt、P2校准、T2授权pending**

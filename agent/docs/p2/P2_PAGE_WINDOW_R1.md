@@ -59,3 +59,19 @@
 1. 是否打开 Store 的一页续读上限（需改 Store 三处 + 预留记账），以及打开后 `MAX_FACTS_PER_PAGE*2` 与页窗口如何对齐
 2. 消息文本 2000 字上限的处置（压缩 / 放宽 / 改判）
 3. 截断与超窗是否应改成不可重试的独立错误分类
+
+## 6. 连带影响：旧执行 pin 已不再匹配当前源码树
+
+本次改动落在 `agent/app/p2_runtime.py`，而该文件是 manifest pin
+`5df93c7fe360e8cedda27b2ca38379c031cd227768f31f7505c127bcd3dd92c6` 的 49 个固定组件之一。
+提交后逐组件复核：**恰好 1 处 mismatch，即 `agent/app/p2_runtime.py`**，其余 48 个仍匹配。
+
+因此：
+
+- 该 pin 对应的是**改动前**的源码（截至提交 `aaf9fc3`）。本文与 `P2_LIVE_CLOSE_LOOP_R1.md` 里
+  的全部真机/闭环证据都产自那个源码状态，**不是**本次分页改动之后的源码。
+- 现在若直接用旧 pin 起一次 v3 运行，会因组件哈希不匹配而 fail closed——这是正确行为。
+- 任何后续 live（含身份恢复）运行**必须先重新生成执行 manifest**（`agent.app.p2_v3_manifest_cli`，
+  参数与四元绑定见 `P2_CONFIGURATION_EXAMPLE.md`）；新 pin 在重新跑出证据之前**没有**任何真机证据，
+  不得沿用旧 pin 的证据描述它。
+- 未擅自重新生成 pin，以避免把"旧源码的真机证据"隐式挂到"新源码的 pin"上。
