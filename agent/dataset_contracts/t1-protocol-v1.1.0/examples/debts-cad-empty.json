@@ -1,0 +1,153 @@
+{
+  "format": "t1-offline-query-example-v1.1.0",
+  "model_context": {
+    "available_permissions": [
+      "read.debts"
+    ],
+    "bound_references": [
+      {
+        "kind": "activity",
+        "ref": "activity_1"
+      }
+    ],
+    "context_version": 1,
+    "input_text": "Are there any debts in CAD?",
+    "intent_classification": "business",
+    "pending_slots": [],
+    "policy_evidence": [],
+    "query_observations": [
+      {
+        "backend_criteria": {
+          "kind": "debts",
+          "scope_ref": "activity_1"
+        },
+        "body_digest": "7cd46561e1984afbb76214ec854fc56409b860f47ac845ea648e0f0d37b99b9d",
+        "context_version": 1,
+        "criteria": {
+          "activity_ref": "activity_1",
+          "currency": "CAD",
+          "kind": "debts",
+          "participant_ref": null
+        },
+        "matched_count": 0,
+        "matching_fact_citations": [],
+        "normalized_criteria": "{\"criteria\":{\"activity_ref\":\"activity_1\",\"currency\":\"CAD\",\"kind\":\"debts\"},\"operation\":\"read.debts\"}",
+        "observed_at": "2026-10-10T12:00:00Z",
+        "operation": "read.debts",
+        "page": {
+          "complete": true,
+          "expected_total": 0,
+          "has_more": false,
+          "pages_seen": 1,
+          "range_contiguous": true,
+          "source_version_fenced": true,
+          "stable_total_verified": true,
+          "truncated": false,
+          "unique_items_verified": true
+        },
+        "post_filter": {
+          "currency": "CAD",
+          "kind": "debts",
+          "participant_ref": null
+        },
+        "query_digest": "69ca93af211b70a748481b286846eb4eb208f883455fad92a64ae866cd3f7155",
+        "query_ref": "query_2",
+        "result_ref": "read_result_1",
+        "returned_count": 0,
+        "schema_version": "1.1.0",
+        "simulation": true,
+        "source": "synthetic_simulation",
+        "source_version": "synthetic-source-v1"
+      }
+    ],
+    "read_results": [
+      {
+        "body": {
+          "items": [],
+          "kind": "debts"
+        },
+        "context_version": 1,
+        "observed_at": "2026-10-10T12:00:00Z",
+        "operation": "read.debts",
+        "result_ref": "read_result_1",
+        "simulation": true
+      }
+    ],
+    "recent_messages": [],
+    "verified_scope": {
+      "activity_ref": "activity_1",
+      "kind": "activity",
+      "permissions": [
+        "read.debts"
+      ]
+    }
+  },
+  "query_observations": [
+    {
+      "backend_criteria": {
+        "kind": "debts",
+        "scope_ref": "activity_1"
+      },
+      "body_digest": "7cd46561e1984afbb76214ec854fc56409b860f47ac845ea648e0f0d37b99b9d",
+      "context_version": 1,
+      "criteria": {
+        "activity_ref": "activity_1",
+        "currency": "CAD",
+        "kind": "debts",
+        "participant_ref": null
+      },
+      "matched_count": 0,
+      "matching_fact_citations": [],
+      "normalized_criteria": "{\"criteria\":{\"activity_ref\":\"activity_1\",\"currency\":\"CAD\",\"kind\":\"debts\"},\"operation\":\"read.debts\"}",
+      "observed_at": "2026-10-10T12:00:00Z",
+      "operation": "read.debts",
+      "page": {
+        "complete": true,
+        "expected_total": 0,
+        "has_more": false,
+        "pages_seen": 1,
+        "range_contiguous": true,
+        "source_version_fenced": true,
+        "stable_total_verified": true,
+        "truncated": false,
+        "unique_items_verified": true
+      },
+      "post_filter": {
+        "currency": "CAD",
+        "kind": "debts",
+        "participant_ref": null
+      },
+      "query_digest": "69ca93af211b70a748481b286846eb4eb208f883455fad92a64ae866cd3f7155",
+      "query_ref": "query_2",
+      "result_ref": "read_result_1",
+      "returned_count": 0,
+      "schema_version": "1.1.0",
+      "simulation": true,
+      "source": "synthetic_simulation",
+      "source_version": "synthetic-source-v1"
+    }
+  ],
+  "synthetic_only": true,
+  "training_eligible": false,
+  "trusted_rendered_decision": {
+    "basis": "grounded",
+    "citations": [
+      "query_2"
+    ],
+    "kind": "answer",
+    "text": "No debts matched; the complete backend result contained 0 items."
+  },
+  "typed_read_results": [
+    {
+      "body": {
+        "items": [],
+        "kind": "debts"
+      },
+      "context_version": 1,
+      "observed_at": "2026-10-10T12:00:00Z",
+      "operation": "read.debts",
+      "result_ref": "read_result_1",
+      "simulation": true
+    }
+  ]
+}

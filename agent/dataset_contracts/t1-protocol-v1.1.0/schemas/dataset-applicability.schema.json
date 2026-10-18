@@ -1,0 +1,99 @@
+{
+  "$defs": {
+    "DatasetApplicabilityEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "dataset_id": {
+          "enum": [
+            "legacy-v0.1.2-six-classes",
+            "legacy-v0.1-scope",
+            "diagnostic-111",
+            "legacy-t1-393-v1",
+            "legacy-t1-release-v2",
+            "t1-v1.1-synthetic-contract-examples"
+          ],
+          "title": "Dataset Id",
+          "type": "string"
+        },
+        "direct_training_eligible": {
+          "const": false,
+          "default": false,
+          "title": "Direct Training Eligible",
+          "type": "boolean"
+        },
+        "disposition": {
+          "enum": [
+            "conversion_candidate",
+            "diagnostic_only",
+            "synthetic_fixture"
+          ],
+          "title": "Disposition",
+          "type": "string"
+        },
+        "explicit_conversion_required": {
+          "title": "Explicit Conversion Required",
+          "type": "boolean"
+        },
+        "new_source_freeze_required": {
+          "title": "New Source Freeze Required",
+          "type": "boolean"
+        },
+        "new_split_required": {
+          "title": "New Split Required",
+          "type": "boolean"
+        },
+        "replay_and_human_review_required": {
+          "title": "Replay And Human Review Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "dataset_id",
+        "disposition",
+        "explicit_conversion_required",
+        "new_source_freeze_required",
+        "replay_and_human_review_required",
+        "new_split_required"
+      ],
+      "title": "DatasetApplicabilityEntry",
+      "type": "object"
+    }
+  },
+  "$id": "https://shared-ledger.invalid/schemas/t1-dataset-applicability-1.1.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "default_training_eligible": {
+      "const": false,
+      "default": false,
+      "title": "Default Training Eligible",
+      "type": "boolean"
+    },
+    "entries": {
+      "items": {
+        "$ref": "#/$defs/DatasetApplicabilityEntry"
+      },
+      "maxItems": 6,
+      "minItems": 6,
+      "title": "Entries",
+      "type": "array"
+    },
+    "protocol_version": {
+      "const": "1.1.0",
+      "title": "Protocol Version",
+      "type": "string"
+    },
+    "relabeling_allowed": {
+      "const": false,
+      "default": false,
+      "title": "Relabeling Allowed",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "protocol_version",
+    "entries"
+  ],
+  "title": "DatasetApplicabilityPolicy",
+  "type": "object"
+}

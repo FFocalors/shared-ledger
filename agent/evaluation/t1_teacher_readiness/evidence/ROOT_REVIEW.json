@@ -1,0 +1,49 @@
+{
+  "reviewer": "root",
+  "reviewer_kind": "agent",
+  "created_utc": "2026-10-10T17:38:29Z",
+  "scope": "Reclassify the existing v1 visible-text result only; no new Teacher request.",
+  "status": "QUARANTINED_EVALUATOR_DEFECT",
+  "teacher_text_readiness": "TEACHER_TEXT_READINESS_INCONCLUSIVE",
+  "defect": {
+    "runner_sha256": "f66bdf94a2f4f65e52f82579e52612834f76ad20dc16652cd704f9f7c74ebad5",
+    "runner_function": "redact_error",
+    "runner_behavior": "It unconditionally returns result[:400]. post_once passes visible_content to this function before strict JSON parsing.",
+    "effect": "A completion longer than 400 characters is truncated; credential_redaction_applied_to_visible_content becomes true because the truncated value differs, even when no secret or token pattern matched.",
+    "synthetic_offline_reproduction": {
+      "provider_or_real_response_used": false,
+      "valid_json_characters_before_slice": 569,
+      "visible_text_characters_per_case": [78, 78, 78],
+      "strict_json_before_400_character_slice": true,
+      "strict_json_after_400_character_slice": false,
+      "reproduction_test": "agent/evaluation/t1_teacher_readiness_v2/tests/test_runner.py::test_synthetic_legacy_400_char_slice_turns_valid_json_into_parse_failure"
+    }
+  },
+  "prior_run_binding": {
+    "preregistration_sha256": "681a7657e893ee6457991350c4b8b3deb5d14c3423993d5455e976548b23dcbb",
+    "request_sha256": "eda1fee97f5907368fd05471ea5ed1cdfa7e34f61dd53fbf3a9ec9019a84ffae",
+    "run_manifest_sha256": "959247cc5dc1efbcadc19f94730c90726f160789064fcb503a84b5ccdbfd2c84",
+    "post_sanitizer_completion_sha256": "d139f6cfb8b6b9a9b3be38735bcfdf7a8b24921ddec5aa2cc9af6bf9a14b92cb",
+    "post_sanitizer_completion_characters": 400,
+    "recorded_http_status": 200,
+    "recorded_duration_seconds": 11.687,
+    "recorded_finish_reason": "stop",
+    "recorded_usage": {
+      "prompt_tokens": 457,
+      "completion_tokens": 1422,
+      "total_tokens": 1879
+    }
+  },
+  "review_conclusion": {
+    "transport_http_200_recorded": true,
+    "original_completion_strict_json": "INCONCLUSIVE_NOT_AVAILABLE",
+    "exact_credential_echo": "NOT_ESTABLISHED",
+    "token_pattern_match": "NOT_ESTABLISHED",
+    "teacher_data_quality": "NOT_ASSESSED",
+    "student_model_quality": "DEFERRED",
+    "human_semantic_review_pending": true,
+    "training_eligible": false,
+    "raw_response_reconstructed_or_saved": false,
+    "additional_posts_authorized_by_this_review": false
+  }
+}

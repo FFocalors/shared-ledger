@@ -1,0 +1,4 @@
+# Minimal offline contract snapshot and test dependencies (not the P1 service runtime).
+pydantic==2.13.4
+jsonschema==4.25.1
+pytest==8.4.2

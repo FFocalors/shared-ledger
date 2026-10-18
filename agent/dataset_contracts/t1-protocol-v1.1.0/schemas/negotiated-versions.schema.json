@@ -1,0 +1,41 @@
+{
+  "$id": "https://shared-ledger.invalid/schemas/t1-negotiated-versions-1.1.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "api_version": {
+      "const": "1.0.0",
+      "title": "Api Version",
+      "type": "string"
+    },
+    "execution_key_version": {
+      "const": "1",
+      "title": "Execution Key Version",
+      "type": "string"
+    },
+    "operations_version": {
+      "const": "1.1.0",
+      "title": "Operations Version",
+      "type": "string"
+    },
+    "semantic_version": {
+      "const": "1.1.0",
+      "title": "Semantic Version",
+      "type": "string"
+    },
+    "trajectory_version": {
+      "const": "1.1.0",
+      "title": "Trajectory Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "api_version",
+    "semantic_version",
+    "operations_version",
+    "trajectory_version",
+    "execution_key_version"
+  ],
+  "title": "NegotiatedVersions",
+  "type": "object"
+}

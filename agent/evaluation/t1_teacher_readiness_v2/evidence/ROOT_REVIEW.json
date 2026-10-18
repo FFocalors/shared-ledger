@@ -1,0 +1,129 @@
+{
+  "reviewer": "root",
+  "reviewer_kind": "agent",
+  "created_utc": "2026-10-10T17:42:50Z",
+  "reviewed_utc": "2026-10-11T03:18:55Z",
+  "status": "APPROVED_LIMITED_THREE_CASE_TEXT_AVAILABILITY",
+  "scope": "One bounded request over three new synthetic cases; transport and strict candidate schema/short-text availability only.",
+  "preregistration_sha256": "fe7997670342b9b8a19bf0ef49ec5b854a2249054e570b787c1fc654d0e82511",
+  "source_sha256": {
+    "runner": "0fb05908ef67db388e93bf477d35888e796b2c5a457b56e3e20548793b7ec5d9",
+    "prompt": "b19439e42f6638db9d519c76ccaf7568afd0d3029639bcd1d90354c95fb406ef",
+    "fake_http_tests": "8470d3cc81958efe09c931fbe2cb2ef99e7054cd66c390c6b39460a80026dcca",
+    "legacy_provider_config_reader_read_only": "86d803f077becf3604f4fb2a073be552cf9616986682dae94b1084dd858b571b"
+  },
+  "evidence": {
+    "directory": "D:/AI/runs/shared-ledger/t1-teacher-readiness-v2-20261011/",
+    "request_sha256": "238ce566518cb33cd9378a595eed0bb4d2e3cb225bf7226029e6b3e942001cec",
+    "run_manifest_sha256": "acaae39eb78dd60ed4c30da003f61d460576360f8fe5f7ee9632641b66a9b170",
+    "raw_response_saved": false,
+    "hidden_reasoning_value_saved": false,
+    "response_files": ["request.json", "run_manifest.json"]
+  },
+  "request_limits_and_observations": {
+    "configured_provider": "opencode",
+    "configured_model": "deepseek-v4.1-flash",
+    "route": "https://opencode.ai/zen/go/v1/chat/completions",
+    "provider_returned_model_label": "deepseek-v4.1-flash",
+    "returned_model_label_is_metadata_only": true,
+    "max_posts": 1,
+    "posts_sent": 1,
+    "timeout_seconds": 60,
+    "max_output_tokens": 2048,
+    "max_response_bytes": 256000,
+    "retries": 0,
+    "fallbacks": 0,
+    "http_status": 200,
+    "duration_seconds": 5.75,
+    "finish_reason": "stop",
+    "usage": {
+      "prompt_tokens": 383,
+      "completion_tokens": 1134,
+      "total_tokens": 1517
+    },
+    "server_request_id": "chatcmpl-5fa324f8a4894c37975ce2ae5f01798c",
+    "completion_strict_json_valid": true,
+    "reasoning_content_field_present": true,
+    "reasoning_content_value_recorded": false,
+    "tool_calls_field_present": false
+  },
+  "candidate_texts": [
+    {
+      "case_id": "activity-meadow-prepay",
+      "task_conclusion": "reject_prepaid_activity",
+      "visible_text": "“草地野餐”为普通 Activity，不支持预存，无法先存 60 元后抵扣。",
+      "characters": 38,
+      "sha256": "677e8d6ce9914cc9b7191a644bb6e9477b0c7409c94b534f2ff2a8051e7309b6"
+    },
+    {
+      "case_id": "expense-tea-84-two-payers",
+      "task_conclusion": "stage_expense_create",
+      "visible_text": "可准备创建 84 元茶点支出：甲付 52 元、乙付 32 元，甲/乙/丙等额分摊；尚未创建。",
+      "characters": 46,
+      "sha256": "47a165ab00fa54482c0c670d4478858be737fffa8652068445f39974efe7e980"
+    },
+    {
+      "case_id": "expense-locked-memo",
+      "task_conclusion": "presentation_only_memo",
+      "visible_text": "财务字段已锁定；可准备将备注从“用品”改为“文件夹”，暂未修改。",
+      "characters": 32,
+      "sha256": "3866eebf24e27a4f3d13a6ab22e3953289cb8d0ae94c01633e9eac22353ab078"
+    }
+  ],
+  "schema_validation": {
+    "status": "TEXT_CANDIDATE_SCHEMA_READY",
+    "schema_valid": true,
+    "task_conclusions_match": true,
+    "visible_text_valid": true,
+    "no_completed_write_claim": true,
+    "manual_semantic_review_required": true
+  },
+  "root_review_checks": {
+    "four_source_hashes_reverified": true,
+    "preregistration_and_manifest_binding_reverified": true,
+    "request_and_run_manifest_hashes_reverified": true,
+    "three_candidate_text_hashes_reverified": true,
+    "independent_fake_tests": {
+      "count": 17,
+      "result": "PASS",
+      "duration_seconds": 0.004
+    }
+  },
+  "root_agent_semantic_review": {
+    "status": "PASS_LIMITED_SCOPE",
+    "cases_reviewed": 3,
+    "cases_passed": 3,
+    "case_results": [
+      {
+        "case_id": "activity-meadow-prepay",
+        "result": "PASS",
+        "note": "Correctly refuses prepayment for an ordinary Activity."
+      },
+      {
+        "case_id": "expense-tea-84-two-payers",
+        "result": "PASS",
+        "note": "Preserves 84 = 52 + 32 and equal three-person split; says it is only prepared, not created."
+      },
+      {
+        "case_id": "expense-locked-memo",
+        "result": "PASS",
+        "note": "Keeps financial fields locked and allows memo presentation only; says it was not modified."
+      }
+    ],
+    "human_semantic_review_pending": true
+  },
+  "interpretation": {
+    "transport_and_three_case_candidate_text_availability": "PASS_LIMITED_SCOPE",
+    "teacher_data_quality": "NOT_ASSESSED",
+    "teacher_dataset_quality": "NOT_ASSESSED",
+    "root_business_semantic_review_pending": false,
+    "human_semantic_review_pending": true,
+    "student_model_quality": "DEFERRED",
+    "training_eligible": false,
+    "candidate_texts_are_not_training_data": true,
+    "business_data_or_database_used": false,
+    "student_or_gpu_used": false,
+    "train_validation_sealed_data_read": false,
+    "additional_posts_in_scope": 0
+  }
+}

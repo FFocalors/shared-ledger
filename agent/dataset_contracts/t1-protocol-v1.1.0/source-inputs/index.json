@@ -1,0 +1,119 @@
+{
+  "capture_policy": "one-time; check reads archived bytes only; P2 module hashes are provenance references, not check dependencies",
+  "entries": [
+    {
+      "archive_path": "agent/app/contracts.py",
+      "size_bytes": 169017,
+      "source_path": "D:\\project\\Android\\shared-ledger-agent\\agent\\app\\contracts.py",
+      "source_sha256": "9fd214d9d8eb43c6f5b03b1d7e95b2bef274dbf9e8be495f536f495b48a5bf2d"
+    },
+    {
+      "archive_path": "agent/docs/p1/PROTOCOL_FREEZE.md",
+      "size_bytes": 15432,
+      "source_path": "D:\\project\\Android\\shared-ledger-agent\\agent\\docs\\p1\\PROTOCOL_FREEZE.md",
+      "source_sha256": "eedc8203f023da0806bfbe4403be9205bb13217d7d7c387eddc1a0c189a2cbb3"
+    },
+    {
+      "archive_path": "agent/docs/p2/CONTRACT-VERSION-DIFF.md",
+      "size_bytes": 11742,
+      "source_path": "D:\\project\\Android\\shared-ledger-agent\\agent\\docs\\p2\\CONTRACT-VERSION-DIFF.md",
+      "source_sha256": "1ce19ae725558166dd4b65caf814ea910758c634ec29394ae43384ddaa6efaec"
+    },
+    {
+      "archive_path": "agent/docs/p2/IMPLEMENTATION_PLAN.md",
+      "size_bytes": 8923,
+      "source_path": "D:\\project\\Android\\shared-ledger-agent\\agent\\docs\\p2\\IMPLEMENTATION_PLAN.md",
+      "source_sha256": "5e83da3f2c3a50654c33a60f21738fc699de5009dca99ef6b039aeddaab3bd07"
+    },
+    {
+      "archive_path": "agent/docs/t1/release-v2/P2-CALIBRATION-REVIEW-FINDINGS.md",
+      "size_bytes": 3424,
+      "source_path": "D:\\project\\Android\\shared-ledger-agent\\agent\\docs\\t1\\release-v2\\P2-CALIBRATION-REVIEW-FINDINGS.md",
+      "source_sha256": "7704c71648fb3a8be056b16c71ac85959e83ab09b572cb8d47a5759d0e7228e9"
+    },
+    {
+      "archive_path": "agent/docs/t1/release-v2/ROOT-BUSINESS-REVIEW.md",
+      "size_bytes": 8462,
+      "source_path": "D:\\project\\Android\\shared-ledger-agent\\agent\\docs\\t1\\release-v2\\ROOT-BUSINESS-REVIEW.md",
+      "source_sha256": "0fd9d6c8eee36a81536c26daf51d3fb1993cbd6b33d78790dae171a8e9a905c7"
+    },
+    {
+      "archive_path": "agent/pyproject.toml",
+      "size_bytes": 428,
+      "source_path": "D:\\project\\Android\\shared-ledger-agent\\agent\\pyproject.toml",
+      "source_sha256": "e76597bbf692ebf2b649123335f5bfa92966e6626577897bb40dba9e969a65dd"
+    },
+    {
+      "archive_path": "agent/requirements-contracts.txt",
+      "size_bytes": 138,
+      "source_path": "D:\\project\\Android\\shared-ledger-agent\\agent\\requirements-contracts.txt",
+      "source_sha256": "ea5236e6063198756ba490ff6fbc032edfbe685f22e5e801103c569dd1f17fb4"
+    },
+    {
+      "archive_path": "agent/toolchain-contracts.json",
+      "size_bytes": 344,
+      "source_path": "D:\\project\\Android\\shared-ledger-agent\\agent\\toolchain-contracts.json",
+      "source_sha256": "2235f7dcf2f1a77d1709538e54077ab2617b1b47f96c85e81dc75d65ec287c2a"
+    },
+    {
+      "archive_path": "agent/uv.lock",
+      "size_bytes": 38961,
+      "source_path": "D:\\project\\Android\\shared-ledger-agent\\agent\\uv.lock",
+      "source_sha256": "0486d2570f46dbe0cf20a84649dbdb01c71f39d90f7de7930d38e62ec4399a9d"
+    },
+    {
+      "archive_path": "external/root-freeze-requirements.json",
+      "size_bytes": 4898,
+      "source_path": "D:\\AI\\runs\\shared-ledger\\t1-protocol-v1.1.0-20261011\\root-freeze-requirements.json",
+      "source_sha256": "0b9e114375619f514588f5b7384be19d8cb1477423f6178e8fe5287d866ecb93"
+    },
+    {
+      "archive_path": "external/root-protected-baseline.json",
+      "size_bytes": 26435,
+      "source_path": "D:\\AI\\runs\\shared-ledger\\t1-protocol-v1.1.0-20261011\\root-protected-baseline.json",
+      "source_sha256": "e35eabc0b11a3eb0261333027fb18f7ad5c996e5030971e42faf54a82e208b2a"
+    },
+    {
+      "archive_path": "reference/business/BUSINESS_LOGIC.md",
+      "size_bytes": 39333,
+      "source_path": "D:\\project\\Android\\shared-ledger\\docs\\backend\\BUSINESS_LOGIC.md",
+      "source_sha256": "91c5907ccda95c118bd4b4b89a7c7f5b012e73664076cf01efd6de18291b25d9"
+    },
+    {
+      "archive_path": "reference/p2_backend.py",
+      "size_bytes": 63322,
+      "source_path": "D:\\project\\Android\\shared-ledger-agent\\agent\\app\\p2_backend.py",
+      "source_sha256": "1172eb01db89b6ec5f10ca294684d799121fbb3dba33f054622c98ab54333cbb"
+    },
+    {
+      "archive_path": "reference/p2_runtime.py",
+      "size_bytes": 95706,
+      "source_path": "D:\\project\\Android\\shared-ledger-agent\\agent\\app\\p2_runtime.py",
+      "source_sha256": "9a17ba735a73dfdfdf4724e69ed2f527ea7cf0c40e9b435959a59290c72ee220"
+    },
+    {
+      "archive_path": "runtime-dependencies.json",
+      "size_bytes": 219,
+      "source_path": "generated:runtime-dependencies",
+      "source_sha256": "4bc435b3e62a625c056c500aeb17fa1eeef8c30e261a17a491019079c1ccaf13"
+    },
+    {
+      "archive_path": "vendor/v1_contracts.py",
+      "size_bytes": 169017,
+      "source_path": "D:\\project\\Android\\shared-ledger-agent\\agent\\evaluation\\t1_protocol_v1_1\\v1_contracts.py",
+      "source_sha256": "9fd214d9d8eb43c6f5b03b1d7e95b2bef274dbf9e8be495f536f495b48a5bf2d"
+    }
+  ],
+  "format": "t1-source-input-snapshot-v1",
+  "p2_module_provenance_sha256": {
+    "agent/app/p2_backend.py": "1172eb01db89b6ec5f10ca294684d799121fbb3dba33f054622c98ab54333cbb",
+    "agent/app/p2_harness.py": "dc26ce2658203c2b70c0380cfd8903cc00ce026b81cd5c12de067ac9a7aca5f0",
+    "agent/app/p2_identity.py": "7eea02cc738f36ac68674a5e3efa6c79fc935a533cdcc6c12fcf09617f100e87",
+    "agent/app/p2_journal.py": "739ecaa6b6d9268117878b71f27455759a3a6655e455ddc5862c84bb49830e4a",
+    "agent/app/p2_model_provider.py": "51bfccc129c26e168cf4261598e6dff3e8f52c3608add6f05c719fd5218468b3",
+    "agent/app/p2_prompt_policy.py": "2ed5bf4d4340a638956fc24abd844616806557bf05d8d7e00e2a7d26936eab81",
+    "agent/app/p2_runtime.py": "9a17ba735a73dfdfdf4724e69ed2f527ea7cf0c40e9b435959a59290c72ee220",
+    "agent/app/p2_token_budget.py": "88dea2188675121e03b2609d6d73eadc1c354f426cc207f1b39c44f3043b5be1"
+  },
+  "runtime_dependencies_archive_path": "runtime-dependencies.json"
+}

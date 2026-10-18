@@ -1,0 +1,61 @@
+{
+  "default_training_eligible": false,
+  "entries": [
+    {
+      "dataset_id": "legacy-v0.1.2-six-classes",
+      "direct_training_eligible": false,
+      "disposition": "conversion_candidate",
+      "explicit_conversion_required": true,
+      "new_source_freeze_required": true,
+      "new_split_required": true,
+      "replay_and_human_review_required": true
+    },
+    {
+      "dataset_id": "legacy-v0.1-scope",
+      "direct_training_eligible": false,
+      "disposition": "conversion_candidate",
+      "explicit_conversion_required": true,
+      "new_source_freeze_required": true,
+      "new_split_required": true,
+      "replay_and_human_review_required": true
+    },
+    {
+      "dataset_id": "diagnostic-111",
+      "direct_training_eligible": false,
+      "disposition": "diagnostic_only",
+      "explicit_conversion_required": true,
+      "new_source_freeze_required": true,
+      "new_split_required": true,
+      "replay_and_human_review_required": true
+    },
+    {
+      "dataset_id": "legacy-t1-393-v1",
+      "direct_training_eligible": false,
+      "disposition": "conversion_candidate",
+      "explicit_conversion_required": true,
+      "new_source_freeze_required": true,
+      "new_split_required": true,
+      "replay_and_human_review_required": true
+    },
+    {
+      "dataset_id": "legacy-t1-release-v2",
+      "direct_training_eligible": false,
+      "disposition": "conversion_candidate",
+      "explicit_conversion_required": true,
+      "new_source_freeze_required": true,
+      "new_split_required": true,
+      "replay_and_human_review_required": true
+    },
+    {
+      "dataset_id": "t1-v1.1-synthetic-contract-examples",
+      "direct_training_eligible": false,
+      "disposition": "synthetic_fixture",
+      "explicit_conversion_required": false,
+      "new_source_freeze_required": false,
+      "new_split_required": false,
+      "replay_and_human_review_required": false
+    }
+  ],
+  "protocol_version": "1.1.0",
+  "relabeling_allowed": false
+}

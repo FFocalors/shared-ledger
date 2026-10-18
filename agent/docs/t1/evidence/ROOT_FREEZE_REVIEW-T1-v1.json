@@ -1,0 +1,58 @@
+{
+  "backend_acceptance_status": "NOT_RUN_RESOURCE",
+  "bundle_sha256": {
+    "sealed": "74e78965283856986c417532173772a940279778628612aed170984fe2250e7c",
+    "train": "dcac3f8c754e84d8d21da99d899c84e494751ffd3a6b8804d247031aaa925491",
+    "validation": "445be2dbaeea0eefdd0dfdfc4c3517d0d92fac97c6b262b92889c754e7d4bed3"
+  },
+  "formal_release_status": "INSUFFICIENT_SAMPLE",
+  "human_review_pending": true,
+  "limitations": [
+    "At least 5 independent fixture families per enabled operation per split; formal release requires 20.",
+    "15 prompt near-duplicate pairs remain; these fixtures do not establish language generalization.",
+    "Synthetic simulator proves supplied fixture trace consistency only; live backend/RLS/effects and model-driven full tasks remain untested.",
+    "Agent self-review and root review do not constitute human review or training admission."
+  ],
+  "manifest_and_jsonl_mutated_by_review": false,
+  "manifest_sha256": "f87eae34f7d77632701ed3fcf1090e1e6a5adedcbe5e39342241a44448f0dddf",
+  "model_evaluation_status": "NOT_TESTED_USER_DEFERRED",
+  "protocol_fingerprint_sha256": "089fc318d503cff7995ea8fead876c99b97351e334e270c3de17e3d1ee452f50",
+  "rejected_candidate": {
+    "manifest_sha256": "be4233dc085b8345c9a2ef56810faa320be280d2a0b12a4f9d56965297d0fb0c",
+    "path": "D:\\AI\\runs\\shared-ledger\\t1\\rejected-pre-review-v1",
+    "reasons": [
+      "title-only financial update overlapped valid presentation operation",
+      "clarification lacked explicit known values",
+      "write request needed explicit target expense reference"
+    ]
+  },
+  "review_basis": {
+    "all_splits": "generator and signature-code review, deterministic generated-fixture tests, aggregate manifest and byte hashes only",
+    "data_pipeline_tests": {
+      "passed": 7,
+      "root_run_seconds": 4.257
+    },
+    "model_evaluator_tests": {
+      "passed": 19,
+      "root_run_seconds": 1.09,
+      "scope": "scoring and gates only, no model calls"
+    },
+    "pipeline_source_hash_count": 6,
+    "train": "37 stored rows independently validated and request/gold financial-operation and reference binding checked"
+  },
+  "review_version": "t1-root-diagnostic-freeze-review-v1",
+  "reviewed_at_utc": "2026-10-10T04:21:52.047218+00:00",
+  "reviewed_splits": [
+    "train",
+    "validation",
+    "sealed"
+  ],
+  "reviewer_id": "/root",
+  "reviewer_kind": "agent",
+  "scope": "diagnostic_only",
+  "sealed_consumed": false,
+  "sealed_one_shot_authorized": false,
+  "sealed_semantic_content_examined_by_reviewer": false,
+  "status": "APPROVED_DIAGNOSTIC_FREEZE",
+  "training_eligible": false
+}

@@ -1,0 +1,86 @@
+{
+  "config_version": "t1-model-runtime-v1",
+  "status": "FROZEN_ROOT_APPROVED",
+  "protocol_fingerprint_sha256": "089fc318d503cff7995ea8fead876c99b97351e334e270c3de17e3d1ee452f50",
+  "freeze_note": "Root approved the diagnostic freeze by exact manifest hash. The model remains NOT_TESTED_USER_DEFERRED; sealed one-shot is not authorized.",
+  "freeze_manifest_path": "D:\\AI\\runs\\shared-ledger\\t1\\freeze-manifest.json",
+  "root_freeze_approval_path": "D:\\AI\\runs\\shared-ledger\\t1\\freeze-review-root.json",
+  "data_freeze": {
+    "manifest_sha256": "f87eae34f7d77632701ed3fcf1090e1e6a5adedcbe5e39342241a44448f0dddf",
+    "root_approval_sha256": "8b5f94329a3c2e7f1c008152ebc440fcb2434c6af32d05da8775307583ae7188",
+    "protocol_fingerprint_sha256": "089fc318d503cff7995ea8fead876c99b97351e334e270c3de17e3d1ee452f50",
+    "bundle_sha256": {
+      "validation": "445be2dbaeea0eefdd0dfdfc4c3517d0d92fac97c6b262b92889c754e7d4bed3",
+      "sealed": "74e78965283856986c417532173772a940279778628612aed170984fe2250e7c"
+    }
+  },
+  "model_prereg_path": "D:\\project\\Android\\shared-ledger-agent\\agent\\docs\\t1\\MODEL_PREREG-T1-v1.json",
+  "model": {
+    "model_key": "t0-cp36-20261007",
+    "artifact_path": "D:\\computer\\LM_Models\\shared-ledger\\t0-cp36-20261007\\qwen3.5-4b-q4_k_m.gguf",
+    "artifact_sha256": "acfd01df6cbd3c8e1fa4dbe144f5852290689851c4f92d4ab892707d08724b34",
+    "artifact_size_bytes": 2708804480,
+    "artifact_sha256_source": "existing T0 index; not rehashed during this preparation",
+    "artifact_lineage_status": "BASE_SNAPSHOT_BINDING_UNCONFIRMED",
+    "quantization": "Q4_K_M",
+    "context_length": 8192,
+    "max_output_tokens": 768,
+    "temperature": 0.0,
+    "reasoning": "off",
+    "parallel": 1,
+    "stream": false,
+    "store": false,
+    "api_mode": "LM Studio native v1 REST only; not OpenAI-compatible endpoint acceptance"
+  },
+  "runtime": {
+    "evaluation_mode": "teacher_forced_stepwise_semantic_diagnostic",
+    "endpoint": "http://127.0.0.1:1234/api/v1/chat",
+    "models_endpoint": "http://127.0.0.1:1234/api/v1/models",
+    "timeout_seconds": 120,
+    "p95_limit_seconds": 60,
+    "repair_attempts": 1,
+    "repair_only_after_parse_failure": true,
+    "repair_feedback": "Return one valid closed semantic decision using only listed references.",
+    "max_concurrency": 1,
+    "results_root": "D:\\AI\\runs\\shared-ledger\\t1\\model_evaluation",
+    "validation_input": "D:\\AI\\runs\\shared-ledger\\t1\\data\\validation.jsonl",
+    "sealed_input": "D:\\AI\\runs\\shared-ledger\\t1\\data\\sealed.jsonl",
+    "validation_output": "D:\\AI\\runs\\shared-ledger\\t1\\model_evaluation\\validation-report.json",
+    "sealed_output": "D:\\AI\\runs\\shared-ledger\\t1\\model_evaluation\\sealed-aggregate.json",
+    "sealed_consumption_ledger": "D:\\AI\\runs\\shared-ledger\\t1\\model_evaluation\\sealed-consumption-ledger.json",
+    "sealed_one_shot_requires_root_approval": true,
+    "sealed_one_shot_authorized": false,
+    "model_management_api_calls": false,
+    "real_backend_calls": false
+  },
+  "resource_thresholds": {
+    "before_load_ram_gib": 12.0,
+    "before_load_vram_mib": 6500,
+    "ready_ram_gib": 8.0,
+    "ready_vram_mib": 1500
+  },
+  "sample_floors": {
+    "diagnostic_state_families_per_operation_per_split": 5,
+    "formal_state_families_per_operation_per_split": 20,
+    "required_splits": ["validation", "sealed"]
+  },
+  "acceptance_thresholds": {
+    "schema_validity_min": 0.95,
+    "operation_choice_exact_min": 0.90,
+    "required_parameters_exact_case_min": 0.90,
+    "typed_reference_binding_exact_min": 0.90,
+    "supported_complete_task_success_min": 0.90,
+    "false_refusal_max": 0.05,
+    "critical_errors_max": 0,
+    "single_concurrency_p95_seconds_max": 60,
+    "timeout_rate_max": 0.05
+  },
+  "status_by_layer": {
+    "p1_closed_parser": "IMPLEMENTED_EXISTING_CONTRACT; PARSER_TESTS_NOT_RUN_BY_T1_PREPARATION",
+    "student_model_plus_teacher_forced_synthetic_trace": "NOT_TESTED_USER_DEFERRED",
+    "closed_loop_model_tool_replay": "NOT_TESTED_STORED_CONTEXTS_AND_RESULTS",
+    "supported_complete_task_success": "NOT_EVALUATED_TEACHER_FORCED_TRACE",
+    "real_backend_agent": "NOT_TESTED_NOT_WIRED",
+    "duplicate_business_effects": "NOT_TESTED_SIMULATED_FIXTURES_ONLY"
+  }
+}

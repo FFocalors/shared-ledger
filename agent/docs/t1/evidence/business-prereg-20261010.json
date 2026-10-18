@@ -1,0 +1,451 @@
+{
+  "evidence_id": "business-prereg-20261010",
+  "captured_at_utc": "2026-10-10T03:40:25Z",
+  "status": "PREREGISTERED_NOT_RUN_RESOURCE",
+  "purpose": "Current-main backend business acceptance preregistration; no Agent live CAP is claimed.",
+  "business_checkout": {
+    "path": "D:\\project\\Android\\shared-ledger",
+    "branch": "main",
+    "head": "3f938ee6114b763e6cd3dbd10792a78c691eb526",
+    "clean": true
+  },
+  "agent_checkout": {
+    "path": "D:\\project\\Android\\shared-ledger-agent",
+    "branch": "agent",
+    "head": "1a80a0f29e1ea432a60b95e7437af23d51182938",
+    "source_aggregate_sha256": "294238ae26508634226b5cc7e732ab9c06aac2574cc96bde9bc979d21fa6fd54",
+    "source_file_count": 107,
+    "expected_dirty_state": "P1 files are untracked/unstaged; this evaluation adds docs only."
+  },
+  "input_scope": {
+    "migration_count": 45,
+    "active_sql_test_count": 32,
+    "active_sql_plan_assertion_sum": 237,
+    "excluded_tests": [
+      "legacy_rpc_fixture_adapters.sql (fixture helper, not standalone)",
+      "phase8_transfer_restore.sql (retired contract)"
+    ],
+    "input_hash_algorithm": "SHA-256 per relative path",
+    "main_inputs": [
+      {
+        "path": "docs/backend/BUSINESS_LOGIC.md",
+        "sha256": "91c5907ccda95c118bd4b4b89a7c7f5b012e73664076cf01efd6de18291b25d9"
+      },
+      {
+        "path": "supabase/config.toml",
+        "sha256": "0e047c59cf56b28ad02b33a9f07c485e8e111880528b6a920e94d36a3332cce0"
+      },
+      {
+        "path": "supabase/migrations/20260830100421_backend_foundation_types.sql",
+        "sha256": "effbf39c0609aa074e78612bf2d7c510cc3a955ca874b43c9bc391d304b3bcf4"
+      },
+      {
+        "path": "supabase/migrations/20260830100423_profiles_and_auth.sql",
+        "sha256": "e5cf0d9230156b150cf1afb92428c0c5043193cc972588d5c80d14a8260fc65e"
+      },
+      {
+        "path": "supabase/migrations/20260830100424_activities_and_members.sql",
+        "sha256": "ab242220864266a058c0203227955b0f2ddf99aff86fb2ef42bc9f99f5ae21fb"
+      },
+      {
+        "path": "supabase/migrations/20260830100426_ledger_units_and_participants.sql",
+        "sha256": "6e64bcc140927653b53b6ed459f4d6caf9151b53378dfde27675a0824db90ad5"
+      },
+      {
+        "path": "supabase/migrations/20260830100429_foundation_rls.sql",
+        "sha256": "2b92e78d3d7b83f5dbb3a360560f4b17898047277a15b348ad2d5c83e61faa49"
+      },
+      {
+        "path": "supabase/migrations/20260830105311_activity_lifecycle_rpc.sql",
+        "sha256": "7fe62353eab45a8a29bda2ff2f18a35eca4156376f03ccea8e07a97be5b7d198"
+      },
+      {
+        "path": "supabase/migrations/20260830115348_expense_core_schema.sql",
+        "sha256": "5f360d3b8e78e28b4da694f49fc2bdb455b5788ee88a36667ae479403e540edc"
+      },
+      {
+        "path": "supabase/migrations/20260830115402_expense_core_rpc.sql",
+        "sha256": "afb83d71404d4b6a9476807eb0bf6eb98f43360767d08e789cdd01db81e04d09"
+      },
+      {
+        "path": "supabase/migrations/20260830115418_expense_core_rls.sql",
+        "sha256": "11d9d3dc363f45cf0a149ae4b3157f6377bd4bb2cfd9c2702d4185592a83535e"
+      },
+      {
+        "path": "supabase/migrations/20260830151327_base_amount_normalization.sql",
+        "sha256": "46f54b6a6e1ec46d227d016b8d93d004777a76b20e16e02b480a96025b34acf6"
+      },
+      {
+        "path": "supabase/migrations/20260830191659_backend_debt_projection.sql",
+        "sha256": "58268ac227b17d5484940189218ee3aa88be8a827b79e432d91d90b35e919959"
+      },
+      {
+        "path": "supabase/migrations/20260831034645_backend_settlement_transfer.sql",
+        "sha256": "891252d21de940979e9a33bc9bd57b67528823022bda0117472a1b8d8d6abf97"
+      },
+      {
+        "path": "supabase/migrations/20260831055425_backend_prepayment.sql",
+        "sha256": "6496a004e6caa032d52634c7e5e80251a3d01ae63d892a3c6ea8d285d5780c0c"
+      },
+      {
+        "path": "supabase/migrations/20260831120000_phase5_fk_indexes.sql",
+        "sha256": "eb61a8c44086f1102767f2ef9fe4bb27879747b4e147e58cebb7d235fe07607c"
+      },
+      {
+        "path": "supabase/migrations/20260831160108_backend_final_settlement_archive.sql",
+        "sha256": "97b0e0a5412a435e6bb976e7163fcecdec77b9a1af21a0f4433cd2d40bba82b1"
+      },
+      {
+        "path": "supabase/migrations/20260901124212_backend_finalization_integration_readiness.sql",
+        "sha256": "6cdb4600575dd03b7e19762e82d2e0b80d73499126b675270df99e58efd367d5"
+      },
+      {
+        "path": "supabase/migrations/20260905151820_expense_deleted_read_restore.sql",
+        "sha256": "0e3d72fc29c10de00d14efb1d6a53048a1290cc5c4ab9aa332b571d6c8913a36"
+      },
+      {
+        "path": "supabase/migrations/20260908063410_transfer_restore_contract.sql",
+        "sha256": "7324c856779a11e16de7edfd379701194bfcc0bb2a60b396ef9a37d774238a46"
+      },
+      {
+        "path": "supabase/migrations/20260908092201_allow_members_create_sub_activity.sql",
+        "sha256": "83935dc51de2bd421cbae951bcf08bf57e92fc9eaf0585edc5b356fe07fc72cb"
+      },
+      {
+        "path": "supabase/migrations/20260910133739_fair_aa_base_allocation.sql",
+        "sha256": "266404746e4457b84bb7460756837c8d61047d7067b31421ff00caf6ed9c3e6f"
+      },
+      {
+        "path": "supabase/migrations/20260913112306_sub_activity_delete_restore.sql",
+        "sha256": "498e170f9723a747fcdf9de0e4f38e4dfd34e37e57f1ef589c2bb9a523f1d373"
+      },
+      {
+        "path": "supabase/migrations/20260913112419_ecb_exchange_rate_expense_snapshots.sql",
+        "sha256": "6f5b11b4c7cb09dfb96ccfc61c2f6965b40255caa7bf33985ae78fefeaa58025"
+      },
+      {
+        "path": "supabase/migrations/20260913120850_schedule_ecb_exchange_rate_sync.sql",
+        "sha256": "3d13c23963d249a32728de4590a2f717545a2dbb08f465ea548d61e6cf5b2316"
+      },
+      {
+        "path": "supabase/migrations/20260913121250_fix_ecb_cron_net_http_post.sql",
+        "sha256": "65094ec31aaf8470513c3ad5d0a7754eaa933a5dd880cdd393a91aedde2d0c0e"
+      },
+      {
+        "path": "supabase/migrations/20260913123459_fix_exchange_rate_cache_update_where.sql",
+        "sha256": "12c03e358b6ef2763d5f636c81817fed9bafadf95c828cbbd05a933d84000f3b"
+      },
+      {
+        "path": "supabase/migrations/20260918054229_profiles_avatar_style_presets.sql",
+        "sha256": "ea84572be10304f9b443113267e31ac64e611bd0cde16089196a2de88b530773"
+      },
+      {
+        "path": "supabase/migrations/20260919094626_expense_icon_keys.sql",
+        "sha256": "6015fd998f9944a9d3413f5e7a32b031ed223a51e5a0e93a5b423f9110b8aaf7"
+      },
+      {
+        "path": "supabase/migrations/20260919164707_multi_currency_settlement.sql",
+        "sha256": "0bbd478a18adbedb645b5e905c07af76433fa42a532642126a4778ebaf1c07e8"
+      },
+      {
+        "path": "supabase/migrations/20260920112458_fix_original_currency_debt_projection.sql",
+        "sha256": "4d79f5548a4dad4d6ae2b7e00baf7ed1a9bb6470b132444dbda03b7027105435"
+      },
+      {
+        "path": "supabase/migrations/20260920120259_fix_multi_currency_allocation_invariants.sql",
+        "sha256": "ea962f18b93e3e36a84fa5817ad3240aff9c7d86c069df7fea3b4918f9d76fe0"
+      },
+      {
+        "path": "supabase/migrations/20260920142845_multi_currency_prepayment_final_settlement_core.sql",
+        "sha256": "2e41d6cdf18acd1de97bf095c3c5255bfdb48ecea634f3902c8acdb8d38cfad0"
+      },
+      {
+        "path": "supabase/migrations/20260920142942_immutable_transfer_delete_restore_contract.sql",
+        "sha256": "8e481330fb27387fba5b399459e0e4eed02871c636ace2aa6273db368451cdaa"
+      },
+      {
+        "path": "supabase/migrations/20260920151825_fix_transfer_source_expenses_indexes.sql",
+        "sha256": "33879e71a100527127733bfe497be97046e589a39da38e417637caaf89bf2fe6"
+      },
+      {
+        "path": "supabase/migrations/20260920152349_fix_prepayment_currency_priority.sql",
+        "sha256": "28483dca957af7f14cb2a3a32ee551401288959ca16ee6b1725b9c634a0f9f1a"
+      },
+      {
+        "path": "supabase/migrations/20260921022101_allow_members_create_prepayment.sql",
+        "sha256": "dbe15e28717e5c625e2919e241a1a3fab52aa56a3f56eba79cfed38259cd6c53"
+      },
+      {
+        "path": "supabase/migrations/20260921043414_expense_financial_lock_presentation_update.sql",
+        "sha256": "eb738fc9e5ee6e09239d7991cd16b76050ec9d47768878ff5d973d9667b3a563"
+      },
+      {
+        "path": "supabase/migrations/20260921051720_targeted_expense_repayment_contract.sql",
+        "sha256": "d7d198ce22395e512d4049a92c3af22f728914d8da8b36e52f509a404be4be34"
+      },
+      {
+        "path": "supabase/migrations/20260922031227_fix_final_settlement_transfer_mode.sql",
+        "sha256": "df2c2b4855bb10549c85dd074c1a0ac1529a6e8316a534b498e1959574773ff9"
+      },
+      {
+        "path": "supabase/migrations/20260922072033_final_settlement_member_actor_gate.sql",
+        "sha256": "7df8287e5c69bd576c03952da6c9c66a181ee6c807d38208c5f57fc8716b2475"
+      },
+      {
+        "path": "supabase/migrations/20260923022250_business_logic_finalization.sql",
+        "sha256": "4e000b18ec5a66e09a77838b26b854d21c731e4b72a712f2bb160fd314c20b28"
+      },
+      {
+        "path": "supabase/migrations/20260923032928_refund_limits_and_legacy_rpc_permissions.sql",
+        "sha256": "db76ecfaeb258e0398d36e8779cb89d21e1f1c289c302e114cd7701ce6a9f7af"
+      },
+      {
+        "path": "supabase/migrations/20260924020249_fix_aa_original_currency_debt_preservation.sql",
+        "sha256": "5cb53e9da9b30fb9cbc3596d445f127a6ade13f087a4f500dff549055920e038"
+      },
+      {
+        "path": "supabase/migrations/20260925133211_fix_negative_expense_base_debt_allocation.sql",
+        "sha256": "d6a153948c005ec5e9d1c50767103d6864c7d1dc2b36010b6219312c4b62a5d6"
+      },
+      {
+        "path": "supabase/migrations/20261006025641_normal_activity_prepayment_restrictions.sql",
+        "sha256": "1637bf05fbdb358246d6f82d9ff63fcd6687eeeaade8a0b9b9aefa2ea5338967"
+      },
+      {
+        "path": "supabase/migrations/20261006142507_sub_activity_participant_scopes.sql",
+        "sha256": "77f11f989a044abae93d29b921c878c2fb1357e18fd506769ba629351bc877ed"
+      },
+      {
+        "path": "supabase/seed.sql",
+        "sha256": "04ff09fad50d8d0c479a9d73c9ef82545e0311b8db6179825b7d92ccdb081c12"
+      },
+      {
+        "path": "supabase/tests/database/aa_original_currency_debt_contract.sql",
+        "sha256": "28a2d827f681c29675bf82ae031f2d1ced4ebe72f4afe66b8d73e14553b8d2b7"
+      },
+      {
+        "path": "supabase/tests/database/critical_financial_concurrency.sql",
+        "sha256": "94f5e6125eee6798a041468065c15eb2df4a788e12d2c6e8d46c593bce3c9b39"
+      },
+      {
+        "path": "supabase/tests/database/critical_financial_ordering.sql",
+        "sha256": "0ce93250c6a1ca3fc92f9dc4b74a9c44e6555e9efd680b761bad1748cb36e864"
+      },
+      {
+        "path": "supabase/tests/database/exchange_rate_expense_snapshots.sql",
+        "sha256": "330db4a692192223aa49f7ac6f4e955df4f827278b0a8dcbf1e40ab6618af5cb"
+      },
+      {
+        "path": "supabase/tests/database/fix_original_currency_debt_projection.sql",
+        "sha256": "5bfcfe18c3f2b982a46f9f7d5ffcc47ba518a0e1e4f8d2f2d5eb1c9e1310491f"
+      },
+      {
+        "path": "supabase/tests/database/idempotency_request_replay_contract.sql",
+        "sha256": "4e6da5715f10f7e4fedcfd40b4c051b4f3603083f6d98d78422ccbbd62f84676"
+      },
+      {
+        "path": "supabase/tests/database/Invoke-IsolatedDatabaseTests.ps1",
+        "sha256": "b493fd0b7995f786a14d11bfcbbd23edd9706eea1a82b54254a03238f334d7be"
+      },
+      {
+        "path": "supabase/tests/database/linked_refund_contract.sql",
+        "sha256": "203dbc6c7ade8c2ab2825d5f4dfb08d50a6d9f0e0b0bcecd670e34de62b2c528"
+      },
+      {
+        "path": "supabase/tests/database/mass500_micro_aa_debt_allocation.sql",
+        "sha256": "bf3c2dd979cf6c71f05720ef2f580ef4e9fbff64b299ca3b58b2fe719d9fb46c"
+      },
+      {
+        "path": "supabase/tests/database/normal_prepayment_restrictions.sql",
+        "sha256": "11a72da3e7500246302603041809c0639810f333a81ea5f0b0d657f7b1f69899"
+      },
+      {
+        "path": "supabase/tests/database/phase10_sub_activity_delete_restore.sql",
+        "sha256": "1efa2e819cbd58778cff86c5899f2005a67f51969953123c248dd670089101d8"
+      },
+      {
+        "path": "supabase/tests/database/phase11_multi_currency_settlement.sql",
+        "sha256": "20415060c0ca7f060d0f91f06223ef91127af33045ffe71b8949f790ddd2a181"
+      },
+      {
+        "path": "supabase/tests/database/phase12_multi_currency_allocation_invariants.sql",
+        "sha256": "fc091b1f9e6c767774f33092b86c8599104927bf99342916d0226c637a2d37ce"
+      },
+      {
+        "path": "supabase/tests/database/phase2c_base_amount_normalization.sql",
+        "sha256": "61a04a8c95405dab561dc4e5e6a1556f2c901059b0de609b768968a599d2c403"
+      },
+      {
+        "path": "supabase/tests/database/phase3_debt_projection_concurrency.sql",
+        "sha256": "84c128180ddbb900cb0f11a5baf7851437c877f6029d92f14d35a765816d04af"
+      },
+      {
+        "path": "supabase/tests/database/phase3_debt_projection.sql",
+        "sha256": "3c1f0aa9eab571db316c4c3691f5ff94abc6ecca72b61748d7e3d68ce0afd5ab"
+      },
+      {
+        "path": "supabase/tests/database/phase3_deleted_expense_read_restore.sql",
+        "sha256": "6c1e22561865b6e8b4ca685f683da5bd64ad533bf97821734cba483f53fac9f9"
+      },
+      {
+        "path": "supabase/tests/database/phase4_settlement_transfer_concurrency.sql",
+        "sha256": "e4862fa20ef768e9faf8dcaf901ced3339d96c808dff1148dadeccd0ffa6cb98"
+      },
+      {
+        "path": "supabase/tests/database/phase4_settlement_transfer.sql",
+        "sha256": "032c52aa9ae7f80aecbc0b64881879c67cd61bea0f60c9f961cd37055e3fa92e"
+      },
+      {
+        "path": "supabase/tests/database/phase5_prepayment_concurrency.sql",
+        "sha256": "370ca3f9500c1c42eb3694a76acaf73395dd19394bf744c6b64ca8a0f0f59db0"
+      },
+      {
+        "path": "supabase/tests/database/phase5_prepayment_extended.sql",
+        "sha256": "6abc84bc2ea0df6001a6b09c8575277e7a5af38fb30d57fbdaf59d1fcfdd929a"
+      },
+      {
+        "path": "supabase/tests/database/phase5_prepayment.sql",
+        "sha256": "7b879b269556b7aac4242c2433b735ecca42f94cbdda1c1b6fd7e455ddee1b3e"
+      },
+      {
+        "path": "supabase/tests/database/phase6_final_settlement_concurrency.sql",
+        "sha256": "483a5fd5615b7dc159fb3e32f7179e9aa45d01a447f3ad7dcde0f891acc7a346"
+      },
+      {
+        "path": "supabase/tests/database/phase6_final_settlement.sql",
+        "sha256": "1fb97fc3b7e14847b2982cf96389ebc7a67fbc9da382d3d6a4343dd1a15a446f"
+      },
+      {
+        "path": "supabase/tests/database/phase7_finalization_concurrency.sql",
+        "sha256": "07422e905025955c3778d2806197c8eee882f3641ab62205c7db5863aa3caebe"
+      },
+      {
+        "path": "supabase/tests/database/phase7_finalization.sql",
+        "sha256": "d1e82cf886e27d54ea9253967dd668aa57ca09f98aed122946f0ac272bc2d929"
+      },
+      {
+        "path": "supabase/tests/database/phase9_fair_aa_final_settlement.sql",
+        "sha256": "50531092006c9b1f76700a8e4d7aef280f1909371f7e1497b546a6d914de0586"
+      },
+      {
+        "path": "supabase/tests/database/rpc_client_contract.sql",
+        "sha256": "71295e713e3d7bfe8b14135123a27a12140749bd502ad366f1cac264a04e519f"
+      },
+      {
+        "path": "supabase/tests/database/sub_activity_participant_scopes.sql",
+        "sha256": "22581e8e6fadf67c87893a0e5063c526b0c171a3f3ea8d0513f0f191861c4214"
+      },
+      {
+        "path": "supabase/tests/database/targeted_expense_repayment_multicurrency.sql",
+        "sha256": "f54c105fb0bfcc5487f567f2d851824e22a6c592647fc579b5727cf0ddfdd24a"
+      },
+      {
+        "path": "supabase/tests/database/targeted_expense_repayment.sql",
+        "sha256": "f583b9629814bc635bb5892f798032f2a5992c35f3925606fd2c0bffc64cebf2"
+      },
+      {
+        "path": "supabase/tests/database/TEST_STATUS.md",
+        "sha256": "a9eab2b0e9fc3451c0fa743ff2668b51abee8c0a93fd8b7759be9533c06f323d"
+      },
+      {
+        "path": "supabase/tests/database/transfer_restore_contract.sql",
+        "sha256": "46f984df176f8851233e939e5e93822a6a1804d810a0d43c73e0741268254f1b"
+      },
+      {
+        "path": "supabase/tests/database/u03_historical_foreign_currency.sql",
+        "sha256": "5531b0dfec0718f03770d47f0d376ffa04e605dcd9aabb12f3d3a263ab8d20bc"
+      }
+    ],
+    "agent_review_inputs": [
+      {
+        "path": "agent/app/api.py",
+        "sha256": "d31fea0b3093f876503168c076b3abad52f2f3cca27af726766027803ed10635"
+      },
+      {
+        "path": "agent/app/backend.py",
+        "sha256": "0d76021508a3b976b3755e3b94712e66d9da7c0742a717ca6946522a2e06abde"
+      },
+      {
+        "path": "agent/app/components.py",
+        "sha256": "e89af3921f85f930c0b9d56a17b87cf354e1ebdcac292f68dcb0111819bb8e3f"
+      },
+      {
+        "path": "agent/app/gateway.py",
+        "sha256": "903e441b9220df5df0558f9ef06802a7ebda260d3d634a742c2713e6c02a28c3"
+      },
+      {
+        "path": "agent/app/harness.py",
+        "sha256": "e334275b89f9a29a4f3d4b88db56c734bf6bbee80e5e5a933ce12d763cd6e2f3"
+      },
+      {
+        "path": "agent/app/model_provider.py",
+        "sha256": "7c29229b6508796297439594e82e097d6e89912685cd862adf6b105a6505c042"
+      },
+      {
+        "path": "agent/app/ports.py",
+        "sha256": "c71a78fd4e42be21f1654b174e5764720c8ee5b4f1f3dab051293c57107496ac"
+      },
+      {
+        "path": "agent/app/runtime.py",
+        "sha256": "dc370cf61e8c91f950da3a414f95bd638ee54869936ad9e542f1a594d920dc1d"
+      },
+      {
+        "path": "agent/contracts/v1.0.0/capability-registry.json",
+        "sha256": "e444a702326923899704cdf1c8dc5ae13b05f140fe127ee1e855eb65a1fb03e8"
+      },
+      {
+        "path": "agent/docs/p0/capability-map.md",
+        "sha256": "99b1cc7ef6c5344c406c072845a278576f2c1c69144719441b3cf2872b7193ea"
+      },
+      {
+        "path": "agent/docs/p1/FINAL_REVIEW.md",
+        "sha256": "24f13850138523796ca57966c02c02f7b418fa713800e5009e4aa5d38f3a06bc"
+      },
+      {
+        "path": "agent/docs/p1/FINAL_REVIEW_SUMMARY.json",
+        "sha256": "16ad97c62e60663ea15520ae7f771735d5d646cd0ca3ca1baa5f4b498972af67"
+      }
+    ],
+    "external_inputs": [
+      {
+        "path": "agent/docs/shared-ledger-agent-development-guide-v0.4.html",
+        "sha256": "dd43f57450aa13153bea9ceb8eaa38ef7b51d3f46e38777470f61d4f9c7a14c8"
+      }
+    ]
+  },
+  "prior_status_conflict": "Existing agent/docs/dev-status.md reports a historical isolated 32-file/237-assertion PASS (old run at D:\\computer\\Hermes\\temp\\shared-ledger-dbtests-04074edf63); current main supabase/tests/database/TEST_STATUS.md is stale at 30/223. Both are historical records. This preregistration pins current main inputs and does not claim a fresh rerun.",
+  "environment": {
+    "supabase_cli": "2.116.0",
+    "docker": "Docker version 29.8.2, build 7fc2dff",
+    "powershell": "7.6.6",
+    "resource_preflight_source": "Root coordinator reading dated 2026-10-10: free RAM 1.82 GiB; free GPU VRAM 189 MiB; heavy DB run paused; not remeasured by this subagent."
+  },
+  "execution": {
+    "planned_status": "NOT_RUN_RESOURCE",
+    "reason": "Root coordinator explicitly paused the heavy database run while free RAM/GPU are below the available resource floor.",
+    "proposed_test": "full current-main active isolated database suite: 32 SQL files / 237 declared pgTAP assertions",
+    "run_root": "D:\\AI\\runs\\shared-ledger\\t1\\business-20261010",
+    "temp_root": "D:\\AI\\runs\\shared-ledger\\t1\\business-20261010\\temp",
+    "runner": "D:\\project\\Android\\shared-ledger\\supabase\\tests\\database\\Invoke-IsolatedDatabaseTests.ps1",
+    "project_naming": "runner generates a fresh random sl-dbtest-<10hex> project_id and shared-ledger-dbtests-<10hex> workdir from process TEMP; never reuse existing shared-ledger project",
+    "replay_command": "$ErrorActionPreference = 'Stop'\r\n$mainRoot = 'D:\\project\\Android\\shared-ledger'\r\n$agentRoot = 'D:\\project\\Android\\shared-ledger-agent'\r\n$taskRoot = 'D:\\AI\\runs\\shared-ledger\\t1\\business-20261010'\r\n$tempRoot = Join-Path $taskRoot 'temp'\r\nNew-Item -ItemType Directory -Path $taskRoot,$tempRoot -Force | Out-Null\r\n$env:TEMP = $tempRoot; $env:TMP = $tempRoot\r\n$baseline = Get-Content (Join-Path $agentRoot 'agent\\docs\\t1\\evidence\\business-prereg-20261010.json') -Raw | ConvertFrom-Json\r\nif ((git -C $mainRoot rev-parse HEAD).Trim() -ne $baseline.business_checkout.head) { throw 'main HEAD changed; re-preregister' }\r\nif (@(git -C $mainRoot status --porcelain).Count -ne 0) { throw 'main is dirty; re-preregister' }\r\nforeach ($file in $baseline.input_scope.main_inputs) { $path = Join-Path $mainRoot ($file.path.Replace('/','\\')); if ((Get-FileHash -Algorithm SHA256 -LiteralPath $path).Hash.ToLower() -ne $file.sha256) { throw ('Input changed: ' + $file.path) } }\r\ndocker ps -a --no-trunc --format '{{.ID}}|{{.Names}}|{{.Image}}|{{.Status}}' | Set-Content -LiteralPath (Join-Path $taskRoot 'docker-containers-before.txt')\r\ndocker volume ls --format '{{.Name}}' | Set-Content -LiteralPath (Join-Path $taskRoot 'docker-volumes-before.txt')\r\n& (Join-Path $mainRoot 'supabase\\tests\\database\\Invoke-IsolatedDatabaseTests.ps1') -KeepStack *>&1 | Tee-Object -FilePath (Join-Path $taskRoot 'database-acceptance.log')\r\n$testExit = $LASTEXITCODE\r\nif ($testExit -ne 0) { throw ('isolated DB suite failed: ' + $testExit) }\r\nWrite-Output 'Record the exact retained project_id and workdir printed by the runner; compare post-run Docker state; stop only that exact workdir with supabase stop --workdir <printed-workdir> --no-backup. Never use --all.'",
+    "cleanup": "Runner -KeepStack prints unique project id/workdir; record both and then stop only that exact workdir with supabase stop --workdir <printed-workdir> --no-backup. Compare Docker containers and volumes against before-snapshot. Do not run supabase stop --all. Keep log and snapshots under D:\\AI\\runs\\shared-ledger\\t1\\business-20261010."
+  },
+  "interrupted_attempt": {
+    "project_id": "sl-dbtest-869fb4ec5d",
+    "workdir": "D:\\computer\\Hermes\\temp\\shared-ledger-dbtests-869fb4ec5d",
+    "phase": "started isolated stack; interrupted during migration/seeding before SQL tests",
+    "test_count": 0,
+    "status": "ATTEMPTED_ABORTED_NOT_A_TEST_RESULT",
+    "stopped_with": "supabase stop --workdir <exact-workdir> --no-backup",
+    "container_and_volume_inventory": "post-stop read-only checks found no matching test containers or volumes",
+    "remaining_temp": "source-copy folder remains because recursive cleanup was denied by shell safety; do not retry via another shell."
+  },
+  "official_supabase_refs": [
+    "https://supabase.com/docs/guides/local-development/cli-workflows",
+    "https://supabase.com/docs/guides/database/testing",
+    "https://supabase.com/docs/reference/cli/supabase-test-db",
+    "https://supabase.com/changelog?types=breaking-change"
+  ],
+  "note": "All hashes are preregistration inputs only. If any main HEAD/status/input hash differs before execution, discard this preregistration and regenerate. The local DB run is still pending and no cloud-linked operation is authorized."
+}

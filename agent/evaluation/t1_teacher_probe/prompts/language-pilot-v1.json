@@ -1,0 +1,36 @@
+{
+  "version": "t1-teacher-language-pilot-v1",
+  "messages": [
+    {
+      "role": "system",
+      "content": "为三个合成场景写简短的中文助手候选回复，只用于离线语言试点。不得调用工具、执行或声称已完成任何操作，不得输出工具结果、隐藏推理或账本事实。只返回一个 JSON 对象，顶层唯一键为 cases；每项唯一键为 case_id、disposition、reply。disposition 必须按场景选择规定值；reply 不超过 80 个汉字。不得增加或删除场景。"
+    },
+    {
+      "role": "user",
+      "content": "合成场景和规则：\n1) case_id=ordinary-prepayment：活动类型为普通 Activity。用户请求先存 500 元供之后消费抵扣。普通 Activity 不支持预存、使用预存或返还；必须拒绝，不得改写为普通支出或结算。disposition 必须是 reject_unsupported。\n2) case_id=explicit-expense-create：用户明确要求新增一笔总额 90 元的晚餐支出；A、B 各付款 45 元；参与人 A、B、C 等额分摊。意图明确，可以给出写入前摘要；保留 expense.create 意图、多付款人与 equal split，不计算或改写金额。不得声称已保存。disposition 必须是 stage_expense_create。\n3) case_id=locked-presentation-only：既有支出的财务字段已锁定；用户只要求把备注改为“晚餐”。仅展示信息修改可以准备，金额、付款人和分摊保持锁定。不得声称已保存。disposition 必须是 presentation_only。\n\n返回形状示例（reply 内容应是你的候选文案）：{\"cases\":[{\"case_id\":\"ordinary-prepayment\",\"disposition\":\"reject_unsupported\",\"reply\":\"...\"},{\"case_id\":\"explicit-expense-create\",\"disposition\":\"stage_expense_create\",\"reply\":\"...\"},{\"case_id\":\"locked-presentation-only\",\"disposition\":\"presentation_only\",\"reply\":\"...\"}]}"
+    }
+  ],
+  "expected_cases": [
+    {
+      "case_id": "ordinary-prepayment",
+      "disposition": "reject_unsupported",
+      "must_preserve": ["ordinary Activity", "prepayment refused", "no reinterpretation as expense or settlement"]
+    },
+    {
+      "case_id": "explicit-expense-create",
+      "disposition": "stage_expense_create",
+      "must_preserve": ["expense.create intent", "A and B each pay 45", "A/B/C equal split", "no claim of completed write"]
+    },
+    {
+      "case_id": "locked-presentation-only",
+      "disposition": "presentation_only",
+      "must_preserve": ["memo only", "financial fields remain locked", "no claim of completed write"]
+    }
+  ],
+  "output_limits": {
+    "cases": 3,
+    "reply_max_han_chars": 80,
+    "must_not_call_tools": true,
+    "must_not_claim_write_completed": true
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "api_version": "1.0.0",
+  "capabilities": [
+    {
+      "capability_id": "CAP01",
+      "execution_enabled": false,
+      "inherited_availability": "mock_read_only",
+      "operations": [
+        "read.activities",
+        "read.expenses",
+        "read.debts"
+      ],
+      "targeted_by_protocol": true
+    },
+    {
+      "capability_id": "CAP02",
+      "execution_enabled": false,
+      "inherited_availability": "unavailable",
+      "operations": [],
+      "targeted_by_protocol": true
+    },
+    {
+      "capability_id": "CAP03",
+      "execution_enabled": false,
+      "inherited_availability": "unavailable",
+      "operations": [],
+      "targeted_by_protocol": true
+    },
+    {
+      "capability_id": "CAP04",
+      "execution_enabled": false,
+      "inherited_availability": "unavailable",
+      "operations": [],
+      "targeted_by_protocol": true
+    },
+    {
+      "capability_id": "CAP05",
+      "execution_enabled": false,
+      "inherited_availability": "unavailable",
+      "operations": [],
+      "targeted_by_protocol": true
+    },
+    {
+      "capability_id": "CAP06",
+      "execution_enabled": false,
+      "inherited_availability": "unavailable",
+      "operations": [],
+      "targeted_by_protocol": true
+    },
+    {
+      "capability_id": "CAP07",
+      "execution_enabled": false,
+      "inherited_availability": "mock_proposal_only",
+      "operations": [
+        "expense.create"
+      ],
+      "targeted_by_protocol": true
+    },
+    {
+      "capability_id": "CAP08",
+      "execution_enabled": false,
+      "inherited_availability": "mock_proposal_only",
+      "operations": [
+        "expense.update",
+        "expense.presentation.update"
+      ],
+      "targeted_by_protocol": true
+    },
+    {
+      "capability_id": "CAP09",
+      "execution_enabled": false,
+      "inherited_availability": "unavailable",
+      "operations": [],
+      "targeted_by_protocol": true
+    },
+    {
+      "capability_id": "CAP10",
+      "execution_enabled": false,
+      "inherited_availability": "unavailable",
+      "operations": [],
+      "targeted_by_protocol": true
+    },
+    {
+      "capability_id": "CAP11",
+      "execution_enabled": false,
+      "inherited_availability": "unavailable",
+      "operations": [],
+      "targeted_by_protocol": true
+    },
+    {
+      "capability_id": "CAP12",
+      "execution_enabled": false,
+      "inherited_availability": "unavailable",
+      "operations": [],
+      "targeted_by_protocol": true
+    },
+    {
+      "capability_id": "CAP13",
+      "execution_enabled": false,
+      "inherited_availability": "unavailable",
+      "operations": [],
+      "targeted_by_protocol": true
+    },
+    {
+      "capability_id": "CAP14",
+      "execution_enabled": false,
+      "inherited_availability": "unavailable",
+      "operations": [],
+      "targeted_by_protocol": true
+    },
+    {
+      "capability_id": "CAP15",
+      "execution_enabled": false,
+      "inherited_availability": "unavailable",
+      "operations": [],
+      "targeted_by_protocol": true
+    },
+    {
+      "capability_id": "CAP16",
+      "execution_enabled": false,
+      "inherited_availability": "unavailable",
+      "operations": [],
+      "targeted_by_protocol": true
+    },
+    {
+      "capability_id": "CAP17",
+      "execution_enabled": false,
+      "inherited_availability": "unavailable",
+      "operations": [],
+      "targeted_by_protocol": true
+    }
+  ],
+  "execution_key_version": "1",
+  "operations": [
+    {
+      "category": "read",
+      "executable": false,
+      "external_write_enabled": false,
+      "operation": "read.activities",
+      "required_capability": "CAP01"
+    },
+    {
+      "category": "read",
+      "executable": false,
+      "external_write_enabled": false,
+      "operation": "read.expenses",
+      "required_capability": "CAP01"
+    },
+    {
+      "category": "read",
+      "executable": false,
+      "external_write_enabled": false,
+      "operation": "read.debts",
+      "required_capability": "CAP01"
+    },
+    {
+      "category": "proposal",
+      "executable": false,
+      "external_write_enabled": false,
+      "operation": "expense.create",
+      "required_capability": "CAP07"
+    },
+    {
+      "category": "proposal",
+      "executable": false,
+      "external_write_enabled": false,
+      "operation": "expense.update",
+      "required_capability": "CAP08"
+    },
+    {
+      "category": "proposal",
+      "executable": false,
+      "external_write_enabled": false,
+      "operation": "expense.presentation.update",
+      "required_capability": "CAP08"
+    }
+  ],
+  "operations_version": "1.1.0",
+  "semantic_version": "1.1.0",
+  "trajectory_version": "1.1.0"
+}

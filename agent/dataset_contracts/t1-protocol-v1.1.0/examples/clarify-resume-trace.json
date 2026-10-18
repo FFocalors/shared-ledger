@@ -1,0 +1,676 @@
+{
+  "format": "t1-offline-causal-trace-v1.1.0",
+  "model_contexts": [
+    {
+      "available_permissions": [
+        "read.expenses",
+        "propose.expense.create"
+      ],
+      "bound_references": [
+        {
+          "kind": "activity",
+          "ref": "activity_1"
+        },
+        {
+          "kind": "ledger_unit",
+          "ref": "ledger_unit_1"
+        },
+        {
+          "kind": "participant",
+          "ref": "participant_1"
+        },
+        {
+          "kind": "participant",
+          "ref": "participant_2"
+        }
+      ],
+      "context_version": 1,
+      "input_text": "Add Lunch to Dinner, paid by Alice, and split equally with Alice and Jo.",
+      "intent_classification": "business",
+      "pending_slots": [],
+      "policy_evidence": [],
+      "query_observations": [],
+      "read_results": [],
+      "recent_messages": [],
+      "verified_scope": {
+        "activity_ref": "activity_1",
+        "kind": "activity",
+        "permissions": [
+          "read.expenses",
+          "propose.expense.create"
+        ]
+      }
+    },
+    {
+      "available_permissions": [
+        "read.expenses",
+        "propose.expense.create"
+      ],
+      "bound_references": [
+        {
+          "kind": "activity",
+          "ref": "activity_1"
+        },
+        {
+          "kind": "ledger_unit",
+          "ref": "ledger_unit_1"
+        },
+        {
+          "kind": "participant",
+          "ref": "participant_1"
+        },
+        {
+          "kind": "participant",
+          "ref": "participant_2"
+        }
+      ],
+      "context_version": 1,
+      "input_text": "Add Lunch to Dinner, paid by Alice, and split equally with Alice and Jo.",
+      "intent_classification": "business",
+      "pending_slots": [],
+      "policy_evidence": [],
+      "query_observations": [
+        {
+          "backend_criteria": {
+            "kind": "expenses",
+            "scope_ref": "activity_1"
+          },
+          "body_digest": "684520ccfdf3133e5214c5af814b9bde0834ebc5f6131abbebbb96cfa4394a17",
+          "context_version": 1,
+          "criteria": {
+            "activity_ref": "activity_1",
+            "from_date": null,
+            "kind": "expenses",
+            "participant_ref": null,
+            "title_contains": null,
+            "to_date": null
+          },
+          "matched_count": 0,
+          "matching_fact_citations": [],
+          "normalized_criteria": "{\"criteria\":{\"activity_ref\":\"activity_1\",\"kind\":\"expenses\"},\"operation\":\"read.expenses\"}",
+          "observed_at": "2026-10-12T10:00:00Z",
+          "operation": "read.expenses",
+          "page": {
+            "complete": true,
+            "expected_total": 0,
+            "has_more": false,
+            "pages_seen": 1,
+            "range_contiguous": true,
+            "source_version_fenced": true,
+            "stable_total_verified": true,
+            "truncated": false,
+            "unique_items_verified": true
+          },
+          "post_filter": {
+            "from_date": null,
+            "kind": "expenses",
+            "participant_ref": null,
+            "title_contains": null,
+            "to_date": null
+          },
+          "query_digest": "80afb1d046ff7ad9ca9a85d0c592457d4788b922bcbff7d2acd23d5bbb41dc62",
+          "query_ref": "query_1",
+          "result_ref": "read_result_1",
+          "returned_count": 0,
+          "schema_version": "1.1.0",
+          "simulation": true,
+          "source": "synthetic_simulation",
+          "source_version": "synthetic-resume-source-v1"
+        }
+      ],
+      "read_results": [
+        {
+          "body": {
+            "items": [],
+            "kind": "expenses"
+          },
+          "context_version": 1,
+          "observed_at": "2026-10-12T10:00:00Z",
+          "operation": "read.expenses",
+          "result_ref": "read_result_1",
+          "simulation": true
+        }
+      ],
+      "recent_messages": [],
+      "verified_scope": {
+        "activity_ref": "activity_1",
+        "kind": "activity",
+        "permissions": [
+          "read.expenses",
+          "propose.expense.create"
+        ]
+      }
+    },
+    {
+      "available_permissions": [
+        "read.expenses",
+        "propose.expense.create"
+      ],
+      "bound_references": [
+        {
+          "kind": "activity",
+          "ref": "activity_1"
+        },
+        {
+          "kind": "ledger_unit",
+          "ref": "ledger_unit_1"
+        },
+        {
+          "kind": "participant",
+          "ref": "participant_1"
+        },
+        {
+          "kind": "participant",
+          "ref": "participant_2"
+        }
+      ],
+      "context_version": 1,
+      "input_text": "50 USD.",
+      "intent_classification": "business",
+      "pending_slots": [],
+      "policy_evidence": [],
+      "query_observations": [
+        {
+          "backend_criteria": {
+            "kind": "expenses",
+            "scope_ref": "activity_1"
+          },
+          "body_digest": "684520ccfdf3133e5214c5af814b9bde0834ebc5f6131abbebbb96cfa4394a17",
+          "context_version": 1,
+          "criteria": {
+            "activity_ref": "activity_1",
+            "from_date": null,
+            "kind": "expenses",
+            "participant_ref": null,
+            "title_contains": null,
+            "to_date": null
+          },
+          "matched_count": 0,
+          "matching_fact_citations": [],
+          "normalized_criteria": "{\"criteria\":{\"activity_ref\":\"activity_1\",\"kind\":\"expenses\"},\"operation\":\"read.expenses\"}",
+          "observed_at": "2026-10-12T10:00:00Z",
+          "operation": "read.expenses",
+          "page": {
+            "complete": true,
+            "expected_total": 0,
+            "has_more": false,
+            "pages_seen": 1,
+            "range_contiguous": true,
+            "source_version_fenced": true,
+            "stable_total_verified": true,
+            "truncated": false,
+            "unique_items_verified": true
+          },
+          "post_filter": {
+            "from_date": null,
+            "kind": "expenses",
+            "participant_ref": null,
+            "title_contains": null,
+            "to_date": null
+          },
+          "query_digest": "80afb1d046ff7ad9ca9a85d0c592457d4788b922bcbff7d2acd23d5bbb41dc62",
+          "query_ref": "query_1",
+          "result_ref": "read_result_1",
+          "returned_count": 0,
+          "schema_version": "1.1.0",
+          "simulation": true,
+          "source": "synthetic_simulation",
+          "source_version": "synthetic-resume-source-v1"
+        }
+      ],
+      "read_results": [
+        {
+          "body": {
+            "items": [],
+            "kind": "expenses"
+          },
+          "context_version": 1,
+          "observed_at": "2026-10-12T10:00:00Z",
+          "operation": "read.expenses",
+          "result_ref": "read_result_1",
+          "simulation": true
+        }
+      ],
+      "recent_messages": [
+        {
+          "role": "user",
+          "text": "Add Lunch to Dinner, paid by Alice, and split equally with Alice and Jo."
+        }
+      ],
+      "verified_scope": {
+        "activity_ref": "activity_1",
+        "kind": "activity",
+        "permissions": [
+          "read.expenses",
+          "propose.expense.create"
+        ]
+      }
+    }
+  ],
+  "synthetic_only": true,
+  "trace": {
+    "initial_generation": 1,
+    "original_input_text": "Add Lunch to Dinner, paid by Alice, and split equally with Alice and Jo.",
+    "recent_messages": [],
+    "scenario": "synthetic-resume-preserves-original-fields",
+    "steps": [
+      {
+        "kind": "user_input",
+        "seq": 0,
+        "text": "Add Lunch to Dinner, paid by Alice, and split equally with Alice and Jo."
+      },
+      {
+        "context": {
+          "available_permissions": [
+            "read.expenses",
+            "propose.expense.create"
+          ],
+          "bound_references": [
+            {
+              "kind": "activity",
+              "ref": "activity_1"
+            },
+            {
+              "kind": "ledger_unit",
+              "ref": "ledger_unit_1"
+            },
+            {
+              "kind": "participant",
+              "ref": "participant_1"
+            },
+            {
+              "kind": "participant",
+              "ref": "participant_2"
+            }
+          ],
+          "context_version": 1,
+          "input_text": "Add Lunch to Dinner, paid by Alice, and split equally with Alice and Jo.",
+          "intent_classification": "business",
+          "pending_slots": [],
+          "policy_evidence": [],
+          "query_observations": [],
+          "read_results": [],
+          "recent_messages": [],
+          "verified_scope": {
+            "activity_ref": "activity_1",
+            "kind": "activity",
+            "permissions": [
+              "read.expenses",
+              "propose.expense.create"
+            ]
+          }
+        },
+        "decision": {
+          "criteria": {
+            "activity_ref": "activity_1",
+            "from_date": null,
+            "kind": "expenses",
+            "participant_ref": null,
+            "title_contains": null,
+            "to_date": null
+          },
+          "kind": "read",
+          "operation": "read.expenses"
+        },
+        "kind": "model_decision",
+        "seq": 1
+      },
+      {
+        "kind": "tool_observation",
+        "query": {
+          "backend_criteria": {
+            "kind": "expenses",
+            "scope_ref": "activity_1"
+          },
+          "body_digest": "684520ccfdf3133e5214c5af814b9bde0834ebc5f6131abbebbb96cfa4394a17",
+          "context_version": 1,
+          "criteria": {
+            "activity_ref": "activity_1",
+            "from_date": null,
+            "kind": "expenses",
+            "participant_ref": null,
+            "title_contains": null,
+            "to_date": null
+          },
+          "matched_count": 0,
+          "matching_fact_citations": [],
+          "normalized_criteria": "{\"criteria\":{\"activity_ref\":\"activity_1\",\"kind\":\"expenses\"},\"operation\":\"read.expenses\"}",
+          "observed_at": "2026-10-12T10:00:00Z",
+          "operation": "read.expenses",
+          "page": {
+            "complete": true,
+            "expected_total": 0,
+            "has_more": false,
+            "pages_seen": 1,
+            "range_contiguous": true,
+            "source_version_fenced": true,
+            "stable_total_verified": true,
+            "truncated": false,
+            "unique_items_verified": true
+          },
+          "post_filter": {
+            "from_date": null,
+            "kind": "expenses",
+            "participant_ref": null,
+            "title_contains": null,
+            "to_date": null
+          },
+          "query_digest": "80afb1d046ff7ad9ca9a85d0c592457d4788b922bcbff7d2acd23d5bbb41dc62",
+          "query_ref": "query_1",
+          "result_ref": "read_result_1",
+          "returned_count": 0,
+          "schema_version": "1.1.0",
+          "simulation": true,
+          "source": "synthetic_simulation",
+          "source_version": "synthetic-resume-source-v1"
+        },
+        "result": {
+          "body": {
+            "items": [],
+            "kind": "expenses"
+          },
+          "context_version": 1,
+          "observed_at": "2026-10-12T10:00:00Z",
+          "operation": "read.expenses",
+          "result_ref": "read_result_1",
+          "simulation": true
+        },
+        "seq": 2
+      },
+      {
+        "context": {
+          "available_permissions": [
+            "read.expenses",
+            "propose.expense.create"
+          ],
+          "bound_references": [
+            {
+              "kind": "activity",
+              "ref": "activity_1"
+            },
+            {
+              "kind": "ledger_unit",
+              "ref": "ledger_unit_1"
+            },
+            {
+              "kind": "participant",
+              "ref": "participant_1"
+            },
+            {
+              "kind": "participant",
+              "ref": "participant_2"
+            }
+          ],
+          "context_version": 1,
+          "input_text": "Add Lunch to Dinner, paid by Alice, and split equally with Alice and Jo.",
+          "intent_classification": "business",
+          "pending_slots": [],
+          "policy_evidence": [],
+          "query_observations": [
+            {
+              "backend_criteria": {
+                "kind": "expenses",
+                "scope_ref": "activity_1"
+              },
+              "body_digest": "684520ccfdf3133e5214c5af814b9bde0834ebc5f6131abbebbb96cfa4394a17",
+              "context_version": 1,
+              "criteria": {
+                "activity_ref": "activity_1",
+                "from_date": null,
+                "kind": "expenses",
+                "participant_ref": null,
+                "title_contains": null,
+                "to_date": null
+              },
+              "matched_count": 0,
+              "matching_fact_citations": [],
+              "normalized_criteria": "{\"criteria\":{\"activity_ref\":\"activity_1\",\"kind\":\"expenses\"},\"operation\":\"read.expenses\"}",
+              "observed_at": "2026-10-12T10:00:00Z",
+              "operation": "read.expenses",
+              "page": {
+                "complete": true,
+                "expected_total": 0,
+                "has_more": false,
+                "pages_seen": 1,
+                "range_contiguous": true,
+                "source_version_fenced": true,
+                "stable_total_verified": true,
+                "truncated": false,
+                "unique_items_verified": true
+              },
+              "post_filter": {
+                "from_date": null,
+                "kind": "expenses",
+                "participant_ref": null,
+                "title_contains": null,
+                "to_date": null
+              },
+              "query_digest": "80afb1d046ff7ad9ca9a85d0c592457d4788b922bcbff7d2acd23d5bbb41dc62",
+              "query_ref": "query_1",
+              "result_ref": "read_result_1",
+              "returned_count": 0,
+              "schema_version": "1.1.0",
+              "simulation": true,
+              "source": "synthetic_simulation",
+              "source_version": "synthetic-resume-source-v1"
+            }
+          ],
+          "read_results": [
+            {
+              "body": {
+                "items": [],
+                "kind": "expenses"
+              },
+              "context_version": 1,
+              "observed_at": "2026-10-12T10:00:00Z",
+              "operation": "read.expenses",
+              "result_ref": "read_result_1",
+              "simulation": true
+            }
+          ],
+          "recent_messages": [],
+          "verified_scope": {
+            "activity_ref": "activity_1",
+            "kind": "activity",
+            "permissions": [
+              "read.expenses",
+              "propose.expense.create"
+            ]
+          }
+        },
+        "decision": {
+          "kind": "clarify",
+          "missing_slots": [
+            "original_amount",
+            "original_currency"
+          ],
+          "prompt": "What amount and currency should I use?"
+        },
+        "kind": "model_decision",
+        "seq": 3
+      },
+      {
+        "generation": 2,
+        "kind": "user_clarification",
+        "responds_to_seq": 3,
+        "seq": 4,
+        "text": "50 USD."
+      },
+      {
+        "context": {
+          "available_permissions": [
+            "read.expenses",
+            "propose.expense.create"
+          ],
+          "bound_references": [
+            {
+              "kind": "activity",
+              "ref": "activity_1"
+            },
+            {
+              "kind": "ledger_unit",
+              "ref": "ledger_unit_1"
+            },
+            {
+              "kind": "participant",
+              "ref": "participant_1"
+            },
+            {
+              "kind": "participant",
+              "ref": "participant_2"
+            }
+          ],
+          "context_version": 1,
+          "input_text": "50 USD.",
+          "intent_classification": "business",
+          "pending_slots": [],
+          "policy_evidence": [],
+          "query_observations": [
+            {
+              "backend_criteria": {
+                "kind": "expenses",
+                "scope_ref": "activity_1"
+              },
+              "body_digest": "684520ccfdf3133e5214c5af814b9bde0834ebc5f6131abbebbb96cfa4394a17",
+              "context_version": 1,
+              "criteria": {
+                "activity_ref": "activity_1",
+                "from_date": null,
+                "kind": "expenses",
+                "participant_ref": null,
+                "title_contains": null,
+                "to_date": null
+              },
+              "matched_count": 0,
+              "matching_fact_citations": [],
+              "normalized_criteria": "{\"criteria\":{\"activity_ref\":\"activity_1\",\"kind\":\"expenses\"},\"operation\":\"read.expenses\"}",
+              "observed_at": "2026-10-12T10:00:00Z",
+              "operation": "read.expenses",
+              "page": {
+                "complete": true,
+                "expected_total": 0,
+                "has_more": false,
+                "pages_seen": 1,
+                "range_contiguous": true,
+                "source_version_fenced": true,
+                "stable_total_verified": true,
+                "truncated": false,
+                "unique_items_verified": true
+              },
+              "post_filter": {
+                "from_date": null,
+                "kind": "expenses",
+                "participant_ref": null,
+                "title_contains": null,
+                "to_date": null
+              },
+              "query_digest": "80afb1d046ff7ad9ca9a85d0c592457d4788b922bcbff7d2acd23d5bbb41dc62",
+              "query_ref": "query_1",
+              "result_ref": "read_result_1",
+              "returned_count": 0,
+              "schema_version": "1.1.0",
+              "simulation": true,
+              "source": "synthetic_simulation",
+              "source_version": "synthetic-resume-source-v1"
+            }
+          ],
+          "read_results": [
+            {
+              "body": {
+                "items": [],
+                "kind": "expenses"
+              },
+              "context_version": 1,
+              "observed_at": "2026-10-12T10:00:00Z",
+              "operation": "read.expenses",
+              "result_ref": "read_result_1",
+              "simulation": true
+            }
+          ],
+          "recent_messages": [
+            {
+              "role": "user",
+              "text": "Add Lunch to Dinner, paid by Alice, and split equally with Alice and Jo."
+            }
+          ],
+          "verified_scope": {
+            "activity_ref": "activity_1",
+            "kind": "activity",
+            "permissions": [
+              "read.expenses",
+              "propose.expense.create"
+            ]
+          }
+        },
+        "decision": {
+          "fields": {
+            "kind": "expense.create",
+            "ledger_unit_ref": "ledger_unit_1",
+            "note": null,
+            "occurred_at": null,
+            "original_amount": "50.00",
+            "original_currency": "USD",
+            "payment_allocations": [
+              {
+                "amount": "50.00",
+                "participant_ref": "participant_1"
+              }
+            ],
+            "split": {
+              "mode": "equal",
+              "participant_refs": [
+                "participant_1",
+                "participant_2"
+              ]
+            },
+            "title": "Lunch"
+          },
+          "kind": "propose",
+          "operation": "expense.create"
+        },
+        "kind": "model_decision",
+        "seq": 5
+      }
+    ],
+    "synthetic_private_bound_references": [
+      {
+        "entity_id": "f2296f8d-e79a-5a5f-b191-71002a30ea01",
+        "kind": "activity",
+        "ref": "activity_1",
+        "scope_activity_id": "f2296f8d-e79a-5a5f-b191-71002a30ea01",
+        "source_turn_id": "9ae3d8c9-205d-5f73-b104-013c42a55af5"
+      },
+      {
+        "entity_id": "cac4dfeb-4fb5-5864-81d2-ba8a9b977ca8",
+        "kind": "ledger_unit",
+        "ref": "ledger_unit_1",
+        "scope_activity_id": "f2296f8d-e79a-5a5f-b191-71002a30ea01",
+        "source_turn_id": "9ae3d8c9-205d-5f73-b104-013c42a55af5"
+      },
+      {
+        "entity_id": "1b47df32-3c67-5110-a258-45289999b6ea",
+        "kind": "participant",
+        "ref": "participant_1",
+        "scope_activity_id": "f2296f8d-e79a-5a5f-b191-71002a30ea01",
+        "source_turn_id": "9ae3d8c9-205d-5f73-b104-013c42a55af5"
+      },
+      {
+        "entity_id": "7dd27c06-1fdc-5876-9afc-f97c831659e0",
+        "kind": "participant",
+        "ref": "participant_2",
+        "scope_activity_id": "f2296f8d-e79a-5a5f-b191-71002a30ea01",
+        "source_turn_id": "9ae3d8c9-205d-5f73-b104-013c42a55af5"
+      }
+    ],
+    "synthetic_private_turn_id": "9ae3d8c9-205d-5f73-b104-013c42a55af5",
+    "trajectory_version": "1.1.0",
+    "versions": {
+      "api_version": "1.0.0",
+      "execution_key_version": "1",
+      "operations_version": "1.1.0",
+      "semantic_version": "1.1.0",
+      "trajectory_version": "1.1.0"
+    }
+  },
+  "training_eligible": false
+}

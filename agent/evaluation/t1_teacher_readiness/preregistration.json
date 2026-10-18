@@ -1,0 +1,90 @@
+{
+  "configuration": {
+    "api_key_present": true,
+    "credential_value_recorded_or_hashed": false,
+    "model": "deepseek-v4.1-flash",
+    "nonsecret_projection_sha256": "ceceed12367d1c6554222ab15620524747d757a58fcc9bc26dac6e646a3114c8",
+    "provider": "opencode",
+    "route": "https://opencode.ai/zen/go/v1/chat/completions",
+    "temperature": 0.0
+  },
+  "created_utc": "2026-10-10T17:31:01Z",
+  "credential_source": {
+    "loaded_into_memory_only": true,
+    "path": "D:/project/Android/shared-ledger/scripts/ai_teacher_generator/.env",
+    "read_only": true,
+    "secret_value_recorded_or_hashed": false
+  },
+  "evidence_output_directory": "D:\\AI\\runs\\shared-ledger\\t1-teacher-readiness-20261011",
+  "interpretation": {
+    "business_database_used": false,
+    "human_semantic_review_required": true,
+    "student_or_gpu_used": false,
+    "student_quality": "DEFERRED",
+    "success_scope": "three synthetic candidate texts and strict schema only",
+    "teacher_quality_pass": false,
+    "train_validation_sealed_data_read": false,
+    "training_eligible": false
+  },
+  "local_date": "2026-10-11",
+  "local_timezone": "Asia/Shanghai",
+  "output_contract": {
+    "case_count": 3,
+    "case_exact_keys": [
+      "case_id",
+      "task_conclusion",
+      "visible_text"
+    ],
+    "case_ids_and_conclusions": [
+      {
+        "case_id": "ordinary-prepay-denial",
+        "task_conclusion": "reject_unsupported"
+      },
+      {
+        "case_id": "expense-create-conservation",
+        "task_conclusion": "stage_expense_create"
+      },
+      {
+        "case_id": "locked-note-presentation",
+        "task_conclusion": "presentation_only"
+      }
+    ],
+    "no_hidden_reasoning_requested_or_persisted": true,
+    "no_tool_results_or_completed_write_claims": true,
+    "no_tools_or_business_writes": true,
+    "top_level_exact_keys": [
+      "cases"
+    ],
+    "visible_text_character_limit": 80,
+    "visible_text_must_be_nonempty": true
+  },
+  "preregistration_version": "t1-teacher-readiness-preregistration-v1",
+  "prompt_sha256": "59f15ca652dfc05af566190fde9dcd2f19dcf2c9c17b9c0d9ef51b7a689a64a1",
+  "purpose": "one bounded visible-text readiness check using three new synthetic business states",
+  "request_limits": {
+    "automatic_retry": false,
+    "fallback": false,
+    "max_output_tokens": 2048,
+    "max_response_bytes": 256000,
+    "max_total_posts": 1,
+    "timeout_seconds": 60.0
+  },
+  "route_and_identity": {
+    "configured_model": "deepseek-v4.1-flash",
+    "endpoint": "https://opencode.ai/zen/go/v1/chat/completions",
+    "response_request_id": "record the allowlisted envelope id when returned",
+    "session_header": "x-opencode-session",
+    "session_id": "one randomly generated UUID, stable for this single request",
+    "user_agent": "shared-ledger-t1-teacher-readiness/0.1.0"
+  },
+  "source_sha256": {
+    "business_acceptance_t1_read_only": "572d00543448ae61dfb600d88e0175af8da9af9e07ee8fd459dec29d9110593d",
+    "fake_http_tests": "6f88a06333ae2f52e5a22e99bd6a6f7f5dbd8e14e4d4540409a7db0151e2c509",
+    "legacy_provider_config_reader_read_only": "86d803f077becf3604f4fb2a073be552cf9616986682dae94b1084dd858b571b",
+    "prompt": "59f15ca652dfc05af566190fde9dcd2f19dcf2c9c17b9c0d9ef51b7a689a64a1",
+    "runner": "f66bdf94a2f4f65e52f82579e52612834f76ad20dc16652cd704f9f7c74ebad5",
+    "t1_freeze_read_only": "fc3ca21eae1f8fbc10c9180abc4641219b80c9e51705935fb2d09d4a20917c35",
+    "teacher_status_t1_v1_read_only": "d6511cc64429e740607629df698b5439afe4f679fdbb2196a4b67e0583c00952"
+  },
+  "status": "FROZEN_BEFORE_EXTERNAL_REQUEST"
+}

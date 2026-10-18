@@ -1,0 +1,65 @@
+{
+  "fingerprint_version": "t1-protocol-fingerprint-v1",
+  "status": "PRE_DATA_PROTOCOL_FINGERPRINT",
+  "captured_on": "2026-10-10",
+  "agent_checkout": "D:\\project\\Android\\shared-ledger-agent",
+  "agent_head": "1a80a0f29e1ea432a60b95e7437af23d51182938",
+  "agent_branch": "agent",
+  "working_tree_contracts_uncommitted": true,
+  "protocol_versions": {
+    "api": "1.0.0",
+    "semantic": "1.0.0",
+    "operations": "1.0.0",
+    "trajectory": "1.0.0",
+    "execution_key": "1"
+  },
+  "contracts_manifest_path": "agent/contracts/v1.0.0/manifest.json",
+  "contracts_manifest_sha256": "9d2d5938373681ab60ccdeb42a10190dd5b136615bce2026e29c94864a9dbca3",
+  "generated_files_count": 55,
+  "schema_files_count": 47,
+  "mock_trace_files_count": 4,
+  "source_fingerprints": {
+    "app/contracts.py": "4da745eeb218cbd75cff2d30b62b0d895ceb8920c54f463cfa7dce35a1ef5130",
+    "app/export_contracts.py": "46ab93fb37223b08031665e1f3eab5a8602006b7cb91d97e34051994c0186b18",
+    "app/mock_fixtures.py": "f2275b8df771ce65fa3a753d5b7aa0bc58e4d5353473fd2dfb18841a99527dcc",
+    "requirements-contracts.txt": "ea5236e6063198756ba490ff6fbc032edfbe685f22e5e801103c569dd1f17fb4",
+    "toolchain-contracts.json": "2235f7dcf2f1a77d1709538e54077ab2617b1b47f96c85e81dc75d65ec287c2a"
+  },
+  "all_source_fingerprints_match": true,
+  "all_generated_file_hashes_match": true,
+  "capability_registry_sha256": "e444a702326923899704cdf1c8dc5ae13b05f140fe127ee1e855eb65a1fb03e8",
+  "openapi_sha256": "2ae0f297a72cc6ae39c69c92892325faf3718687cde2a061bf64f6ea5f4c021c",
+  "snapshot_check": {
+    "source_files_checked": 5,
+    "generated_files_checked": 55,
+    "source_mismatches": 0,
+    "generated_mismatches": 0
+  },
+  "current_semantic_operation_ids": [
+    "read.activities",
+    "read.expenses",
+    "read.debts",
+    "expense.create",
+    "expense.update",
+    "expense.presentation.update"
+  ],
+  "capability_ids": [
+    "CAP01",
+    "CAP02",
+    "CAP03",
+    "CAP04",
+    "CAP05",
+    "CAP06",
+    "CAP07",
+    "CAP08",
+    "CAP09",
+    "CAP10",
+    "CAP11",
+    "CAP12",
+    "CAP13",
+    "CAP14",
+    "CAP15",
+    "CAP16",
+    "CAP17"
+  ]
+}

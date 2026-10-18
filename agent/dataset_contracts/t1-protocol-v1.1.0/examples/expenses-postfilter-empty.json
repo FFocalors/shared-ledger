@@ -1,0 +1,347 @@
+{
+  "format": "t1-offline-query-example-v1.1.0",
+  "model_context": {
+    "available_permissions": [
+      "read.expenses"
+    ],
+    "bound_references": [
+      {
+        "kind": "activity",
+        "ref": "activity_1"
+      },
+      {
+        "kind": "participant",
+        "ref": "participant_1"
+      },
+      {
+        "kind": "expense",
+        "ref": "expense_1"
+      },
+      {
+        "kind": "expense",
+        "ref": "expense_2"
+      },
+      {
+        "kind": "expense",
+        "ref": "expense_3"
+      },
+      {
+        "kind": "expense",
+        "ref": "expense_4"
+      },
+      {
+        "kind": "expense",
+        "ref": "expense_5"
+      }
+    ],
+    "context_version": 1,
+    "input_text": "Find expenses whose title contains \"rail\".",
+    "intent_classification": "business",
+    "pending_slots": [],
+    "policy_evidence": [],
+    "query_observations": [
+      {
+        "backend_criteria": {
+          "kind": "expenses",
+          "scope_ref": "activity_1"
+        },
+        "body_digest": "4cd50a294a69496e63a5a5e97dc5cbf8a5f1e130ee125f958dcf3c65ba0ace78",
+        "context_version": 1,
+        "criteria": {
+          "activity_ref": "activity_1",
+          "from_date": null,
+          "kind": "expenses",
+          "participant_ref": null,
+          "title_contains": "rail",
+          "to_date": null
+        },
+        "matched_count": 0,
+        "matching_fact_citations": [],
+        "normalized_criteria": "{\"criteria\":{\"activity_ref\":\"activity_1\",\"kind\":\"expenses\",\"title_contains\":\"rail\"},\"operation\":\"read.expenses\"}",
+        "observed_at": "2026-10-10T12:00:00Z",
+        "operation": "read.expenses",
+        "page": {
+          "complete": true,
+          "expected_total": 5,
+          "has_more": false,
+          "pages_seen": 1,
+          "range_contiguous": true,
+          "source_version_fenced": true,
+          "stable_total_verified": true,
+          "truncated": false,
+          "unique_items_verified": true
+        },
+        "post_filter": {
+          "from_date": null,
+          "kind": "expenses",
+          "participant_ref": null,
+          "title_contains": "rail",
+          "to_date": null
+        },
+        "query_digest": "b89eb14faf3675bf4c2a971d3f2a9b4f5031b08b443375fc513808487f83265f",
+        "query_ref": "query_3",
+        "result_ref": "read_result_1",
+        "returned_count": 5,
+        "schema_version": "1.1.0",
+        "simulation": true,
+        "source": "synthetic_simulation",
+        "source_version": "synthetic-source-v1"
+      }
+    ],
+    "read_results": [
+      {
+        "body": {
+          "items": [
+            {
+              "context_version": 1,
+              "evidence_ref": "fact_expense_1",
+              "expense_ref": "expense_1",
+              "expense_version": "1",
+              "financial_locked": true,
+              "kind": "expense",
+              "observed_at": "2026-10-10T12:00:00Z",
+              "occurred_at": "2026-10-10T12:00:00Z",
+              "original_amount": "1.00",
+              "original_currency": "CAD",
+              "participant_refs": [
+                "participant_1"
+              ],
+              "title": "Cafe 1"
+            },
+            {
+              "context_version": 1,
+              "evidence_ref": "fact_expense_2",
+              "expense_ref": "expense_2",
+              "expense_version": "2",
+              "financial_locked": true,
+              "kind": "expense",
+              "observed_at": "2026-10-10T12:00:00Z",
+              "occurred_at": "2026-10-10T12:00:00Z",
+              "original_amount": "2.00",
+              "original_currency": "CAD",
+              "participant_refs": [
+                "participant_1"
+              ],
+              "title": "Cafe 2"
+            },
+            {
+              "context_version": 1,
+              "evidence_ref": "fact_expense_3",
+              "expense_ref": "expense_3",
+              "expense_version": "3",
+              "financial_locked": true,
+              "kind": "expense",
+              "observed_at": "2026-10-10T12:00:00Z",
+              "occurred_at": "2026-10-10T12:00:00Z",
+              "original_amount": "3.00",
+              "original_currency": "CAD",
+              "participant_refs": [
+                "participant_1"
+              ],
+              "title": "Cafe 3"
+            },
+            {
+              "context_version": 1,
+              "evidence_ref": "fact_expense_4",
+              "expense_ref": "expense_4",
+              "expense_version": "4",
+              "financial_locked": true,
+              "kind": "expense",
+              "observed_at": "2026-10-10T12:00:00Z",
+              "occurred_at": "2026-10-10T12:00:00Z",
+              "original_amount": "4.00",
+              "original_currency": "CAD",
+              "participant_refs": [
+                "participant_1"
+              ],
+              "title": "Cafe 4"
+            },
+            {
+              "context_version": 1,
+              "evidence_ref": "fact_expense_5",
+              "expense_ref": "expense_5",
+              "expense_version": "5",
+              "financial_locked": true,
+              "kind": "expense",
+              "observed_at": "2026-10-10T12:00:00Z",
+              "occurred_at": "2026-10-10T12:00:00Z",
+              "original_amount": "5.00",
+              "original_currency": "CAD",
+              "participant_refs": [
+                "participant_1"
+              ],
+              "title": "Cafe 5"
+            }
+          ],
+          "kind": "expenses"
+        },
+        "context_version": 1,
+        "observed_at": "2026-10-10T12:00:00Z",
+        "operation": "read.expenses",
+        "result_ref": "read_result_1",
+        "simulation": true
+      }
+    ],
+    "recent_messages": [],
+    "verified_scope": {
+      "activity_ref": "activity_1",
+      "kind": "activity",
+      "permissions": [
+        "read.expenses"
+      ]
+    }
+  },
+  "query_observations": [
+    {
+      "backend_criteria": {
+        "kind": "expenses",
+        "scope_ref": "activity_1"
+      },
+      "body_digest": "4cd50a294a69496e63a5a5e97dc5cbf8a5f1e130ee125f958dcf3c65ba0ace78",
+      "context_version": 1,
+      "criteria": {
+        "activity_ref": "activity_1",
+        "from_date": null,
+        "kind": "expenses",
+        "participant_ref": null,
+        "title_contains": "rail",
+        "to_date": null
+      },
+      "matched_count": 0,
+      "matching_fact_citations": [],
+      "normalized_criteria": "{\"criteria\":{\"activity_ref\":\"activity_1\",\"kind\":\"expenses\",\"title_contains\":\"rail\"},\"operation\":\"read.expenses\"}",
+      "observed_at": "2026-10-10T12:00:00Z",
+      "operation": "read.expenses",
+      "page": {
+        "complete": true,
+        "expected_total": 5,
+        "has_more": false,
+        "pages_seen": 1,
+        "range_contiguous": true,
+        "source_version_fenced": true,
+        "stable_total_verified": true,
+        "truncated": false,
+        "unique_items_verified": true
+      },
+      "post_filter": {
+        "from_date": null,
+        "kind": "expenses",
+        "participant_ref": null,
+        "title_contains": "rail",
+        "to_date": null
+      },
+      "query_digest": "b89eb14faf3675bf4c2a971d3f2a9b4f5031b08b443375fc513808487f83265f",
+      "query_ref": "query_3",
+      "result_ref": "read_result_1",
+      "returned_count": 5,
+      "schema_version": "1.1.0",
+      "simulation": true,
+      "source": "synthetic_simulation",
+      "source_version": "synthetic-source-v1"
+    }
+  ],
+  "synthetic_only": true,
+  "training_eligible": false,
+  "trusted_rendered_decision": {
+    "basis": "grounded",
+    "citations": [
+      "query_3"
+    ],
+    "kind": "answer",
+    "text": "No expenses matched the post-filter; all 5 backend items were checked."
+  },
+  "typed_read_results": [
+    {
+      "body": {
+        "items": [
+          {
+            "context_version": 1,
+            "evidence_ref": "fact_expense_1",
+            "expense_ref": "expense_1",
+            "expense_version": "1",
+            "financial_locked": true,
+            "kind": "expense",
+            "observed_at": "2026-10-10T12:00:00Z",
+            "occurred_at": "2026-10-10T12:00:00Z",
+            "original_amount": "1.00",
+            "original_currency": "CAD",
+            "participant_refs": [
+              "participant_1"
+            ],
+            "title": "Cafe 1"
+          },
+          {
+            "context_version": 1,
+            "evidence_ref": "fact_expense_2",
+            "expense_ref": "expense_2",
+            "expense_version": "2",
+            "financial_locked": true,
+            "kind": "expense",
+            "observed_at": "2026-10-10T12:00:00Z",
+            "occurred_at": "2026-10-10T12:00:00Z",
+            "original_amount": "2.00",
+            "original_currency": "CAD",
+            "participant_refs": [
+              "participant_1"
+            ],
+            "title": "Cafe 2"
+          },
+          {
+            "context_version": 1,
+            "evidence_ref": "fact_expense_3",
+            "expense_ref": "expense_3",
+            "expense_version": "3",
+            "financial_locked": true,
+            "kind": "expense",
+            "observed_at": "2026-10-10T12:00:00Z",
+            "occurred_at": "2026-10-10T12:00:00Z",
+            "original_amount": "3.00",
+            "original_currency": "CAD",
+            "participant_refs": [
+              "participant_1"
+            ],
+            "title": "Cafe 3"
+          },
+          {
+            "context_version": 1,
+            "evidence_ref": "fact_expense_4",
+            "expense_ref": "expense_4",
+            "expense_version": "4",
+            "financial_locked": true,
+            "kind": "expense",
+            "observed_at": "2026-10-10T12:00:00Z",
+            "occurred_at": "2026-10-10T12:00:00Z",
+            "original_amount": "4.00",
+            "original_currency": "CAD",
+            "participant_refs": [
+              "participant_1"
+            ],
+            "title": "Cafe 4"
+          },
+          {
+            "context_version": 1,
+            "evidence_ref": "fact_expense_5",
+            "expense_ref": "expense_5",
+            "expense_version": "5",
+            "financial_locked": true,
+            "kind": "expense",
+            "observed_at": "2026-10-10T12:00:00Z",
+            "occurred_at": "2026-10-10T12:00:00Z",
+            "original_amount": "5.00",
+            "original_currency": "CAD",
+            "participant_refs": [
+              "participant_1"
+            ],
+            "title": "Cafe 5"
+          }
+        ],
+        "kind": "expenses"
+      },
+      "context_version": 1,
+      "observed_at": "2026-10-10T12:00:00Z",
+      "operation": "read.expenses",
+      "result_ref": "read_result_1",
+      "simulation": true
+    }
+  ]
+}

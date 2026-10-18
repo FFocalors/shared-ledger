@@ -1,0 +1,545 @@
+{
+  "format": "t1-protocol-v1.1.0-requirements-trace-v1",
+  "profile": {
+    "api_version": "1.0.0",
+    "semantic_version": "1.1.0",
+    "operations_version": "1.1.0",
+    "trajectory_version": "1.1.0",
+    "execution_key_version": "1",
+    "mode": "offline_synthetic_simulation_only",
+    "training_eligible": false
+  },
+  "source_requirements_format": "root-t1-protocol-v1.1-freeze-requirements-v1",
+  "source_requirements_path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-freeze-requirements.json",
+  "independent_root_review": "APPROVED_OFFLINE_SOURCE_SCHEMA_AND_EXPORT_REVIEW",
+  "requirements": [
+    {
+      "id": "PF-01",
+      "requirement": "explicit_api_1.0_semantic_operations_trajectory_1.1_execution_key_1_versions_and_unknown_version_rejection",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Complete legacy/current negotiation; missing and mixed tuples reject; legacy parser rejects query citation."
+    },
+    {
+      "id": "PF-02",
+      "requirement": "four_semantics_six_operations_CAP17_registry_no_execution_or_new_financial_capability",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Four kinds/six operations and exact immutable CAP17 map; executable and external write flags false; prepay/transfer/restore closed."
+    },
+    {
+      "id": "PF-03",
+      "requirement": "original_user_input_unchanged_typed_observations_separate_no_teacher_forcing_hints",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Original Unicode value preserved; query observations separate; causal input and resume history checked; NFC/NFD seal rejects."
+    },
+    {
+      "id": "PF-04",
+      "requirement": "query_citations_distinct_from_facts_and_policy_v1_rejects_new_query_tokens",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Query refs have distinct enum/schema; old v1 source and parser unchanged and reject new tokens."
+    },
+    {
+      "id": "PF-05",
+      "requirement": "trusted_private_owner_turn_scope_generation_revision_epoch_binding",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Independent owner/Turn/generation/CAS/epoch checks reject mismatches and unavailable authority."
+    },
+    {
+      "id": "PF-06",
+      "requirement": "operation_normalized_criteria_and_actual_backend_vs_postfilter_stage_binding",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Typed criteria, explicit scope-only backend stage and all postfilters are bound and recalculated; offline stage differs explicitly from P2 date pushdown."
+    },
+    {
+      "id": "PF-07",
+      "requirement": "actual_tool_result_body_source_identity_time_context_and_financial_version_binding",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Actual result body/identity/time/context/source and private financial snapshot are compared and revalidated."
+    },
+    {
+      "id": "PF-08",
+      "requirement": "deterministic_matched_fact_set_and_count_recomputed_from_complete_baseline",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Full result and exact matching-set/count re-derived; tampered count/body rejected; current fact rendering only."
+    },
+    {
+      "id": "PF-09",
+      "requirement": "pagination_continuity_exact_stable_total_and_source_version_fence",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Private page ranges/cursor chain/stable total/unique row IDs/version fences checked; source-boundary negatives and package tests."
+    },
+    {
+      "id": "PF-10",
+      "requirement": "backend_zero_vs_postfilter_zero_evidence_distinction",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Three complete positive examples distinguish backend zero from five-row postfilter zero."
+    },
+    {
+      "id": "PF-11",
+      "requirement": "partial_unknown_count_truncation_source_error_overflow_cannot_prove_no_match",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Complete requires exact count/full fences; incomplete remains explicit partial; source errors and capacity overflow reject."
+    },
+    {
+      "id": "PF-12",
+      "requirement": "simulation_and_source_allowlist_cannot_claim_real_backend",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Offline issuer only synthetic; future P2 source label and false simulation are rejected."
+    },
+    {
+      "id": "PF-13",
+      "requirement": "immutable_typed_entity_fact_result_query_refs_and_private_UUID_projection",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Vendored immutable v1 typed binding checks plus exact detached context/query/private seals; raw UUID sidecar never model input."
+    },
+    {
+      "id": "PF-14",
+      "requirement": "stale_new_read_restart_resume_scope_source_and_generation_changes_fail_closed",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Old/stale history retained but not rendered; independent per-query current versions allowed; missing authority/restart/mismatch fails closed."
+    },
+    {
+      "id": "PF-15",
+      "requirement": "trusted_query_renderer_cannot_turn_query_citation_into_arbitrary_financial_assertion",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Exact query, fact and policy renderers reject arbitrary ledger totals; names escaped; no summing/netting/FX."
+    },
+    {
+      "id": "PF-16",
+      "requirement": "business_queries_cannot_fallback_to_source_free_conversation",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Trusted intent explicitly business/non_business; no-permission business context still rejects free conversation; fixed acknowledgement needs trusted opt-in."
+    },
+    {
+      "id": "PF-17",
+      "requirement": "new_versioned_causal_trajectory_and_data_adaptation_schema_no_future_evidence",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "New versioned causal schema; exact earlier objects and latest accepted input; typed clarification; no future results; explicit adaptation requires new freeze/replay/review/split."
+    },
+    {
+      "id": "PF-18",
+      "requirement": "decimal_conservation_scope_lock_permissions_and_existing_business_rules_preserved",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Immutable v1 Decimal/conservation/permission/lock/presentation guards preserved; current backend bytes archived and main unchanged. Real business acceptance not claimed."
+    },
+    {
+      "id": "PF-19",
+      "requirement": "Draft202012_schema_structure_plus_Pydantic_cross_field_layers",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Ten valid Draft202012 schemas and five examples checked with JSON Schema plus Pydantic; documented cross-field/private-validation layer."
+    },
+    {
+      "id": "PF-20",
+      "requirement": "deterministic_export_check_manifest_source_drift_and_unexpected_file_detection",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Actual 36-file scratch write/check; repeat write byte-identical; unknown file and archived-source mutation reject; one-time immutable snapshots and dependency locks archived."
+    },
+    {
+      "id": "PF-21",
+      "requirement": "explicit_migration_old_API_not_enabled_no_old_proposal_or_execution_identity_upgrade",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Legacy API/P2 not enabled or imported; old proposals/execution keys not rewritten; migration/new-candidate boundary explicit."
+    },
+    {
+      "id": "PF-22",
+      "requirement": "synthetic_positive_negative_edge_cases_for_three_read_operations_and_four_semantics",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "22 package tests and 46 root probes plus all three read examples, causal clarify/propose and participant filtered trace; source stable."
+    },
+    {
+      "id": "PF-23",
+      "requirement": "old_v1_v2_P1_P2_sources_candidate_and_heldouts_preserved_no_model_or_cloud_actions",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Old111/393/packet/pending receipt byte hashes/counts match; main clean and HEADs unchanged. 152/154 resumed protected files match; two observed P2 path drifts disclosed, not restored or attributed."
+    },
+    {
+      "id": "PF-24",
+      "requirement": "offline_protocol_freeze_not_formal_dataset_training_or_P2_model_acceptance",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "All generated examples, registry/applicability and manifest remain synthetic/offline/non-training; data/human/P2/model gates separate."
+    },
+    {
+      "id": "PF-25",
+      "requirement": "independent_root_completion_audit_bound_to_exact_source_schema_test_evidence",
+      "status": "PASS_OFFLINE_REQUIREMENT_REVIEW",
+      "evidence": [
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+          "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+          "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b"
+        },
+        {
+          "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+          "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e"
+        }
+      ],
+      "root_assessment": "Root approved the offline requirements against exact source/schema/test/export evidence; final repository-freeze approval is external and must bind the final manifest."
+    }
+  ],
+  "notes": [
+    "All 25 requirements have root status PASS_OFFLINE_REQUIREMENT_REVIEW; this is offline source/schema/export acceptance only.",
+    "T1 training eligibility remains false. Genuine human review, P2 calibration, and T2 authorization remain pending; Student evaluation was deferred by the user and GPU evaluation is deferred.",
+    "The 393-row candidate and 111-row baseline remain immutable. Root business review of the 34 train-only rows is not a genuine human-review receipt; rows 21, 22, and 24 need provenance repair, plus three separate context/clarification/coverage actions.",
+    "Offline private bindings establish consistency among supplied synthetic records; they do not prove cryptographic provenance, live backend authorization, Auth/RLS, archive/sub-activity rules, or real write preflight.",
+    "Old and resumed protected-baseline comparisons are distinct: 149/154 matched plus five observed P2 changes in the original comparison; 152/154 matched plus two observed P2 paths in the resumed comparison."
+  ],
+  "independent_root_review_sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712",
+  "human_reviewed": false,
+  "training_eligible": false,
+  "production_enabled": false,
+  "final_repo_manifest_approval": {
+    "expected_receipt_path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-FREEZE-APPROVAL.json",
+    "status": "EXTERNAL_SHA_BOUND_RECEIPT_DETERMINES_FINAL_APPROVAL",
+    "sha256": null,
+    "receipt_hash_policy": "Not embedded in the frozen documents to avoid a manifest self-reference loop.",
+    "manifest_root_approved": false
+  },
+  "prefreeze_review_path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+  "independent_root_review_path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+  "models_run": false,
+  "prefreeze_review_sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b",
+  "independent_audit_report_path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/independent-audit-20261012/final-independent-audit-20261012.md",
+  "independent_audit_report_sha256": "63500edfa41d2c2f7fa6686453d6b90bbd7ecc5c8510230749b46fb777da9ee1",
+  "independent_export_receipt_path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/independent-audit-20261012/export-audit-final-results.json",
+  "independent_export_receipt_sha256": "e9dd0e2fb0de1de0bc7fbc5e275a1e582516056822cc3ad2480e93516042f03f",
+  "root_freeze_receipt_path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-FREEZE-APPROVAL.json",
+  "root_freeze_receipt_hash_policy": "External SHA-bound receipt must bind the final repository manifest; its hash is not embedded in these frozen docs."
+}

@@ -1,0 +1,75 @@
+{
+  "$id": "https://shared-ledger.invalid/schemas/t1-adaptation-1.1.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "explicit_conversion": {
+      "const": true,
+      "title": "Explicit Conversion",
+      "type": "boolean"
+    },
+    "new_source_freeze_required": {
+      "const": true,
+      "title": "New Source Freeze Required",
+      "type": "boolean"
+    },
+    "new_split_required": {
+      "const": true,
+      "title": "New Split Required",
+      "type": "boolean"
+    },
+    "preserve_original_input": {
+      "const": true,
+      "title": "Preserve Original Input",
+      "type": "boolean"
+    },
+    "preserve_recent_messages": {
+      "const": true,
+      "title": "Preserve Recent Messages",
+      "type": "boolean"
+    },
+    "query_evidence_adapter": {
+      "enum": [
+        "not_applicable",
+        "trusted_adapter_required"
+      ],
+      "title": "Query Evidence Adapter",
+      "type": "string"
+    },
+    "replay_and_review_required": {
+      "const": true,
+      "title": "Replay And Review Required",
+      "type": "boolean"
+    },
+    "source_freeze_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Source Freeze Sha256",
+      "type": "string"
+    },
+    "source_profile": {
+      "maxLength": 240,
+      "minLength": 1,
+      "title": "Source Profile",
+      "type": "string"
+    },
+    "target_profile": {
+      "const": "t1-offline-canonical",
+      "title": "Target Profile",
+      "type": "string"
+    }
+  },
+  "required": [
+    "source_profile",
+    "target_profile",
+    "explicit_conversion",
+    "preserve_original_input",
+    "preserve_recent_messages",
+    "query_evidence_adapter",
+    "source_freeze_sha256",
+    "new_source_freeze_required",
+    "replay_and_review_required",
+    "new_split_required"
+  ],
+  "title": "AdaptationEnvelope",
+  "type": "object"
+}

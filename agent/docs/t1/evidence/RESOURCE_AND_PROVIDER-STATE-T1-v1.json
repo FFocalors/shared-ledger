@@ -1,0 +1,43 @@
+{
+  "evidence_version": "t1-resource-provider-state-v1",
+  "observed_at_local": "2026-10-10T11:33+08:00 (approximate snapshot window)",
+  "source": "read-only operating-system metadata and prior T0 index; no model inference",
+  "before_lms_query_observation_from_session": {
+    "gpu_used_mib": 3450,
+    "gpu_total_mib": 8188,
+    "provenance_note": "Observed before the lms CLI query in this session; no application attribution recorded."
+  },
+  "after_lms_query_observation_from_session": {
+    "gpu_used_mib": 7768,
+    "gpu_total_mib": 8188,
+    "free_ram_gib": 1.82,
+    "listener_ports_checked": [1234, 1235, 8765],
+    "listeners_found": [],
+    "lm_studio_process_count": 5,
+    "lm_studio_process_creation_time": "2026-10-10T11:33:08+08:00"
+  },
+  "current_read_only_snapshot": {
+    "observed_at_local": "2026-10-10T11:44+08:00 (approximate)",
+    "gpu_used_mib": 7672,
+    "gpu_total_mib": 8188,
+    "gpu_free_mib": 285,
+    "free_ram_gib": 2.09,
+    "total_ram_gib": 31.8,
+    "listener_ports_checked": [1234, 1235, 8765],
+    "listeners_found": [],
+    "lm_studio_process_count": 5,
+    "lm_studio_process_creation_time": "2026-10-10T11:33:08+08:00"
+  },
+  "attribution_and_recovery": {
+    "lms_cli_help_and_ps_were_invoked": true,
+    "ps_output_indicated_service_wake_attempt": true,
+    "causal_attribution_of_gpu_or_ram_change": "UNKNOWN",
+    "heavy_model_loaded_or_inference_run_by_this_task": false,
+    "user_processes_terminated": false,
+    "lm_studio_or_user_processes_killed": false,
+    "baseline_state_restoration_claim": "NOT_MADE; no proof of prior service/process state restoration",
+    "cleanup_boundary": "Preserve current process state pending root/user direction. No broad LM Studio stop/kill was performed."
+  },
+  "evaluation_readiness": "BLOCKED_BY_RESOURCE_FLOOR_AND_NO_API_LISTENER",
+  "secret_values": "NOT_READ_OR_RECORDED"
+}

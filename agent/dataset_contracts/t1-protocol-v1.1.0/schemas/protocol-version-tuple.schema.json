@@ -1,0 +1,73 @@
+{
+  "$id": "https://shared-ledger.invalid/schemas/t1-protocol-version-tuple-1.1.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "additionalProperties": false,
+      "properties": {
+        "api_version": {
+          "const": "1.0.0",
+          "type": "string"
+        },
+        "execution_key_version": {
+          "const": "1",
+          "type": "string"
+        },
+        "operations_version": {
+          "const": "1.0.0",
+          "type": "string"
+        },
+        "semantic_version": {
+          "const": "1.0.0",
+          "type": "string"
+        },
+        "trajectory_version": {
+          "const": "1.0.0",
+          "type": "string"
+        }
+      },
+      "required": [
+        "api_version",
+        "semantic_version",
+        "operations_version",
+        "trajectory_version",
+        "execution_key_version"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "api_version": {
+          "const": "1.0.0",
+          "type": "string"
+        },
+        "execution_key_version": {
+          "const": "1",
+          "type": "string"
+        },
+        "operations_version": {
+          "const": "1.1.0",
+          "type": "string"
+        },
+        "semantic_version": {
+          "const": "1.1.0",
+          "type": "string"
+        },
+        "trajectory_version": {
+          "const": "1.1.0",
+          "type": "string"
+        }
+      },
+      "required": [
+        "api_version",
+        "semantic_version",
+        "operations_version",
+        "trajectory_version",
+        "execution_key_version"
+      ],
+      "type": "object"
+    }
+  ],
+  "title": "ProtocolVersionTuple"
+}

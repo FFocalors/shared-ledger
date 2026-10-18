@@ -1,0 +1,34 @@
+{
+  "version": "t1-teacher-readiness-text-v1",
+  "messages": [
+    {
+      "role": "system",
+      "content": "请根据三个虚构状态各写一条简短中文助手可见回复。只输出一个严格 JSON 对象，不要代码围栏。顶层唯一键 cases；每项严格包含 case_id、task_conclusion、visible_text 三个键，不能增加、删除或重排项目。不得输出隐藏推理、分析过程、工具调用、工具结果；不得执行或声称已经完成任何写入。visible_text 每条不超过 80 个字符。"
+    },
+    {
+      "role": "user",
+      "content": "请判断任务结论并写候选回复。只用以下合成事实，不引入其他账本事实。\n\n1. case_id=ordinary-prepay-denial. 状态：普通 Activity“海边周末”。用户说：“先存 100 元，之后吃饭时抵扣。”普通 Activity 禁止预存。task_conclusion 应为 reject_unsupported；回复需拒绝预存，不能改写成支出或结算。\n\n2. case_id=expense-create-conservation. 状态：用户明确请求新增一笔 84 元午餐支出；付款人为 A 付 50 元、B 付 34 元，合计正好 84 元；分摊人 A、B、C 等额分摊。意图和金额信息完整。task_conclusion 应为 stage_expense_create；回复保留 expense.create 意图、两位付款人及金额守恒，不自行计算分摊金额，不声称已保存或已创建。\n\n3. case_id=locked-note-presentation. 状态：既有 Expense 的财务字段已锁定；用户仅请求把备注从“停车”改成“车票”。展示备注修改合法；金额、付款人、分摊保持锁定。task_conclusion 应为 presentation_only；回复只允许准备备注修改，不声称已修改。\n\n结论值分别限定为 reject_unsupported、stage_expense_create、presentation_only。只返回形状为 {\"cases\":[{\"case_id\":\"...\",\"task_conclusion\":\"...\",\"visible_text\":\"...\"}]} 的 JSON。"
+    }
+  ],
+  "expected_cases": [
+    {
+      "case_id": "ordinary-prepay-denial",
+      "task_conclusion": "reject_unsupported"
+    },
+    {
+      "case_id": "expense-create-conservation",
+      "task_conclusion": "stage_expense_create"
+    },
+    {
+      "case_id": "locked-note-presentation",
+      "task_conclusion": "presentation_only"
+    }
+  ],
+  "output_limits": {
+    "exact_case_count": 3,
+    "visible_text_max_characters": 80,
+    "must_not_call_tools": true,
+    "must_not_claim_write_completed": true,
+    "must_not_output_hidden_reasoning": true
+  }
+}

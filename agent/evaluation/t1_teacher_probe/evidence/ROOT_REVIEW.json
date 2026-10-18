@@ -1,0 +1,55 @@
+{
+  "review_record_version": "t1-teacher-probe-root-review-v1",
+  "reviewer": "root",
+  "kind": "agent",
+  "reviewed_at_utc": "2026-10-10T16:11:24Z",
+  "scope": "transport_protocol_sanity_only",
+  "status": "APPROVED_LIMITED_TEACHER_AVAILABILITY",
+  "language_pilot": "QUARANTINED_NO_CANDIDATE",
+  "teacher_data_quality": "NOT_ASSESSED",
+  "student_model_quality": "DEFERRED",
+  "user_manual_pending": true,
+  "training_eligible": false,
+  "review_findings": {
+    "fake_http_tests": {
+      "command": "& 'D:\\project\\Android\\shared-ledger-agent\\agent\\.venv\\Scripts\\python.exe' -m unittest discover -s 'agent\\evaluation\\t1_teacher_probe\\tests' -v",
+      "working_directory": "D:\\project\\Android\\shared-ledger-agent",
+      "passed": 8,
+      "failed": 0,
+      "elapsed_seconds": 0.001,
+      "network_calls": 0
+    },
+    "preregistration_source_hashes": {
+      "checked": 10,
+      "mismatches": 0
+    },
+    "external_evidence_hashes": {
+      "checked": 7,
+      "mismatches": 0
+    },
+    "original_run_manifest_unchanged": true,
+    "second_response_metadata_matches_offline_analysis": true,
+    "second_response_observation": {
+      "finish_reason": "length",
+      "visible_content_characters": 0,
+      "reasoning_content_field_present": true,
+      "reasoning_tokens": 256
+    }
+  },
+  "sha256_bindings": {
+    "preregistration": "745d636051726935fcc697d46783dbebf203ba623e73b05abcd8fb7e7359d8ba",
+    "run_manifest": "e3efefa6f039f20f1179d1a4e529ee505a189b0a4e0ecc43c4aef018303f3345",
+    "request_1_raw_response": "f53bc73bace611393093e8bffe4b9fee87e84c47c8c2d0db1c3c0467fb62f202",
+    "request_2_raw_response": "aac05bde936ea6fd3736bfebec97a9230159ae961afce4d4a973e46174696480",
+    "offline_response_analysis": "bf892128d7c158bf2bb17db262d640d9efe1f91370c94f1fe50b0ab505d0ca21",
+    "evidence_summary": "c24bd5f9c8f0d37a2eb08004c1027e014ea6d0676ae98e112aaa68387b0f2b1b"
+  },
+  "limits": {
+    "requests_sent": 2,
+    "additional_requests_sent_during_review": 0,
+    "teacher_batch_generation": false,
+    "student_inference": false,
+    "database_access": false,
+    "business_writes": false
+  }
+}

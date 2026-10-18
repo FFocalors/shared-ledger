@@ -1,0 +1,145 @@
+{
+  "format": "t1-offline-query-example-v1.1.0",
+  "model_context": {
+    "available_permissions": [
+      "read.activities"
+    ],
+    "bound_references": [],
+    "context_version": 1,
+    "input_text": "List active activities.",
+    "intent_classification": "business",
+    "pending_slots": [],
+    "policy_evidence": [],
+    "query_observations": [
+      {
+        "backend_criteria": {
+          "kind": "activities",
+          "scope_ref": null
+        },
+        "body_digest": "1c1273f38cb121c0084047499009474953bf6468bf615fb61a5880cbe69effdc",
+        "context_version": 1,
+        "criteria": {
+          "kind": "activities",
+          "name_contains": null,
+          "status": "active"
+        },
+        "matched_count": 0,
+        "matching_fact_citations": [],
+        "normalized_criteria": "{\"criteria\":{\"kind\":\"activities\",\"status\":\"active\"},\"operation\":\"read.activities\"}",
+        "observed_at": "2026-10-10T12:00:00Z",
+        "operation": "read.activities",
+        "page": {
+          "complete": true,
+          "expected_total": 0,
+          "has_more": false,
+          "pages_seen": 1,
+          "range_contiguous": true,
+          "source_version_fenced": true,
+          "stable_total_verified": true,
+          "truncated": false,
+          "unique_items_verified": true
+        },
+        "post_filter": {
+          "kind": "activities",
+          "name_contains": null,
+          "status": "active"
+        },
+        "query_digest": "c8bc7e6149f9adce3731bd0af041f30104d1d7252c12dbbfea4b1cc89a30d2d8",
+        "query_ref": "query_1",
+        "result_ref": "read_result_1",
+        "returned_count": 0,
+        "schema_version": "1.1.0",
+        "simulation": true,
+        "source": "synthetic_simulation",
+        "source_version": "synthetic-source-v1"
+      }
+    ],
+    "read_results": [
+      {
+        "body": {
+          "items": [],
+          "kind": "activities"
+        },
+        "context_version": 1,
+        "observed_at": "2026-10-10T12:00:00Z",
+        "operation": "read.activities",
+        "result_ref": "read_result_1",
+        "simulation": true
+      }
+    ],
+    "recent_messages": [],
+    "verified_scope": {
+      "kind": "none",
+      "permissions": [
+        "read.activities"
+      ]
+    }
+  },
+  "query_observations": [
+    {
+      "backend_criteria": {
+        "kind": "activities",
+        "scope_ref": null
+      },
+      "body_digest": "1c1273f38cb121c0084047499009474953bf6468bf615fb61a5880cbe69effdc",
+      "context_version": 1,
+      "criteria": {
+        "kind": "activities",
+        "name_contains": null,
+        "status": "active"
+      },
+      "matched_count": 0,
+      "matching_fact_citations": [],
+      "normalized_criteria": "{\"criteria\":{\"kind\":\"activities\",\"status\":\"active\"},\"operation\":\"read.activities\"}",
+      "observed_at": "2026-10-10T12:00:00Z",
+      "operation": "read.activities",
+      "page": {
+        "complete": true,
+        "expected_total": 0,
+        "has_more": false,
+        "pages_seen": 1,
+        "range_contiguous": true,
+        "source_version_fenced": true,
+        "stable_total_verified": true,
+        "truncated": false,
+        "unique_items_verified": true
+      },
+      "post_filter": {
+        "kind": "activities",
+        "name_contains": null,
+        "status": "active"
+      },
+      "query_digest": "c8bc7e6149f9adce3731bd0af041f30104d1d7252c12dbbfea4b1cc89a30d2d8",
+      "query_ref": "query_1",
+      "result_ref": "read_result_1",
+      "returned_count": 0,
+      "schema_version": "1.1.0",
+      "simulation": true,
+      "source": "synthetic_simulation",
+      "source_version": "synthetic-source-v1"
+    }
+  ],
+  "synthetic_only": true,
+  "training_eligible": false,
+  "trusted_rendered_decision": {
+    "basis": "grounded",
+    "citations": [
+      "query_1"
+    ],
+    "kind": "answer",
+    "text": "No activities matched; the complete backend result contained 0 items."
+  },
+  "typed_read_results": [
+    {
+      "body": {
+        "items": [],
+        "kind": "activities"
+      },
+      "context_version": 1,
+      "observed_at": "2026-10-10T12:00:00Z",
+      "operation": "read.activities",
+      "result_ref": "read_result_1",
+      "simulation": true
+    }
+  ]
+}

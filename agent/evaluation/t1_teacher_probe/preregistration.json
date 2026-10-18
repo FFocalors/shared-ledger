@@ -1,0 +1,90 @@
+{
+  "configuration": {
+    "api_key_present": true,
+    "config_fingerprint_sha256_nonsecret_projection": "ceceed12367d1c6554222ab15620524747d757a58fcc9bc26dac6e646a3114c8",
+    "credential_value_recorded": false,
+    "model": "deepseek-v4.1-flash",
+    "provider": "opencode",
+    "route": "https://opencode.ai/zen/go/v1/chat/completions",
+    "temperature": 0.0
+  },
+  "configuration_source": {
+    "path": "D:/project/Android/shared-ledger/scripts/ai_teacher_generator/.env",
+    "read_only": true,
+    "secret_loaded_into_memory_only": true,
+    "secret_value_recorded_or_hashed": false
+  },
+  "created_utc": "2026-10-10T16:04:17Z",
+  "evidence_output_directory": "D:/AI/runs/shared-ledger/t1-teacher-probe-20261011",
+  "interpretation_limits": {
+    "business_data_used": false,
+    "sealed_data_used": false,
+    "student_model_quality": "DEFERRED_NOT_TESTED",
+    "three_case_pilot_is_not_teacher_quality_acceptance": true,
+    "training_eligible": false,
+    "transport_success_is_not_teacher_dataset_quality_acceptance": true
+  },
+  "local_date": "2026-10-11",
+  "local_timezone": "Asia/Shanghai",
+  "preregistration_version": "t1-teacher-probe-preregistration-v1",
+  "prompt_sha256": {
+    "contract_sanity": "010e8fea467ec643e3f6790edccefd424a6667f9f68dd7b425f7db7b106e30c0",
+    "language_pilot": "7ca77279fa17a48da1ab6c1f54095ad04e19d01589fc3696c170f4a817514a48"
+  },
+  "request_1_contract_sanity": {
+    "failure_behavior": "record bounded failure and stop; do not retry or send language pilot",
+    "pass_criteria": "HTTP 200, exact canary object, finish_reason=stop, prompt/completion/total token counts present, response id present, and provider-returned model label present (label is not treated as model identity proof)",
+    "prompt_version": "t1-teacher-contract-sanity-v1",
+    "purpose": [
+      "HTTP reachability",
+      "configured authentication path",
+      "completion content",
+      "strict JSON object and exact schema",
+      "finish reason",
+      "usage metadata",
+      "request identity metadata"
+    ]
+  },
+  "request_2_language_pilot": {
+    "candidate_checks": "exact three IDs and dispositions, exact item schema, reply length cap; human semantic review still required",
+    "execution_boundary": "no tools, no write, no tool result, no claim of completed write, no hidden reasoning",
+    "prompt_version": "t1-teacher-language-pilot-v1",
+    "sent_only_if": "request 1 meets all pass criteria",
+    "synthetic_cases": [
+      "ordinary Activity prepayment refusal",
+      "explicit expense.create with two payers and equal split",
+      "locked Expense presentation-only note change"
+    ]
+  },
+  "request_budget": {
+    "automatic_retry_count": 0,
+    "max_output_tokens_per_request": 256,
+    "max_response_bytes": 256000,
+    "maximum_total_posts": 2,
+    "per_request_timeout_seconds": 60.0,
+    "route_or_model_fallback": false,
+    "sequential_only": true
+  },
+  "route_and_identity": {
+    "configured_model": "deepseek-v4.1-flash",
+    "endpoint": "https://opencode.ai/zen/go/v1/chat/completions",
+    "response_server_request_id": "record envelope id when returned; provider-reported identifiers are metadata, not proof of model identity",
+    "session_header": "x-opencode-session",
+    "session_id_policy": "one UUID stable across the two possible requests; record only as request identity",
+    "user_agent": "shared-ledger-t1-teacher-probe/0.1.0"
+  },
+  "scope": "synthetic protocol canary and optional three-case language candidate only",
+  "source_sha256": {
+    "business_acceptance_t1": "572d00543448ae61dfb600d88e0175af8da9af9e07ee8fd459dec29d9110593d",
+    "fake_http_tests": "70483b96900d52f26ecfe77c14a8485aaaec24f6c7793093c806a7e58379fdab",
+    "language_prompt": "7ca77279fa17a48da1ab6c1f54095ad04e19d01589fc3696c170f4a817514a48",
+    "legacy_provider_adapter_read_only": "86d803f077becf3604f4fb2a073be552cf9616986682dae94b1084dd858b571b",
+    "model_preregistration_read_only": "e5699fe99bf9b97f4c52e8ac188ee35256b6f1588c13761baa3013204e3ead08",
+    "probe": "bea79cd3f952c65fa252d9d78001a1b19970e2896201744e41a3ef1a970d1843",
+    "sanity_prompt": "010e8fea467ec643e3f6790edccefd424a6667f9f68dd7b425f7db7b106e30c0",
+    "t1_freeze": "fc3ca21eae1f8fbc10c9180abc4641219b80c9e51705935fb2d09d4a20917c35",
+    "teacher_status_t1_v1": "d6511cc64429e740607629df698b5439afe4f679fdbb2196a4b67e0583c00952",
+    "training_guide": "dd43f57450aa13153bea9ceb8eaa38ef7b51d3f46e38777470f61d4f9c7a14c8"
+  },
+  "status": "FROZEN_BEFORE_EXTERNAL_REQUESTS"
+}

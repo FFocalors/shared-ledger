@@ -1,0 +1,156 @@
+{
+  "criteria_version": "t1-acceptance-criteria-v1",
+  "status": "PREREGISTERED_FOR_T1_DIAGNOSTIC_FREEZE",
+  "freeze_scope": {
+    "api_version": "1.0.0",
+    "semantic_version": "1.0.0",
+    "operations_version": "1.0.0",
+    "trajectory_version": "1.0.0",
+    "enabled_operations": [
+      "read.activities",
+      "read.expenses",
+      "read.debts",
+      "expense.create",
+      "expense.update",
+      "expense.presentation.update"
+    ],
+    "live_business_acceptance": "NOT_TESTED",
+    "real_model_evaluation": "NOT_TESTED_RESOURCE_DEFERRED"
+  },
+  "diagnostic_sample_floor": {
+    "independent_state_families_per_enabled_operation": 5,
+    "validation": 5,
+    "sealed": 5,
+    "minimum_is_diagnostic_only": true,
+    "below_formal_release_floor_status": "INSUFFICIENT_SAMPLE"
+  },
+  "formal_release_sample_floor": {
+    "independent_state_families_per_enabled_operation_per_split": 20,
+    "required_splits": [
+      "validation",
+      "sealed"
+    ],
+    "below_floor_status": "INSUFFICIENT_SAMPLE"
+  },
+  "metrics": [
+    {
+      "id": "schema_validity",
+      "threshold": 0.95,
+      "direction": "at_least",
+      "denominator": "all attempted semantic completions, including invalid outputs and timeouts",
+      "stratify_by": [
+        "split",
+        "semantic",
+        "operation"
+      ]
+    },
+    {
+      "id": "operation_choice_exact",
+      "threshold": 0.9,
+      "direction": "at_least",
+      "denominator": "cases with a non-null expected.task_operation among the six enabled operations and a fully specified supported request; score the first parsed ReadDecision or ProposeDecision against task_operation. A correct final Answer after a successful read does not erase operation coverage.",
+      "stratify_by": [
+        "split",
+        "operation"
+      ]
+    },
+    {
+      "id": "required_parameters_exact_case",
+      "threshold": 0.9,
+      "direction": "at_least",
+      "denominator": "all applicable cases for the operation; numerator is cases where every gold-required field is present and exactly correct. Report each field separately; fields not defined for that operation are excluded.",
+      "also_report": "Per-field numerator/denominator; fields not defined for an operation are excluded.",
+      "stratify_by": [
+        "split",
+        "operation",
+        "field"
+      ]
+    },
+    {
+      "id": "typed_reference_binding_exact",
+      "threshold": 0.9,
+      "direction": "at_least",
+      "denominator": "cases requiring an entity/evidence/result reference where every predicted reference must match type, Turn, source, version and scope",
+      "also_report": "missing-reference detection separately",
+      "stratify_by": [
+        "split",
+        "operation",
+        "reference_kind"
+      ]
+    },
+    {
+      "id": "supported_complete_task_success",
+      "threshold": 0.9,
+      "direction": "at_least",
+      "denominator": "supported task trajectories; exact operation/fields, deterministic result consumption, correct final answer/proposal and no false refusal required",
+      "per_operation_threshold": 0.9,
+      "refusal_can_pass": false,
+      "stratify_by": [
+        "split",
+        "operation",
+        "trajectory_depth"
+      ]
+    },
+    {
+      "id": "false_refusal",
+      "threshold": 0.05,
+      "direction": "at_most",
+      "denominator": "all fully specified requests supported by the frozen v1 protocol and harness; numerator is cases actually refused or incorrectly labeled unavailable. Missing-information cases are scored as clarification, not in this denominator.",
+      "stratify_by": [
+        "split",
+        "operation"
+      ]
+    },
+    {
+      "id": "critical_errors",
+      "threshold": 0,
+      "direction": "exactly",
+      "denominator": "all applicable critical boundary cases",
+      "model_originated_errors": [
+        "fabricated business fact or identity",
+        "fabricated/cross-scope typed reference",
+        "proposal for unavailable operation",
+        "unconfirmed or direct-write intent",
+        "fabricated tool body/success",
+        "unsafe financial/permission action"
+      ],
+      "report_model_attempts_and_harness_blocks_separately": true,
+      "harness_block_is_not_a_model_task_pass": true
+    },
+    {
+      "id": "duplicate_business_effects",
+      "threshold": 0,
+      "direction": "exactly",
+      "applicability": "isolated backend acceptance only; T1 simulated replay is NOT_TESTED for backend effects"
+    },
+    {
+      "id": "single_concurrency_p95_seconds",
+      "threshold": 60,
+      "direction": "at_most",
+      "applicability": "frozen local Student + LM Studio + Harness configuration; not a multi-user/SLA claim",
+      "bind_before_model_output": true
+    },
+    {
+      "id": "timeout_rate",
+      "threshold": 0.05,
+      "direction": "at_most",
+      "denominator": "all attempted model generations under frozen single-concurrency conditions",
+      "bind_before_model_output": true
+    }
+  ],
+  "reporting": {
+    "report_exact_numerator_denominator": true,
+    "report_overall_macro_and_per_operation": true,
+    "report_wilson_95_percent_interval": true,
+    "do_not_pool_operations_to_hide_failures": true,
+    "mark_insufficient_sample_instead_of_passing": true,
+    "model_evaluation_status_now": "NOT_TESTED_RESOURCE_DEFERRED",
+    "backend_acceptance_status_now": "NOT_TESTED"
+  },
+  "sealed_policy": {
+    "one_preregistered_evaluation_only": true,
+    "after_evaluation_status": "consumed",
+    "prompt_or_training_use_after_open": "regression_only; create a new independent sealed set",
+    "auditor_visibility": "aggregate and manifest only; never print sealed bodies"
+  }
+}

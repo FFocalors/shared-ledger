@@ -1,0 +1,939 @@
+{
+  "$defs": {
+    "ActivityPostFilter": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "activities",
+          "title": "Kind",
+          "type": "string"
+        },
+        "name_contains": {
+          "anyOf": [
+            {
+              "maxLength": 240,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name Contains"
+        },
+        "status": {
+          "default": "active",
+          "enum": [
+            "active",
+            "archived",
+            "any"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "ActivityPostFilter",
+      "type": "object"
+    },
+    "BackendActivitiesCriteria": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "activities",
+          "title": "Kind",
+          "type": "string"
+        },
+        "scope_ref": {
+          "default": null,
+          "title": "Scope Ref",
+          "type": "null"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "BackendActivitiesCriteria",
+      "type": "object"
+    },
+    "BackendDebtsCriteria": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "debts",
+          "title": "Kind",
+          "type": "string"
+        },
+        "scope_ref": {
+          "enum": [
+            "activity_selected",
+            "activity_1",
+            "activity_2",
+            "activity_3",
+            "activity_4",
+            "activity_5",
+            "activity_6",
+            "activity_7",
+            "activity_8",
+            "activity_9",
+            "activity_10",
+            "activity_11",
+            "activity_12",
+            "activity_13",
+            "activity_14",
+            "activity_15",
+            "activity_16"
+          ],
+          "title": "ActivityRef",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "scope_ref"
+      ],
+      "title": "BackendDebtsCriteria",
+      "type": "object"
+    },
+    "BackendExpensesCriteria": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "expenses",
+          "title": "Kind",
+          "type": "string"
+        },
+        "scope_ref": {
+          "enum": [
+            "activity_selected",
+            "activity_1",
+            "activity_2",
+            "activity_3",
+            "activity_4",
+            "activity_5",
+            "activity_6",
+            "activity_7",
+            "activity_8",
+            "activity_9",
+            "activity_10",
+            "activity_11",
+            "activity_12",
+            "activity_13",
+            "activity_14",
+            "activity_15",
+            "activity_16"
+          ],
+          "title": "ActivityRef",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "scope_ref"
+      ],
+      "title": "BackendExpensesCriteria",
+      "type": "object"
+    },
+    "DebtPostFilter": {
+      "additionalProperties": false,
+      "properties": {
+        "currency": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z]{3}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Currency"
+        },
+        "kind": {
+          "const": "debts",
+          "title": "Kind",
+          "type": "string"
+        },
+        "participant_ref": {
+          "anyOf": [
+            {
+              "enum": [
+                "participant_selected",
+                "participant_1",
+                "participant_2",
+                "participant_3",
+                "participant_4",
+                "participant_5",
+                "participant_6",
+                "participant_7",
+                "participant_8",
+                "participant_9",
+                "participant_10",
+                "participant_11",
+                "participant_12",
+                "participant_13",
+                "participant_14",
+                "participant_15",
+                "participant_16",
+                "participant_17",
+                "participant_18",
+                "participant_19",
+                "participant_20",
+                "participant_21",
+                "participant_22",
+                "participant_23",
+                "participant_24",
+                "participant_25",
+                "participant_26",
+                "participant_27",
+                "participant_28",
+                "participant_29",
+                "participant_30",
+                "participant_31",
+                "participant_32"
+              ],
+              "title": "ParticipantRef",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Participant Ref"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "DebtPostFilter",
+      "type": "object"
+    },
+    "ExpensePostFilter": {
+      "additionalProperties": false,
+      "properties": {
+        "from_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "From Date"
+        },
+        "kind": {
+          "const": "expenses",
+          "title": "Kind",
+          "type": "string"
+        },
+        "participant_ref": {
+          "anyOf": [
+            {
+              "enum": [
+                "participant_selected",
+                "participant_1",
+                "participant_2",
+                "participant_3",
+                "participant_4",
+                "participant_5",
+                "participant_6",
+                "participant_7",
+                "participant_8",
+                "participant_9",
+                "participant_10",
+                "participant_11",
+                "participant_12",
+                "participant_13",
+                "participant_14",
+                "participant_15",
+                "participant_16",
+                "participant_17",
+                "participant_18",
+                "participant_19",
+                "participant_20",
+                "participant_21",
+                "participant_22",
+                "participant_23",
+                "participant_24",
+                "participant_25",
+                "participant_26",
+                "participant_27",
+                "participant_28",
+                "participant_29",
+                "participant_30",
+                "participant_31",
+                "participant_32"
+              ],
+              "title": "ParticipantRef",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Participant Ref"
+        },
+        "title_contains": {
+          "anyOf": [
+            {
+              "maxLength": 240,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title Contains"
+        },
+        "to_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "To Date"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "ExpensePostFilter",
+      "type": "object"
+    },
+    "QueryPageMetadata": {
+      "additionalProperties": false,
+      "description": "Model-visible pagination summary; raw cursors and cursor digests stay private.",
+      "properties": {
+        "complete": {
+          "title": "Complete",
+          "type": "boolean"
+        },
+        "expected_total": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Total"
+        },
+        "has_more": {
+          "title": "Has More",
+          "type": "boolean"
+        },
+        "pages_seen": {
+          "maximum": 128,
+          "minimum": 1,
+          "title": "Pages Seen",
+          "type": "integer"
+        },
+        "range_contiguous": {
+          "title": "Range Contiguous",
+          "type": "boolean"
+        },
+        "source_version_fenced": {
+          "title": "Source Version Fenced",
+          "type": "boolean"
+        },
+        "stable_total_verified": {
+          "title": "Stable Total Verified",
+          "type": "boolean"
+        },
+        "truncated": {
+          "title": "Truncated",
+          "type": "boolean"
+        },
+        "unique_items_verified": {
+          "title": "Unique Items Verified",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "pages_seen",
+        "has_more",
+        "truncated",
+        "complete",
+        "range_contiguous",
+        "stable_total_verified",
+        "source_version_fenced",
+        "unique_items_verified"
+      ],
+      "title": "QueryPageMetadata",
+      "type": "object"
+    },
+    "ReadActivitiesCriteria": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "activities",
+          "title": "Kind",
+          "type": "string"
+        },
+        "name_contains": {
+          "anyOf": [
+            {
+              "maxLength": 240,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name Contains"
+        },
+        "status": {
+          "default": "active",
+          "enum": [
+            "active",
+            "archived",
+            "any"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "ReadActivitiesCriteria",
+      "type": "object"
+    },
+    "ReadDebtsCriteria": {
+      "additionalProperties": false,
+      "properties": {
+        "activity_ref": {
+          "enum": [
+            "activity_selected",
+            "activity_1",
+            "activity_2",
+            "activity_3",
+            "activity_4",
+            "activity_5",
+            "activity_6",
+            "activity_7",
+            "activity_8",
+            "activity_9",
+            "activity_10",
+            "activity_11",
+            "activity_12",
+            "activity_13",
+            "activity_14",
+            "activity_15",
+            "activity_16"
+          ],
+          "title": "ActivityRef",
+          "type": "string"
+        },
+        "currency": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z]{3}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Currency"
+        },
+        "kind": {
+          "const": "debts",
+          "title": "Kind",
+          "type": "string"
+        },
+        "participant_ref": {
+          "anyOf": [
+            {
+              "enum": [
+                "participant_selected",
+                "participant_1",
+                "participant_2",
+                "participant_3",
+                "participant_4",
+                "participant_5",
+                "participant_6",
+                "participant_7",
+                "participant_8",
+                "participant_9",
+                "participant_10",
+                "participant_11",
+                "participant_12",
+                "participant_13",
+                "participant_14",
+                "participant_15",
+                "participant_16",
+                "participant_17",
+                "participant_18",
+                "participant_19",
+                "participant_20",
+                "participant_21",
+                "participant_22",
+                "participant_23",
+                "participant_24",
+                "participant_25",
+                "participant_26",
+                "participant_27",
+                "participant_28",
+                "participant_29",
+                "participant_30",
+                "participant_31",
+                "participant_32"
+              ],
+              "title": "ParticipantRef",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Participant Ref"
+        }
+      },
+      "required": [
+        "kind",
+        "activity_ref"
+      ],
+      "title": "ReadDebtsCriteria",
+      "type": "object"
+    },
+    "ReadExpensesCriteria": {
+      "additionalProperties": false,
+      "description": "v1 expense criteria plus one explicit NFC/casefold literal title filter.",
+      "properties": {
+        "activity_ref": {
+          "enum": [
+            "activity_selected",
+            "activity_1",
+            "activity_2",
+            "activity_3",
+            "activity_4",
+            "activity_5",
+            "activity_6",
+            "activity_7",
+            "activity_8",
+            "activity_9",
+            "activity_10",
+            "activity_11",
+            "activity_12",
+            "activity_13",
+            "activity_14",
+            "activity_15",
+            "activity_16"
+          ],
+          "title": "ActivityRef",
+          "type": "string"
+        },
+        "from_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "From Date"
+        },
+        "kind": {
+          "const": "expenses",
+          "title": "Kind",
+          "type": "string"
+        },
+        "participant_ref": {
+          "anyOf": [
+            {
+              "enum": [
+                "participant_selected",
+                "participant_1",
+                "participant_2",
+                "participant_3",
+                "participant_4",
+                "participant_5",
+                "participant_6",
+                "participant_7",
+                "participant_8",
+                "participant_9",
+                "participant_10",
+                "participant_11",
+                "participant_12",
+                "participant_13",
+                "participant_14",
+                "participant_15",
+                "participant_16",
+                "participant_17",
+                "participant_18",
+                "participant_19",
+                "participant_20",
+                "participant_21",
+                "participant_22",
+                "participant_23",
+                "participant_24",
+                "participant_25",
+                "participant_26",
+                "participant_27",
+                "participant_28",
+                "participant_29",
+                "participant_30",
+                "participant_31",
+                "participant_32"
+              ],
+              "title": "ParticipantRef",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Participant Ref"
+        },
+        "title_contains": {
+          "anyOf": [
+            {
+              "maxLength": 240,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title Contains"
+        },
+        "to_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "To Date"
+        }
+      },
+      "required": [
+        "kind",
+        "activity_ref"
+      ],
+      "title": "ReadExpensesCriteria",
+      "type": "object"
+    }
+  },
+  "$id": "https://shared-ledger.invalid/schemas/t1-query-evidence-1.1.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Typed query summary shown beside v1 facts; it is not trusted on its own.",
+  "properties": {
+    "backend_criteria": {
+      "discriminator": {
+        "mapping": {
+          "activities": "#/$defs/BackendActivitiesCriteria",
+          "debts": "#/$defs/BackendDebtsCriteria",
+          "expenses": "#/$defs/BackendExpensesCriteria"
+        },
+        "propertyName": "kind"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/BackendActivitiesCriteria"
+        },
+        {
+          "$ref": "#/$defs/BackendExpensesCriteria"
+        },
+        {
+          "$ref": "#/$defs/BackendDebtsCriteria"
+        }
+      ],
+      "title": "Backend Criteria"
+    },
+    "body_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Body Digest",
+      "type": "string"
+    },
+    "context_version": {
+      "minimum": 1,
+      "title": "Context Version",
+      "type": "integer"
+    },
+    "criteria": {
+      "discriminator": {
+        "mapping": {
+          "activities": "#/$defs/ReadActivitiesCriteria",
+          "debts": "#/$defs/ReadDebtsCriteria",
+          "expenses": "#/$defs/ReadExpensesCriteria"
+        },
+        "propertyName": "kind"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ReadActivitiesCriteria"
+        },
+        {
+          "$ref": "#/$defs/ReadExpensesCriteria"
+        },
+        {
+          "$ref": "#/$defs/ReadDebtsCriteria"
+        }
+      ],
+      "title": "Criteria"
+    },
+    "matched_count": {
+      "maximum": 16,
+      "minimum": 0,
+      "title": "Matched Count",
+      "type": "integer"
+    },
+    "matching_fact_citations": {
+      "items": {
+        "anyOf": [
+          {
+            "enum": [
+              "fact_activity_1",
+              "fact_activity_2",
+              "fact_activity_3",
+              "fact_activity_4",
+              "fact_activity_5",
+              "fact_activity_6",
+              "fact_activity_7",
+              "fact_activity_8",
+              "fact_activity_9",
+              "fact_activity_10",
+              "fact_activity_11",
+              "fact_activity_12",
+              "fact_activity_13",
+              "fact_activity_14",
+              "fact_activity_15",
+              "fact_activity_16"
+            ],
+            "title": "ActivityEvidenceRef",
+            "type": "string"
+          },
+          {
+            "enum": [
+              "fact_expense_1",
+              "fact_expense_2",
+              "fact_expense_3",
+              "fact_expense_4",
+              "fact_expense_5",
+              "fact_expense_6",
+              "fact_expense_7",
+              "fact_expense_8",
+              "fact_expense_9",
+              "fact_expense_10",
+              "fact_expense_11",
+              "fact_expense_12",
+              "fact_expense_13",
+              "fact_expense_14",
+              "fact_expense_15",
+              "fact_expense_16"
+            ],
+            "title": "ExpenseEvidenceRef",
+            "type": "string"
+          },
+          {
+            "enum": [
+              "fact_debt_1",
+              "fact_debt_2",
+              "fact_debt_3",
+              "fact_debt_4",
+              "fact_debt_5",
+              "fact_debt_6",
+              "fact_debt_7",
+              "fact_debt_8",
+              "fact_debt_9",
+              "fact_debt_10",
+              "fact_debt_11",
+              "fact_debt_12",
+              "fact_debt_13",
+              "fact_debt_14",
+              "fact_debt_15",
+              "fact_debt_16"
+            ],
+            "title": "DebtEvidenceRef",
+            "type": "string"
+          }
+        ]
+      },
+      "maxItems": 16,
+      "title": "Matching Fact Citations",
+      "type": "array"
+    },
+    "normalized_criteria": {
+      "maxLength": 2000,
+      "minLength": 2,
+      "title": "Normalized Criteria",
+      "type": "string"
+    },
+    "observed_at": {
+      "format": "date-time",
+      "title": "Observed At",
+      "type": "string"
+    },
+    "operation": {
+      "enum": [
+        "read.activities",
+        "read.expenses",
+        "read.debts"
+      ],
+      "title": "ReadOperation",
+      "type": "string"
+    },
+    "page": {
+      "$ref": "#/$defs/QueryPageMetadata"
+    },
+    "post_filter": {
+      "discriminator": {
+        "mapping": {
+          "activities": "#/$defs/ActivityPostFilter",
+          "debts": "#/$defs/DebtPostFilter",
+          "expenses": "#/$defs/ExpensePostFilter"
+        },
+        "propertyName": "kind"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ActivityPostFilter"
+        },
+        {
+          "$ref": "#/$defs/ExpensePostFilter"
+        },
+        {
+          "$ref": "#/$defs/DebtPostFilter"
+        }
+      ],
+      "title": "Post Filter"
+    },
+    "query_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Query Digest",
+      "type": "string"
+    },
+    "query_ref": {
+      "enum": [
+        "query_1",
+        "query_2",
+        "query_3",
+        "query_4",
+        "query_5",
+        "query_6",
+        "query_7",
+        "query_8",
+        "query_9",
+        "query_10",
+        "query_11",
+        "query_12",
+        "query_13",
+        "query_14",
+        "query_15",
+        "query_16"
+      ],
+      "title": "QueryEvidenceRef",
+      "type": "string"
+    },
+    "result_ref": {
+      "enum": [
+        "read_result_1",
+        "read_result_2",
+        "read_result_3",
+        "read_result_4",
+        "read_result_5",
+        "read_result_6",
+        "read_result_7",
+        "read_result_8",
+        "read_result_9",
+        "read_result_10",
+        "read_result_11",
+        "read_result_12",
+        "read_result_13",
+        "read_result_14",
+        "read_result_15",
+        "read_result_16"
+      ],
+      "title": "ReadResultRef",
+      "type": "string"
+    },
+    "returned_count": {
+      "maximum": 16,
+      "minimum": 0,
+      "title": "Returned Count",
+      "type": "integer"
+    },
+    "schema_version": {
+      "const": "1.1.0",
+      "default": "1.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "simulation": {
+      "title": "Simulation",
+      "type": "boolean"
+    },
+    "source": {
+      "enum": [
+        "synthetic_simulation",
+        "p2_t1_adapter"
+      ],
+      "title": "QuerySource",
+      "type": "string"
+    },
+    "source_version": {
+      "maxLength": 240,
+      "minLength": 1,
+      "title": "Source Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "query_ref",
+    "result_ref",
+    "operation",
+    "criteria",
+    "normalized_criteria",
+    "backend_criteria",
+    "post_filter",
+    "context_version",
+    "source",
+    "source_version",
+    "observed_at",
+    "simulation",
+    "returned_count",
+    "matched_count",
+    "matching_fact_citations",
+    "page",
+    "query_digest",
+    "body_digest"
+  ],
+  "title": "QueryEvidenceObservation",
+  "type": "object"
+}

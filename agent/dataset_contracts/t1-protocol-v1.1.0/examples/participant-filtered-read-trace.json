@@ -1,0 +1,529 @@
+{
+  "format": "t1-offline-causal-trace-v1.1.0",
+  "model_contexts": [
+    {
+      "available_permissions": [
+        "read.expenses"
+      ],
+      "bound_references": [
+        {
+          "kind": "activity",
+          "ref": "activity_1"
+        },
+        {
+          "kind": "participant",
+          "ref": "participant_1"
+        },
+        {
+          "kind": "expense",
+          "ref": "expense_1"
+        },
+        {
+          "kind": "expense",
+          "ref": "expense_2"
+        }
+      ],
+      "context_version": 1,
+      "input_text": "Find Cafe expenses for Alice.",
+      "intent_classification": "business",
+      "pending_slots": [],
+      "policy_evidence": [],
+      "query_observations": [],
+      "read_results": [],
+      "recent_messages": [],
+      "verified_scope": {
+        "activity_ref": "activity_1",
+        "kind": "activity",
+        "permissions": [
+          "read.expenses"
+        ]
+      }
+    },
+    {
+      "available_permissions": [
+        "read.expenses"
+      ],
+      "bound_references": [
+        {
+          "kind": "activity",
+          "ref": "activity_1"
+        },
+        {
+          "kind": "participant",
+          "ref": "participant_1"
+        },
+        {
+          "kind": "expense",
+          "ref": "expense_1"
+        },
+        {
+          "kind": "expense",
+          "ref": "expense_2"
+        }
+      ],
+      "context_version": 1,
+      "input_text": "Find Cafe expenses for Alice.",
+      "intent_classification": "business",
+      "pending_slots": [],
+      "policy_evidence": [],
+      "query_observations": [
+        {
+          "backend_criteria": {
+            "kind": "expenses",
+            "scope_ref": "activity_1"
+          },
+          "body_digest": "1fa877d0875f7dc34db2f6e80e8402d4fdf067ace240ac8b269649e11af5d9b2",
+          "context_version": 1,
+          "criteria": {
+            "activity_ref": "activity_1",
+            "from_date": null,
+            "kind": "expenses",
+            "participant_ref": "participant_1",
+            "title_contains": "Cafe",
+            "to_date": null
+          },
+          "matched_count": 2,
+          "matching_fact_citations": [
+            "fact_expense_1",
+            "fact_expense_2"
+          ],
+          "normalized_criteria": "{\"criteria\":{\"activity_ref\":\"activity_1\",\"kind\":\"expenses\",\"participant_ref\":\"participant_1\",\"title_contains\":\"Cafe\"},\"operation\":\"read.expenses\"}",
+          "observed_at": "2026-10-10T12:00:00Z",
+          "operation": "read.expenses",
+          "page": {
+            "complete": true,
+            "expected_total": 2,
+            "has_more": false,
+            "pages_seen": 1,
+            "range_contiguous": true,
+            "source_version_fenced": true,
+            "stable_total_verified": true,
+            "truncated": false,
+            "unique_items_verified": true
+          },
+          "post_filter": {
+            "from_date": null,
+            "kind": "expenses",
+            "participant_ref": "participant_1",
+            "title_contains": "Cafe",
+            "to_date": null
+          },
+          "query_digest": "6281bd43dc8f32f23a77f89783175b2334097a0de14a589c86a5924664b0947f",
+          "query_ref": "query_3",
+          "result_ref": "read_result_1",
+          "returned_count": 2,
+          "schema_version": "1.1.0",
+          "simulation": true,
+          "source": "synthetic_simulation",
+          "source_version": "synthetic-source-v1"
+        }
+      ],
+      "read_results": [
+        {
+          "body": {
+            "items": [
+              {
+                "context_version": 1,
+                "evidence_ref": "fact_expense_1",
+                "expense_ref": "expense_1",
+                "expense_version": "1",
+                "financial_locked": true,
+                "kind": "expense",
+                "observed_at": "2026-10-10T12:00:00Z",
+                "occurred_at": "2026-10-10T12:00:00Z",
+                "original_amount": "1.00",
+                "original_currency": "CAD",
+                "participant_refs": [
+                  "participant_1"
+                ],
+                "title": "Cafe 1"
+              },
+              {
+                "context_version": 1,
+                "evidence_ref": "fact_expense_2",
+                "expense_ref": "expense_2",
+                "expense_version": "2",
+                "financial_locked": true,
+                "kind": "expense",
+                "observed_at": "2026-10-10T12:00:00Z",
+                "occurred_at": "2026-10-10T12:00:00Z",
+                "original_amount": "2.00",
+                "original_currency": "CAD",
+                "participant_refs": [
+                  "participant_1"
+                ],
+                "title": "Cafe 2"
+              }
+            ],
+            "kind": "expenses"
+          },
+          "context_version": 1,
+          "observed_at": "2026-10-10T12:00:00Z",
+          "operation": "read.expenses",
+          "result_ref": "read_result_1",
+          "simulation": true
+        }
+      ],
+      "recent_messages": [],
+      "verified_scope": {
+        "activity_ref": "activity_1",
+        "kind": "activity",
+        "permissions": [
+          "read.expenses"
+        ]
+      }
+    }
+  ],
+  "synthetic_only": true,
+  "trace": {
+    "initial_generation": 1,
+    "original_input_text": "Find Cafe expenses for Alice.",
+    "recent_messages": [],
+    "scenario": "synthetic-participant-filtered-read",
+    "steps": [
+      {
+        "kind": "user_input",
+        "seq": 0,
+        "text": "Find Cafe expenses for Alice."
+      },
+      {
+        "context": {
+          "available_permissions": [
+            "read.expenses"
+          ],
+          "bound_references": [
+            {
+              "kind": "activity",
+              "ref": "activity_1"
+            },
+            {
+              "kind": "participant",
+              "ref": "participant_1"
+            },
+            {
+              "kind": "expense",
+              "ref": "expense_1"
+            },
+            {
+              "kind": "expense",
+              "ref": "expense_2"
+            }
+          ],
+          "context_version": 1,
+          "input_text": "Find Cafe expenses for Alice.",
+          "intent_classification": "business",
+          "pending_slots": [],
+          "policy_evidence": [],
+          "query_observations": [],
+          "read_results": [],
+          "recent_messages": [],
+          "verified_scope": {
+            "activity_ref": "activity_1",
+            "kind": "activity",
+            "permissions": [
+              "read.expenses"
+            ]
+          }
+        },
+        "decision": {
+          "criteria": {
+            "activity_ref": "activity_1",
+            "from_date": null,
+            "kind": "expenses",
+            "participant_ref": "participant_1",
+            "title_contains": "Cafe",
+            "to_date": null
+          },
+          "kind": "read",
+          "operation": "read.expenses"
+        },
+        "kind": "model_decision",
+        "seq": 1
+      },
+      {
+        "kind": "tool_observation",
+        "query": {
+          "backend_criteria": {
+            "kind": "expenses",
+            "scope_ref": "activity_1"
+          },
+          "body_digest": "1fa877d0875f7dc34db2f6e80e8402d4fdf067ace240ac8b269649e11af5d9b2",
+          "context_version": 1,
+          "criteria": {
+            "activity_ref": "activity_1",
+            "from_date": null,
+            "kind": "expenses",
+            "participant_ref": "participant_1",
+            "title_contains": "Cafe",
+            "to_date": null
+          },
+          "matched_count": 2,
+          "matching_fact_citations": [
+            "fact_expense_1",
+            "fact_expense_2"
+          ],
+          "normalized_criteria": "{\"criteria\":{\"activity_ref\":\"activity_1\",\"kind\":\"expenses\",\"participant_ref\":\"participant_1\",\"title_contains\":\"Cafe\"},\"operation\":\"read.expenses\"}",
+          "observed_at": "2026-10-10T12:00:00Z",
+          "operation": "read.expenses",
+          "page": {
+            "complete": true,
+            "expected_total": 2,
+            "has_more": false,
+            "pages_seen": 1,
+            "range_contiguous": true,
+            "source_version_fenced": true,
+            "stable_total_verified": true,
+            "truncated": false,
+            "unique_items_verified": true
+          },
+          "post_filter": {
+            "from_date": null,
+            "kind": "expenses",
+            "participant_ref": "participant_1",
+            "title_contains": "Cafe",
+            "to_date": null
+          },
+          "query_digest": "6281bd43dc8f32f23a77f89783175b2334097a0de14a589c86a5924664b0947f",
+          "query_ref": "query_3",
+          "result_ref": "read_result_1",
+          "returned_count": 2,
+          "schema_version": "1.1.0",
+          "simulation": true,
+          "source": "synthetic_simulation",
+          "source_version": "synthetic-source-v1"
+        },
+        "result": {
+          "body": {
+            "items": [
+              {
+                "context_version": 1,
+                "evidence_ref": "fact_expense_1",
+                "expense_ref": "expense_1",
+                "expense_version": "1",
+                "financial_locked": true,
+                "kind": "expense",
+                "observed_at": "2026-10-10T12:00:00Z",
+                "occurred_at": "2026-10-10T12:00:00Z",
+                "original_amount": "1.00",
+                "original_currency": "CAD",
+                "participant_refs": [
+                  "participant_1"
+                ],
+                "title": "Cafe 1"
+              },
+              {
+                "context_version": 1,
+                "evidence_ref": "fact_expense_2",
+                "expense_ref": "expense_2",
+                "expense_version": "2",
+                "financial_locked": true,
+                "kind": "expense",
+                "observed_at": "2026-10-10T12:00:00Z",
+                "occurred_at": "2026-10-10T12:00:00Z",
+                "original_amount": "2.00",
+                "original_currency": "CAD",
+                "participant_refs": [
+                  "participant_1"
+                ],
+                "title": "Cafe 2"
+              }
+            ],
+            "kind": "expenses"
+          },
+          "context_version": 1,
+          "observed_at": "2026-10-10T12:00:00Z",
+          "operation": "read.expenses",
+          "result_ref": "read_result_1",
+          "simulation": true
+        },
+        "seq": 2
+      },
+      {
+        "context": {
+          "available_permissions": [
+            "read.expenses"
+          ],
+          "bound_references": [
+            {
+              "kind": "activity",
+              "ref": "activity_1"
+            },
+            {
+              "kind": "participant",
+              "ref": "participant_1"
+            },
+            {
+              "kind": "expense",
+              "ref": "expense_1"
+            },
+            {
+              "kind": "expense",
+              "ref": "expense_2"
+            }
+          ],
+          "context_version": 1,
+          "input_text": "Find Cafe expenses for Alice.",
+          "intent_classification": "business",
+          "pending_slots": [],
+          "policy_evidence": [],
+          "query_observations": [
+            {
+              "backend_criteria": {
+                "kind": "expenses",
+                "scope_ref": "activity_1"
+              },
+              "body_digest": "1fa877d0875f7dc34db2f6e80e8402d4fdf067ace240ac8b269649e11af5d9b2",
+              "context_version": 1,
+              "criteria": {
+                "activity_ref": "activity_1",
+                "from_date": null,
+                "kind": "expenses",
+                "participant_ref": "participant_1",
+                "title_contains": "Cafe",
+                "to_date": null
+              },
+              "matched_count": 2,
+              "matching_fact_citations": [
+                "fact_expense_1",
+                "fact_expense_2"
+              ],
+              "normalized_criteria": "{\"criteria\":{\"activity_ref\":\"activity_1\",\"kind\":\"expenses\",\"participant_ref\":\"participant_1\",\"title_contains\":\"Cafe\"},\"operation\":\"read.expenses\"}",
+              "observed_at": "2026-10-10T12:00:00Z",
+              "operation": "read.expenses",
+              "page": {
+                "complete": true,
+                "expected_total": 2,
+                "has_more": false,
+                "pages_seen": 1,
+                "range_contiguous": true,
+                "source_version_fenced": true,
+                "stable_total_verified": true,
+                "truncated": false,
+                "unique_items_verified": true
+              },
+              "post_filter": {
+                "from_date": null,
+                "kind": "expenses",
+                "participant_ref": "participant_1",
+                "title_contains": "Cafe",
+                "to_date": null
+              },
+              "query_digest": "6281bd43dc8f32f23a77f89783175b2334097a0de14a589c86a5924664b0947f",
+              "query_ref": "query_3",
+              "result_ref": "read_result_1",
+              "returned_count": 2,
+              "schema_version": "1.1.0",
+              "simulation": true,
+              "source": "synthetic_simulation",
+              "source_version": "synthetic-source-v1"
+            }
+          ],
+          "read_results": [
+            {
+              "body": {
+                "items": [
+                  {
+                    "context_version": 1,
+                    "evidence_ref": "fact_expense_1",
+                    "expense_ref": "expense_1",
+                    "expense_version": "1",
+                    "financial_locked": true,
+                    "kind": "expense",
+                    "observed_at": "2026-10-10T12:00:00Z",
+                    "occurred_at": "2026-10-10T12:00:00Z",
+                    "original_amount": "1.00",
+                    "original_currency": "CAD",
+                    "participant_refs": [
+                      "participant_1"
+                    ],
+                    "title": "Cafe 1"
+                  },
+                  {
+                    "context_version": 1,
+                    "evidence_ref": "fact_expense_2",
+                    "expense_ref": "expense_2",
+                    "expense_version": "2",
+                    "financial_locked": true,
+                    "kind": "expense",
+                    "observed_at": "2026-10-10T12:00:00Z",
+                    "occurred_at": "2026-10-10T12:00:00Z",
+                    "original_amount": "2.00",
+                    "original_currency": "CAD",
+                    "participant_refs": [
+                      "participant_1"
+                    ],
+                    "title": "Cafe 2"
+                  }
+                ],
+                "kind": "expenses"
+              },
+              "context_version": 1,
+              "observed_at": "2026-10-10T12:00:00Z",
+              "operation": "read.expenses",
+              "result_ref": "read_result_1",
+              "simulation": true
+            }
+          ],
+          "recent_messages": [],
+          "verified_scope": {
+            "activity_ref": "activity_1",
+            "kind": "activity",
+            "permissions": [
+              "read.expenses"
+            ]
+          }
+        },
+        "decision": {
+          "basis": "grounded",
+          "citations": [
+            "query_3"
+          ],
+          "kind": "answer",
+          "text": "Found 2 matching expenses:\n- expense_1 | \"Cafe 1\" | 1.00 CAD\n- expense_2 | \"Cafe 2\" | 2.00 CAD"
+        },
+        "kind": "model_decision",
+        "seq": 3
+      }
+    ],
+    "synthetic_private_bound_references": [
+      {
+        "entity_id": "4f8eb97c-690b-5bf7-b404-a0f0e6b602b7",
+        "kind": "activity",
+        "ref": "activity_1",
+        "scope_activity_id": "4f8eb97c-690b-5bf7-b404-a0f0e6b602b7",
+        "source_turn_id": "f1b3da5f-7962-5eb3-bcf4-5df6fead34ba"
+      },
+      {
+        "entity_id": "dca673ba-223c-503f-b635-67b08cd6581a",
+        "kind": "participant",
+        "ref": "participant_1",
+        "scope_activity_id": "4f8eb97c-690b-5bf7-b404-a0f0e6b602b7",
+        "source_turn_id": "f1b3da5f-7962-5eb3-bcf4-5df6fead34ba"
+      },
+      {
+        "entity_id": "3ad35fcf-fc7a-5226-ac8c-afa0d5078f54",
+        "kind": "expense",
+        "ref": "expense_1",
+        "scope_activity_id": "4f8eb97c-690b-5bf7-b404-a0f0e6b602b7",
+        "source_turn_id": "f1b3da5f-7962-5eb3-bcf4-5df6fead34ba"
+      },
+      {
+        "entity_id": "54556a35-8640-581a-8a3a-479f5d72d101",
+        "kind": "expense",
+        "ref": "expense_2",
+        "scope_activity_id": "4f8eb97c-690b-5bf7-b404-a0f0e6b602b7",
+        "source_turn_id": "f1b3da5f-7962-5eb3-bcf4-5df6fead34ba"
+      }
+    ],
+    "synthetic_private_turn_id": "f1b3da5f-7962-5eb3-bcf4-5df6fead34ba",
+    "trajectory_version": "1.1.0",
+    "versions": {
+      "api_version": "1.0.0",
+      "execution_key_version": "1",
+      "operations_version": "1.1.0",
+      "semantic_version": "1.1.0",
+      "trajectory_version": "1.1.0"
+    }
+  },
+  "training_eligible": false
+}

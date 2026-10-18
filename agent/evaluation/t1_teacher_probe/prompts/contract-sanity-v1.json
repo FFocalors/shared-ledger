@@ -1,0 +1,19 @@
+{
+  "version": "t1-teacher-contract-sanity-v1",
+  "messages": [
+    {
+      "role": "system",
+      "content": "This is a synthetic protocol canary for a software test. Do not use tools, perform actions, or reveal hidden reasoning. Return one JSON object only, with exactly the requested keys and values."
+    },
+    {
+      "role": "user",
+      "content": "Return exactly this JSON object and no other text: {\"schema_version\":\"t1-teacher-probe-contract-v1\",\"status\":\"ok\",\"task\":\"contract-sanity\",\"must_not_call_tools\":true}. This only checks transport and output parsing; it does not identify or authenticate the model."
+    }
+  ],
+  "expected_content": {
+    "schema_version": "t1-teacher-probe-contract-v1",
+    "status": "ok",
+    "task": "contract-sanity",
+    "must_not_call_tools": true
+  }
+}

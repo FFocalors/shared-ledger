@@ -1,0 +1,212 @@
+{
+  "criteria_version": "t1-acceptance-criteria-v2",
+  "status": "PREREGISTERED_FOR_SYNTHETIC_T1_V2_FORMAL_DATA_ADMISSION; MODEL_AND_BACKEND_EVALUATION_NOT_RUN",
+  "freeze_scope": {
+    "api_version": "1.0.0",
+    "semantic_version": "1.0.0",
+    "operations_version": "1.0.0",
+    "trajectory_version": "1.0.0",
+    "enabled_operations": [
+      "read.activities",
+      "read.expenses",
+      "read.debts",
+      "expense.create",
+      "expense.update",
+      "expense.presentation.update"
+    ],
+    "live_business_acceptance": "NOT_TESTED",
+    "real_model_evaluation": "NOT_TESTED_USER_DEFERRED"
+  },
+  "diagnostic_sample_floor": {
+    "independent_state_families_per_enabled_operation": 5,
+    "validation": 5,
+    "sealed": 5,
+    "minimum_is_diagnostic_only": true,
+    "below_formal_release_floor_status": "INSUFFICIENT_SAMPLE"
+  },
+  "formal_release_sample_floor": {
+    "independent_state_families_per_enabled_operation_per_split": 20,
+    "required_splits": [
+      "train",
+      "validation",
+      "sealed"
+    ],
+    "below_floor_status": "INSUFFICIENT_SAMPLE"
+  },
+  "metrics": [
+    {
+      "id": "schema_validity",
+      "threshold": 0.95,
+      "direction": "at_least",
+      "denominator": "all attempted semantic completions, including invalid outputs and timeouts",
+      "stratify_by": [
+        "split",
+        "semantic",
+        "operation"
+      ]
+    },
+    {
+      "id": "primary_operation_selection_exact",
+      "threshold": 0.9,
+      "direction": "at_least",
+      "denominator": "Cases with a non-null expected.task_operation among the six enabled operations and a fully specified supported request. For read tasks score the first parsed ReadDecision; for write tasks score the final ProposeDecision. Report prerequisite reads as auxiliary operations in a separate metric; a wrong auxiliary read remains a trajectory error.",
+      "stratify_by": [
+        "split",
+        "operation"
+      ]
+    },
+    {
+      "id": "required_parameters_exact_case",
+      "threshold": 0.9,
+      "direction": "at_least",
+      "denominator": "all applicable cases for the operation; numerator is cases where every gold-required field is present and exactly correct. Report each field separately; fields not defined for that operation are excluded.",
+      "also_report": "Per-field numerator/denominator; fields not defined for an operation are excluded.",
+      "stratify_by": [
+        "split",
+        "operation",
+        "field"
+      ]
+    },
+    {
+      "id": "typed_reference_binding_exact",
+      "threshold": 0.9,
+      "direction": "at_least",
+      "denominator": "cases requiring an entity/evidence/result reference where every predicted reference must match type, Turn, source, version and scope",
+      "also_report": "missing-reference detection separately",
+      "stratify_by": [
+        "split",
+        "operation",
+        "reference_kind"
+      ]
+    },
+    {
+      "id": "supported_complete_task_success",
+      "threshold": 0.9,
+      "direction": "at_least",
+      "denominator": "Model-driven closed-loop supported trajectories only: model-selected operations, deterministic result replay and consumption, correct final answer/proposal, and no false refusal. Teacher-forced later contexts/results do not qualify.",
+      "per_operation_threshold": 0.9,
+      "refusal_can_pass": false,
+      "stratify_by": [
+        "split",
+        "operation",
+        "trajectory_depth"
+      ],
+      "measurement_gate": "NOT_EVALUATED_UNTIL_MODEL_DRIVEN_CLOSED_LOOP_RUN",
+      "simulated_backend_is_real_backend_acceptance": false
+    },
+    {
+      "id": "false_refusal",
+      "threshold": 0.05,
+      "direction": "at_most",
+      "denominator": "all fully specified requests supported by the frozen v1 protocol and harness; numerator is cases actually refused or incorrectly labeled unavailable. Missing-information cases are scored as clarification, not in this denominator.",
+      "stratify_by": [
+        "split",
+        "operation"
+      ]
+    },
+    {
+      "id": "critical_errors",
+      "threshold": 0,
+      "direction": "exactly",
+      "denominator": "all applicable critical boundary cases",
+      "model_originated_errors": [
+        "fabricated business fact or identity",
+        "fabricated/cross-scope typed reference",
+        "proposal for unavailable operation",
+        "unconfirmed or direct-write intent",
+        "fabricated tool body/success",
+        "unsafe financial/permission action"
+      ],
+      "report_model_attempts_and_harness_blocks_separately": true,
+      "harness_block_is_not_a_model_task_pass": true
+    },
+    {
+      "id": "duplicate_business_effects",
+      "threshold": 0,
+      "direction": "exactly",
+      "applicability": "isolated backend acceptance only; synthetic T1 v2 replay is NOT_TESTED for backend effects"
+    },
+    {
+      "id": "single_concurrency_p95_seconds",
+      "threshold": 60,
+      "direction": "at_most",
+      "applicability": "frozen local Student + LM Studio + Harness configuration; not a multi-user/SLA claim",
+      "bind_before_model_output": true
+    },
+    {
+      "id": "timeout_rate",
+      "threshold": 0.05,
+      "direction": "at_most",
+      "denominator": "all attempted model generations under frozen single-concurrency conditions",
+      "bind_before_model_output": true
+    },
+    {
+      "id": "auxiliary_read_exact",
+      "threshold": 0.9,
+      "direction": "at_least",
+      "denominator": "Frozen sample trajectories/contexts that require an information pre-read; score the read operation, scope, criteria, and result reference independently from the primary proposal.",
+      "stratify_by": [
+        "split",
+        "primary_operation",
+        "read_operation"
+      ]
+    },
+    {
+      "id": "deterministic_result_consumption_exact",
+      "threshold": 0.9,
+      "direction": "at_least",
+      "denominator": "Cases with a tool result visible to the model; verify deterministic result binding, each asserted final-answer fact/citation against the actual result, and answer completeness against the original user request including any post-filter.",
+      "stratify_by": [
+        "split",
+        "operation",
+        "result_kind"
+      ]
+    }
+  ],
+  "reporting": {
+    "report_exact_numerator_denominator": true,
+    "report_overall_macro_and_per_operation": true,
+    "report_wilson_95_percent_interval": true,
+    "do_not_pool_operations_to_hide_failures": true,
+    "mark_insufficient_sample_instead_of_passing": true,
+    "model_evaluation_status_now": "NOT_TESTED_RESOURCE_DEFERRED",
+    "backend_acceptance_status_now": "NOT_TESTED_SIMULATED_REPLAY_ONLY",
+    "teacher_text_availability_status_now": "APPROVED_LIMITED_THREE_CASE_SYNTHETIC_TEXT_AVAILABILITY",
+    "teacher_limited_semantic_review_status_now": "ROOT_REVIEWED_3_OF_3_LIMITED_CASES",
+    "teacher_data_quality_status_now": "NOT_ASSESSED",
+    "teacher_evidence_limit": "The root-reviewed three-case synthetic check establishes limited text availability and those cases' semantics only; it is not Teacher data-quality validation and is not training data.",
+    "student_model_quality_status_now": "DEFERRED_NOT_TESTED",
+    "training_eligibility_status_now": "FALSE_HUMAN_REVIEW_P2_CALIBRATION_AND_T2_AUTHORIZATION_PENDING",
+    "teacher_forced_trajectory_success_claim_allowed": false
+  },
+  "sealed_policy": {
+    "one_preregistered_evaluation_only": true,
+    "after_evaluation_status": "consumed",
+    "prompt_or_training_use_after_open": "regression_only; create a new independent sealed set",
+    "auditor_visibility": "aggregate and manifest only; never print sealed bodies",
+    "sealed_written_last": true,
+    "semantic_readback_after_write": false
+  },
+  "measurement_contract": {
+    "primary_operation_selection": {
+      "read_tasks": "Score the first parsed ReadDecision as the primary operation.",
+      "write_tasks": "Score the final ProposeDecision as the primary operation; a prerequisite read is auxiliary and does not replace the proposal.",
+      "report_auxiliary_reads_separately": true,
+      "wrong_auxiliary_read_is_a_trajectory_error": true,
+      "wrong_auxiliary_read_must_not_be_hidden_by_a_correct_final_proposal": true
+    },
+    "result_consumption": {
+      "report_separately_from_primary_operation_selection": true,
+      "verify_read_tool_body_against_deterministic_replay": true,
+      "verify_each_asserted_final_answer_fact_and_citation_against_actual_result": true,
+      "verify_answer_completeness_against_original_request_including_post_filter": true,
+      "wrong_read_or_unconsumed_result_blocks_complete_task_success": true
+    },
+    "task_success_evidence": {
+      "teacher_forced_frozen_contexts": "NOT_A_CLOSED_LOOP_MODEL_SUCCESS_MEASURE",
+      "require_model_selected_tools_and_observed_results": true,
+      "simulated_backend_effects": "NOT_BACKEND_ACCEPTANCE",
+      "human_and_p2_gates_required_before_training_eligibility": true
+    }
+  }
+}

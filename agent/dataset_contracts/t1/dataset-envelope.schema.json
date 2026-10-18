@@ -1,0 +1,515 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Shared Ledger Agent T1 sample envelope v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "sample_id",
+    "state_family_id",
+    "split",
+    "case_type",
+    "capability_ids",
+    "expected",
+    "trace",
+    "data_origin",
+    "replay_status",
+    "protocol_fingerprint_sha256",
+    "review",
+    "normalized_state_signature_sha256",
+    "normalized_scenario_signature_sha256",
+    "coverage_tags",
+    "fixture_state",
+    "fixture_state_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "shared-ledger-agent-t1-sample-v1"
+    },
+    "sample_id": {
+      "type": "string",
+      "pattern": "^t1-[a-z0-9][a-z0-9_-]{2,95}$"
+    },
+    "state_family_id": {
+      "type": "string",
+      "pattern": "^state-family-[a-z0-9][a-z0-9_-]{2,63}$"
+    },
+    "split": {
+      "enum": [
+        "train",
+        "validation",
+        "sealed"
+      ]
+    },
+    "case_type": {
+      "enum": [
+        "supported_operation",
+        "grounded_answer",
+        "clarification",
+        "locked_financial_update",
+        "ordinary_prepayment",
+        "permission_denial",
+        "prompt_injection",
+        "multi_turn"
+      ]
+    },
+    "capability_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^CAP(0[1-9]|1[0-7])$"
+      },
+      "uniqueItems": true
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "supported_in_v1",
+        "semantic",
+        "operation",
+        "task_operation",
+        "must_complete"
+      ],
+      "properties": {
+        "supported_in_v1": {
+          "type": "boolean"
+        },
+        "semantic": {
+          "enum": [
+            "answer",
+            "clarify",
+            "read",
+            "propose"
+          ]
+        },
+        "operation": {
+          "oneOf": [
+            {
+              "enum": [
+                "read.activities",
+                "read.expenses",
+                "read.debts",
+                "expense.create",
+                "expense.update",
+                "expense.presentation.update"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "must_complete": {
+          "type": "boolean"
+        },
+        "success_note": {
+          "type": "string",
+          "maxLength": 240
+        },
+        "task_operation": {
+          "oneOf": [
+            {
+              "enum": [
+                "read.activities",
+                "read.expenses",
+                "read.debts",
+                "expense.create",
+                "expense.update",
+                "expense.presentation.update"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "trace": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/model_step"
+          },
+          {
+            "$ref": "#/$defs/tool_result_step"
+          },
+          {
+            "$ref": "#/$defs/user_followup_step"
+          }
+        ]
+      }
+    },
+    "data_origin": {
+      "const": "synthetic"
+    },
+    "replay_status": {
+      "const": "simulated"
+    },
+    "protocol_fingerprint_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "fixture_state_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "business_source_revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "generator_version": {
+      "type": "string",
+      "pattern": "^t1-synth-[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "teacher_candidate_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 120
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reviewer_kind",
+        "reviewer_id",
+        "independent_root_review",
+        "human_review_pending",
+        "training_eligible"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "auto_validated",
+            "agent_self_reviewed",
+            "rejected"
+          ]
+        },
+        "reviewer_kind": {
+          "const": "agent"
+        },
+        "reviewer_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "independent_root_review": {
+          "enum": [
+            "pending",
+            "approved",
+            "rejected"
+          ]
+        },
+        "human_review_pending": {
+          "const": true
+        },
+        "training_eligible": {
+          "const": false
+        },
+        "review_note": {
+          "type": "string",
+          "maxLength": 240
+        }
+      }
+    },
+    "normalized_state_signature_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "normalized_scenario_signature_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "fixture_state": {
+      "$ref": "#/$defs/synthetic_fixture"
+    },
+    "fixture_state_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "coverage_tags": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9_-]{1,63}$"
+      }
+    }
+  },
+  "$defs": {
+    "model_step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "context",
+        "target"
+      ],
+      "properties": {
+        "kind": {
+          "const": "model"
+        },
+        "context": {
+          "$ref": "../../contracts/v1.0.0/schemas/ModelContext.schema.json"
+        },
+        "target": {
+          "oneOf": [
+            {
+              "$ref": "../../contracts/v1.0.0/schemas/AnswerDecision.schema.json"
+            },
+            {
+              "$ref": "../../contracts/v1.0.0/schemas/ClarifyDecision.schema.json"
+            },
+            {
+              "$ref": "../../contracts/v1.0.0/schemas/ReadDecision.schema.json"
+            },
+            {
+              "$ref": "../../contracts/v1.0.0/schemas/ProposeDecision.schema.json"
+            }
+          ]
+        }
+      }
+    },
+    "tool_result_step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "producer",
+        "fixture_state",
+        "request",
+        "observed_at",
+        "context_version",
+        "replay_key",
+        "simulator_version",
+        "simulator_sha256",
+        "result"
+      ],
+      "properties": {
+        "kind": {
+          "const": "tool_result"
+        },
+        "producer": {
+          "const": "deterministic_synthetic_fixture"
+        },
+        "result": {
+          "$ref": "../../contracts/v1.0.0/schemas/ToolReadResult.schema.json"
+        },
+        "fixture_state": {
+          "$ref": "#/$defs/synthetic_fixture"
+        },
+        "request": {
+          "$ref": "../../contracts/v1.0.0/schemas/ReadDecision.schema.json"
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "context_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "replay_key": {
+          "type": "string",
+          "pattern": "^t1-[a-z0-9][a-z0-9_-]{2,95}$"
+        },
+        "simulator_version": {
+          "const": "t1-synthetic-read-1.0.0"
+        },
+        "simulator_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "user_followup_step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "text"
+      ],
+      "properties": {
+        "kind": {
+          "const": "user_followup"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      }
+    },
+    "synthetic_fixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "activities",
+        "expenses",
+        "debts"
+      ],
+      "properties": {
+        "activities": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/$defs/fixture_activity"
+          }
+        },
+        "expenses": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/$defs/fixture_expense"
+          }
+        },
+        "debts": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/$defs/fixture_debt"
+          }
+        }
+      }
+    },
+    "fixture_activity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "activity_ref",
+        "name",
+        "activity_kind",
+        "base_currency",
+        "status"
+      ],
+      "properties": {
+        "activity_ref": {
+          "type": "string",
+          "pattern": "^activity_(selected|[0-9]{1,2})$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "activity_kind": {
+          "enum": [
+            "normal",
+            "large"
+          ]
+        },
+        "base_currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "archived",
+            "deleted"
+          ]
+        }
+      }
+    },
+    "fixture_expense": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "activity_ref",
+        "expense_ref",
+        "title",
+        "original_amount",
+        "original_currency",
+        "occurred_at",
+        "participant_refs",
+        "financial_locked",
+        "expense_version"
+      ],
+      "properties": {
+        "activity_ref": {
+          "type": "string",
+          "pattern": "^activity_(selected|[0-9]{1,2})$"
+        },
+        "expense_ref": {
+          "type": "string",
+          "pattern": "^expense_(selected|[0-9]{1,2})$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "original_amount": {
+          "type": "string",
+          "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"
+        },
+        "original_currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "participant_refs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "items": {
+            "type": "string",
+            "pattern": "^participant_(selected|[0-9]{1,2})$"
+          }
+        },
+        "financial_locked": {
+          "type": "boolean"
+        },
+        "expense_version": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*$"
+        }
+      }
+    },
+    "fixture_debt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "activity_ref",
+        "debtor_ref",
+        "creditor_ref",
+        "amount",
+        "currency"
+      ],
+      "properties": {
+        "activity_ref": {
+          "type": "string",
+          "pattern": "^activity_(selected|[0-9]{1,2})$"
+        },
+        "debtor_ref": {
+          "type": "string",
+          "pattern": "^participant_(selected|[0-9]{1,2})$"
+        },
+        "creditor_ref": {
+          "type": "string",
+          "pattern": "^participant_(selected|[0-9]{1,2})$"
+        },
+        "amount": {
+          "type": "string",
+          "pattern": "^[0-9]+(\\.[0-9]{1,2})?$"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    }
+  }
+}

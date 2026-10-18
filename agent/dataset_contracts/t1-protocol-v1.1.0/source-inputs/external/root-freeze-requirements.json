@@ -1,0 +1,141 @@
+{
+  "authority": [
+    "user objective: continue completing T1 protocol freeze",
+    "guide T1 roadmap row77",
+    "P1 frozen v1 protocol",
+    "root RBR01-04 review",
+    "current P2 version differences",
+    "independent protocol audit"
+  ],
+  "created_at": "2026-10-11T13:37:27.706719+00:00",
+  "format": "root-t1-protocol-v1.1-freeze-requirements-v1",
+  "requirements": [
+    {
+      "id": "PF-01",
+      "requirement": "explicit_api_1.0_semantic_operations_trajectory_1.1_execution_key_1_versions_and_unknown_version_rejection",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-02",
+      "requirement": "four_semantics_six_operations_CAP17_registry_no_execution_or_new_financial_capability",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-03",
+      "requirement": "original_user_input_unchanged_typed_observations_separate_no_teacher_forcing_hints",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-04",
+      "requirement": "query_citations_distinct_from_facts_and_policy_v1_rejects_new_query_tokens",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-05",
+      "requirement": "trusted_private_owner_turn_scope_generation_revision_epoch_binding",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-06",
+      "requirement": "operation_normalized_criteria_and_actual_backend_vs_postfilter_stage_binding",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-07",
+      "requirement": "actual_tool_result_body_source_identity_time_context_and_financial_version_binding",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-08",
+      "requirement": "deterministic_matched_fact_set_and_count_recomputed_from_complete_baseline",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-09",
+      "requirement": "pagination_continuity_exact_stable_total_and_source_version_fence",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-10",
+      "requirement": "backend_zero_vs_postfilter_zero_evidence_distinction",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-11",
+      "requirement": "partial_unknown_count_truncation_source_error_overflow_cannot_prove_no_match",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-12",
+      "requirement": "simulation_and_source_allowlist_cannot_claim_real_backend",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-13",
+      "requirement": "immutable_typed_entity_fact_result_query_refs_and_private_UUID_projection",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-14",
+      "requirement": "stale_new_read_restart_resume_scope_source_and_generation_changes_fail_closed",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-15",
+      "requirement": "trusted_query_renderer_cannot_turn_query_citation_into_arbitrary_financial_assertion",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-16",
+      "requirement": "business_queries_cannot_fallback_to_source_free_conversation",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-17",
+      "requirement": "new_versioned_causal_trajectory_and_data_adaptation_schema_no_future_evidence",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-18",
+      "requirement": "decimal_conservation_scope_lock_permissions_and_existing_business_rules_preserved",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-19",
+      "requirement": "Draft202012_schema_structure_plus_Pydantic_cross_field_layers",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-20",
+      "requirement": "deterministic_export_check_manifest_source_drift_and_unexpected_file_detection",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-21",
+      "requirement": "explicit_migration_old_API_not_enabled_no_old_proposal_or_execution_identity_upgrade",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-22",
+      "requirement": "synthetic_positive_negative_edge_cases_for_three_read_operations_and_four_semantics",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-23",
+      "requirement": "old_v1_v2_P1_P2_sources_candidate_and_heldouts_preserved_no_model_or_cloud_actions",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-24",
+      "requirement": "offline_protocol_freeze_not_formal_dataset_training_or_P2_model_acceptance",
+      "status": "EVIDENCE_PENDING"
+    },
+    {
+      "id": "PF-25",
+      "requirement": "independent_root_completion_audit_bound_to_exact_source_schema_test_evidence",
+      "status": "EVIDENCE_PENDING"
+    }
+  ],
+  "scope": "new offline protocol freeze; T1 formal dataset admission remains a separate unfinished objective",
+  "training_eligible": false
+}

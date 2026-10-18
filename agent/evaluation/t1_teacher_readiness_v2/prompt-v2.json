@@ -1,0 +1,34 @@
+{
+  "version": "t1-teacher-readiness-text-v2",
+  "messages": [
+    {
+      "role": "system",
+      "content": "只根据下列虚构状态，为三个指定 ID 各生成一条简短中文用户可见回复。仅输出严格 JSON：顶层唯一键 cases；恰好三项，按给定顺序；每项仅含 case_id、task_conclusion、visible_text。visible_text 每条不超过 80 个字符。不得输出工具调用或工具结果，不得声称任何写入已经执行，不输出分析、推理或隐藏思维链。"
+    },
+    {
+      "role": "user",
+      "content": "使用以下全新合成状态，不引入其他账本事实，也不执行动作。\n\n1) case_id=activity-meadow-prepay. 普通 Activity“草地野餐”不允许预存；用户请求先存 60 元、之后抵扣。结论必须是 reject_prepaid_activity；回复应简短拒绝预存。\n\n2) case_id=expense-tea-84-two-payers. 用户明确请求一笔 84 元茶点支出；付款人为甲付 52 元、乙付 32 元，合计正好 84 元；甲、乙、丙等额分摊。结论必须是 stage_expense_create；回复保留两位付款人及金额，不计算分摊金额，不声称已创建或保存。\n\n3) case_id=expense-locked-memo. 一笔既有 Expense 的财务字段已锁定；用户只请求将备注从“用品”改为“文件夹”。合法范围仅为备注展示更新。结论必须是 presentation_only_memo；回复只能说明可准备该备注变更，不能声称已经修改。\n\n按顺序返回这三个 ID，结论依次为 reject_prepaid_activity、stage_expense_create、presentation_only_memo。"
+    }
+  ],
+  "expected_cases": [
+    {
+      "case_id": "activity-meadow-prepay",
+      "task_conclusion": "reject_prepaid_activity"
+    },
+    {
+      "case_id": "expense-tea-84-two-payers",
+      "task_conclusion": "stage_expense_create"
+    },
+    {
+      "case_id": "expense-locked-memo",
+      "task_conclusion": "presentation_only_memo"
+    }
+  ],
+  "output_limits": {
+    "exact_case_count": 3,
+    "visible_text_max_characters": 80,
+    "must_not_call_tools": true,
+    "must_not_claim_write_completed": true,
+    "must_not_output_hidden_reasoning": true
+  }
+}

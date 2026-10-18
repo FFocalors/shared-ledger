@@ -1,0 +1,198 @@
+{
+  "format": "t1-protocol-v1.1.0-source-inputs-v1",
+  "status": "APPROVED_OFFLINE_SOURCE_SCHEMA_AND_EXPORT_REVIEW",
+  "mode": "offline_synthetic_source_schema_export_review",
+  "training_eligible": false,
+  "human_reviewed": false,
+  "production_enabled": false,
+  "models_run": false,
+  "approved_source_hashes": [
+    {
+      "sha256": "1e18a07dfd4125428251adfbeac22868efbd20fb313f48cd24e3e7a0c83ed48a",
+      "path": "agent/evaluation/t1_protocol_v1_1/__init__.py"
+    },
+    {
+      "sha256": "13980bbe7ccbd024bfc061e19788b2db70bcd3e13eaa99c395c1769b96992c98",
+      "path": "agent/evaluation/t1_protocol_v1_1/contracts.py"
+    },
+    {
+      "sha256": "cd63aaca9d4191d6f234a98060a481b90b0725531df677652a61dba999fd40e7",
+      "path": "agent/evaluation/t1_protocol_v1_1/examples.py"
+    },
+    {
+      "sha256": "b733c784103b4a42799901286457601a3b6309226ae607a43c070bd014a65197",
+      "path": "agent/evaluation/t1_protocol_v1_1/export_protocol.py"
+    },
+    {
+      "sha256": "de3856a89ef7a5e0c2814de714ca4b792e016ec5d48897837eac2ad8cfd415eb",
+      "path": "agent/evaluation/t1_protocol_v1_1/harness.py"
+    },
+    {
+      "sha256": "eea73373bb5407778c5983a6429150a9163a82609f42ddd038e1a56ac57bf6c7",
+      "path": "agent/evaluation/t1_protocol_v1_1/protocol_registry.py"
+    },
+    {
+      "sha256": "2b957cf254b9ebfaf55842306f16a5b87c1f52c6125b7d781b04914d9934d5b1",
+      "path": "agent/evaluation/t1_protocol_v1_1/tests/test_protocol_v1_1.py"
+    },
+    {
+      "sha256": "d12d377936ce65ed46a05a59e740118d47912988a253a428e2b12ff8564776ed",
+      "path": "agent/evaluation/t1_protocol_v1_1/trajectory.py"
+    },
+    {
+      "sha256": "9fd214d9d8eb43c6f5b03b1d7e95b2bef274dbf9e8be495f536f495b48a5bf2d",
+      "path": "agent/evaluation/t1_protocol_v1_1/v1_contracts.py"
+    }
+  ],
+  "generated_schemas": [
+    {
+      "sha256": "9d8880f721008b1bad938641ab84aed92ade02e37283c64cf2ee4d82d2f4fdf2",
+      "path": "schemas/adaptation-envelope.schema.json"
+    },
+    {
+      "sha256": "cd869fdbae76ff79badd78beb67b8798d798e7da857e05234d9c7e7fda3e8e07",
+      "path": "schemas/dataset-applicability.schema.json"
+    },
+    {
+      "sha256": "ecb5dba5d6ba897b6b4238e4d4b133fe0ef4530ace126752ddb47afc3b845e1a",
+      "path": "schemas/decision-envelope-v1.1.schema.json"
+    },
+    {
+      "sha256": "9b435f7ef31900ceede476d92d7542ffd1c8f272d57645d730bde567c16ba4e2",
+      "path": "schemas/model-context.schema.json"
+    },
+    {
+      "sha256": "7496c0a95ec6e9cdb040b350a5d2d4abd175933ed0f2b5c76dc851a8fa027484",
+      "path": "schemas/negotiated-versions.schema.json"
+    },
+    {
+      "sha256": "80e4860fdd5255cf770baf2542bde70b935b836dd7d9832c5a4afcb090282970",
+      "path": "schemas/protocol-registry.schema.json"
+    },
+    {
+      "sha256": "3f3c10727722d01a63f4e2e41016e225c7b1383739dd52589fdb2fb930957a62",
+      "path": "schemas/protocol-version-tuple.schema.json"
+    },
+    {
+      "sha256": "76df92f0fda2d55f5aeb2d980fd077bfd291d8d28cf8c9a51ae327daa5b55d8a",
+      "path": "schemas/query-evidence.schema.json"
+    },
+    {
+      "sha256": "b1e667b95c67e1501199ec18ae5ac4a4c3231de54a9e109e7f260ffcd9a9b85f",
+      "path": "schemas/semantic-decision.schema.json"
+    },
+    {
+      "sha256": "da34f7b66e1c23b589c69ebe2bb796b532c2d10fe0570de8a31d620274f7142d",
+      "path": "schemas/trajectory.schema.json"
+    }
+  ],
+  "typed_synthetic_examples": [
+    {
+      "sha256": "8dfa461904ea73d55e75902ff3608b4f4df27b18bfc877fbb7e18f0d4668f3c5",
+      "path": "examples/activities-empty.json"
+    },
+    {
+      "sha256": "d2ce4ec372fab4758328a8bdcf9cc39266a9fb331b8447636af50326fd4cfabb",
+      "path": "examples/clarify-resume-trace.json"
+    },
+    {
+      "sha256": "3dbb5bcb16f05ffe480b3f6f134687b4209cfd42828885f1006293a6e8bee754",
+      "path": "examples/debts-cad-empty.json"
+    },
+    {
+      "sha256": "4a870c2c645843d603845026f58bbb4c41d08aa8cc214298a4edad6cc2620a57",
+      "path": "examples/expenses-postfilter-empty.json"
+    },
+    {
+      "sha256": "dec8d55141cd2566b9eebc3981dc140d7a11b0e31da127cf2a8df226826a0b8b",
+      "path": "examples/participant-filtered-read-trace.json"
+    }
+  ],
+  "reports": [
+    {
+      "sha256": "0b9e114375619f514588f5b7384be19d8cb1477423f6178e8fe5287d866ecb93",
+      "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-freeze-requirements.json",
+      "name": "root_freeze_requirements"
+    },
+    {
+      "sha256": "fb46818230b82c1d5c1a55a34e36c21f3c2110a079d06d4dd26ba9b704bf294b",
+      "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/prefreeze-20261012T004838745457/ROOT-PREFREEZE-REVIEW.json",
+      "name": "root_prefreeze_review"
+    },
+    {
+      "sha256": "22bc7188963daa58b9c7a1beb8b5f828742a65aa51f0bb486184a069d16dc712",
+      "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-PF-REVIEW.json",
+      "name": "root_pf_review_matrix"
+    },
+    {
+      "sha256": "01a877db99750aa48f967d0aac15bf35dc6d566d38e67cd32cc9f6e24dd17ebd",
+      "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/root-probes-results-20261012T004842037763.json",
+      "name": "root_final_probes"
+    },
+    {
+      "sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e",
+      "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/preservation-20261012T003538035255.json",
+      "name": "preservation_review"
+    },
+    {
+      "sha256": "63500edfa41d2c2f7fa6686453d6b90bbd7ecc5c8510230749b46fb777da9ee1",
+      "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/independent-audit-20261012/final-independent-audit-20261012.md",
+      "name": "independent_final_audit"
+    },
+    {
+      "sha256": "e9dd0e2fb0de1de0bc7fbc5e275a1e582516056822cc3ad2480e93516042f03f",
+      "path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/independent-audit-20261012/export-audit-final-results.json",
+      "name": "independent_export_audit_receipt"
+    },
+    {
+      "sha256": "77ce270ee836d889f119008348caaa702781e667a61a44e4964b84e826c9f7ad",
+      "path": "D:/AI/runs/shared-ledger/t1-release-v2-20261011/review/human-review-v2/root-business-review.json",
+      "name": "v2_root_business_review"
+    },
+    {
+      "sha256": "7704c71648fb3a8be056b16c71ac85959e83ab09b572cb8d47a5759d0e7228e9",
+      "path": "agent/docs/t1/release-v2/P2-CALIBRATION-REVIEW-FINDINGS.md",
+      "name": "p2_calibration_findings"
+    }
+  ],
+  "scratch_export": {
+    "candidate": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/independent-final-export-scratch-02-20261012",
+    "candidate_file_count": 36,
+    "scope": "Export mechanism evidence only; the scratch manifest captured prior PENDING documentation and is not the final repository candidate.",
+    "checks": [
+      "initial write/check passed",
+      "repeat write preserved every file byte",
+      "unknown export and archive files rejected",
+      "source, documentation, schema, archive-byte, and provenance drift rejected",
+      "restoring exact D-only bytes returned check to success"
+    ],
+    "manifest_sha256": "f43344f13e1c80b36acef0e2ded66239dae843a5356f669704a0ac33a0990d11",
+    "archive_index_sha256": "78eb7090084f39b46be70014dd8180588b225a486fd7533e4e1517e1df6e6f22",
+    "executor_preview_probe_log_path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/executor-attempt02-export-probes.log",
+    "executor_preview_probe_log_sha256": "9ac5a86158d568d9f8f05890b429dd17952a4a7da721067f5ae3a06449f00e39"
+  },
+  "preservation": {
+    "report_sha256": "87530bd62c3aefd0b99df87d5abb58036093851b098583cf418ecf90d055c95e",
+    "resumed_baseline": "152/154 matched; two observed paths: agent/app/p2_runtime.py and agent/docs/p2/R2_CLOSED_LOOP_DIAGNOSTIC.md",
+    "runtime_input_projection": "reported unchanged",
+    "r2": "design-only",
+    "status": "PASS_WITH_OBSERVED_PARALLEL_P2_DRIFT",
+    "old_candidate_check": "split raw hashes and row counts plus listed receipts matched",
+    "restore": "none",
+    "attribution": "none",
+    "original_baseline": "149/154 matched; five observed P2-path changes"
+  },
+  "final_repo_freeze": {
+    "approval_source": "separate external SHA-bound root receipt",
+    "receipt_path": "D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-FREEZE-APPROVAL.json",
+    "manifest_root_approved": "false by design; external receipt must bind the final repository manifest hash",
+    "status": "EXTERNAL_SHA_BOUND_RECEIPT_DETERMINES_FINAL_APPROVAL",
+    "receipt_hash_policy": "Not embedded in these frozen documents to avoid a manifest self-reference loop."
+  },
+  "exclusions": [
+    "No model, Teacher, GPU, cloud, P2 API, Supabase, Auth, or RLS call was made.",
+    "No held-out/validation semantics were used by the protocol tests, probes, or preservation comparison; preservation used raw hashes and counts.",
+    "Offline supplied-record consistency is not live backend authorization, cryptographic provenance, archive/sub-activity acceptance, or write-preflight proof.",
+    "The protocol review is not T1 formal data admission or training authorization; training_eligible remains false."
+  ]
+}

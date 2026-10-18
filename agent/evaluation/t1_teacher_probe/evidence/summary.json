@@ -1,0 +1,142 @@
+{
+  "availability": "AVAILABLE_PROTOCOL_SANITY_ONLY",
+  "configuration": {
+    "api_key_present": true,
+    "credential_value_recorded": false,
+    "model": "deepseek-v4.1-flash",
+    "nonsecret_config_fingerprint": "ceceed12367d1c6554222ab15620524747d757a58fcc9bc26dac6e646a3114c8",
+    "provider": "opencode",
+    "route": "https://opencode.ai/zen/go/v1/chat/completions"
+  },
+  "credential_bytes_found_in_external_evidence": false,
+  "evidence_version": "t1-teacher-probe-summary-v1",
+  "external_evidence_directory": "D:\\AI\\runs\\shared-ledger\\t1-teacher-probe-20261011",
+  "external_files": {
+    "01-contract-sanity.parsed.json": {
+      "bytes": 198,
+      "sha256": "1e8fbf50d84f7168f1879107f85c69e8b4516f8adf4fb7973197c1218bb93e27"
+    },
+    "01-contract-sanity.raw_response.json": {
+      "bytes": 616,
+      "sha256": "f53bc73bace611393093e8bffe4b9fee87e84c47c8c2d0db1c3c0467fb62f202"
+    },
+    "01-contract-sanity.request.json": {
+      "bytes": 989,
+      "sha256": "667b7b608b90228fb3049b5fbafd40f6a211b7d6d436cd58575a7cc77b26cd33"
+    },
+    "02-language-pilot.parse_failure.json": {
+      "bytes": 115,
+      "sha256": "9d43d7780ef903179117e9387ebdb3484e2cd5667c172eeeeeb716e50ac0a5d1"
+    },
+    "02-language-pilot.raw_response.json": {
+      "bytes": 1542,
+      "sha256": "aac05bde936ea6fd3736bfebec97a9230159ae961afce4d4a973e46174696480"
+    },
+    "02-language-pilot.request.json": {
+      "bytes": 2244,
+      "sha256": "fe53e610e3cc0cc711104bd266bd627bf8d0c4a1e87013994f688b52c525f65a"
+    },
+    "run_manifest.json": {
+      "bytes": 3294,
+      "sha256": "e3efefa6f039f20f1179d1a4e529ee505a189b0a4e0ecc43c4aef018303f3345"
+    }
+  },
+  "fake_http_tests": {
+    "network_calls": 0,
+    "passed": 8
+  },
+  "limits": {
+    "automatic_retries": 0,
+    "max_output_tokens_per_request": 256,
+    "max_requests": 2,
+    "max_response_bytes": 256000,
+    "requests_sent": 2,
+    "timeout_seconds_per_request": 60.0
+  },
+  "measured_date_local": "2026-10-11",
+  "notes": [
+    "provider-returned model labels are metadata and not independent identity proof",
+    "the second completion stopped at the 256-token cap and returned empty content; no retry was sent",
+    "request 2 envelope metadata was parsed post hoc without preserving completion text in this summary"
+  ],
+  "preregistration": {
+    "prompt_sha256": {
+      "contract_sanity": "010e8fea467ec643e3f6790edccefd424a6667f9f68dd7b425f7db7b106e30c0",
+      "language_pilot": "7ca77279fa17a48da1ab6c1f54095ad04e19d01589fc3696c170f4a817514a48"
+    },
+    "sha256": "745d636051726935fcc697d46783dbebf203ba623e73b05abcd8fb7e7359d8ba",
+    "source_sha256": {
+      "business_acceptance_t1": "572d00543448ae61dfb600d88e0175af8da9af9e07ee8fd459dec29d9110593d",
+      "fake_http_tests": "70483b96900d52f26ecfe77c14a8485aaaec24f6c7793093c806a7e58379fdab",
+      "language_prompt": "7ca77279fa17a48da1ab6c1f54095ad04e19d01589fc3696c170f4a817514a48",
+      "legacy_provider_adapter_read_only": "86d803f077becf3604f4fb2a073be552cf9616986682dae94b1084dd858b571b",
+      "model_preregistration_read_only": "e5699fe99bf9b97f4c52e8ac188ee35256b6f1588c13761baa3013204e3ead08",
+      "probe": "bea79cd3f952c65fa252d9d78001a1b19970e2896201744e41a3ef1a970d1843",
+      "sanity_prompt": "010e8fea467ec643e3f6790edccefd424a6667f9f68dd7b425f7db7b106e30c0",
+      "t1_freeze": "fc3ca21eae1f8fbc10c9180abc4641219b80c9e51705935fb2d09d4a20917c35",
+      "teacher_status_t1_v1": "d6511cc64429e740607629df698b5439afe4f679fdbb2196a4b67e0583c00952",
+      "training_guide": "dd43f57450aa13153bea9ceb8eaa38ef7b51d3f46e38777470f61d4f9c7a14c8"
+    },
+    "status": "FROZEN_BEFORE_EXTERNAL_REQUESTS"
+  },
+  "request_2_offline_analysis": {
+    "file": "D:\\project\\Android\\shared-ledger-agent\\agent\\evaluation\\t1_teacher_probe\\evidence\\offline_response_analysis.json",
+    "finish_reason": "length",
+    "interpretation": "finish_reason=length and reasoning_tokens equals the 256-token output cap while visible completion content is empty; this records output-budget exhaustion behavior and is not a model-quality judgment.",
+    "reasoning_content_field_present": true,
+    "reasoning_content_value_inspected": false,
+    "sha256": "bf892128d7c158bf2bb17db262d640d9efe1f91370c94f1fe50b0ab505d0ca21",
+    "source_raw_response_sha256": "aac05bde936ea6fd3736bfebec97a9230159ae961afce4d4a973e46174696480",
+    "usage": {
+      "completion_tokens": 256,
+      "prompt_tokens": 428,
+      "total_tokens": 684
+    },
+    "visible_completion_content_character_count": 0
+  },
+  "request_identity": {
+    "headers_saved": false,
+    "server_request_ids_recorded": true,
+    "stable_across_requests": true,
+    "x_opencode_session_present": true
+  },
+  "requests": [
+    {
+      "call_number": 1,
+      "duration_seconds": 1.594,
+      "finish_reason": "stop",
+      "http_status": 200,
+      "provider_returned_model_label": "deepseek-v4.1-flash",
+      "server_request_id": "chatcmpl-b9170975",
+      "strict_json_exact_schema_pass": true,
+      "usage": {
+        "completion_tokens": 53,
+        "prompt_tokens": 129,
+        "total_tokens": 182
+      }
+    },
+    {
+      "call_number": 2,
+      "completion_content_character_count": 0,
+      "completion_content_is_text": true,
+      "completion_content_strict_json_valid": false,
+      "content_limit_reached": true,
+      "duration_seconds": 2.781,
+      "finish_reason": "length",
+      "http_status": 200,
+      "outer_envelope_json_valid": true,
+      "provider_returned_model_label": "deepseek-v4.1-flash",
+      "semantic_candidate_generated": false,
+      "server_request_id": "chatcmpl-cb70471a9ca54500822bbbd93b233550",
+      "usage": {
+        "completion_tokens": 256,
+        "prompt_tokens": 428,
+        "total_tokens": 684
+      }
+    }
+  ],
+  "student_model_quality": "DEFERRED_NOT_TESTED",
+  "teacher_data_quality": "NOT_ASSESSED",
+  "timezone": "Asia/Shanghai",
+  "training_eligible": false
+}

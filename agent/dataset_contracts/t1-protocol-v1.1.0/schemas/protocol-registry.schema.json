@@ -1,0 +1,157 @@
+{
+  "$defs": {
+    "CapabilityCoverage": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "pattern": "^CAP(?:0[1-9]|1[0-7])$",
+          "title": "Capability Id",
+          "type": "string"
+        },
+        "execution_enabled": {
+          "const": false,
+          "default": false,
+          "title": "Execution Enabled",
+          "type": "boolean"
+        },
+        "inherited_availability": {
+          "title": "Inherited Availability",
+          "type": "string"
+        },
+        "operations": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 6,
+          "title": "Operations",
+          "type": "array"
+        },
+        "targeted_by_protocol": {
+          "const": true,
+          "default": true,
+          "title": "Targeted By Protocol",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "capability_id",
+        "inherited_availability",
+        "operations"
+      ],
+      "title": "CapabilityCoverage",
+      "type": "object"
+    },
+    "OperationCoverage": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "enum": [
+            "read",
+            "proposal"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "executable": {
+          "const": false,
+          "default": false,
+          "title": "Executable",
+          "type": "boolean"
+        },
+        "external_write_enabled": {
+          "const": false,
+          "default": false,
+          "title": "External Write Enabled",
+          "type": "boolean"
+        },
+        "operation": {
+          "enum": [
+            "read.activities",
+            "read.expenses",
+            "read.debts",
+            "expense.create",
+            "expense.update",
+            "expense.presentation.update"
+          ],
+          "title": "Operation",
+          "type": "string"
+        },
+        "required_capability": {
+          "enum": [
+            "CAP01",
+            "CAP07",
+            "CAP08"
+          ],
+          "title": "Required Capability",
+          "type": "string"
+        }
+      },
+      "required": [
+        "operation",
+        "category",
+        "required_capability"
+      ],
+      "title": "OperationCoverage",
+      "type": "object"
+    }
+  },
+  "$id": "https://shared-ledger.invalid/schemas/t1-protocol-registry-1.1.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "api_version": {
+      "const": "1.0.0",
+      "title": "Api Version",
+      "type": "string"
+    },
+    "capabilities": {
+      "items": {
+        "$ref": "#/$defs/CapabilityCoverage"
+      },
+      "maxItems": 17,
+      "minItems": 17,
+      "title": "Capabilities",
+      "type": "array"
+    },
+    "execution_key_version": {
+      "const": "1",
+      "title": "Execution Key Version",
+      "type": "string"
+    },
+    "operations": {
+      "items": {
+        "$ref": "#/$defs/OperationCoverage"
+      },
+      "maxItems": 6,
+      "minItems": 6,
+      "title": "Operations",
+      "type": "array"
+    },
+    "operations_version": {
+      "const": "1.1.0",
+      "title": "Operations Version",
+      "type": "string"
+    },
+    "semantic_version": {
+      "const": "1.1.0",
+      "title": "Semantic Version",
+      "type": "string"
+    },
+    "trajectory_version": {
+      "const": "1.1.0",
+      "title": "Trajectory Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "api_version",
+    "semantic_version",
+    "operations_version",
+    "trajectory_version",
+    "execution_key_version",
+    "operations",
+    "capabilities"
+  ],
+  "title": "ProtocolRegistry",
+  "type": "object"
+}

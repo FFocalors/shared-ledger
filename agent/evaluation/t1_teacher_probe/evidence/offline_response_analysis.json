@@ -1,0 +1,41 @@
+{
+  "action_boundary": {
+    "additional_requests_sent": 0,
+    "business_writes": false,
+    "tools_called": false,
+    "training_eligible": false
+  },
+  "analysis_version": "t1-teacher-probe-offline-envelope-review-v1",
+  "bounded_observation": "finish_reason=length and reasoning_tokens equals the 256-token output cap while visible completion content is empty; this records output-budget exhaustion behavior and is not a model-quality judgment.",
+  "completion_content": {
+    "candidate_produced": false,
+    "character_count": 0,
+    "is_empty": true,
+    "is_text": true,
+    "strict_json_valid": false
+  },
+  "configured_max_output_tokens": 256,
+  "duration_seconds": 2.781,
+  "envelope_json_valid": true,
+  "finish_reason": "length",
+  "http_status": 200,
+  "method": "Read-only parse of the existing key-redacted second response envelope; no new request was sent.",
+  "provider_returned_model_label": "deepseek-v4.1-flash",
+  "reasoning_content": {
+    "field_present": true,
+    "value_copied_to_analysis": false,
+    "value_inspected": false
+  },
+  "server_request_id": "chatcmpl-cb70471a9ca54500822bbbd93b233550",
+  "source": {
+    "bytes": 1542,
+    "path": "D:\\AI\\runs\\shared-ledger\\t1-teacher-probe-20261011\\02-language-pilot.raw_response.json",
+    "run_manifest_sha256": "e3efefa6f039f20f1179d1a4e529ee505a189b0a4e0ecc43c4aef018303f3345",
+    "sha256": "aac05bde936ea6fd3736bfebec97a9230159ae961afce4d4a973e46174696480"
+  },
+  "usage": {
+    "completion_tokens": 256,
+    "prompt_tokens": 428,
+    "total_tokens": 684
+  }
+}
