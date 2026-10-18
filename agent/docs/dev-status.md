@@ -1,9 +1,29 @@
 # Agent 开发状态
 
-日期：2026-10-08  
-当前阶段：**P0 工程核查通过；T0 六步部署链验收通过（2026-10-08）；P1 并行推进**  
+## P2 当前 private-v3 检查点（2026-10-18）
+
+Private-v3/native 默认关闭；当前 source/config manifest SHA-256 为 `5df93c7fe360e8cedda27b2ca38379c031cd227768f31f7505c127bcd3dd92c6`。本机有限 Auth/RLS 四财务 shape App/Runtime/Store/QEV、历史 pin native 活动闭环、当前 pin clarify 的事后解析，以及同 generation/input descriptor 恢复的50项定向 CPU 验证已记录。恢复由新 attempt 从 page 0 重读，未验证真实 Auth/process 重启；云端未验收，质量为 `INSUFFICIENT_SAMPLE`。分项证据与边界见 [P2 交付状态 R3](p2/P2_DELIVERY_R3.md) 和 [P2 配置示例](p2/P2_CONFIGURATION_EXAMPLE.md)。
+
+日期：2026-10-12
+当前阶段：**P0 工程核查通过；T0 六步部署链验收通过；P1 限定工程范围通过；T1 protocol v1.1.0 离线协议冻结已批准；release-v2 数据准入及训练仍未完成，genuine human receipt、P2校准、T2授权pending**
+
 Agent 项目路径：agent/  
 本次指南源文件 SHA-256（下载的 v0.3 HTML；源文件未修改）：40e2c2b017c71a3081e3e7460dd964a34af7484f0ae6be17d896a28c11d39a09
+
+## 当前状态与版本化快照（2026-10-12）
+
+- **T0：**六步部署链验收通过；提交 `1a80a0f29e1ea432a60b95e7437af23d51182938` 已推送，跟踪引用一致。T0 运行证据见下方按日期保留的历史记录及 [T0 清单](t0/README.md)。
+- **T1 protocol v1.1.0 离线冻结（2026-10-12）：**[Root receipt](file:///D:/AI/runs/shared-ledger/t1-protocol-v1.1.0-20261011/root-review-20261012/ROOT-FREEZE-APPROVAL.json) `352dcba6cce50c249709be37ba96fd2427b43958406ec570fb5cd2a183ea2036` 批准离线协议冻结；最终36-file manifest SHA-256 `5665565eb503c16e5e8c8ca6cb207743ee52e5add1b0b27c7aeca8cc3a6a80c3`。范围为 25/25 PF、22 package tests、46 root probes、17 independent export checks、10 schemas、5 examples，CAP01–CAP17 execution/external writes 全false。具体边界与证据见 [v1.1.0协议冻结](t1/protocol-v1.1.0/PROTOCOL.md)、[root review](t1/protocol-v1.1.0/ROOT_REVIEW.md)。这是离线协议门，不是数据准入/真实后端/模型验收；training_eligible=false，genuine human review、P2 calibration、T2 authorization仍pending，Student按用户指示延期，GPU未运行。下一轮数据须fresh source freeze/new candidate，修复RBR01–04并重跑Gold/replay/near/split及人审；旧111/393候选和receipt不改、不复用。
+- **P1：**主会话批准限定工程范围通过（`PASSED_LIMITED_P1_ENGINEERING`）：126 pytest passed（34.25s）、本地 Auth 29/29、Docker 部署/备份恢复与重启恢复证据通过，107 个 P1 源码文件 manifest 全匹配；55 个生成 contract 文件复核匹配且 `export_contracts --check` exit 0。通过范围只包括可恢复骨架、Mock Runtime、身份隔离和 Docker 恢复；不代表真实业务 Backend、工具执行或模型质量通过。P1 文件仍未提交，完整限定与边界见 [P1 终审](p1/FINAL_REVIEW.md)。
+- **T1 数据与候选：**API/语义/操作/轨迹版本为 1.0.0。旧 `t1-synth-1.0.1` 仍是获诊断用途审批的111条（train/validation/sealed各37），manifest SHA-256 `f87eae34f7d77632701ed3fcf1090e1e6a5adedcbe5e39342241a44448f0dddf`、approval SHA-256 `8b5f94329a3c2e7f1c008152ebc440fcb2434c6af32d05da8775307583ae7188`；其15组潜在prompt近重复和 `INSUFFICIENT_SAMPLE` 是旧版记录。release-v2 候选现已写入393条（train/validation/sealed分别135/129/129），全393条strict schema、independent Gold与deterministic replay零失败；exact duplicate/state leakage均为0，24个boundary rows不计入positive family floor，18个operation×split的独立family count均为20。Root对4,984组near findings均完成技术处分，当前未解决项为0；这不替代人审。Source manifest `f92f5074d898ba25922bbd609e1c2fed2f82780eb4b03427c9317dacf03cbfc3`，collection `382dda0a21ab42d12f11df72794e1c8cece866cb0b557a8b592d0a1268aa1c86`，creation manifest `08bebb9c96101d6be09c4d5273d4ff7b019c4608c8057aeac64b661f3e0ea820`，checker report `0fa561067849b9233ddbe23245aaa8710a34e0c9d5d934bf6ecb0f3e7339dd21`，write metadata `8316a5bfcc358a1fbfb76e4400972ab03eddf4085914b61d05117c045f1b3ba2`。candidate与哈希细节见[T1 release-v2记录](t1/release-v2/README.md)和[候选准备记录](t1/release-v2/CANDIDATE_PREPARATION.md)。
+- **模型 / Teacher：**用户选择将Student实际模型评估延期，状态为 `NOT_TESTED_USER_DEFERRED`；没有Student推理或质量 PASS。模型 preregistration 仍在任何模型输出前冻结，64项来源指纹匹配，并绑定manifest、approval、protocol fingerprint及validation/sealed bundle hashes；这只是冻结运行方案，不代表已评估。sealed one-shot评测授权为false。Teacher最新v2检查限于一次请求、三个短合成文本案例，root limited semantic review通过3/3；Teacher data quality仍为 `NOT_ASSESSED`，并非训练数据。此前v1 evaluator因400字符截断而隔离的解释保持不变。19项evaluator单元测试只验证评分器、runner门禁和受限回放逻辑，不是模型质量测试。详见[T1索引](t1/README.md#model-evaluation)及[Teacher v2 readiness](t1/release-v2/TEACHER-READINESS.md)。
+- **人工审核与准入：**Root已完成34条train-only逐项业务复核，报告SHA-256 77ce270ee836d889f119008348caaa702781e667a61a44e4964b84e826c9f7ad，结论REQUIRES_TRAINING_DATA_REVISION。34/34业务文字、金额与范围正确；31/34输出来源通过，rows 21/22/24的空结果缺少来源绑定。12项资金提案的Decimal总额/allowlist独立检查通过。逐项root_note见[T1 root业务复核](t1/release-v2/ROOT-BUSINESS-REVIEW.md)，P2接续任务见[P2校准发现](t1/release-v2/P2-CALIBRATION-REVIEW-FINDINGS.md)。其他训练质量待办：33/34条context.input_text有人为已读取并消费提示；rows 19/20/26使用裸expense_ref澄清；rows 15/16/17的AA分配都能整分，故此包未覆盖AA最小单位尾差。第21/22/24条业务文字正确，但结果来源需可引用；其中22是5条已读结果再经title筛选为空，需绑定过滤条件和完整性，21/24为tool空结果。P1现有citation类型不含read-result引用；任何typed-query citation或canonical协议调整必须版本化并重新freeze，不得静默改旧协议或伪造Fact/Policy/citation。Root报告不是genuine human receipt，仍human_review_pending=true、human_reviewed=false；P2 baseline calibration和显式T2授权pending，Student仍按用户决定延期，training_eligible=false。冻结候选和packet不改；数据修订必须新版本及fresh source freeze，不能复用旧receipt。sealed仅核对root receipt/hash/行数，无语义readback，模型评测授权false。
+- **业务能力：**本轮 Agent 后端验收为 `NOT_RUN_RESOURCE`；当前真实 Agent CAP01–CAP17 为 **0/17 可验收**，默认真实 Backend/Gateway 尚未接入。现有 Mock 验证不等于业务通过。B01–B14 后端测试映射、隔离回归未运行事实和确切缺口见 [业务验收报告](t1/BUSINESS_ACCEPTANCE.md)；prereg 输入哈希绑定 main `3f938ee6114b763e6cd3dbd10792a78c691eb526`。
+- **工作树/授权边界：**业务 main 该基线保持 clean；Agent 分支的 P1 与 T1 新工作未提交。release-v2候选仅写入D盘本地证据路径，不涉及云端业务写入、模型评测或训练。
+
+以下章节是此前按各自时间点保留的状态快照和证据。其 P1、T1、数据库回归及模型待办措辞如与本节冲突，以本节和链接的最新验收文件为准；原历史事实不改写。
+
+## 历史快照与证据（按各节原记录时间保留）
 
 P0 工程核查按统一指南验收条件已通过：现状、CAP/RPC 参数与角色权限映射、环境/资产证据及未决项归属均有记录；不要求 P1/P3 先实现。9B 原生 host/Docker chat 是前序独立验证；OpenAI 兼容 chat/completions 空 content 单列 P2。T0步骤1–5实测、固定输入对照与静态资产适用性审核已完成；步骤5的4B Q4_K_M host/Docker smoke和服务/日志生命周期复核通过，步骤6共享文档、D盘日志归档与C原hold清理完成，T0六步部署链验收通过（2026-10-08）。详见[T0清单](t0/README.md)、[HF报告](t0/runs/20261008-hf-loader-preparation.md)、[F16/Q4/HF对照](t0/runs/20261008-f16-cpu-comparison.md)和[LM smoke报告](t0/runs/20261008-lmstudio-q4-smoke.md)。
 
