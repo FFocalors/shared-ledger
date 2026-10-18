@@ -2,7 +2,7 @@
 
 ## P2 当前 private-v3 检查点（2026-10-18）
 
-Private-v3/native 默认关闭；当前 source/config manifest SHA-256 为 `5df93c7fe360e8cedda27b2ca38379c031cd227768f31f7505c127bcd3dd92c6`。基线提交 `aaf9fc3` 上全量 `agent/tests` **首次全绿：738 passed**，`export_contracts --check` exit 0；此前同一工作树在基线 `7ac1d71` 上实测为 45 failed / 693 passed，其中 33 项真实失败全部定性为**测试端过期**（测试替身缺生产新增端口、假 SDK 缺新类型、迁移号断言停在旧值、prompt golden 未随 schema 裁剪更新、fixture 到期时间用固定 NOW 而生产用真实时钟），无生产缺陷，`agent/app/` 零改动。
+Private-v3/native 默认关闭；当前 source/config manifest SHA-256 为 `5df93c7fe360e8cedda27b2ca38379c031cd227768f31f7505c127bcd3dd92c6`。**全量目录调用**下 `agent/tests` 在基线 `aaf9fc3` 上首次全绿（738 passed），分页补口后为 743 passed + 1 xfailed，`export_contracts --check` exit 0；此前同一工作树在基线 `7ac1d71` 上实测为 45 failed / 693 passed，其中 33 项真实失败全部定性为**测试端过期**（测试替身缺生产新增端口、假 SDK 缺新类型、迁移号断言停在旧值、prompt golden 未随 schema 裁剪更新、fixture 到期时间用固定 NOW 而生产用真实时钟），无生产缺陷，`agent/app/` 零改动。**"全绿"附调用方式前提**：`test_p2_v3_store_recovery_edges.py` 有一条时间相关用例（合成时间戳与真实时钟混用）在全量调用下通过、在单文件调用下 3/3 失败，机理与未采用的修法见 [套件可复现性 R1](p2/P2_SUITE_REPRODUCIBILITY_R1.md)。
 
 当前 pin 上新增三组本机隔离实测（D 盘隔离 Supabase + 本地模型），已记入 [当前 pin 闭环与身份恢复 R1](p2/P2_LIVE_CLOSE_LOOP_R1.md)：
 
