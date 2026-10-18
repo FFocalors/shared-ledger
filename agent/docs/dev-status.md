@@ -2,7 +2,15 @@
 
 ## P2 当前 private-v3 检查点（2026-10-18）
 
-Private-v3/native 默认关闭；当前 source/config manifest SHA-256 为 `5df93c7fe360e8cedda27b2ca38379c031cd227768f31f7505c127bcd3dd92c6`。本机有限 Auth/RLS 四财务 shape App/Runtime/Store/QEV、历史 pin native 活动闭环、当前 pin clarify 的事后解析，以及同 generation/input descriptor 恢复的50项定向 CPU 验证已记录。恢复由新 attempt 从 page 0 重读，未验证真实 Auth/process 重启；云端未验收，质量为 `INSUFFICIENT_SAMPLE`。分项证据与边界见 [P2 交付状态 R3](p2/P2_DELIVERY_R3.md) 和 [P2 配置示例](p2/P2_CONFIGURATION_EXAMPLE.md)。
+Private-v3/native 默认关闭；当前 source/config manifest SHA-256 为 `5df93c7fe360e8cedda27b2ca38379c031cd227768f31f7505c127bcd3dd92c6`。基线提交 `aaf9fc3` 上全量 `agent/tests` **首次全绿：738 passed**，`export_contracts --check` exit 0；此前同一工作树在基线 `7ac1d71` 上实测为 45 failed / 693 passed，其中 33 项真实失败全部定性为**测试端过期**（测试替身缺生产新增端口、假 SDK 缺新类型、迁移号断言停在旧值、prompt golden 未随 schema 裁剪更新、fixture 到期时间用固定 NOW 而生产用真实时钟），无生产缺陷，`agent/app/` 零改动。
+
+当前 pin 上新增三组本机隔离实测（D 盘隔离 Supabase + 本地模型），已记入 [当前 pin 闭环与身份恢复 R1](p2/P2_LIVE_CLOSE_LOOP_R1.md)：
+
+- **零模型 POST 闭环通过**：真实 GoTrue 鉴权、真实 RLS 读取、Store 接受、QEV/fact、受保护答案精确引用该 QEV；业务写入 0。
+- **真实模型闭环：3 次 Turn 中 1 次 COMPLETED**；另 2 次因答案根对象多出 4 个契约未声明字段（`source_query_complete` 等）被严格 sent guard 拒绝——**模型侧未遵循既有契约，不是实现缺陷**；1/3 不是通过率结论，质量仍为 `INSUFFICIENT_SAMPLE`。
+- **真实身份恢复：机制可用但发现缺陷**。故障在查询描述符绑定之前时，恢复只能重新规划并撞模型额度 → 终态 `RATE_LIMITED`；故障在描述符已绑定之后时，恢复确实复用原逻辑查询（单查询 id）、以新 attempt 从 page 0 重读、且逻辑读取与模型调用额度不增加，但随后第 2 次规划任务被取消，回合被遗弃为 `RUNNING`（仍持有 claim、无终态或暂停事件）。**该项修复前不应把身份恢复记为 P2 通过。**
+
+v3 candidate 的裁决现状见 [v3 profile 状态](p2/P2_V3_PROFILE_STATUS.md)：只有「disabled CPU candidate foundation」范围的 root 接受，没有把它作为基线的裁决。分项边界另见 [P2 交付状态 R3](p2/P2_DELIVERY_R3.md)、[R2 当前状态](p2/R2_STATUS.md) 和 [P2 配置示例](p2/P2_CONFIGURATION_EXAMPLE.md)。
 
 日期：2026-10-12
 当前阶段：**P0 工程核查通过；T0 六步部署链验收通过；P1 限定工程范围通过；T1 protocol v1.1.0 离线协议冻结已批准；release-v2 数据准入及训练仍未完成，genuine human receipt、P2校准、T2授权pending**
