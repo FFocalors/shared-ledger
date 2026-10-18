@@ -38,7 +38,7 @@ from .p2_read_contracts_v3 import P2_V3_CANDIDATE_PROFILE_ID
 from . import p2_event_contracts_v3 as pe3
 from . import p2_read_contracts_v3 as pc3
 from . import p2_source_codec_v3 as codec3
-from .p2_read_backend import P2ReadBackendAdapter
+from .p2_read_backend import MAX_PAGES_PER_QUERY, P2ReadBackendAdapter
 from .p2_read_prompt_v3 import P2V3PromptBuildConfig, build_p2_v3_request
 from .p2_read_provider_v3 import P2V3ReadProvider
 from .p2_source_store_v3 import (
@@ -63,6 +63,50 @@ _ACTIVE_TURN: ContextVar[uuid.UUID | None] = ContextVar("p2_active_turn", defaul
 _ACTIVE_CANDIDATE_PROFILE: ContextVar[str | None] = ContextVar(
     "p2_active_candidate_profile", default=None,
 )
+
+# One v3 read is projected as a bounded chain of model pages: page zero, then
+# one continuation page per model-authored continuation decision, then the
+# answer. Each page therefore costs exactly one model call, which is what ties
+# the page count to the Turn-wide model budget:
+#
+#     model_calls(pages) = _V3_QUERY_SELECTION_MODEL_CALLS
+#                        + (pages - 1) * _V3_CONTINUATION_MODEL_CALLS
+#                        + _V3_ANSWER_MODEL_CALLS
+#
+# The selection and answer calls are also what a *single*-page read spends, so
+# _V3_MIN_PAGED_READ_MODEL_CALLS is the reservation a planned read already
+# takes: the smallest read that can continue at all (selection, one
+# continuation decision, answer). That reservation is a floor; the Store still
+# charges and enforces every individual call.
+_V3_QUERY_SELECTION_MODEL_CALLS = 1
+_V3_CONTINUATION_MODEL_CALLS = 1
+_V3_ANSWER_MODEL_CALLS = 1
+_V3_MIN_PAGED_READ_MODEL_CALLS = (
+    _V3_QUERY_SELECTION_MODEL_CALLS
+    + _V3_CONTINUATION_MODEL_CALLS
+    + _V3_ANSWER_MODEL_CALLS
+)
+_V3_PLANNED_READ_CALLS = 1
+
+
+def _v3_read_page_window(max_model_calls: int) -> int:
+    """Bounded number of model pages one v3 read may project.
+
+    Every page after the first is a model decision, so the model budget alone
+    would allow ``max_model_calls - 1`` pages. Two stricter bounds already
+    exist and are never widened here: the read backend projects at most
+    ``MAX_PAGES_PER_QUERY`` pages of one logical query, and the strict source
+    codec caps one query's projection at
+    ``MAX_FACTS_PER_QUERY // MAX_FACTS_PER_PAGE`` pages -- the manifest's
+    ``rows_per_table`` / ``get_rows_per_page`` arithmetic. The window is the
+    minimum of those existing bounds, never a new budget, and it is clamped to
+    at least one page so a single-page read stays representable.
+    """
+    affordable_pages = (
+        max_model_calls - _V3_QUERY_SELECTION_MODEL_CALLS - _V3_ANSWER_MODEL_CALLS
+    ) // _V3_CONTINUATION_MODEL_CALLS + 1
+    projection_pages = codec3.MAX_FACTS_PER_QUERY // codec3.MAX_FACTS_PER_PAGE
+    return max(1, min(affordable_pages, MAX_PAGES_PER_QUERY, projection_pages))
 
 
 @dataclass(slots=True)
@@ -726,8 +770,11 @@ class P2Runtime(MockRuntime):
         if metadata_activity_hint is None:
             ledger_unit_hint = None
         planned_read = "read" in plan.allowed_decision_kinds
-        reserved_model_calls = 3 if planned_read else 1
-        reserved_read_calls = 1 if planned_read else 0
+        reserved_model_calls = (
+            _V3_MIN_PAGED_READ_MODEL_CALLS if planned_read
+            else _V3_QUERY_SELECTION_MODEL_CALLS
+        )
+        reserved_read_calls = _V3_PLANNED_READ_CALLS if planned_read else 0
 
         # A query created for this exact generation/input is a durable planning
         # checkpoint. Validate it before reserving another planning sequence so
@@ -1070,49 +1117,64 @@ class P2Runtime(MockRuntime):
             raise _GateClosed()
 
         all_facts: list[pc3.P2Fact] = list(live_result.page.items)
-        if live_result.page.has_more:
-            if live_result.page.page_index != 0 or live_result.page.next_page_ref is None:
+        # Page zero plus at most ``page_window - 1`` server-minted continuation
+        # pages. Every continuation repeats the whole per-page safety sequence:
+        # the decision must be the exact authorized one, the read must present a
+        # Store-minted single-use continuation, and the Turn claim, Auth grant
+        # and kill-switch revision are re-checked after every source read.
+        page_window = _v3_read_page_window(self._max_model_calls)
+        pages_seen = 1
+        while live_result.page.has_more:
+            if (
+                live_result.page.page_index != pages_seen - 1
+                or live_result.page.next_page_ref is None
+            ):
                 raise CapabilityUnavailable("v3 source page cannot be continued safely")
-            first_qev = live_result.query_evidence
-            first_observed = datetime.now(timezone.utc)
-            first_receipt = pc3.P2FreshQueryEvidenceRef(
-                query_evidence_ref=first_qev.query_evidence_ref,
-                query_ref=first_qev.query_ref,
+            if pages_seen >= page_window:
+                # A truncated projection is never presented as a final result.
+                raise CapabilityUnavailable(
+                    "v3 source result exceeds the candidate's bounded page window"
+                )
+            page_qev = live_result.query_evidence
+            page_observed = datetime.now(timezone.utc)
+            page_receipt = pc3.P2FreshQueryEvidenceRef(
+                query_evidence_ref=page_qev.query_evidence_ref,
+                query_ref=page_qev.query_ref,
                 principal_ref=grant.principal_ref,
                 owner_turn_ref=grant.owner_turn_ref,
                 generation=identity.generation,
                 source_input_seq=identity.input_seq,
                 input_digest=identity.input_digest,
-                operation=first_qev.operation,
+                operation=page_qev.operation,
                 scope_ref=grant.scope.scope_ref if grant.scope is not None else None,
-                criteria_digest=first_qev.criteria_digest,
-                observed_at=first_qev.observed_at,
-                expires_at=min(expires_at, first_observed + timedelta(minutes=2)),
+                criteria_digest=page_qev.criteria_digest,
+                observed_at=page_qev.observed_at,
+                expires_at=min(expires_at, page_observed + timedelta(minutes=2)),
                 next_page_ref=live_result.page.next_page_ref,
                 page_index=live_result.page.page_index,
             )
-            first_binding = pc3.P2QueryAuthorizationBinding(
-                query_evidence_ref=first_qev.query_evidence_ref,
-                receipt=first_receipt,
+            page_binding = pc3.P2QueryAuthorizationBinding(
+                query_evidence_ref=page_qev.query_evidence_ref,
+                receipt=page_receipt,
                 grant=grant,
             )
             continuation_hint = pc3.P2ContinuationHint(
-                query_evidence_ref=first_qev.query_evidence_ref,
-                query_ref=first_qev.query_ref,
+                query_evidence_ref=page_qev.query_evidence_ref,
+                query_ref=page_qev.query_ref,
                 next_page_ref=live_result.page.next_page_ref,
             )
             continuation_public = self._v3_model_context(
                 plan, input_text, identity, scope=scope,
-                query_evidence=(first_qev,), facts=tuple(live_result.page.items),
+                query_evidence=(page_qev,), facts=tuple(live_result.page.items),
                 allowed_decision_kinds=("read",),
-                fresh_receipt_refs=(first_qev.query_evidence_ref,),
+                fresh_receipt_refs=(page_qev.query_evidence_ref,),
                 continuations=(continuation_hint,),
                 scope_authorization_receipt_ref=scope_receipt_ref,
                 current_actor=current_actor, source_labels=source_labels,
             )
             continuation_private = self._v3_intent_context(
                 plan, admission, scope=scope, grant=grant,
-                receipts=(first_receipt,), bindings=(first_binding,),
+                receipts=(page_receipt,), bindings=(page_binding,),
             )
             pc3.validate_p2_clarification_projection(continuation_public, continuation_private)
             continuation_prepared = build_p2_v3_request(
@@ -1136,6 +1198,7 @@ class P2Runtime(MockRuntime):
             verified = self._make_verified_context(
                 owner_id, turn_id, active_grant, aggregate.record.bound_references,
             )
+            expected_page_index = pages_seen
             try:
                 continued_pending = await adapter.read_candidate_v3(
                     continue_decision, verified, grant,
@@ -1154,8 +1217,9 @@ class P2Runtime(MockRuntime):
                 )
             except BackendReadError as exc:
                 raise self._backend_pause(exc) from None
-            if live_result.page.page_index != 1 or live_result.page.has_more:
-                raise CapabilityUnavailable("v3 continuation must produce one terminal second page")
+            if live_result.page.page_index != expected_page_index:
+                raise CapabilityUnavailable("v3 continuation did not produce the next source page")
+            pages_seen += 1
             all_facts.extend(live_result.page.items)
             current = await asyncio.to_thread(self._store.get_turn, owner_id, turn_id)
             self._ensure_claim_current(current, aggregate, claimed.claim_token)
