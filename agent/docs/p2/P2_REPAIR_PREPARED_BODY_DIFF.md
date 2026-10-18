@@ -1,0 +1,15 @@
+# P2 prepared-body format repair slice
+
+This candidate slice adds a server-controlled, single-request format-repair mechanism for parser syntax and strict decision-schema failures. It does not select an error from model output, retry automatically, or integrate Runtime/Store/API budget ownership.
+
+`P2RepairFeedback` accepts only `invalid_json_syntax` and `invalid_strict_decision_schema`, paired with the fixed instruction id `p2_format_repair_v1`. The instruction text and shape policy live in the pure standard-library module `agent/app/p2_format_repair.py`. No raw completion, parser detail, context, ref, UUID, token, authorization grant, or exception text is carried into feedback.
+
+Normal requests retain the legacy two messages (`system`, `user`) and exact pre-change request SHA-256 `6611de455f8898fe4e5e77ecb61af5a94f1ccb0914dc46fdf19fff2dd7c38dd0` for the CPU fixture. A repair request has exactly three messages (`system`, fixed `system`, `user`); the middle message must equal one of the two fixed strings. No other roles, ordering, extra fields, or fourth message are accepted. The feedback DTO hash and fixed instruction version bind the repaired prepared fingerprint; its body hash also changes because the actual request changes.
+
+`P2ReadProvider.generate(context, prepared, *, repair_feedback=...)` revalidates the exact DTO, requires the separate argument to equal the feedback bound into the prepared request, rebuilds the request from context/config/feedback, and rejects mismatches before invoking the shared bounded counter/HTTP path. That path reconstructs typed counter input and posts the unchanged same serialized bytes. There is no retry loop in prompt/provider code. A future Runtime must still enforce the single repair within its six-call turn budget and persist repair accounting; this slice does not prove that behavior.
+
+The same pure message-shape helper is used by `P2TokenBudgetRequest`, the direct `--counter-child` JSON validator, and the `--counter-session-child` measure validator. The test suite invokes both exact script entry points in subprocesses. A D-only fake `lmstudio` shim proves valid two/three-message counting and checks that malformed direct-child input is rejected before SDK import. Invalid session bootstrap preserves its existing empty-stdout/exit-2 behavior before SDK import. The shim is not the LM Studio SDK and no service or network is contacted.
+
+Validation used the pinned agent virtualenv with `python -B -m pytest -p no:cacheprovider`, D-only `TEMP`/`TMP`/pytest basetemp, and these relevant suites: repair prepared-body, read prompt, read provider, token budget, and token session. Final result: 66 passed. Historical failed runs remain in the D evidence package and are not counted as passing evidence.
+
+This work leaves public P2 contracts, four-tuple, context fields, Runtime, Store, API, components, and application assembly unchanged. It does not establish Runtime retry limits, actual SDK token counts, model output quality, source authorization, or production read behavior.

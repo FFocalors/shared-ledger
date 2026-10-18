@@ -1,0 +1,178 @@
+{
+  "report_version": "p2-final-engineering-v1",
+  "overall_status": "PASSED_LIMITED_A_ENGINEERING_SUBSET",
+  "verification": {
+    "agent_tests": {
+      "status": "PASS",
+      "command": "PYTHONPATH=.. .venv\\Scripts\\python.exe -X utf8 -m pytest tests -q",
+      "working_directory": "D:\\project\\Android\\shared-ledger-agent\\agent",
+      "exit_code": 0,
+      "passed": 248,
+      "failed": 0,
+      "elapsed_seconds": 46.6,
+      "start_time_utc": null,
+      "end_time_utc": null,
+      "time_note": "Original invocation recorded elapsed time but not wall-clock start/end; not reconstructed.",
+      "evidence_file": "D:\\AI\\runs\\shared-ledger\\p2\\acceptance-20261011T040422Z-runtime-final\\pytest-full.log",
+      "evidence_sha256": "663dc32192eb1877bfec23ac1d7dbb4b32479010441e5a67f9632c88f45bf7f6"
+    },
+    "export_check": {
+      "status": "PASS_READ_ONLY",
+      "command": "PYTHONPATH=.. .venv\\Scripts\\python.exe -X utf8 -m agent.app.export_contracts --check",
+      "working_directory": "D:\\project\\Android\\shared-ledger-agent\\agent",
+      "exit_code": 0,
+      "output": "contract snapshot matches manifest",
+      "evidence_file": "D:\\AI\\runs\\shared-ledger\\p2\\acceptance-20261011T040422Z-runtime-final\\export-check.log",
+      "evidence_sha256": "0c2f3b23ba859e080b4236dc4b7a1554cccfa636b9078f6285cf0360ebb4d212"
+    },
+    "initial_collection_attempt": {
+      "status": "COLLECTION_FAILED_NO_TESTS_EXECUTED",
+      "cause": "PYTHONPATH omitted; eight P1 modules could not import agent.app",
+      "corrected_run": "The full corrected run above passed.",
+      "evidence_file": "D:\\AI\\runs\\shared-ledger\\p2\\acceptance-20261011T040422Z-runtime-final\\pytest-collection-path-fix.log",
+      "evidence_sha256": "21dc34307a4dfdd68a2e5c9e6f9f1090b80f733a59d8ad4f473e635d3143eee6"
+    }
+  },
+  "acceptance_gates": {
+    "A_bounded_engineering_subset": "PASS",
+    "B_live_supabase_auth_rls": "NOT_RUN_USER_DEFERRED",
+    "C_lmstudio_compatibility_probe": "FAIL_SEMANTIC_DIAGNOSTIC",
+    "D_live_supabase_plus_model_closure": "NOT_RUN_USER_DEFERRED",
+    "capabilities_passed": 0,
+    "capabilities_total": 17,
+    "model_quality_scope": "INSUFFICIENT_SAMPLE",
+    "live_model_sample_count_accepted": 0,
+    "C_extended_semantics_operations_probe": "COMPLETED_DIAGNOSTIC_FAILURE",
+    "C_transport_compatibility": "LIMITED_PASS"
+  },
+  "runtime_limits_and_gaps": {
+    "max_model_calls_per_generation": 6,
+    "max_reads_per_generation": 4,
+    "max_repairs_per_generation": 1,
+    "model_concurrency": 1,
+    "max_running_per_user": 1,
+    "max_queued_per_user": 1,
+    "global_queue_capacity": 16,
+    "pagination_continuation": "NOT_IMPLEMENTED",
+    "prepayment_refund_semantics": "NOT_IMPLEMENTED",
+    "multi_operation_current_evidence_answer": "NOT_SUPPORTED_LATEST_RESULT_ONLY",
+    "restart_without_private_provenance": "DETERMINISTIC_CLARIFICATION",
+    "canonical_fact_card_amounts": "ORIGINAL_CURRENCY_ONLY",
+    "base_amount_fact_rendering": "NOT_IMPLEMENTED",
+    "business_write_path": "UNIMPLEMENTED",
+    "max_fact_items_per_read_result": 16,
+    "max_read_results_per_context": 16,
+    "max_typed_bound_references_per_context": 64,
+    "max_durable_evidence_entries": 48,
+    "P2_Docker_deployment": "NOT_TESTED"
+  },
+  "scope_exclusions": {
+    "agent_evaluation": "NOT_RUN",
+    "T1": "NO_T1_EVALUATION_OR_DATA_RUN; frozen protocol docs and metadata/fingerprint hashes reviewed",
+    "T0": "NOT_RUN",
+    "sealed_data": "NOT_READ",
+    "live_auth_or_data_api": "NOT_RUN",
+    "commit_or_push": "NOT_PERFORMED",
+    "agent_tests_live_lmstudio_inference": "NOT_RUN",
+    "separate_C_probe": "COMPLETED_17_CALLS_SEMANTIC_DIAGNOSTIC_FAILED",
+    "B_and_D": "NOT_RUN_USER_DEFERRED",
+    "teacher_or_evaluation_run": "NOT_RUN",
+    "P2_Docker_or_container_deployment": "NOT_TESTED"
+  },
+  "baseline_audit": {
+    "baseline_files": 176,
+    "unchanged_files": 171,
+    "authorized_existing_p2_integration_files": [
+      "app/api.py",
+      "app/components.py",
+      "app/settings.py"
+    ],
+    "external_T1_drift_not_attributed_to_P2": [
+      {
+        "path": "docs/t1/release-v2/.guide-text.tmp",
+        "status": "absent_in_later_read_only_audit",
+        "baseline_sha256": "5fb38314dd9e41a997cad8c636ee23787ee36833a3724817bb3171bedfe376cd"
+      },
+      {
+        "path": "evaluation/t1_teacher_probe/probe.py",
+        "baseline_sha256": "af7a9b7f423a0e0dee94e2a15fbbcca42758017e04389481a2cf4947c7b0fe89",
+        "later_sha256": "bea79cd3f952c65fa252d9d78001a1b19970e2896201744e41a3ef1a970d1843"
+      }
+    ]
+  },
+  "evidence_directory": "D:\\AI\\runs\\shared-ledger\\p2\\acceptance-20261011T040422Z-runtime-final",
+  "source_snapshot_file": "D:\\AI\\runs\\shared-ledger\\p2\\final-delivery-20261011T0427Z-runtime\\source-test-snapshot.json",
+  "configuration_example": "docs/p2/P2_CONFIGURATION_EXAMPLE.md",
+  "C_probe": {
+    "overall_status": "FAIL_SEMANTIC_DIAGNOSTIC",
+    "transport_compatibility": "LIMITED_PASS",
+    "total_calls": 17,
+    "nonempty_outputs": 13,
+    "empty_outputs": 4,
+    "schema_valid_outputs": 10,
+    "pooled_schema_validity_note": "Mixed candidate caps; diagnostic only, not an acceptance estimate.",
+    "default_cap_768": {
+      "calls": 9,
+      "nonempty_outputs": 9,
+      "schema_valid_outputs": 7,
+      "provider_http_stop_responses": 9
+    },
+    "clarification_kind_correct": "1/1",
+    "exact_required_missing_slots": "0/1",
+    "exact_read_operation_selection": "0/3 at default cap 768",
+    "exact_proposal_operation_selection": "0/3 at default cap 768",
+    "grounded_answers_or_citations": 0,
+    "financial_critical_assertions_observed": 0,
+    "financial_assertion_scope": "amount, currency, debt direction, settlement, participant, citation, write success; absence in this sample is not a safety pass",
+    "known_context_failure": "An expense-context response contradicted supplied scope/read availability; additional cases falsely refused supported work.",
+    "empty_responses_assessment": "Unassessable, not a safety pass.",
+    "first_bundle": {
+      "calls": 12,
+      "exit_code": 0,
+      "cap64": "4/4 HTTP 200 with empty content",
+      "cap768": "4/4 nonempty Stop; schema-valid 3/4",
+      "cap1536": "4/4 nonempty Stop; schema-valid 3/4",
+      "results_file": "D:\\AI\\runs\\shared-ledger\\p2\\provider-harness-probe-20261011-aeb77fe681964762b732f14e40c09141\\results\\results.json",
+      "results_sha256": "b23d3870a258ded84fdb7da166bdc265e35709335d909e6d5f7f55b0242a9679"
+    },
+    "extension_bundle": {
+      "calls": 5,
+      "cap": 768,
+      "exit_code": 0,
+      "all_nonempty_stop_responses": true,
+      "clarification_kind_correct": "1/1",
+      "exact_required_missing_slots": "0/1",
+      "results_directory": "D:\\AI\\runs\\shared-ledger\\p2\\semantic-extension-probe-20261011-9826d6fa640c4964a3246cb05c398f05",
+      "results_sha256": "816c889cf7a210584270618eebdc136782a47b4479360cc9b26b8ce22a99f963",
+      "attempts_sha256": "fe62fdcf6bec43058fa86a1abac092c8b31241aaa4250b27465c3ebd8a772ce7",
+      "preregistration_sha256": "13f6c1aa03d610024663cf878622e530dae161aa1dfdad52a6ee90f77b44490e",
+      "candidate_sha256": "1a0bc801492a23c0260f20428d9634de699fcd1542456fb6245e51c22bb6a1e6",
+      "create_case": "Strict-invalid because duplicate missing_slots were supplied.",
+      "update_presentation_read_activities_cases": "Clarified instead of selecting the expected operation."
+    },
+    "operation_selection_scope": "Six default-cap (768-token) operation fixtures: one per operation; three reads and three proposals.",
+    "final_diagnostic_review": "D:\\AI\\runs\\shared-ledger\\p2\\final-diagnostic-review-20261011-720e9be3b7854e96a8fe31ad7aabfc0d\\p2-c-diagnostic-review.md",
+    "final_diagnostic_review_sha256": "322e064299e9fc666619b20a086334fbcfda67df78f9911e686a7cbbb76d6a87",
+    "provider_evidence_manifest_v2": "D:\\AI\\runs\\shared-ledger\\p2\\final-diagnostic-review-20261011-720e9be3b7854e96a8fe31ad7aabfc0d\\evidence-manifest-v2.json",
+    "provider_evidence_manifest_v2_sha256": "c8a66978e680345de08bbe3e7ddac04579b63a38a1997b2927807495584b3617",
+    "source_stability": {
+      "all_attempts_stable": true,
+      "attempts_checked": 17,
+      "evidence": "Corrected provider evidence-manifest-v2; independently checked by root."
+    }
+  },
+  "cpu_evidence_recorded_at_utc": "2026-10-11T04:04:22Z",
+  "recorded_at_utc": "2026-10-11T04:32:22Z",
+  "updated_at_utc": "2026-10-11T04:32:22Z",
+  "next_diagnostic_plan": [
+    "Separate read permission for starting a read from evidence required for a cited final answer.",
+    "Test false refusal when verified scope/reference exists.",
+    "Keep duplicate missing_slots invalid and verify exact amount/currency clarification slots.",
+    "Freeze new independent development fixtures, token cap, prompt, expected decisions and raw metrics before any further inference; viewed outputs are regression only.",
+    "B and D remain user-deferred; do not enable live business service from CPU or transport results. No Teacher training, sealed data, or further inference in this delivery."
+  ],
+  "final_delivery_directory": "D:\\AI\\runs\\shared-ledger\\p2\\final-delivery-20261011T0427Z-runtime",
+  "source_test_fingerprint_sha256": "ddcb64f27d5565a7af09c85e89b49ccca154786b97cbfa3cf53bdeda4243b3c5",
+  "source_snapshot_sha256": "aea16953ae50977fe9d7d23835739129d98f9c2d11f62dfe7e790f6901c812af",
+  "delivery_manifest_file": "D:\\AI\\runs\\shared-ledger\\p2\\final-delivery-20261011T0427Z-runtime\\evidence-manifest.json"
+}
