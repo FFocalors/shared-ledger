@@ -1178,7 +1178,7 @@ def test_current_migrations_upgrade_legacy_ledger_without_rewriting_existing_mig
     try:
         store.start()
         with store._connection() as connection:
-            assert connection.execute("PRAGMA user_version").fetchone()[0] == 6
+            assert connection.execute("PRAGMA user_version").fetchone()[0] == 7
             rows = tuple(tuple(row) for row in connection.execute(
                 "SELECT version,name,checksum,applied_at FROM schema_migrations ORDER BY version"
             ))
@@ -1190,7 +1190,7 @@ def test_current_migrations_upgrade_legacy_ledger_without_rewriting_existing_mig
         store.close()
         store.start()
         with store._connection() as connection:
-            assert connection.execute("PRAGMA user_version").fetchone()[0] == 6
+            assert connection.execute("PRAGMA user_version").fetchone()[0] == 7
             assert tuple(tuple(row) for row in connection.execute(
                 "SELECT version,name,checksum,applied_at FROM schema_migrations ORDER BY version"
             )) == rows
@@ -1222,7 +1222,8 @@ def test_v3_upgrade_preserves_existing_v2_candidate_row_byte_for_byte(tmp_path: 
         for name in triggers:
             connection.execute(f'DROP TRIGGER "{name}"')
         tables = [row[0] for row in connection.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'p2_v3_%' ORDER BY name DESC"
+            "SELECT name FROM sqlite_master WHERE type='table' "
+            "AND (name LIKE 'p2_v3_%' OR name LIKE 'mock_%') ORDER BY name DESC"
         )]
         for table in tables:
             connection.execute(f'DROP TABLE "{table}"')
@@ -1250,7 +1251,7 @@ def test_v3_upgrade_preserves_existing_v2_candidate_row_byte_for_byte(tmp_path: 
                 "SELECT * FROM p2_candidate_turns WHERE turn_id=?", (str(v2_turn),),
             ).fetchone())
             assert after_row == before_row
-            assert connection.execute("PRAGMA user_version").fetchone()[0] == 6
+            assert connection.execute("PRAGMA user_version").fetchone()[0] == 7
             assert connection.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
             assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
         finally:

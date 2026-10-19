@@ -312,10 +312,18 @@ class MockRuntime:
             )
             return
         except _GateClosed:
-            pass
-        # No P1 execution adapter exists. Keep the same execution key and UNKNOWN
-        # outcome; park until an explicit /resume/auth action wakes this turn.
-        self._deferred_recovery.add(turn_id)
+            # A closed kill switch must not settle an execution either.
+            self._deferred_recovery.add(turn_id)
+            return
+        # The effect may already have landed. Settle by looking the original
+        # execution key up in the ledger first; only a missing row is applied, and
+        # it is applied under that same key. An unknown outcome is never turned
+        # into a terminal guess, so any failure here parks the Turn as recoverable.
+        try:
+            await asyncio.to_thread(self._store.reconcile_mock_execution, owner_id, turn_id)
+        except Exception:
+            self._deferred_recovery.add(turn_id)
+            return
 
     async def _run_claim(
         self, claimed: ClaimedTurn, *, auth_resume_state: c.ResumeState = c.ResumeState.RUNNING,

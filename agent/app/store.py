@@ -802,6 +802,8 @@ class SQLiteAgentStore(P2V3StoreMixin):
         new_proposal: Optional[ProposalRecord] = None,
         updated_proposal: Optional[ProposalRecord] = None,
         fixture_execution: bool = False,
+        execution_dispatch: bool = False,
+        proposal_result_update: bool = False,
         claim_token: Optional[str] = None,
         candidate_profile_id: Optional[str] = None,
         p2_v3_protected_output: Any = None,
@@ -835,16 +837,18 @@ class SQLiteAgentStore(P2V3StoreMixin):
             except ValueError:
                 raise StateConflict("turn state transition precondition failed") from None
             assigning_execution = before.execution is None and after.execution is not None
-            if assigning_execution != fixture_execution:
-                raise StateConflict("execution identity assignment is restricted to explicit fixture injection")
+            if assigning_execution and not (fixture_execution or execution_dispatch):
+                raise StateConflict("execution identity assignment requires an explicit dispatch")
+            if (fixture_execution or execution_dispatch) and not assigning_execution:
+                raise StateConflict("an explicit dispatch must assign the execution identity")
             if before.state != TurnState.RUNNING and after.state == TurnState.RUNNING:
                 self._check_admission(
                     connection, owner_user_id, target_state=TurnState.RUNNING,
                     excluding_turn_id=after.turn_id, now=instant,
                 )
-            if fixture_execution:
+            if fixture_execution or execution_dispatch:
                 if new_proposal is not None or updated_proposal is None or after.execution is None:
-                    raise InvariantViolation("fixture execution requires the existing proposal update")
+                    raise InvariantViolation("execution dispatch requires the existing proposal update")
                 current_proposal = self._proposal_by_id(connection, owner_user_id, after.execution.proposal_id)
                 try:
                     validate_confirm_transition(
@@ -853,7 +857,7 @@ class SQLiteAgentStore(P2V3StoreMixin):
                         expected_proposal_revision=after.execution.proposal_revision,
                     )
                 except ValueError:
-                    raise StateConflict("fixture execution identity does not match the pending proposal") from None
+                    raise StateConflict("execution identity does not match the pending proposal") from None
                 updated_proposal = self._preserve_proposal_receipts(current_proposal, updated_proposal)
                 if (
                     updated_proposal.proposal_id != current_proposal.proposal_id
@@ -861,7 +865,7 @@ class SQLiteAgentStore(P2V3StoreMixin):
                     or updated_proposal.execution != after.execution
                     or updated_proposal.status != ProposalStatus.CONFIRMED
                 ):
-                    raise InvariantViolation("fixture execution must atomically confirm the same proposal revision")
+                    raise InvariantViolation("execution dispatch must atomically confirm the same proposal revision")
                 self._validate_proposal_scope(updated_proposal, after)
                 changed = connection.execute(
                     "UPDATE proposals SET status = ?, record_json = ?, updated_at = ? "
@@ -870,9 +874,34 @@ class SQLiteAgentStore(P2V3StoreMixin):
                      str(updated_proposal.proposal_id), str(owner_user_id), updated_proposal.revision),
                 ).rowcount
                 if changed != 1:
-                    raise ProposalConflict("fixture proposal changed before execution identity injection")
+                    raise ProposalConflict("proposal changed before execution identity dispatch")
             elif updated_proposal is not None:
-                raise InvariantViolation("proposal status updates require an explicit isolated execution fixture")
+                if not proposal_result_update:
+                    raise InvariantViolation("proposal status updates require an explicit execution dispatch")
+                # Settling a dispatched execution may move an already-confirmed
+                # proposal to a terminal status. It may not reassign the execution
+                # identity, resurrect a pending proposal, or touch another turn.
+                if after.execution is None or before.execution != after.execution:
+                    raise InvariantViolation("a proposal result update requires the existing execution identity")
+                current_proposal = self._proposal_by_id(connection, owner_user_id, after.execution.proposal_id)
+                updated_proposal = self._preserve_proposal_receipts(current_proposal, updated_proposal)
+                if (
+                    updated_proposal.proposal_id != current_proposal.proposal_id
+                    or updated_proposal.revision != current_proposal.revision
+                    or updated_proposal.execution != after.execution
+                    or current_proposal.execution != after.execution
+                    or current_proposal.status != ProposalStatus.CONFIRMED
+                    or updated_proposal.status not in (ProposalStatus.REJECTED, ProposalStatus.CLOSED)
+                ):
+                    raise InvariantViolation("a proposal result update may only settle a confirmed execution")
+                changed = connection.execute(
+                    "UPDATE proposals SET status = ?, record_json = ?, updated_at = ? "
+                    "WHERE proposal_id = ? AND owner_user_id = ? AND revision = ? AND status = 'confirmed'",
+                    (updated_proposal.status.value, _dump_json(updated_proposal), _timestamp(instant),
+                     str(updated_proposal.proposal_id), str(owner_user_id), updated_proposal.revision),
+                ).rowcount
+                if changed != 1:
+                    raise ProposalConflict("proposal changed before its execution result was recorded")
             self._validate_after_owner_session(after, owner_user_id, aggregate.record)
             next_checkpoint = checkpoint if checkpoint is not None else aggregate.checkpoint
             next_checkpoint_revision = aggregate.checkpoint_revision + (1 if checkpoint is not None or event_sources else 0)
@@ -1629,6 +1658,352 @@ class SQLiteAgentStore(P2V3StoreMixin):
             self._fault("record_confirmation_unavailable.before_commit")
         self._fault("record_confirmation_unavailable.after_commit")
         return receipt
+
+    # --- P3a mock write path -------------------------------------------------
+    #
+    # The business effect happens outside the agent, so this path is deliberately
+    # two commits: `confirm_and_dispatch` fixes the execution identity and enters
+    # EXECUTING, `apply_mock_execution` commits the effect to the mock ledger, and
+    # `settle_mock_execution` records the result. A crash between the last two
+    # therefore leaves a recoverable UNKNOWN under the original key, never a
+    # silent retry with a new one.
+
+    @staticmethod
+    def _mock_ledger_version(connection: sqlite3.Connection, activity_id: str) -> int:
+        row = connection.execute(
+            "SELECT financial_version FROM mock_ledger_state WHERE activity_id = ?", (activity_id,),
+        ).fetchone()
+        return int(row["financial_version"]) if row is not None else 0
+
+    def mock_ledger_financial_version(self, activity_id: uuid.UUID) -> int:
+        self._require_started()
+        with self._connection() as connection:
+            return self._mock_ledger_version(connection, str(activity_id))
+
+    def bump_mock_ledger_version(
+        self, activity_id: uuid.UUID, *, now: Optional[datetime] = None,
+    ) -> int:
+        """Stand in for another writer changing the activity after a preview."""
+        self._require_started()
+        instant = _aware_now(now)
+        with self._transaction() as connection:
+            version = self._mock_ledger_version(connection, str(activity_id)) + 1
+            connection.execute(
+                "INSERT INTO mock_ledger_state(activity_id, financial_version, updated_at) VALUES (?, ?, ?) "
+                "ON CONFLICT(activity_id) DO UPDATE SET financial_version = excluded.financial_version, "
+                "updated_at = excluded.updated_at",
+                (str(activity_id), version, _timestamp(instant)),
+            )
+            return version
+
+    def read_mock_execution(self, execution_id: uuid.UUID) -> Optional[dict[str, Any]]:
+        self._require_started()
+        with self._connection() as connection:
+            row = connection.execute(
+                "SELECT * FROM mock_execution_ledger WHERE execution_id = ?", (str(execution_id),),
+            ).fetchone()
+        if row is None:
+            return None
+        return {
+            "execution_id": row["execution_id"],
+            "owner_user_id": row["owner_user_id"],
+            "proposal_id": row["proposal_id"],
+            "proposal_revision": int(row["proposal_revision"]),
+            "operation": row["operation"],
+            "command_sha256": row["command_sha256"],
+            "applied_at": row["applied_at"],
+            "effect": json.loads(row["effect_json"]),
+        }
+
+    def count_mock_executions(self, proposal_id: uuid.UUID) -> int:
+        self._require_started()
+        with self._connection() as connection:
+            return int(connection.execute(
+                "SELECT COUNT(*) FROM mock_execution_ledger WHERE proposal_id = ?", (str(proposal_id),),
+            ).fetchone()[0])
+
+    def confirm_and_dispatch(
+        self,
+        owner_user_id: UserId,
+        proposal_id: uuid.UUID,
+        request: Any,
+        *,
+        expected_state_revision: int,
+        expected_proposal_revision: int,
+        now: Optional[datetime] = None,
+    ) -> TurnAggregate:
+        """Assign the deterministic execution identity and enter EXECUTING."""
+        from .contracts import (
+            ConfirmProposalRequest, ExecutionIdentity, ExecutionReference, ProposalRecord,
+            ProposalStatus, derive_execution_id,
+        )
+        from .p3_execution import MockExecutionStateError, mock_effect_for_command, require_matching_financial_version
+
+        if not isinstance(request, ConfirmProposalRequest):
+            raise TypeError("confirming the mock write path requires the frozen confirm request")
+        self._require_started()
+        instant = _aware_now(now)
+        proposal = self.get_proposal(owner_user_id, proposal_id)
+        aggregate = self.get_turn(owner_user_id, proposal.turn_id)
+        before = aggregate.record.turn
+        if proposal.status != ProposalStatus.PENDING or proposal.execution is not None:
+            raise ProposalConflict("proposal is not currently confirmable")
+        if proposal.revision != expected_proposal_revision:
+            raise ProposalConflict("proposal revision precondition failed")
+        if proposal.expires_at <= instant:
+            raise ProposalExpired("proposal has expired")
+        if before.state != TurnState.WAIT_CONFIRM or before.wait_reason != WaitReason.CONFIRM_REQUIRED:
+            raise StateConflict("turn is not currently awaiting proposal confirmation")
+        if before.state_revision != expected_state_revision:
+            raise StateConflict("turn state revision precondition failed")
+        if proposal.mode != "backend" or proposal.canonical_command is None:
+            raise MockExecutionStateError("the mock write path requires a backend proposal with a fixed command")
+        if (
+            proposal.command_digest is None
+            or not hmac.compare_digest(proposal.command_digest, request.command_digest)
+            or proposal.confirmation_nonce is None
+            or not hmac.compare_digest(proposal.confirmation_nonce, request.confirmation_nonce)
+        ):
+            raise ProposalConflict("proposal confirmation precondition failed")
+        # Deriving the effect here validates the fixed command before any state moves.
+        effect = mock_effect_for_command(proposal.canonical_command)
+        with self._connection() as connection:
+            require_matching_financial_version(
+                proposal.preconditions,
+                self._mock_ledger_version(connection, str(effect.activity_id)),
+            )
+        execution_id = derive_execution_id(owner_user_id, proposal.proposal_id, proposal.revision)
+        identity = ExecutionIdentity(
+            execution_id=execution_id, actor_id=owner_user_id,
+            proposal_id=proposal.proposal_id, proposal_revision=proposal.revision,
+        )
+        after = TurnStateSnapshot.model_validate(
+            before.model_dump(mode="python")
+            | {
+                "state": TurnState.EXECUTING, "step": TurnStep.DISPATCH,
+                "state_revision": before.state_revision + 1,
+                "wait_reason": None, "resume_state": None,
+                "execution": identity.model_dump(mode="python"),
+                "execution_resolution": None,
+            }
+        )
+        confirmed = ProposalRecord.model_validate(
+            proposal.model_dump(mode="python", by_alias=True, exclude_none=False)
+            | {
+                "status": ProposalStatus.CONFIRMED.value,
+                # Once confirmed the proposal must not keep exposing the nonce.
+                "confirmation_nonce": None,
+                # The proposal keeps the full identity, not just a reference, so the
+                # recorded executor and the Turn's identity cannot diverge.
+                "execution": identity.model_dump(mode="python"),
+            }
+        )
+        result = self.transition_turn(
+            owner_user_id, after,
+            expected_state_revision=before.state_revision,
+            expected_checkpoint_revision=aggregate.checkpoint_revision,
+            events=[self._status_draft(after, instant)],
+            updated_proposal=confirmed,
+            execution_dispatch=True,
+            now=instant,
+        )
+        self._fault("confirm_and_dispatch.after_commit")
+        return result
+
+    def apply_mock_execution(
+        self, owner_user_id: UserId, proposal_id: uuid.UUID, *, now: Optional[datetime] = None,
+    ) -> dict[str, Any]:
+        """Apply the fixed effect exactly once, keyed by the execution identity."""
+        from .contracts import ProposalStatus
+        from .p3_execution import MockExecutionStateError, mock_effect_for_command, require_matching_financial_version
+
+        self._require_started()
+        instant = _aware_now(now)
+        with self._transaction() as connection:
+            proposal = self._proposal_by_id(connection, owner_user_id, proposal_id)
+            if proposal.status != ProposalStatus.CONFIRMED or proposal.execution is None:
+                raise MockExecutionStateError("the proposal has no dispatched execution")
+            execution_id = str(proposal.execution.execution_id)
+            existing = connection.execute(
+                "SELECT * FROM mock_execution_ledger WHERE execution_id = ?", (execution_id,),
+            ).fetchone()
+            if existing is not None:
+                return {
+                    "applied": False, "execution_id": execution_id,
+                    "effect": json.loads(existing["effect_json"]),
+                }
+            if proposal.canonical_command is None:
+                raise MockExecutionStateError("the confirmed proposal has no fixed command")
+            effect = mock_effect_for_command(proposal.canonical_command)
+            require_matching_financial_version(
+                proposal.preconditions,
+                self._mock_ledger_version(connection, str(effect.activity_id)),
+            )
+            connection.execute(
+                "INSERT INTO mock_execution_ledger(execution_id, owner_user_id, proposal_id, "
+                "proposal_revision, operation, command_sha256, activity_id, effect_json, applied_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    execution_id, str(owner_user_id), str(proposal.proposal_id), proposal.revision,
+                    effect.operation, effect.command_sha256, str(effect.activity_id),
+                    json.dumps(effect.as_payload(), ensure_ascii=False, sort_keys=True),
+                    _timestamp(instant),
+                ),
+            )
+            connection.execute(
+                "INSERT INTO mock_ledger_state(activity_id, financial_version, updated_at) "
+                "VALUES (?, ?, ?) ON CONFLICT(activity_id) DO UPDATE SET "
+                "financial_version = excluded.financial_version, updated_at = excluded.updated_at",
+                (str(effect.activity_id), effect.next_financial_version(), _timestamp(instant)),
+            )
+            self._fault("apply_mock_execution.before_commit")
+        self._fault("apply_mock_execution.after_commit")
+        return {"applied": True, "execution_id": execution_id, "effect": effect.as_payload()}
+
+    def settle_mock_execution(
+        self,
+        owner_user_id: UserId,
+        proposal_id: uuid.UUID,
+        resolution: ExecutionResolution,
+        *,
+        result_code: Optional[str] = None,
+        result_summary: Optional[str] = None,
+        now: Optional[datetime] = None,
+    ) -> TurnAggregate:
+        """Record the durable execution result and leave the Turn terminal."""
+        from .contracts import (
+            ExecutionReference, ExecutionResultPayload, ProposalRecord, ProposalStatus,
+        )
+        from .p3_execution import MockExecutionStateError
+
+        self._require_started()
+        instant = _aware_now(now)
+        if resolution not in (ExecutionResolution.SUCCEEDED, ExecutionResolution.REJECTED):
+            raise MockExecutionStateError("settlement records a succeeded or rejected execution only")
+        proposal = self.get_proposal(owner_user_id, proposal_id)
+        aggregate = self.get_turn(owner_user_id, proposal.turn_id)
+        before = aggregate.record.turn
+        if (
+            before.execution is None or proposal.execution is None
+            or before.execution.execution_id != proposal.execution.execution_id
+        ):
+            raise MockExecutionStateError("the proposal and turn do not share one execution identity")
+        if before.state not in (TurnState.EXECUTING, TurnState.RECOVERING):
+            raise MockExecutionStateError("only a dispatched or recovering execution can be settled")
+        if before.execution_resolution not in (None, ExecutionResolution.UNKNOWN, resolution):
+            raise MockExecutionStateError("a terminal execution resolution is immutable")
+        terminal = TurnState.COMPLETED if resolution == ExecutionResolution.SUCCEEDED else TurnState.FAILED
+        after = TurnStateSnapshot.model_validate(
+            before.model_dump(mode="python")
+            | {
+                "state": terminal, "step": TurnStep.TERMINAL,
+                "state_revision": before.state_revision + 1,
+                "wait_reason": None, "resume_state": None,
+                "execution_resolution": resolution.value,
+            }
+        )
+        payload = ExecutionResultPayload(
+            execution=ExecutionReference(
+                execution_id=before.execution.execution_id,
+                proposal_id=before.execution.proposal_id,
+                proposal_revision=before.execution.proposal_revision,
+            ),
+            resolution=resolution,
+            result_code=result_code,
+            result_summary=result_summary,
+        )
+        rejected_proposal = None
+        if resolution == ExecutionResolution.REJECTED:
+            rejected_proposal = ProposalRecord.model_validate(
+                proposal.model_dump(mode="python", by_alias=True, exclude_none=False)
+                | {"status": ProposalStatus.REJECTED.value}
+            )
+        return self.transition_turn(
+            owner_user_id, after,
+            expected_state_revision=before.state_revision,
+            expected_checkpoint_revision=aggregate.checkpoint_revision,
+            events=[
+                EventDraft(
+                    type=EventType.EXECUTION_RESULT, occurred_at=instant,
+                    simulation=False, payload=payload,
+                ),
+                self._status_draft(after, instant),
+            ],
+            updated_proposal=rejected_proposal,
+            proposal_result_update=rejected_proposal is not None,
+            now=instant,
+        )
+
+    def mark_execution_unknown(
+        self, owner_user_id: UserId, proposal_id: uuid.UUID, *, now: Optional[datetime] = None,
+    ) -> TurnAggregate:
+        """Park a dispatched execution whose effect may have landed as UNKNOWN."""
+        from .contracts import ExecutionReference, ExecutionResultPayload
+        from .p3_execution import MockExecutionStateError
+
+        self._require_started()
+        instant = _aware_now(now)
+        proposal = self.get_proposal(owner_user_id, proposal_id)
+        aggregate = self.get_turn(owner_user_id, proposal.turn_id)
+        before = aggregate.record.turn
+        if before.execution is None or proposal.execution is None:
+            raise MockExecutionStateError("no execution was dispatched for this proposal")
+        if before.state not in (TurnState.EXECUTING, TurnState.RECOVERING):
+            raise MockExecutionStateError("only a dispatched execution can become unknown")
+        after = TurnStateSnapshot.model_validate(
+            before.model_dump(mode="python")
+            | {
+                "state": TurnState.RECOVERING, "step": TurnStep.RECONCILE,
+                "state_revision": before.state_revision + 1,
+                "wait_reason": None, "resume_state": None,
+                "execution_resolution": ExecutionResolution.UNKNOWN.value,
+            }
+        )
+        payload = ExecutionResultPayload(
+            execution=ExecutionReference(
+                execution_id=before.execution.execution_id,
+                proposal_id=before.execution.proposal_id,
+                proposal_revision=before.execution.proposal_revision,
+            ),
+            resolution=ExecutionResolution.UNKNOWN,
+        )
+        return self.transition_turn(
+            owner_user_id, after,
+            expected_state_revision=before.state_revision,
+            expected_checkpoint_revision=aggregate.checkpoint_revision,
+            events=[
+                EventDraft(
+                    type=EventType.EXECUTION_RESULT, occurred_at=instant,
+                    simulation=False, payload=payload,
+                ),
+                self._status_draft(after, instant),
+            ],
+            now=instant,
+        )
+
+    def reconcile_mock_execution(
+        self, owner_user_id: UserId, turn_id: TurnId, *, now: Optional[datetime] = None,
+    ) -> TurnAggregate:
+        """Settle a recovering execution by looking up the original key.
+
+        The lookup precedes any application: if the effect already landed the
+        ledger row proves it and nothing is applied twice. If it did not land,
+        the same execution identity is applied — never a freshly minted one.
+        """
+        from .contracts import ExecutionResolution
+        from .p3_execution import MockExecutionStateError
+
+        aggregate = self.get_turn(owner_user_id, turn_id)
+        turn = aggregate.record.turn
+        if turn.execution is None or turn.state != TurnState.RECOVERING:
+            raise MockExecutionStateError("only a recovering execution can be reconciled")
+        proposal = self.get_proposal(owner_user_id, turn.execution.proposal_id)
+        applied = self.apply_mock_execution(owner_user_id, proposal.proposal_id, now=now)
+        summary = "mock expense effect applied" if applied["applied"] else "mock expense effect already applied"
+        return self.settle_mock_execution(
+            owner_user_id, proposal.proposal_id, ExecutionResolution.SUCCEEDED,
+            result_code="mock_expense_created", result_summary=summary, now=now,
+        )
 
     def get_turn(self, owner_user_id: UserId, turn_id: TurnId) -> TurnAggregate:
         self._require_started()
@@ -3610,6 +3985,13 @@ class SQLiteAgentStore(P2V3StoreMixin):
         raw = scope_fence_capture_migration.read_bytes()
         migrations.append(
             _Migration(6, "p2_v3_scope_fence_capture", raw.decode("utf-8"), hashlib.sha256(raw).hexdigest())
+        )
+        mock_execution_migration = Path(__file__).resolve().with_name("p3_mock_execution_migration.sql")
+        if not mock_execution_migration.is_file():
+            raise StorageStartupError("the Agent-owned P3a mock execution migration is missing")
+        raw = mock_execution_migration.read_bytes()
+        migrations.append(
+            _Migration(7, "p3_mock_execution", raw.decode("utf-8"), hashlib.sha256(raw).hexdigest())
         )
         return tuple(migrations)
 

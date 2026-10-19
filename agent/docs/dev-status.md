@@ -1,12 +1,14 @@
 # Agent 开发状态
 
-## T1 release-v3 转换切片（2026-10-19）
+## T1 release-v3 候选（2026-10-19）
 
-RBR01 的横向切片完成并验证：root 复核点名的三条空结果读样本（packet 行 21/22/24）已按数据集适用性政策要求的「显式转换」转到冻结的离线协议 v1.1.0 profile。答案改由冻结的可信 renderer 生成并引用 `query_1`，`backend_zero`（行 21/24）与 `post_filter_zero`（行 22，后端确返回 5 条、被 title 后置筛选清空）保持可区分；三条同时移除人工追加的「已读取并消费」提示。RBR01 的权威定义取冻结的 T1 v1.1.0 typed query evidence；P2 v3 的 `query_zero_classification` 是**未裁决候选**，仅作对齐目标，并入协议需另开 freeze（已与 P2 会话确认）。
+四个 RBR 项已全部落到新版本。新 source freeze（27 文件，绑定 git head、91 文件 pin 快照与冻结 v1.1 manifest）；新候选 405 条（train/validation/sealed = 139/133/133，即 v2 形状 + 12 条 RBR04 覆盖行）；RBR01 3 条、RBR02 402 条、RBR03 56 条、RBR04 12 条。RBR01：三条空结果读样本（packet 行 21/22/24）按数据集适用性政策要求的「显式转换」转到冻结的离线协议 v1.1.0 profile，答案由冻结的可信 renderer 生成并引用 `query_1`，两条 `backend_zero`、一条 `post_filter_zero`（后端确返回 5 条、被 title 后置筛选清空）保持可区分；RBR01 的权威定义取冻结 T1 v1.1.0 typed query evidence，P2 v3 的 `query_zero_classification` 是**未裁决候选**、仅作对齐目标，并入协议需另开 freeze（已与 P2 会话确认）。RBR03：56 条歧义澄清改用已返回事实列候选（标题/日期/金额/币种/参与人），回复用日期+金额选择，不再出现裸 `expense_ref`；提案、目标 ref 与金额不变。RBR04：按「覆盖缺失、非算法缺陷」补 12 条 AA 最小单位尾差与多人小额案例，复用既有 family、不改既有行，每条核对守恒并产生确定性尾差（150.01/6 → 25.0017/25.0016）。RBR02：所有已转换行的模型输入与原始用户请求逐字相同。
 
-产出：`D:\AI\runs\shared-ledger\t1-release-v3-20261019\`（91 文件 pin 快照，含 v1 baseline 72 + 冻结 v1.1 包与导出 schema 19；+ `conversion/rbr01-converted-rows.jsonl` 与报告）。代码在 `agent/evaluation/t1_release_v3/`（profile / snapshot / schema / runtime / v11_evidence / convert / slice_rbr01），信封 schema 由冻结 v2 schema 显式变换生成并内嵌冻结 v1.1 schema。验证：v2 生成器仍逐字节复现冻结行（否则中止）、转换行通过 release-v3 信封、每条证据由冻结 v1.1 harness 重新证明（`bind_trusted_query` / `validate_context_bindings` / `render_query_answer`）、v2 载荷哈希在测试中重申；`pytest agent/evaluation/t1_release_v3/tests -q` = 7 passed。
+产出：`D:\AI\runs\shared-ledger\t1-release-v3-20261019\`（`baseline-snapshot/` 91 文件 pin 快照；`review/source-manifest.json`；`candidate-v3/{train,validation}.jsonl`；`review/candidate-report.json`；`review/human-review-v3/` 新 34 条 packet + pending receipt）。代码在 `agent/evaluation/t1_release_v3/`（profile / snapshot / schema / runtime / v11_evidence / convert / rbr03 / rbr04 / hashing / bridge / generate_v2_rows / freeze / build_candidate / packet / 三个 slice），信封 schema 由冻结 v2 schema 显式变换生成并内嵌冻结 v1.1 schema。v2 生成与 v1.1 转换各 pin 一套冻结基线、不能同进程共存，因此生成阶段走隔离子进程，不弱化任何一边的 pin；`checker` 是纯记录分析，故在 pin 之前导入。v2 goldguard 硬要求澄清回复用 `expense_ref=`，故 RBR03 行自带 v3 gold 检查。
 
-边界：这是**切片**，不是完整版本。RBR03、RBR04 与其余 390 条转换未开始；无新 candidate、无新 source freeze、无新 split、无新 review packet、无 genuine human receipt；`human_reviewed=false`、`human_review_pending=true`、真实 CAP 仍 0/17、`training_eligible=false`。旧 393 候选、其 packet 与全部 receipt 字节不变，未读 sealed。详见 [release-v3 转换记录](t1/release-v3/README.md)。
+验证：405 行全部通过 release-v3 信封；写入的 402 个工具观测全部逐字节重放一致（一个反例已修：工具观测的 `request` 必须保持冻结模拟器实际消费的 v1 形状，typed post-filter 只放在 query observation 上）；18 个 operation×split family 计数仍恰好 20；每条空结果证据由冻结 v1.1 harness 重新证明；新 packet 选择确定（重跑得同一 packet hash），receipt gate 拒绝「pending 却声称已审」「无真人与证据的 approved」以及「即使签名也不等于 training_eligible」；`pytest agent/evaluation/t1_release_v3/tests -q` = 27 passed。两轮改生成器后全量可读候选逐行比对仍与冻结 v2 零 mismatch（135 train / 129 validation），三份 v2 载荷哈希不变，既有 `t1_release/tests` = 122 passed 不变。
+
+边界：**未准入**。collection gate 因 5,429 组 near-pair findings 未由 root 裁定而不通过（v2 当时需裁定 4,984 组）；sealed 只生成校验、未写出（须在 gate 关闭后按一次性 receipt 最后写）；无 genuine human receipt（新 packet 与 pending 模板已就绪，签名需真人）；`human_reviewed=false`、`human_review_pending=true`、真实 CAP 仍 0/17、`training_eligible=false`。待裁定：生成器按 0.0001 量子分摊，而记录的后端规则按 0.1 最小单位顺序分配（100.0/3 → 33.4/33.3/33.3），新版本取哪套会改变所有行的份额值。旧 393 候选、其 packet 与全部 receipt 字节不变，未读 sealed。详见 [release-v3 转换记录](t1/release-v3/README.md)。
 
 ## P2 当前 private-v3 检查点（2026-10-19）
 
@@ -24,6 +26,18 @@ Private-v3/native 默认关闭；业务写入全程关闭，`Gateway` 仍 `Unimp
 - **本批修复**：身份恢复遗弃缺陷（`_finalize_claim`，CPU 回归覆盖两条路径）；2C/3 能力失败分类诚实化（不再把「永远不可能成功」报成可重试）；4 提示词白名单修订**实测有效**（本次真机 answer 根对象恰好是契约 4 字段，先前的多余字段消失）。
 
 v3 candidate 的裁决现状见 [v3 profile 状态](p2/P2_V3_PROFILE_STATUS.md)：只有「disabled CPU candidate foundation」范围的 root 接受，**没有**把它作为基线的裁决。分项限制见 [已知限制清单](p2/P2_KNOWN_LIMITS_R1.md)（Store 两页、消息文本 2000 字、恢复期间 events 进度接口不稳、云端未测、CAP 0/17、模型质量 `INSUFFICIENT_SAMPLE`）。历史入口另见 [P2 交付状态 R3](p2/P2_DELIVERY_R3.md)、[R2 当前状态](p2/R2_STATUS.md) 和 [P2 配置示例](p2/P2_CONFIGURATION_EXAMPLE.md)。
+
+## P3a Mock 写路径（2026-10-19）
+
+**引擎已实现并通过四条验收条件；HTTP 确认仍返回冻结的 501。** 详见 [P3a 实现记录](p3/P3A_MOCK_WRITE_PATH.md)。
+
+- 链条：预览（沿用 Mock Runtime 的 `WAIT_CONFIRM`）→ 确认 → 固定命令 → Mock 账本上的恰好一次效果 → 持久回执（提案 `execution`、Turn `execution_resolution`、`execution_result` 事件三者一致）。
+- **`execution_id` 是派生的**：确认时调用冻结契约的 `derive_execution_id(actor, proposal_id, revision)`，非派生 id 被契约拒绝。
+- **未知结果按原键恢复**：写路径两次提交（钉死键 → 落效果 → 记结果），死在中间时 Turn 进 `RECOVERING`，运行时按键先查账再结算，缺行才用同一个键补做；未知永不写成终态。
+- 四条验收条件各有对应用例：未确认不落账 / 同请求无重复效果 / 并发改账使旧预览失效 / 响应丢失可找回；另有正常闭环与"模拟提案不可执行"。
+- 全量：**753 passed + 1 xfailed**（调用方式前提同 P2：整目录一次调用 + 两个 store 根目录每轮新建）。
+- 边界：不碰真实业务写入与云端、不动 P2 v3 防火墙、不碰 T1；HTTP 成功响应需先批准 [确认响应差异提案](p3/P3A_CONFIRM_RESPONSE_DIFF.md)。
+- **pin 提示**：P3a 改动了 `store.py` 与 `runtime.py`，执行 pin `362e66ad…` 现已 2 处 mismatch、不再匹配当前树；新模块 `p3_execution.py` 不在该 manifest 的枚举组件内。
 
 日期：2026-10-12
 当前阶段：**P0 工程核查通过；T0 六步部署链验收通过；P1 限定工程范围通过；T1 protocol v1.1.0 离线协议冻结已批准；release-v2 数据准入及训练仍未完成，genuine human receipt、P2校准、T2授权pending**

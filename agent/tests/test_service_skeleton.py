@@ -65,7 +65,7 @@ def test_sqlite_start_probes_configured_disk_and_rolls_back_without_schema(tmp_p
     with sqlite3.connect(database) as connection:
         # A fresh store now migrates to the current head; the P1 initial schema
         # is still present and the ledger still begins with version 1.
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 6
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 7
         tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         assert {"schema_migrations", "sessions", "turns", "events", "proposals"} <= tables
         assert connection.execute(

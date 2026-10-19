@@ -440,7 +440,7 @@ def test_store_accepts_scoped_financial_get_chains(operation: pc.P2ReadOperation
         store = _configured_store(database_path)
     store.start()
     with store._connection() as connection:
-        assert int(connection.execute("PRAGMA user_version").fetchone()[0]) == 6
+        assert int(connection.execute("PRAGMA user_version").fetchone()[0]) == 7
     now = datetime.now(timezone.utc)
     turn_id, claim_token = _create_running_turn(store, now=now)
     datasets = _datasets()
