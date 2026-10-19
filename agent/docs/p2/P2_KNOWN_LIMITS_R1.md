@@ -15,6 +15,15 @@
 | 7 | 模型质量 | `INSUFFICIENT_SAMPLE`：真实模型闭环 3 次 Turn 的样本量不足以谈准确率 | — | **保留**（按出口要求不追模型准确率） |
 | 8 | v3 candidate 的基线地位 | 只有「disabled CPU candidate foundation」范围的 root 接受（2026-10-14 装配前批准、2026-10-15 R4 review），**没有**把它作为基线/生产路由的裁决；而它已被实际装配进 Runtime/Store/API，超出当时「unassembled」的表述 | — | **未裁决**，见 [v3 profile 状态](P2_V3_PROFILE_STATUS.md) |
 | 9 | 套件完全确定性 | `test_p2_v3_store_recovery_edges.py` 的一条用例曾混用合成时间戳与真实时钟，导致全量与单文件调用结果不一致 | — | **已修**（基准前移 10 秒，兼顾真实时钟顺序与 30 秒 claim 租约；单文件连跑 4/4 通过）；全量连跑结果见证据目录 |
+| 10 | 恢复期间进度通道不可靠 | 真实鉴权暂停 → `/resume/auth` 之后，`GET /v1/turns/{id}/events` 会**持续**返回 503 `dependency_unavailable` "The request could not be completed safely."（3/3 次离线恢复运行均为连续 15 次、约 7.5 秒，直到客户端放弃轮询）；而回合本身仍正常完成 | 是：Turn 照常落定局并释放 claim；503 标 `retryable=true`，重试即可恢复 | **未修，未定位到根因**（详见下节） |
+
+## 关于限制 10 的实测细节（不夸大）
+
+- **来源已定位到代码位置**：该 503 由 [api.py:289-290](../../app/api.py) 的 `_store_call` 通用分支产生——即 store 调用抛出了**既非 `StoreError` 也非 `ValueError`** 的异常。已用 `dependant.call` 包装确认：15 次全部是来自 events endpoint 内的 `_ApiFailure(503, …)`，不是中间件兜的。
+- **是哪个 store 调用：按排除法推断**是 `read_turn_view`（该 endpoint 内唯一的 store 调用），**不是抓到的**——第一次尝试包装 `read_turn_view` 时我把已绑定方法当未绑定用，导致那一次运行本身报 `TypeError` 而作废；修正后的捕获在该运行窗口内未能取到，故此处标记为推断。
+- **对产品行为的影响有限**：同一次运行里权威 store 行显示 `COMPLETED`/`terminal`/`claim_token` 已释放，`orphan_invariant` 为 settled；`read.activities`、4 条 source 收据、1 个受保护答案均正常。即**状态机是对的，进度读接口在恢复窗口内不稳**。
+- **是否早于本批的 claim-finalization 修复：未确立。** 修复前对该窗口的观测被两个 harness 缺陷污染（桥在故障解除后重新武装、以及轮询对瞬时错误不容忍），所以没有可比的修复前数据。**不要**在引用时断言它由本批引入或早于本批存在。
+- 复现与证据：`D:/AI/runs/shared-ledger/p2/current-postfix-live-20261018-01/run-*-offline-resume/`（其中 `read_turn_view_errors`、`transient_poll_errors`、`orphan_invariant` 字段可直接复核）。
 
 ## 与「不做」的边界
 

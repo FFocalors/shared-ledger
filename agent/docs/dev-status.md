@@ -1,16 +1,29 @@
 # Agent 开发状态
 
-## P2 当前 private-v3 检查点（2026-10-18）
+## T1 release-v3 转换切片（2026-10-19）
 
-Private-v3/native 默认关闭；当前 source/config manifest SHA-256 为 `5df93c7fe360e8cedda27b2ca38379c031cd227768f31f7505c127bcd3dd92c6`。**全量目录调用**下 `agent/tests` 在基线 `aaf9fc3` 上首次全绿（738 passed），分页补口后为 743 passed + 1 xfailed，`export_contracts --check` exit 0；此前同一工作树在基线 `7ac1d71` 上实测为 45 failed / 693 passed，其中 33 项真实失败全部定性为**测试端过期**（测试替身缺生产新增端口、假 SDK 缺新类型、迁移号断言停在旧值、prompt golden 未随 schema 裁剪更新、fixture 到期时间用固定 NOW 而生产用真实时钟），无生产缺陷，`agent/app/` 零改动。**"全绿"附调用方式前提**：`test_p2_v3_store_recovery_edges.py` 有一条时间相关用例（合成时间戳与真实时钟混用）在全量调用下通过、在单文件调用下 3/3 失败，机理与未采用的修法见 [套件可复现性 R1](p2/P2_SUITE_REPRODUCIBILITY_R1.md)。
+RBR01 的横向切片完成并验证：root 复核点名的三条空结果读样本（packet 行 21/22/24）已按数据集适用性政策要求的「显式转换」转到冻结的离线协议 v1.1.0 profile。答案改由冻结的可信 renderer 生成并引用 `query_1`，`backend_zero`（行 21/24）与 `post_filter_zero`（行 22，后端确返回 5 条、被 title 后置筛选清空）保持可区分；三条同时移除人工追加的「已读取并消费」提示。RBR01 的权威定义取冻结的 T1 v1.1.0 typed query evidence；P2 v3 的 `query_zero_classification` 是**未裁决候选**，仅作对齐目标，并入协议需另开 freeze（已与 P2 会话确认）。
 
-当前 pin 上新增三组本机隔离实测（D 盘隔离 Supabase + 本地模型），已记入 [当前 pin 闭环与身份恢复 R1](p2/P2_LIVE_CLOSE_LOOP_R1.md)：
+产出：`D:\AI\runs\shared-ledger\t1-release-v3-20261019\`（91 文件 pin 快照，含 v1 baseline 72 + 冻结 v1.1 包与导出 schema 19；+ `conversion/rbr01-converted-rows.jsonl` 与报告）。代码在 `agent/evaluation/t1_release_v3/`（profile / snapshot / schema / runtime / v11_evidence / convert / slice_rbr01），信封 schema 由冻结 v2 schema 显式变换生成并内嵌冻结 v1.1 schema。验证：v2 生成器仍逐字节复现冻结行（否则中止）、转换行通过 release-v3 信封、每条证据由冻结 v1.1 harness 重新证明（`bind_trusted_query` / `validate_context_bindings` / `render_query_answer`）、v2 载荷哈希在测试中重申；`pytest agent/evaluation/t1_release_v3/tests -q` = 7 passed。
 
-- **零模型 POST 闭环通过**：真实 GoTrue 鉴权、真实 RLS 读取、Store 接受、QEV/fact、受保护答案精确引用该 QEV；业务写入 0。
-- **真实模型闭环：3 次 Turn 中 1 次 COMPLETED**；另 2 次因答案根对象多出 4 个契约未声明字段（`source_query_complete` 等）被严格 sent guard 拒绝——**模型侧未遵循既有契约，不是实现缺陷**；1/3 不是通过率结论，质量仍为 `INSUFFICIENT_SAMPLE`。
-- **真实身份恢复：机制可用但发现缺陷**。故障在查询描述符绑定之前时，恢复只能重新规划并撞模型额度 → 终态 `RATE_LIMITED`；故障在描述符已绑定之后时，恢复确实复用原逻辑查询（单查询 id）、以新 attempt 从 page 0 重读、且逻辑读取与模型调用额度不增加，但随后第 2 次规划任务被取消，回合被遗弃为 `RUNNING`（仍持有 claim、无终态或暂停事件）。**该项修复前不应把身份恢复记为 P2 通过。**
+边界：这是**切片**，不是完整版本。RBR03、RBR04 与其余 390 条转换未开始；无新 candidate、无新 source freeze、无新 split、无新 review packet、无 genuine human receipt；`human_reviewed=false`、`human_review_pending=true`、真实 CAP 仍 0/17、`training_eligible=false`。旧 393 候选、其 packet 与全部 receipt 字节不变，未读 sealed。详见 [release-v3 转换记录](t1/release-v3/README.md)。
 
-v3 candidate 的裁决现状见 [v3 profile 状态](p2/P2_V3_PROFILE_STATUS.md)：只有「disabled CPU candidate foundation」范围的 root 接受，没有把它作为基线的裁决。**注意 pin 时点**：manifest `5df93c7f…` 绑定的是分页改动前的源码（截至 `aaf9fc3`），本次分页改动落在其固定组件 `app/p2_runtime.py` 上，已使该 pin 与当前树不再匹配（逐组件复核恰好 1 处 mismatch）；后续任何 live 运行须先重新生成 manifest，且新 pin 在重新出证据前没有真机证据，见 [页窗口 R1](p2/P2_PAGE_WINDOW_R1.md)。分项边界另见 [P2 交付状态 R3](p2/P2_DELIVERY_R3.md)、[R2 当前状态](p2/R2_STATUS.md) 和 [P2 配置示例](p2/P2_CONFIGURATION_EXAMPLE.md)。
+## P2 当前 private-v3 检查点（2026-10-19）
+
+**当前入口是 [P2 交付状态 R4](p2/P2_DELIVERY_R4.md)**（一句话：真实只读链路工程基线通过，带明确限制清单）。当前 source/config manifest SHA-256 为 `362e66ad04491be4f711c8db076f5bb0736904b5d6e9962a9f13ba82e6e8a848`（49 个 component 对当前树 0 处 mismatch，源码 `3fcb2fd`）；旧 `5df93c7f…` 已因分页改动失效，其证据不得用于描述当前源码。
+
+**全量套件的调用方式前提必须连结果一起引用**：`agent/tests` **整个目录**一次调用 + 两个 store 根目录**每轮新建为空**。该调用下为 `745 passed, 1 xfailed`，`export_contracts --check` exit 0，**连跑两次一致**；1 个 xfailed 是刻意钉住的消息文本上限缺口。仅跑单文件或不新建目录时不保证一致。
+
+Private-v3/native 默认关闭；业务写入全程关闭，`Gateway` 仍 `Unimplemented`。
+
+新 pin 下四条 leg 全部通过（D 盘隔离 Supabase + 本地 `t0-cp36-20261007`），详见 [R4](p2/P2_DELIVERY_R4.md)：
+
+- **零模型 POST 闭环** `CLOSE_LOOP_COMPLETED`：真实 GoTrue 鉴权、真实 RLS 读取、Store 接受、QEV/fact、受保护答案精确引用该 QEV；业务写入 0。
+- **真实模型闭环** `CLOSE_LOOP_COMPLETED`：2 次 POST（均 200），answer 引用了本次新铸 QEV，文本含本次刚建的活动名，接地端到端成立。
+- **零模型 POST 身份恢复** 与 **真实模型身份恢复** 均 `AUTH_RESUME_COMPLETED`：恰好一次真实上游鉴权故障 → `WAIT_INPUT/auth_required` → `/resume/auth` 202 → 复用单逻辑查询、attempt 1→2 均 page 0、额度不变 → `COMPLETED` 且 claim 已释放（`orphan_invariant: settled`）。
+- **本批修复**：身份恢复遗弃缺陷（`_finalize_claim`，CPU 回归覆盖两条路径）；2C/3 能力失败分类诚实化（不再把「永远不可能成功」报成可重试）；4 提示词白名单修订**实测有效**（本次真机 answer 根对象恰好是契约 4 字段，先前的多余字段消失）。
+
+v3 candidate 的裁决现状见 [v3 profile 状态](p2/P2_V3_PROFILE_STATUS.md)：只有「disabled CPU candidate foundation」范围的 root 接受，**没有**把它作为基线的裁决。分项限制见 [已知限制清单](p2/P2_KNOWN_LIMITS_R1.md)（Store 两页、消息文本 2000 字、恢复期间 events 进度接口不稳、云端未测、CAP 0/17、模型质量 `INSUFFICIENT_SAMPLE`）。历史入口另见 [P2 交付状态 R3](p2/P2_DELIVERY_R3.md)、[R2 当前状态](p2/R2_STATUS.md) 和 [P2 配置示例](p2/P2_CONFIGURATION_EXAMPLE.md)。
 
 日期：2026-10-12
 当前阶段：**P0 工程核查通过；T0 六步部署链验收通过；P1 限定工程范围通过；T1 protocol v1.1.0 离线协议冻结已批准；release-v2 数据准入及训练仍未完成，genuine human receipt、P2校准、T2授权pending**

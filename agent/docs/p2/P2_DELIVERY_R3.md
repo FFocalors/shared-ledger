@@ -1,5 +1,7 @@
 # P2 delivery status R3 — 2026-10-18
 
+> **Superseded by [R4](P2_DELIVERY_R4.md) (2026-10-19).** R4 replaces this document as the current entry point: the pin below is stale, the abandoned-RUNNING resume defect recorded here is fixed, and R4 carries the four passing legs on the current pin. The rest of this file is kept as the record of what was still open on 2026-10-18.
+>
 > Later evidence on the same pin: [P2 live close loop and auth resume R1](P2_LIVE_CLOSE_LOOP_R1.md). It records a zero-model-POST close loop that passed, a live-model close loop that completed 1 of 3 turns (the other 2 were rejected by the strict guard for four undeclared root fields — model-side non-conformance), and one **open defect**: after a resume whose query descriptor is already bound, the Turn is orphaned in `RUNNING` with no terminal or paused event. It also records that the full `agent/tests` suite is green (738 passed) at commit `aaf9fc3`; the earlier "targeted subset" numbers below were never a full-suite result.
 >
 > **Pin staleness:** the `5df93c7f…` manifest below binds the source as of commit `aaf9fc3`. The later bounded-page-window change (`7e0d27a`) touches its pinned component `agent/app/p2_runtime.py`, so that manifest no longer matches the current tree (exactly one component mismatches). Any further live run must generate a fresh manifest first, and a fresh pin carries no live evidence until it is re-run — see [page window R1](P2_PAGE_WINDOW_R1.md).
