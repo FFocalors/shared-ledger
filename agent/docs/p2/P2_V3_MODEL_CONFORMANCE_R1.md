@@ -1,6 +1,10 @@
-# P2 v3 模型协议不遵循：差异说明与建议的提示词修订（R1）
+# P2 v3 模型协议不遵循：差异说明与已实施的提示词修订（R1）
 
-**状态：待 root 评审，未实施。** 本文不改任何契约、schema、parser 或提示词源码；它记录一次实测到的模型侧协议不遵循，并提出一个**候选**提示词修订供评审。在 root 裁决前，严格 sent guard 与 `P2AnswerDecision` 契约保持原样。
+**状态：修订已批准并实施（2026-10-19），且在本机真机上实测有效。** 修订只动提示词文本：不改契约、schema、parser 或 sent guard，不放宽任何校验。
+
+**实施与验证（2026-10-19，pin `362e66ad…e8a848`）**：修订落地后重跑真实模型 Turn（`m-4` 系列环境，见 [R4](P2_DELIVERY_R4.md)），模型的 answer 根对象**恰好是契约声明的四个字段**——先前两次真机失败中出现的 `source_query_complete`、`model_projection_complete`、`has_more` **不再出现**；同时它仍正确引用本次新铸的 QEV，并在文本里带出本次刚创建的活动名，接地未受影响。两条 wire 的该句逐字节一致并有断言防漂移。提示词加长后输入 token 为 1938 / 2631，远低于 6144 上限。
+
+**样本边界**：修订后的样本是 1 个真实 Turn（2 次 POST）。它足以说明"这次不再出现多余字段"，**不足以**给出遵循率；模型质量仍为 `INSUFFICIENT_SAMPLE`。
 
 ## 实测
 
@@ -23,19 +27,19 @@
 - 这不是第一次：R2 记录过 answer 多出根字段 `"type":"application/json"`。`direct-decision-hint-r3`（`agent/app/p2_read_native_provider_v3.py:42`）已经点名禁止 `type`、`candidates`、`arguments`、`content`、`reason`、`evidence_refs`、`intent_id` 等**旧协议/MIME 字段名**
 - 本次多出的字段**不在 r3 的禁止清单里**：它们是从上下文 page-summary 的词汇（`source_query_complete`、`model_projection_complete`、`has_more` 都出现在 `P2PageSummary` 与 QEV 的公开投影中）**新造**的。即 r3 用「枚举黑名单」压制，而模型会从当前上下文里捡词自造字段
 
-因此**不应**通过放宽 guard、改契约或给 `P2AnswerDecision` 加 `extra="allow"` 来"修好"这件事。可选路径只有两条：改提示词（下文候选），或接受该模型在此契约下不可靠（质量结论）。
+因此**不应**通过放宽 guard、改契约或给 `P2AnswerDecision` 加 `extra="allow"` 来"修好"这件事。可选路径只有两条：改提示词（下文即已实施的修订），或接受该模型在此契约下不可靠（质量结论）。
 
-## 候选修订（未实施，供评审）
+## 已实施的修订
 
-在 `_DIRECT_DECISION_HINT_R3` 的 answer 规则处，把「枚举禁止」升级为「白名单 + 显式禁止复制上下文词汇」：
+在 `_DIRECT_DECISION_HINT_R3` 与 `P2_V3_SYSTEM_INSTRUCTIONS` 中，把「枚举禁止」升级为「白名单 + 显式禁止复制上下文词汇」：
 
 1. 明确写出 `kind=answer` 时根对象**恰好**为 `kind`、`basis`、`text`、`citations` 四个字段（r3 已有此句，但只针对 MIME 情形）
 2. 增加一句：**不得把上下文、query evidence 或 page summary 里的任何字段名（如 `source_query_complete`、`model_projection_complete`、`has_more`、`range_contiguous`、`expected_total` 等）复制到答案根对象或任何决策对象中**；这些信息属于服务端投影，不是模型可回述的字段
 3. 措辞上不改变任何 kind 的授权边界，也不扩大 financial read/source 授权
 
-若采纳，建议同步把该约束同时写入兼容路径与 native 路径的共享提示词片段，避免两条 wire 的约束漂移。
+该约束已同时写入兼容路径与 native 路径的共享提示词片段，避免两条 wire 的约束漂移。
 
-## 影响面（评审时必须一并决定）
+## 影响面（实施结果）
 
 | 项 | 影响 |
 |---|---|
