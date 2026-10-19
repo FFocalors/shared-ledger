@@ -13,6 +13,7 @@ The execution identity itself is derived from (actor, proposal, revision), so it
 is reproducible across restarts and old backups; nothing here mints a random id.
 """
 
+import asyncio
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -22,9 +23,21 @@ from agent.app import contracts as c
 from agent.app import mock_fixtures
 from agent.app.p3_execution import MockExecutionStateError, MockPreconditionConflict
 from agent.app.store import ProposalConflict, SQLiteAgentStore
+from agent.app.backend import MockBackendAdapter, MockScopeAuthorizer
+from agent.app.harness import MockModelProvider
+from agent.app.ports import Principal
+from agent.app.runtime import MockRuntime
+from test_mock_runtime import _Control
 from test_sqlite_persistence import (
     OWNER, _proposal, _session, _submit, _wait_with_proposal,
 )
+
+
+class _OwnerAuth:
+    """Verify every token as this file's owner (test_mock_runtime uses another)."""
+
+    def verify_bearer(self, token: str) -> Principal:
+        return Principal(OWNER, datetime.now(timezone.utc) + timedelta(hours=1))
 
 
 def _waiting_turn(tmp_path, name: str) -> tuple[SQLiteAgentStore, c.TurnStateSnapshot, c.ProposalRecord]:
@@ -240,5 +253,36 @@ def test_dispatch_refuses_a_simulation_proposal(tmp_path) -> None:
                 expected_proposal_revision=proposal.revision,
             )
         assert store.get_turn(OWNER, turn_id).record.turn.state is c.TurnState.WAIT_CONFIRM
+    finally:
+        store.close()
+
+
+def test_runtime_recovery_hook_settles_under_the_original_key(tmp_path) -> None:
+    """The scheduler's recovery hook, not just the store method, must settle it."""
+    store, waiting, proposal = _waiting_turn(tmp_path, "p3a-hook")
+    try:
+        dispatched = _confirm(store, waiting, proposal)
+        execution_id = dispatched.record.turn.execution.execution_id
+        store.apply_mock_execution(OWNER, proposal.proposal_id)
+        store.mark_execution_unknown(OWNER, proposal.proposal_id)
+
+        claimed = store.claim_runnable("p3a-recovery-worker")
+        assert claimed is not None
+        assert claimed.turn.record.turn.turn_id == proposal.turn_id
+        runtime = MockRuntime(
+            store, MockModelProvider(), MockBackendAdapter(), _OwnerAuth(),
+            MockScopeAuthorizer(), _Control(), model_timeout_seconds=1,
+        )
+        runtime.bind_auth_grant(
+            Principal(OWNER, datetime.now(timezone.utc) + timedelta(hours=1)), "runtime-token",
+        )
+        asyncio.run(runtime._inspect_recovery_checkpoint(claimed))
+
+        settled = store.get_turn(OWNER, proposal.turn_id).record.turn
+        assert settled.state is c.TurnState.COMPLETED
+        assert settled.execution_resolution is c.ExecutionResolution.SUCCEEDED
+        assert settled.execution.execution_id == execution_id
+        assert store.count_mock_executions(proposal.proposal_id) == 1
+        assert store.mock_ledger_financial_version(mock_fixtures.ACTIVITY_ID) == 1
     finally:
         store.close()

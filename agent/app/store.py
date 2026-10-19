@@ -1868,6 +1868,7 @@ class SQLiteAgentStore(P2V3StoreMixin):
         *,
         result_code: Optional[str] = None,
         result_summary: Optional[str] = None,
+        claim_token: Optional[str] = None,
         now: Optional[datetime] = None,
     ) -> TurnAggregate:
         """Record the durable execution result and leave the Turn terminal."""
@@ -1931,11 +1932,13 @@ class SQLiteAgentStore(P2V3StoreMixin):
             ],
             updated_proposal=rejected_proposal,
             proposal_result_update=rejected_proposal is not None,
+            claim_token=claim_token,
             now=instant,
         )
 
     def mark_execution_unknown(
-        self, owner_user_id: UserId, proposal_id: uuid.UUID, *, now: Optional[datetime] = None,
+        self, owner_user_id: UserId, proposal_id: uuid.UUID, *,
+        claim_token: Optional[str] = None, now: Optional[datetime] = None,
     ) -> TurnAggregate:
         """Park a dispatched execution whose effect may have landed as UNKNOWN."""
         from .contracts import ExecutionReference, ExecutionResultPayload
@@ -1978,11 +1981,13 @@ class SQLiteAgentStore(P2V3StoreMixin):
                 ),
                 self._status_draft(after, instant),
             ],
+            claim_token=claim_token,
             now=instant,
         )
 
     def reconcile_mock_execution(
-        self, owner_user_id: UserId, turn_id: TurnId, *, now: Optional[datetime] = None,
+        self, owner_user_id: UserId, turn_id: TurnId, *,
+        claim_token: Optional[str] = None, now: Optional[datetime] = None,
     ) -> TurnAggregate:
         """Settle a recovering execution by looking up the original key.
 
@@ -2002,7 +2007,8 @@ class SQLiteAgentStore(P2V3StoreMixin):
         summary = "mock expense effect applied" if applied["applied"] else "mock expense effect already applied"
         return self.settle_mock_execution(
             owner_user_id, proposal.proposal_id, ExecutionResolution.SUCCEEDED,
-            result_code="mock_expense_created", result_summary=summary, now=now,
+            result_code="mock_expense_created", result_summary=summary,
+            claim_token=claim_token, now=now,
         )
 
     def get_turn(self, owner_user_id: UserId, turn_id: TurnId) -> TurnAggregate:

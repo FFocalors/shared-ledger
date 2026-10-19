@@ -320,7 +320,10 @@ class MockRuntime:
         # it is applied under that same key. An unknown outcome is never turned
         # into a terminal guess, so any failure here parks the Turn as recoverable.
         try:
-            await asyncio.to_thread(self._store.reconcile_mock_execution, owner_id, turn_id)
+            await asyncio.to_thread(
+                self._store.reconcile_mock_execution, owner_id, turn_id,
+                claim_token=claimed.claim_token,
+            )
         except Exception:
             self._deferred_recovery.add(turn_id)
             return

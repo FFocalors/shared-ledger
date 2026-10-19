@@ -36,7 +36,9 @@
 | 并发改账使旧预览失效 | `test_concurrent_ledger_change_invalidates_the_preview`（账本版本被第三方推进 → 确认抛 `MockPreconditionConflict`，且未派发、未落账） |
 | 响应丢失能找回 | `test_lost_response_is_reconciled_with_the_same_key` 与 `test_restart_recovery_reuses_the_original_key`（效果已落 → 标记 `UNKNOWN` 或重启恢复 → 按原键结算成功，账本仍 1 行、`execution_id` 不变） |
 
-补充：`test_confirmation_dispatches_deterministic_identity_and_applies_once`（正常闭环，逐段断言"派发本身不落账"）、`test_dispatch_refuses_a_simulation_proposal`（模拟提案不可执行）。
+补充：`test_confirmation_dispatches_deterministic_identity_and_applies_once`（正常闭环，逐段断言"派发本身不落账"）、`test_dispatch_refuses_a_simulation_proposal`（模拟提案不可执行）、`test_runtime_recovery_hook_settles_under_the_original_key`（直接驱动运行时 `_inspect_recovery_checkpoint`，而不是只测 store 方法）。
+
+结算方法在**被 claim 的恢复路径**上必须携带 `claim_token`（`transition_turn` 的 CAS 要求）；运行时钩子已经把 `claimed.claim_token` 传下去，store 的三个结算方法也接受该可选参数。这是实现时踩到的一个真实约束，已在测试中覆盖。
 
 ## 4. 实现落点
 
@@ -46,7 +48,7 @@
 | `agent/app/p3_execution.py` | 纯语义：固定命令 → 确定性效果、期望财务版本校验、错误类型 |
 | `agent/app/store.py` | 迁移 007 接线；`confirm_and_dispatch` / `apply_mock_execution` / `settle_mock_execution` / `mark_execution_unknown` / `reconcile_mock_execution` / 账本读取与版本推进；`transition_turn` 新增 `execution_dispatch`（替代借用测试夹具门）与 `proposal_result_update`（结算时把已确认提案置为终态的窄门） |
 | `agent/app/runtime.py` | `_inspect_recovery_checkpoint` 由"无适配器，park"改为按原键核对并结算 |
-| `agent/tests/test_p3a_mock_write.py` | 上述 8 个用例 |
+| `agent/tests/test_p3a_mock_write.py` | 上述 9 个用例（含直接驱动运行时恢复钩子的一条） |
 
 ## 5. 边界（明确不做）
 
@@ -60,7 +62,7 @@
 
 ```bash
 # 定向
-pytest agent/tests/test_p3a_mock_write.py -q   # 8 passed
+pytest agent/tests/test_p3a_mock_write.py -q   # 9 passed
 ```
 
 全量套件的调用方式前提与结果见本文件末尾「验证记录」一节（整目录一次调用 + 两个 store 根目录每轮新建）。
@@ -68,17 +70,17 @@ pytest agent/tests/test_p3a_mock_write.py -q   # 8 passed
 ## 7. 已知限制与后续
 
 1. **Mock 账本不是业务库**：它证明的是 agent 侧的键、顺序、幂等与恢复，不证明任何真实业务规则（例如后端对金额/分摊/币种的最终裁决）。
-2. **`mark_execution_unknown` 的触发**：P3a 由测试显式调用以模拟响应丢失；真实后端接入时（P3b）应在"请求已发出但结果不可判定"时调用它。当前 runtime 的恢复钩子只处理重启恢复路径。
+2. **`mark_execution_unknown` 的触发**：P3a 由测试显式调用以模拟响应丢失；真实后端接入时（P3b）应在"请求已发出但结果不可判定"时调用它。运行时钩子已覆盖重启恢复与未知结算路径（有专门用例），但"发出请求后立刻判未知"的时机仍由调用方决定。
 3. **单进程 Mock**：并发测试覆盖的是"账本被第三方改动使预览失效"，不是两个 agent 实例同时确认同一提案的竞争；后者依赖 Store 的 CAS（`proposal … status='pending'` 的 `rowcount`）已经具备，但没有专门的多进程用例。
 4. 待批准后才能做的：HTTP 202 + receipt kind（见差异提案）。
 
 ## 8. 验证记录
 
 ```bash
-# 定向（8 个用例）
-pytest agent/tests/test_p3a_mock_write.py -q                     # 8 passed
+# 定向（9 个用例）
+pytest agent/tests/test_p3a_mock_write.py -q                     # 9 passed
 # 全量：agent/tests 整个目录一次调用；两个 store 根目录每轮新建为空
-pytest agent/tests -q -p no:cacheprovider                        # 753 passed, 1 xfailed
+pytest agent/tests -q -p no:cacheprovider                        # 754 passed, 1 xfailed
 export_contracts --check                                         # exit 0
 ```
 

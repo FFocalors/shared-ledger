@@ -608,9 +608,14 @@ def test_unknown_execution_recovery_keeps_key_and_does_not_starve_queued_turn(tm
             completed = await _wait_state(store, queued_id, {c.TurnState.COMPLETED})
             assert completed.checkpoint.model_calls == 1
             recovered = store.get_turn(OWNER, recovery_id).record.turn
-            assert recovered.state == c.TurnState.RECOVERING
+            # P3a filled the previously empty execution-adapter slot: the runtime
+            # now settles the unknown outcome under the original key instead of
+            # parking it indefinitely. The key is unchanged, the queued Turn is
+            # still served, and recovery spends no model call.
+            assert recovered.state == c.TurnState.COMPLETED
             assert recovered.execution == execution
-            assert recovered.execution_resolution == c.ExecutionResolution.UNKNOWN
+            assert recovered.execution_resolution == c.ExecutionResolution.SUCCEEDED
+            assert store.count_mock_executions(proposal.proposal_id) == 1
             assert provider.calls == 1
         finally:
             await runtime.close()
