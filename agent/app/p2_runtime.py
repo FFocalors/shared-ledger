@@ -16,6 +16,8 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any, Sequence
 
+from pydantic import ValidationError
+
 from . import contracts as c
 from .auth import AuthDependencyUnavailable, Unauthenticated
 from .harness import ModelOutputError
@@ -137,6 +139,26 @@ class _P2TerminalFailure(Exception):
         self.message = message
         self.retryable = retryable
         super().__init__(message)
+
+
+# Client-visible capability declines that are NOT retryable. Both strings are
+# already in the closed allowlist of `_closed_error`, so classifying with them
+# needs no contract, error-code or allowlist change: a result that cannot be
+# represented is a capability limit, and retrying the identical Turn cannot
+# succeed. Before this, both cases fell through `_safe_internal_error` into
+# "P2 dependency unavailable: internal_failure." with retryable=true, which told
+# clients to retry work that can never succeed.
+_V3_RESULT_NOT_REPRESENTABLE = "P2 capability unavailable: this query cannot be represented safely."
+_V3_RESULT_CAPACITY_REACHED = "P2 result reference capacity reached; submit a narrower new Turn."
+
+# The Store rejects a projection that exceeds its one-continuation page or fact
+# bound with these exact conflict messages. They describe the same capability
+# limit as _V3_RESULT_CAPACITY_REACHED, and the Store exposes no structured code
+# for them, so the classification is keyed on these strings.
+_V3_STORE_CAPACITY_CONFLICTS = frozenset({
+    "scoped fact projection exceeds the one-continuation source bound",
+    "scoped fact projection exceeds the one-continuation page bound",
+})
 
 
 class _NoBusinessScopeAuthorizer:
@@ -383,30 +405,79 @@ class P2Runtime(MockRuntime):
         except (ModelOutputError, CapabilityUnavailable) as exc:
             await self._terminal_error(claimed, c.ApiErrorCode.DEPENDENCY_UNAVAILABLE,
                                        _safe_internal_error(exc), retryable=False)
+        except P2V3StoreConflict as exc:
+            # The Store's projection capacity bounds are capability limits of the
+            # bounded read, so the client is told to narrow the query rather than
+            # to retry an identical Turn that cannot succeed. Any other conflict
+            # keeps the sanitized internal classification.
+            if str(exc) in _V3_STORE_CAPACITY_CONFLICTS:
+                await self._terminal_error(claimed, c.ApiErrorCode.DEPENDENCY_UNAVAILABLE,
+                                           _V3_RESULT_CAPACITY_REACHED, retryable=False)
+            else:
+                await self._terminal_error(claimed, c.ApiErrorCode.DEPENDENCY_UNAVAILABLE,
+                                           "P2 dependency unavailable: internal_failure.", retryable=True)
         except Exception:
             await self._terminal_error(claimed, c.ApiErrorCode.DEPENDENCY_UNAVAILABLE,
                                        "P2 dependency unavailable: internal_failure.", retryable=True)
         finally:
             renewer.cancel()
             await asyncio.wait({renewer}, timeout=0.2)
+            # Cleanup and reconciliation must survive cancellation. Awaiting
+            # them inline lets a propagating CancelledError skip the claim
+            # release, which leaves the Turn RUNNING with a held claim, no
+            # durable event and no owner. Running them as their own task keeps
+            # the durable work alive, and the second bounded wait gives it a
+            # chance to land before the cancellation propagates.
+            finalize = asyncio.create_task(
+                self._finalize_claim(claimed, auth_resume_state=auth_resume_state),
+            )
             try:
-                await asyncio.to_thread(self._store.release_claim, turn_id, claimed.claim_token)
-            except Exception:
-                pass
-            try:
-                final = await asyncio.to_thread(
-                    self._store.get_turn, claimed.turn.record.turn.owner_user_id, turn_id,
-                )
-                if final.record.turn.state in (c.TurnState.COMPLETED, c.TurnState.FAILED,
-                                                c.TurnState.CANCELLED):
-                    self._p2_states.pop(turn_id, None)
-                    self._turn_grants.revoke(final.record.turn.owner_user_id, turn_id)
-                elif final.record.turn.state == c.TurnState.WAIT_INPUT:
-                    self._p2_states.pop(turn_id, None)
-            except Exception:
-                self._p2_states.pop(turn_id, None)
+                await asyncio.wait({finalize}, timeout=self._shutdown_timeout)
+            except asyncio.CancelledError:
+                await asyncio.wait({finalize}, timeout=self._shutdown_timeout)
+                raise
             _ACTIVE_CANDIDATE_PROFILE.reset(profile_token)
             _ACTIVE_TURN.reset(token)
+
+    async def _finalize_claim(
+        self, claimed: ClaimedTurn, *, auth_resume_state: c.ResumeState,
+    ) -> None:
+        """Leave the Turn durable after planning returns, whatever the reason.
+
+        Releasing the claim alone is not enough. A planning path can exit
+        without a terminal or paused transition -- a swallowed
+        StateConflict/StoreNotFound, or a task whose cancellation skipped the
+        handler chain -- and the Turn would then stay RUNNING with no event and
+        no owner. Reconcile first, while the claim is still held, because the
+        pause transition CASes on ``claimed.claim_token``; only then release it.
+        """
+        owner_id = claimed.turn.record.turn.owner_user_id
+        turn_id = claimed.turn.record.turn.turn_id
+        try:
+            final = await asyncio.to_thread(self._store.get_turn, owner_id, turn_id)
+            state = final.record.turn.state
+            if state == c.TurnState.RUNNING:
+                # No classified outcome was persisted for this claim. Pause with
+                # the same dependency pause the provider-cancellation path uses,
+                # so the Turn is resumable instead of orphaned.
+                self._turn_grants.revoke(owner_id, turn_id)
+                self._p2_states.pop(turn_id, None)
+                await self._pause_for_auth(
+                    claimed, resume_state=auth_resume_state,
+                    code=c.ApiErrorCode.DEPENDENCY_UNAVAILABLE,
+                    message="P2 dependency unavailable: internal_failure.",
+                )
+            elif state in (c.TurnState.COMPLETED, c.TurnState.FAILED, c.TurnState.CANCELLED):
+                self._p2_states.pop(turn_id, None)
+                self._turn_grants.revoke(owner_id, turn_id)
+            elif state == c.TurnState.WAIT_INPUT:
+                self._p2_states.pop(turn_id, None)
+        except Exception:
+            self._p2_states.pop(turn_id, None)
+        try:
+            await asyncio.to_thread(self._store.release_claim, turn_id, claimed.claim_token)
+        except Exception:
+            pass
 
     async def _await_turn_grant(self, owner_id: uuid.UUID, turn_id: uuid.UUID) -> None:
         """Close the API-admission race without retaining request-wide credentials."""
@@ -1132,8 +1203,10 @@ class P2Runtime(MockRuntime):
                 raise CapabilityUnavailable("v3 source page cannot be continued safely")
             if pages_seen >= page_window:
                 # A truncated projection is never presented as a final result.
-                raise CapabilityUnavailable(
-                    "v3 source result exceeds the candidate's bounded page window"
+                # This is a capability limit of the bounded window, not a
+                # retryable dependency failure: the same Turn cannot succeed.
+                raise _P2TerminalFailure(
+                    c.ApiErrorCode.DEPENDENCY_UNAVAILABLE, _V3_RESULT_CAPACITY_REACHED,
                 )
             page_qev = live_result.query_evidence
             page_observed = datetime.now(timezone.utc)
@@ -1549,12 +1622,21 @@ class P2Runtime(MockRuntime):
             raise CapabilityUnavailable("P2 v3 protected output Store path is not available")
         before = aggregate.record.turn
         after = self._next_state(before, c.TurnState.COMPLETED, c.TurnStep.TERMINAL)
+        try:
+            message_payload = c.MessageEventPayload(text=historical_output.text, citations=[])
+        except ValidationError:
+            # A complete, Store-accepted read can still exceed the frozen
+            # MessageEventPayload text bound. That is a capability limit of this
+            # response shape, not a retryable dependency failure.
+            raise _P2TerminalFailure(
+                c.ApiErrorCode.DEPENDENCY_UNAVAILABLE, _V3_RESULT_NOT_REPRESENTABLE,
+            ) from None
         events = [
             EventDraft(
                 type=c.EventType.MESSAGE,
                 occurred_at=datetime.now(timezone.utc),
                 simulation=historical_output.simulation,
-                payload=c.MessageEventPayload(text=historical_output.text, citations=[]),
+                payload=message_payload,
             ),
             self._status_event(after),
         ]

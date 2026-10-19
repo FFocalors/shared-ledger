@@ -43,7 +43,7 @@ _DIRECT_DECISION_HINT_R3 = """【当前输出协议：P2 v3；direct-decision-hi
 只输出符合本轮 schema 的一条决策 JSON，根对象直接包含 kind。禁止旧的 candidates 数组、arguments 外壳或 type="decision" 包装。
 read/query_request 的 message_type、profile_id、versions、operation、criteria、scope 都是根字段；profile_id 和 versions 逐字复制本轮 context，criteria 按 operation 对应 schema 填写。读取请求必须是 kind="read"，不得因尚无来源而改成 kind="answer"。
 answer 的根字段是 kind、basis、text、citations，业务引用只取本轮 fresh_receipt_refs。始终只选择本轮 guard 允许的 kind，不输出解释或 Markdown。
-根对象不得含 schema 未声明的任何字段；尤其禁止 type、candidates、arguments、content、reason、evidence_refs、intent_id 等旧协议或 MIME 字段。kind=answer 时根对象恰好包含 kind、basis、text、citations 四个字段，不得添加 type="application/json"；该 MIME 描述不属于答案。
+根对象不得含 schema 未声明的任何字段；尤其禁止 type、candidates、arguments、content、reason、evidence_refs、intent_id 等旧协议或 MIME 字段。kind=answer 时根对象恰好是 kind、basis、text、citations 四个字段，不得多也不得少，也不得添加 type="application/json"；该 MIME 描述不属于答案。不得把上下文、query evidence 或 page summary 里的任何字段名（如 source_query_complete、model_projection_complete、has_more、range_contiguous、stable_total_verified、unique_items_verified、expected_total 等）复制到答案根对象或任何决策对象中：这些是服务端投影，只能据以判断，不是模型可回述的字段，模型不得把它们当作自己的输出字段。
 当 trusted_intent.classification="proposal_intent" 且 guard.allowed_decision_kinds 只包含 "propose" 时，本轮 propose 仅识别用户意图，不预览、不确认、不执行任何业务写入。必须输出根 kind="propose"，operation 只能取自 guard.allowed_proposal_operations，recognized_intent_text 只简要概述用户意图。识别意图不需要财务来源或业务写入执行授权；不得因缺少财务来源或写入执行授权而改成 answer，也不得声称已经执行。正常用户身份校验和本轮服务器 guard 仍须满足；此规则不扩大任何 financial read/source 授权，也不改变其他 kind 的规则。"""
 
 

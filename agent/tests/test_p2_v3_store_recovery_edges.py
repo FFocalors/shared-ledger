@@ -2198,7 +2198,21 @@ def test_two_store_connections_only_one_consumer_can_claim_continuation_nonce(tm
     store = _store(tmp_path, "continuation-two-connection")
     second: SQLiteAgentStore | None = None
     try:
-        wall_start = datetime.now(timezone.utc).replace(microsecond=0)
+        # This fixture drives synthetic event timestamps (+1/+2/+4/+8s from here)
+        # while the read path it triggers settles charge events on the real
+        # clock. The reopen check orders each reservation's events by
+        # occurred_at (ties broken by event kind), so a real-clock settle must
+        # never precede the synthetic 'reserved' mark. Anchoring the base at
+        # "now" put that mark up to 2s in the future, and the test then passed
+        # only when the machine happened to be slow enough for real time to
+        # overtake it.
+        #
+        # Anchor the base far enough in the past that every synthetic mark is
+        # already behind the real clock, but no further: the Turn claim taken at
+        # +1s carries a 30 second lease, so a larger offset (30s was tried)
+        # expires the claim mid-test and the read fails with upstream_failure
+        # instead.
+        wall_start = datetime.now(timezone.utc).replace(microsecond=0) - timedelta(seconds=10)
         turn_id, claim = _create_running_turn(store, now=wall_start + timedelta(seconds=1))
         fixture = _continuation_read_fixture(store, turn_id, claim, wall_start + timedelta(seconds=2))
         admission = fixture["admission"]

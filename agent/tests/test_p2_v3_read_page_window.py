@@ -290,7 +290,14 @@ def test_v3_read_beyond_the_bound_fails_closed_without_a_partial_answer(
         assert "message" not in [item["type"] for item in result["events"]]
         errors = [item for item in result["events"] if item["type"] == "error"]
         assert len(errors) == 1
-        assert errors[0]["payload"]["code"] == "dependency_unavailable"
+        # The Store rejected the projection at its capacity bound, so this is a
+        # capability limit of the bounded read and not a retryable failure.
+        payload = errors[0]["payload"]
+        assert payload["code"] == "dependency_unavailable"
+        assert payload["message"] == (
+            "P2 result reference capacity reached; submit a narrower new Turn."
+        )
+        assert payload["retryable"] is False
 
         # The model selected the query once and was never asked to continue a
         # result the candidate cannot finish; the answer stage never ran.
@@ -335,12 +342,15 @@ def test_v3_truncation_at_the_page_window_fails_closed(
         assert "message" not in [item["type"] for item in result["events"]]
         errors = [item for item in result["events"] if item["type"] == "error"]
         assert len(errors) == 1
-        # The client-visible error is the shared sanitized dependency result:
-        # _closed_error only lets its exact allowlist through, so every
-        # CapabilityUnavailable in this path reports internal_failure.
+        # A window-truncated read is a capability limit, not a retryable
+        # dependency failure: the identical Turn cannot succeed, so the client
+        # must be told to narrow the query instead of retrying it.
         payload = errors[0]["payload"]
         assert payload["code"] == "dependency_unavailable"
-        assert payload["message"] == "P2 dependency unavailable: internal_failure."
+        assert payload["message"] == (
+            "P2 result reference capacity reached; submit a narrower new Turn."
+        )
+        assert payload["retryable"] is False
 
         # The one-page window was reached with the first page and the runtime
         # stopped there: no continuation decision was requested, and the Store
@@ -371,9 +381,11 @@ def test_v3_truncation_at_the_page_window_fails_closed(
     reason=(
         "Known gap, not caused by the page window: MessageEventPayload.text is "
         "capped at 2000 characters, so a legal two-page read of 24 facts cannot "
-        "be rendered. The overflow surfaces as an unclassified internal_failure "
-        "instead of a classified capability result. Remove this marker when the "
-        "answer projection and that cap agree."
+        "be rendered. The overflow is now classified as the non-retryable "
+        "capability result 'P2 capability unavailable: this query cannot be "
+        "represented safely.', so the client is no longer told to retry; the "
+        "answer still cannot be produced. Remove this marker when the answer "
+        "projection and that cap agree."
     ),
 )
 def test_v3_two_page_read_of_24_facts_can_be_rendered(
