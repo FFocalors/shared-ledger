@@ -56,9 +56,11 @@ harness：`D:/AI/runs/shared-ledger/p2/current-postfix-live-20261018-01/`（`bri
 - **结果**：`745 passed, 1 xfailed, 1 warning`，`export_contracts --check` exit 0；**连跑两次均为此结果**（`D:/AI/runs/shared-ledger/p2/batch-full-20261019-03/`、`-04/`）。1 个 xfailed 是刻意的 `xfail(strict)`（24 条事实的答案超出消息文本上限，见限制 2）。
 - 仅跑单文件、或不新建目录时，结果不保证一致；引用时必须带上上述前提。
 
-## 已知限制
+## 已知限制与验收记录
 
-见 [P2 已知限制清单 R1](P2_KNOWN_LIMITS_R1.md)。摘要：Store 两页上限（保留）、消息文本 2000 字容量（容量保留）、恢复期间 events 进度接口不稳（未定位根因，但不影响 Turn 落定局）、云端未验收、CAP 0/17、模型质量 `INSUFFICIENT_SAMPLE`、v3 profile 基线地位未裁决。
+- 逐条限制与细节：[P2 已知限制清单 R1](P2_KNOWN_LIMITS_R1.md)。摘要：Store 两页上限（保留）、消息文本 2000 字容量（容量保留）、恢复期间 events 进度接口不稳（未定位根因，但不影响 Turn 落定局）、云端未验收、CAP 0/17、模型质量 `INSUFFICIENT_SAMPLE`、v3 profile 基线地位未裁决。
+- **T1 准入清单中的「P2 baseline calibration」已有正式验收记录**：[P2 baseline calibration R1](P2_BASELINE_CALIBRATION_R1.md)（`ACCEPTED_LIMITED_P2_READONLY_ENGINEERING_BASELINE`），含逐条限制判示与本记录全部绑定量。
+- **query-zero 证据口径已裁定并关闭**：RBR01 的唯一权威是冻结的 T1 protocol v1.1.0 typed query evidence；v3 的 `query_zero_classification` **不被采纳为协议**，仅作候选内部字段。详见 [v3 profile 状态](P2_V3_PROFILE_STATUS.md) 的 ruling 一节。
 
 ## 本文不建立什么
 

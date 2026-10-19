@@ -32,3 +32,9 @@ P2 明确不做、也不应据本文推断的事项：不追模型准确率、�
 ## 引用建议
 
 引用 P2 结论时请同时引用本文与当次运行证据的调用方式（全量目录调用 + 每个 store 根目录每轮新建），以及证据所绑的执行 pin。
+
+## 口径裁定：query-zero 证据（2026-10-19）
+
+RBR01 及任何「空结果完整可核验」的主张，**唯一权威是冻结的 T1 protocol v1.1.0 typed query evidence + 其 trusted renderer**。P2 v3 的 `query_zero_classification` **不被采纳为协议**，仅存在于候选内部并由候选自身校验器强制；不得在 P2 或 T1 的任何文档中作为「协议的空结果分类」引用。语义对齐（true backend zero vs post-filter zero）不构成权威迁移；若日后要并入协议，属新增字段 + 新协议版本 + 新 freeze + T1 重新授权，须单独裁定。详细裁定见 [v3 profile 状态](P2_V3_PROFILE_STATUS.md) 的 ruling 一节。
+
+另：T1 准入清单中的「P2 baseline calibration」已不再是自报状态，见 [P2 baseline calibration R1](P2_BASELINE_CALIBRATION_R1.md)。

@@ -73,3 +73,19 @@ If the profile is to be adopted, rejected, or kept as a candidate, the decision 
 ## Can v3 be used as the formal baseline now?
 
 **No.** The profile is default-off, its adoption is undecided, its extra read operations and continuation have no T1 mapping, and no decision record exists that would make it the baseline. It may be enabled and used only as the disabled, opt-in engineering candidate described above, under its own pinned manifest. The frozen v1 contracts remain the baseline.
+
+## query-zero evidence semantics — ruling (2026-10-19)
+
+**Decision: the frozen T1 protocol v1.1.0 typed query evidence is the single approved definition of "empty result evidence". The v3 candidate's `query_zero_classification` is NOT adopted as protocol.**
+
+This closes the gap between P2 and T1 (RBR01), which had been left as "semantically identical but not the same artifact".
+
+What the ruling means concretely:
+
+1. **Authority.** RBR01, and any other claim of the form "this empty result is complete and verifiable", binds to the frozen T1 v1.1.0 typed query evidence and its trusted renderer. No P2 v3 artifact is required or sufficient for such a claim.
+2. **The v3 field stays where it is, but carries no authority.** `query_zero_classification` remains an internal field of the candidate profile's DTOs and its validator (`agent/app/p2_read_contracts_v3.py:741`, enforced at `agent/app/p2_event_contracts_v3.py:910-948`). It is enforced only *inside* the candidate. It is not part of any approved protocol, it is not a T1-mappable field, and **no P2 or T1 document may cite it as the protocol's zero-result classification**.
+3. **Semantic alignment is intentional but carries no transfer of authority.** The two enumerate the same distinction (a true backend zero versus rows returned then filtered to zero — T1 rows 21/24 versus row 22). That alignment means a future adoption proposal would be cheap to write; it does **not** mean the candidate field is already the protocol.
+4. **Adoption, if ever wanted, is a separate decision.** It would require: a new protocol version carrying the field, a new T1 freeze with its own manifest/receipt, a preregistration impact statement, a root verdict, and T1 re-authorization of any affected dataset split. Until then the answer to "which one do we bind?" is v1.1, unconditionally.
+5. **This ruling changes no code.** The candidate field, its validator and the v3 DTO are untouched; what changes is the claim made about them.
+
+Cross-references: [baseline calibration](P2_BASELINE_CALIBRATION_R1.md) §6, [delivery status R4](P2_DELIVERY_R4.md).
