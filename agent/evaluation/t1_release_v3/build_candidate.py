@@ -441,7 +441,10 @@ def main(argv: list[str] | None = None) -> int:
         },
         "collection_gate": {
             "collection_passed": gate.get("collection_passed"),
-            "blockers": gate.get("blockers"),
+            # check_collection reports these under ``blocking_issues``; the
+            # earlier ``blockers`` key never existed and always read as empty.
+            "blocking_issues": gate.get("blocking_issues"),
+            "blocking_issue_count": len(gate.get("blocking_issues") or []),
             "near_pair_findings": len(gate.get("pair_findings", [])),
             "operation_family_counts": gate.get("operation_family_counts"),
             "training_eligible": gate.get("training_eligible"),
@@ -469,7 +472,7 @@ def main(argv: list[str] | None = None) -> int:
           f"{report['near_pair_review']['category_counts']}")
     print(f"collection passed: {report['collection_gate']['collection_passed']} | "
           f"near-pair findings: {report['collection_gate']['near_pair_findings']} | "
-          f"blockers: {len(report['collection_gate']['blockers'] or [])}")
+          f"blocking issues: {report['collection_gate']['blocking_issue_count']}")
     print(f"wrote {report_path}")
     return 0
 

@@ -32,6 +32,12 @@ AGENT_SOURCES = (
     "agent/evaluation/t1_release_v3/convert.py",
     "agent/evaluation/t1_release_v3/rbr03.py",
     "agent/evaluation/t1_release_v3/rbr04.py",
+    # These four determine the candidate's AA allocations and its review
+    # artefacts, so a freeze that omits them does not bind what it claims to.
+    "agent/evaluation/t1_release_v3/base_allocation.py",
+    "agent/evaluation/t1_release_v3/near_pairs.py",
+    "agent/evaluation/t1_release_v3/packet.py",
+    "agent/evaluation/t1_release_v3/handoff.py",
     "agent/evaluation/t1_release_v3/bridge.py",
     "agent/evaluation/t1_release_v3/generate_v2_rows.py",
     "agent/evaluation/t1_release_v3/slice_rbr01.py",
