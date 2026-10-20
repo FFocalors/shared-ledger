@@ -82,6 +82,16 @@ def test_human_receipt_package_leaves_signing_to_a_human():
     assert (HUMAN / "train-review-v3.md").is_file()
 
 
+def test_handoff_index_names_every_open_decision_and_owner():
+    index = (HANDOFF / "HANDOFF-INDEX.md").read_text(encoding="utf-8")
+    assert "independent reviewer" in index
+    assert "human reviewer" in index
+    assert "project owner" in index
+    assert "T2" in index
+    assert "will not re-label its own analysis" in index
+    assert "training_eligible=false" in index or "training_eligible` stays false" in index
+
+
 def test_receipt_gate_still_refuses_the_pending_template():
     manifest = json.loads((HUMAN / "human-review-manifest.json").read_text(encoding="utf-8"))
     receipt = json.loads(

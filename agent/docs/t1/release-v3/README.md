@@ -150,6 +150,7 @@ earlier receipt can be reused).
 | `review/human-review-v3/` | The new 34-row train-only packet, its selection hashes, and the **pending** receipt. |
 | `review/handoff/independent-near-pair-review/` | Handoff package 1: the sanitised 5,429-pair analysis, its status, the role caveat, and a dry-run helper. Explicitly labelled `assistant_technical_review`, not a `root_agent` adjudication. |
 | `review/handoff/human-receipt/` | Handoff package 2: the packet, its hashes, the pending receipt and a signing checker, ready for a human signature. |
+| `review/handoff/HANDOFF-INDEX.md` | The three open decisions, each with its owner and the one command that closes it. |
 | `conversion/*` | The three slice artefacts (RBR01, RBR03, RBR04). |
 
 Repository side, all new files:
@@ -206,7 +207,7 @@ agent/.venv/Scripts/python.exe -m agent.evaluation.t1_release_v3.handoff
   twenty-family floor (eighteen at exactly 20; `read.expenses` at 24 because of the four base
   families per split), plus 5,429 near-pair findings, all classified, that need root
   adjudication.
-* `agent/.venv/Scripts/python.exe -m pytest agent/evaluation/t1_release_v3/tests -q` -- 39 passed.
+* `agent/.venv/Scripts/python.exe -m pytest agent/evaluation/t1_release_v3/tests -q` -- 40 passed.
 * `agent/.venv/Scripts/python.exe -m pytest agent/evaluation/t1_release/tests -q` -- 122 passed,
   unchanged.
 * The packet's selection is deterministic (rebuilding it twice yields the same packet hash)

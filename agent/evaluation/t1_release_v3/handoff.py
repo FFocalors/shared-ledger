@@ -275,11 +275,21 @@ if __name__ == "__main__":
 '''
 
 
-_SIGN_SCRIPT = '''"""Apply the receipt gate's checks to a signed receipt.
+_SIGN_SCRIPT = '''"""Check, or record, a human review receipt.
 
-    agent/.venv/Scripts/python.exe sign-receipt.py --receipt pending-human-review-receipt.json
+Validate the current receipt (read-only):
 
-It prints the gate's verdict and never edits the receipt or any packet file.
+    agent/.venv/Scripts/python.exe sign-receipt.py
+
+Record a signed receipt.  You supply your own identity and evidence; this tool
+never invents either, never overwrites the pending template, and never changes
+any packet file:
+
+    agent/.venv/Scripts/python.exe sign-receipt.py --sign \\
+        --reviewer-id "your name or account" \\
+        --evidence "ticket / meeting note / date"
+
+It writes ``signed-human-review-receipt.json`` next to this script.
 """
 from __future__ import annotations
 
@@ -300,10 +310,36 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--receipt", default="pending-human-review-receipt.json")
     parser.add_argument("--manifest", default="human-review-manifest.json")
+    parser.add_argument("--sign", action="store_true",
+                        help="record a signed receipt; requires --reviewer-id and --evidence")
+    parser.add_argument("--reviewer-id", default=None)
+    parser.add_argument("--evidence", default=None)
     args = parser.parse_args()
     here = Path(__file__).resolve().parent
     receipt = json.loads((here / args.receipt).read_text(encoding="utf-8"))
     manifest = json.loads((here / args.manifest).read_text(encoding="utf-8"))
+
+    if args.sign:
+        if not (args.reviewer_id or "").strip() or not (args.evidence or "").strip():
+            print("Refusing to sign: --reviewer-id and --evidence are both required.")
+            return 2
+        signed = dict(receipt)
+        signed.update({
+            "status": "approved",
+            "decision": "approved",
+            "human_reviewed": True,
+            "reviewer_kind": "human",
+            "reviewer_id": args.reviewer_id.strip(),
+            "evidence": args.evidence.strip(),
+        })
+        target = here / "signed-human-review-receipt.json"
+        target.write_bytes(
+            (json.dumps(signed, ensure_ascii=False, indent=2, sort_keys=True) + "\\n")
+            .encode("utf-8")
+        )
+        print(f"wrote {target.name}")
+        receipt = signed
+
     result = packet.validate_external_receipt(manifest, receipt)
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     if not result["human_reviewed"]:
@@ -319,9 +355,68 @@ if __name__ == "__main__":
 '''
 
 
+def build_index(near: dict[str, Any], human: dict[str, Any]) -> None:
+    target = profile.REVIEW_ROOT / REVIEW_HANDOFF / "HANDOFF-INDEX.md"
+    text = f"""# Release-v3 handoff index
+
+Engineering for this preparation is closed and committed. Admission is not, and
+cannot be closed by the session that produced the data. Three decisions remain,
+each owned by a different actor.
+
+| # | Decision | Owner | Package |
+|---|---|---|---|
+| 1 | Independent near-pair adjudication of {near['findings_total']} pairs | an independent reviewer | `independent-near-pair-review/` |
+| 2 | Genuine human review receipt for the 34-row packet | a human reviewer | `human-receipt/` |
+| 3 | Explicit T2 authorization | the project owner | this index |
+
+`human_reviewed=false`, `training_eligible=false`,
+blockers `{json.dumps(human['training_blockers'], ensure_ascii=False)}`.
+
+## 1. Independent near-pair adjudication
+
+The analysis exists, covers all three splits, and classifies every pair. It is
+recorded as `assistant_technical_review` because it was produced by the session
+that generated the rows; the collection gate accepts only `root_agent`, so it
+does not pass on this analysis. See
+`independent-near-pair-review/README.md` for the exact re-issue procedure. It is
+a source change plus a rebuild into a fresh run root, not a re-analysis.
+
+## 2. Human review receipt
+
+The packet is `human-receipt/train-review-v3.md` (packet
+`{human['packet_sha256']}`). After reading it:
+
+```
+agent/.venv/Scripts/python.exe sign-receipt.py --sign \\
+    --reviewer-id "<your name or account>" --evidence "<ticket or note>"
+```
+
+That writes `signed-human-review-receipt.json`; the pending template is never
+overwritten. Signing is necessary but not sufficient: admission still needs 1
+and 3.
+
+## 3. T2 authorization
+
+T2 is the project owner's decision to move this synthetic dataset toward
+training. It has no file to sign here because no admission record exists yet;
+record it wherever T2 decisions are kept, naming this run root
+(`{profile.RUN_ROOT}`) and the packet hash above. Until it is recorded,
+`training_eligible` stays false regardless of 1 and 2.
+
+## What this preparation will not do
+
+It will not re-label its own analysis as a root adjudication, will not sign a
+human receipt, and will not record a T2 authorization. Those are the three
+things that would make `training_eligible` true, and fabricating any of them
+would invalidate the dataset rather than admit it.
+"""
+    _write(target, text)
+
+
 def main(argv: list[str] | None = None) -> int:
     near = build_near_pair_handoff()
     human = build_human_receipt_handoff()
+    build_index(near, human)
     print(f"near-pair package: {near['findings_total']} findings, "
           f"categories {near['categories']}, original review {near['original_review_kind']}")
     print(f"human-receipt package: {human['packet_rows']} rows, packet "
