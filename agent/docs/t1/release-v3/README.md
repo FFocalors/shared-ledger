@@ -232,8 +232,11 @@ agent/.venv/Scripts/python.exe -m agent.evaluation.t1_release_v3.handoff
 3. **P2 baseline calibration and an explicit T2 authorization.** P2 has recorded
    `ACCEPTED_LIMITED_P2_READONLY_ENGINEERING_BASELINE` (2026-10-19) for its read-only
    engineering baseline, and states plainly that no independent review was performed and that
-   it is not a model-quality or cloud result. Using it as an admission input therefore still
-   needs the T1/root record, and the T2 authorization is the user's decision.
+   it is not a model-quality or cloud result. That record, its pin, its reproducibility
+   precondition and its limits are transcribed in
+   [P2 calibration input](P2-CALIBRATION-INPUT.md); using it as an admission input still
+   needs the root record of that independent review. The T2 authorization is the user's
+   decision.
 4. **Writing sealed**, which happens last under its own one-shot receipt once the gates above
    close.
 
