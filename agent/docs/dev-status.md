@@ -10,7 +10,9 @@
 
 边界：**未准入**。collection gate 因 5,429 组 near-pair findings 未经独立 root 裁定而不通过（分析已完成且覆盖 sealed，但由产出会话自审，harness 的分类器也以 Self-Approval 拦下了把它改标为 `root_agent` 的尝试）；sealed 只生成校验、未写出（须在 gate 关闭后按一次性 receipt 最后写）；无 genuine human receipt（新 packet 与 pending 模板已就绪，签名需真人）；`human_reviewed=false`、`human_review_pending=true`、真实 CAP 仍 0/17、`training_eligible=false`。P2 已记录 `ACCEPTED_LIMITED_P2_READONLY_ENGINEERING_BASELINE`（2026-10-19，只读工程基线、明确未做独立复核、不是模型质量或云端结论），可作为准入输入但仍需 T1/root 记录；T2 授权仍是用户的决定。旧 393 候选、其 packet 与全部 receipt 字节不变，未读 sealed。详见 [release-v3 转换记录](t1/release-v3/README.md)。
 
-## P2 当前 private-v3 检查点（2026-10-19）
+## P2 当前 private-v3 检查点（2026-10-19；2026-10-20 收口）
+
+**P2 已完成，转 P3b 待命。** 未消除的限制（含复核出的 R1-1…R1-6 证据绑定缺陷）统一登记在 [已知限制一页](p2/P2_CLOSED_LIMITS_R1.md)，逐条标注「不影响训练，留待以后」——含义是这些项不改变任何训练数据、模型输出或业务代码，因此不阻塞训练；但 P2 **不可作为可独立复现的对外验收依据**（pin 由本机工作树字节生成，干净 checkout 上 44/46 组件因行尾不匹配）。
 
 **当前入口是 [P2 交付状态 R4](p2/P2_DELIVERY_R4.md)**（一句话：真实只读链路工程基线通过，带明确限制清单）。当前 source/config manifest SHA-256 为 `362e66ad04491be4f711c8db076f5bb0736904b5d6e9962a9f13ba82e6e8a848`（49 个 component 对当前树 0 处 mismatch，源码 `3fcb2fd`）；旧 `5df93c7f…` 已因分页改动失效，其证据不得用于描述当前源码。
 

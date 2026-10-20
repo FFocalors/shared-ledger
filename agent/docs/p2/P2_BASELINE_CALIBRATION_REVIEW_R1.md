@@ -123,6 +123,8 @@ git worktree add --detach <dir> 3fcb2fd
 
 ## 6. 处置建议（按优先级）
 
+> **2026-10-20 裁定：本节建议暂停执行。** 用户决定停止绑定修复，P2 按「完成、带已知限制」收口并转 P3b 待命；下列 1–6 项转为已知限制的「何时必须回头处理」触发条件，见 [P2 收口：已知限制一页](P2_CLOSED_LIMITS_R1.md) §二。
+
 1. **重签 pin 前先修可复现性**：哈希前统一行尾（或改为对 git blob 取哈希，并在仓库加 `.gitattributes` 固化），使同一提交在任何 checkout 上得到同一组哈希。否则 pin 只是本机指纹。
 2. **套件证据重新绑定**：在 clean tree 上重跑并记录 `git_head` + clean 标志（或在 artifact 里记录 `app/`+`tests/` 的工作树摘要）。
 3. **修 `run_baseline_suite.py` 的写文件方式**：`write_bytes` 代替 `write_text`，让记录的哈希可复算。
