@@ -1,5 +1,13 @@
 # T1 release-v3: explicit conversion to the frozen offline v1.1 profile
 
+**Frozen training version (2026-10-20, owner instruction).** The 417-row candidate in
+`D:\AI\runs\shared-ledger\t1-release-v3-20261020\candidate-v3` is designated as the training
+artifact and bound by its own file hashes in
+`review/TRAINING-FREEZE-v3.json` (train 143 rows / `8cd3451d…`, validation 137 rows /
+`6ed20231…`; sealed 137 rows generated but not written). This designation is not an
+admission: `training_eligible` is not asserted. The authoritative limitation list is
+[KNOWN-LIMITATIONS.md](KNOWN-LIMITATIONS.md).
+
 **Status (2026-10-19): the release-v3 candidate is built, validated and gated as far as it
 can be without root adjudication; it is not an admitted dataset.** 417 rows (143 train /
 137 validation / 137 sealed) carry all four RBR fixes, including base-currency AA tail
