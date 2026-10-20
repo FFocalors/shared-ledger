@@ -170,7 +170,8 @@ def _activity(g: int, ref: str, role: str, *, status: str, kind: str, currency: 
     }
 
 
-def _make_state(op: str, g: int, ids: dict[str, Any]) -> dict[str, Any]:
+def _make_state(op: str, g: int, ids: dict[str, Any],
+                state_overrides: dict[str, Any] | None = None) -> dict[str, Any]:
     c, _, _, _, _ = baseline_modules()
     participants_refs = ids["participant_refs"]
     count = len(participants_refs)
@@ -248,6 +249,16 @@ def _make_state(op: str, g: int, ids: dict[str, Any]) -> dict[str, Any]:
         state["fx_snapshot"]["quotes"].append({
             "currency": quote_currency, "rate": f"{rate.quantize(Decimal('0.00000001')):.8f}",
         })
+    if state_overrides and state_overrides.get("expense_currency"):
+        # A release profile may model an expense denominated away from the
+        # activity base currency, which is what makes the base column carry its
+        # own rounding.  The stated rate is the one the fixture is read with.
+        foreign = state_overrides["expense_currency"]
+        rate = Decimal(state_overrides.get("fx_rate") or "1")
+        state["multi_currency_enabled"] = True
+        state["fx_snapshot"]["quotes"] = [{
+            "currency": foreign, "rate": f"{rate.quantize(Decimal('0.00000001')):.8f}",
+        }]
     if op in {"read.expenses", "expense.update", "expense.presentation.update"}:
         expense_count = len(ids["expense_refs"])
         presentation_locked_count = (
@@ -267,6 +278,20 @@ def _make_state(op: str, g: int, ids: dict[str, Any]) -> dict[str, Any]:
             expense_people = used_people[:people_count]
             amount = f"{Decimal(75 + 3 * g + index):.2f}"
             expense_currency = currency
+            if state_overrides:
+                # A release profile may pin the participant count, the amount
+                # and the denomination of a designated expense so that a
+                # specific allocation rule can be exercised.
+                if state_overrides.get("split_participant_count") is not None:
+                    people_count = int(state_overrides["split_participant_count"])
+                    if people_count < 1 or people_count > len(used_people):
+                        raise ValueError("split participant count is outside the allowlist")
+                    expense_people = used_people[:people_count]
+                amounts = state_overrides.get("expense_amounts") or []
+                if index < len(amounts):
+                    amount = amounts[index]
+                if state_overrides.get("expense_currency"):
+                    expense_currency = state_overrides["expense_currency"]
             payments = _even_allocations(amount, expense_people[:1 if (g + index) % 2 == 0 else min(2, len(expense_people))])
             splits = _even_allocations(amount, expense_people[:max(1, len(expense_people))])
             state["expenses"].append({
@@ -515,9 +540,15 @@ def _read_row(op: str, split: str, g: int, ids: dict[str, Any], state: dict[str,
     }
     return prompt, trace, scenario
 
-def _create_row(c, split_name: str, g: int, ids, state):
+def _create_row(c, split_name: str, g: int, ids, state, amount_override=None):
     allowed = state["ledger_unit"]["participant_allowlist"]
-    amount_value = Decimal("0.01") if g == 12 else Decimal(25 * max(1, len(allowed)))
+    if amount_override is not None:
+        # A release profile may pin the amount so that equal splitting leaves a
+        # deterministic minor-unit tail.  The same value feeds the user request
+        # and the proposal, so the two cannot disagree.
+        amount_value = Decimal(amount_override)
+    else:
+        amount_value = Decimal("0.01") if g == 12 else Decimal(25 * max(1, len(allowed)))
     amount = f"{amount_value:.2f}"
     title = _expense_title(g)
     base_currency = state["ledger_unit"]["currency"]
@@ -678,10 +709,23 @@ def _proposal_prelude(c, op: str, prompt: str, ids, state, fixture, now, sample_
     ], final_context
 
 
-def _make_record(op: str, g: int, *, read_variant: str = "full") -> dict[str, Any]:
+def _make_record(op: str, g: int, *, read_variant: str = "full",
+                 amount_override: str | None = None, variant_tag: str = "",
+                 clarification_policy: str = "expense_ref",
+                 gold_validator=None,
+                 state_overrides: dict[str, Any] | None = None,
+                 participant_count_override: int | None = None) -> dict[str, Any]:
     c, _, signature, simulator, validator_module = baseline_modules()
     if read_variant != "full" and op not in {"read.activities", "read.expenses", "read.debts"}:
         raise ValueError("read variants are supported only for read operations")
+    if amount_override is not None and op != "expense.create":
+        raise ValueError("an explicit amount override is supported only for expense.create")
+    if variant_tag and "/" in variant_tag:
+        raise ValueError("variant tag must be a plain label")
+    if clarification_policy not in {"expense_ref", "returned_facts"}:
+        raise ValueError("unsupported clarification policy")
+    if clarification_policy != "expense_ref" and op != "expense.presentation.update":
+        raise ValueError("the returned-facts clarification policy applies to presentation updates")
     split = _split_for(op, g)
     row_idx = g % 20
     if op in {"expense.create", "expense.update"}:
@@ -691,6 +735,12 @@ def _make_record(op: str, g: int, *, read_variant: str = "full") -> dict[str, An
         base_people = 3 + ((g % 15) % 5)
     else:
         base_people = 2
+    if participant_count_override is not None:
+        # A release profile may widen the participant set so a designated
+        # allocation can be exercised at a specific headcount.
+        if participant_count_override < 1:
+            raise ValueError("participant count override must be positive")
+        base_people = int(participant_count_override)
     activity_count = 1 + (g % 15) if op == "read.activities" else 1
     expense_count = (
         1 + (g % 15) if op == "read.expenses" else
@@ -700,7 +750,7 @@ def _make_record(op: str, g: int, *, read_variant: str = "full") -> dict[str, An
     )
     ids = _binding_map(op, g, activity_count=activity_count, participant_count=base_people,
                        expense_count=expense_count)
-    state = _make_state(op, g, ids)
+    state = _make_state(op, g, ids, state_overrides=state_overrides)
     fixture = _fixture_from_state(op, g, state)
     now = datetime(2026, 10, 1, tzinfo=timezone.utc) + timedelta(days=g)
     if op.startswith("read."):
@@ -710,7 +760,9 @@ def _make_record(op: str, g: int, *, read_variant: str = "full") -> dict[str, An
         semantic, operation, task_operation, must_complete = "answer", None, op, True
     else:
         if op == "expense.create":
-            prompt, decision, scenario = _create_row(c, split, g, ids, state)
+            prompt, decision, scenario = _create_row(
+                c, split, g, ids, state, amount_override=amount_override,
+            )
         elif op == "expense.update":
             prompt, decision, scenario = _update_row(c, op, split, g, ids, state)
         else:
@@ -729,24 +781,58 @@ def _make_record(op: str, g: int, *, read_variant: str = "full") -> dict[str, An
                 ]
                 if len(candidates) != len(state["expenses"]) or len(candidates) < 2:
                     raise ValueError("presentation ambiguity candidates do not match replayed facts")
-                candidate_text = "，".join(
-                    "|".join((
-                        item["expense_ref"], item["original_currency"],
-                        ",".join(item["participant_refs"]),
-                        "是" if item["financial_locked"] else "否",
-                    ))
-                    for item in candidates
-                )
-                clarification_prompt = (
-                    f"请求标题=“{scenario['requested_values']['query_title']}”；"
-                    f"候选(ref|currency|participant_refs|financial_locked)={candidate_text}；"
-                    "请回复其中一个expense_ref。"
-                )
+                if clarification_policy == "expense_ref":
+                    candidate_text = "，".join(
+                        "|".join((
+                            item["expense_ref"], item["original_currency"],
+                            ",".join(item["participant_refs"]),
+                            "是" if item["financial_locked"] else "否",
+                        ))
+                        for item in candidates
+                    )
+                    clarification_prompt = (
+                        f"请求标题=“{scenario['requested_values']['query_title']}”；"
+                        f"候选(ref|currency|participant_refs|financial_locked)={candidate_text}；"
+                        "请回复其中一个expense_ref。"
+                    )
+                    followup = f"expense_ref={raw_target['expense_ref']}。"
+                else:
+                    # RBR03: name each candidate by the facts the user can see,
+                    # never by the internal reference.
+                    def describe(item):
+                        return (
+                            f"“{item['title']}”（日期 {item['occurred_at'][:10]}，"
+                            f"金额 {item['original_amount']} {item['original_currency']}，"
+                            f"参与人 {','.join(item['participant_refs'])}）"
+                        )
+
+                    candidate_text = "；".join(describe(item) for item in candidates)
+                    clarification_prompt = (
+                        f"有 {len(candidates)} 笔同名费用：{candidate_text}。"
+                        "请用日期或金额说明要修改哪一笔。"
+                    )
+                    selected = next(
+                        (item for item in candidates
+                         if item["expense_ref"] == raw_target["expense_ref"]),
+                        None,
+                    )
+                    if selected is None:
+                        raise ValueError("presentation target is not among the returned candidates")
+                    if any(
+                        item is not selected
+                        and item["occurred_at"] == selected["occurred_at"]
+                        and item["original_amount"] == selected["original_amount"]
+                        for item in candidates
+                    ):
+                        raise ValueError("returned facts do not uniquely identify the selected candidate")
+                    followup = (
+                        f"改日期 {selected['occurred_at'][:10]}、"
+                        f"金额 {selected['original_amount']} {selected['original_currency']} 的那一笔。"
+                    )
                 clarification = c.ClarifyDecision(
                     kind="clarify", prompt=clarification_prompt,
                     missing_slots=[c.ClarificationSlot.EXPENSE],
                 )
-                followup = f"expense_ref={raw_target['expense_ref']}。"
                 followup_step = {"kind": "user_followup", "text": followup}
                 final_context = c.ModelContext(
                     context_version=replayed_context.context_version,
@@ -781,7 +867,8 @@ def _make_record(op: str, g: int, *, read_variant: str = "full") -> dict[str, An
         semantic, operation, task_operation, must_complete = "propose", op, op, True
 
     variant_suffix = f"-read-{read_variant}" if read_variant != "full" else ""
-    sid = f"t1-v2-{split}-{op.replace('.', '-')}-{g:03d}{variant_suffix}"
+    tag_suffix = f"-{variant_tag}" if variant_tag else ""
+    sid = f"t1-v2-{split}-{op.replace('.', '-')}-{g:03d}{variant_suffix}{tag_suffix}"
     family = f"state-family-t1-v2-{split}-{op.replace('.', '-')}-{g:03d}"
     record = {
         "schema_version": "shared-ledger-agent-t1-sample-v1",
@@ -808,7 +895,8 @@ def _make_record(op: str, g: int, *, read_variant: str = "full") -> dict[str, An
         "normalized_state_signature_sha256": "0" * 64,
         "normalized_scenario_signature_sha256": "0" * 64,
         "coverage_tags": ["synthetic-positive", op.replace(".", "-"), f"family-{row_idx:02d}"]
-                          + ([f"read-{read_variant}"] if read_variant != "full" else []),
+                          + ([f"read-{read_variant}"] if read_variant != "full" else [])
+                          + ([variant_tag] if variant_tag else []),
         "release_version": "t1-release-v2",
         "operation_state": state,
         "scenario": scenario,
@@ -823,7 +911,7 @@ def _make_record(op: str, g: int, *, read_variant: str = "full") -> dict[str, An
     record["normalized_scenario_signature_sha256"] = hashlib.sha256(
         signature.canonical_json(signature.scenario_projection(fixture, record))
     ).hexdigest()
-    validate_operation_gold(record)
+    (gold_validator or validate_operation_gold)(record)
     validator = make_v2_validator()
     validator_module.validate_record(record, validator)
     return record
