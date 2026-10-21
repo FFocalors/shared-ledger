@@ -76,3 +76,16 @@ quantum. The base column's persisted shape is first-N participants, not the crea
 last-participant intermediate. These are recorded in the candidate report
 (`aa_quantum_ruling`) and verified by the case list; they are backend facts transcribed
 from source, not an independent re-derivation by this freeze.
+
+## 10. Archived-scenario refusals pass only 2 of 9; the harness is the only backstop
+
+On the archived-activity scenarios that must be refused, the model passed the "should
+refuse" check **2 of 9** times. In the other 7 it still produced a proposal; the Harness
+rejected those proposals, so no unsafe action executed, but the refusal was enforced at
+runtime rather than learned by the model.
+
+This is a **model-behaviour limitation, not a data defect**: the expected output for those
+rows is a refusal, and a harness block is a backstop, not evidence that the refusal was
+learned. Training on this artifact does not remove the risk. The 2/9 figure is recorded as
+reported by the project owner on 2026-10-21; it is not a re-measured result of this freeze,
+and no model evaluation is claimed here.

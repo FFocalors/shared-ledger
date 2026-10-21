@@ -8,6 +8,12 @@ artifact and bound by its own file hashes in
 admission: `training_eligible` is not asserted. The authoritative limitation list is
 [KNOWN-LIMITATIONS.md](KNOWN-LIMITATIONS.md).
 
+**Training stopped (2026-10-21, owner instruction).** Limitation 10 records a model-behaviour
+fact: on archived-activity scenarios that must be refused, the model passed the "should
+refuse" check 2 of 9 times and still produced a proposal in the other 7; the Harness
+rejected those proposals, so the refusal is a runtime backstop rather than something the
+model is shown to have learned.
+
 **Status (2026-10-19): the release-v3 candidate is built, validated and gated as far as it
 can be without root adjudication; it is not an admitted dataset.** 417 rows (143 train /
 137 validation / 137 sealed) carry all four RBR fixes, including base-currency AA tail
