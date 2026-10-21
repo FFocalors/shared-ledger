@@ -1730,6 +1730,7 @@ class SQLiteAgentStore(P2V3StoreMixin):
         *,
         expected_state_revision: int,
         expected_proposal_revision: int,
+        activity_guard: Optional[Callable[[uuid.UUID], None]] = None,
         now: Optional[datetime] = None,
     ) -> TurnAggregate:
         """Assign the deterministic execution identity and enter EXECUTING."""
@@ -1767,6 +1768,10 @@ class SQLiteAgentStore(P2V3StoreMixin):
             raise ProposalConflict("proposal confirmation precondition failed")
         # Deriving the effect here validates the fixed command before any state moves.
         effect = mock_effect_for_command(proposal.canonical_command)
+        # Permission and Activity lifecycle are re-checked at dispatch, not only
+        # when the preview was rendered: a proposal can outlive either.
+        if activity_guard is not None:
+            activity_guard(effect.activity_id)
         with self._connection() as connection:
             require_matching_financial_version(
                 proposal.preconditions,
@@ -1811,7 +1816,9 @@ class SQLiteAgentStore(P2V3StoreMixin):
         return result
 
     def apply_mock_execution(
-        self, owner_user_id: UserId, proposal_id: uuid.UUID, *, now: Optional[datetime] = None,
+        self, owner_user_id: UserId, proposal_id: uuid.UUID, *,
+        activity_guard: Optional[Callable[[uuid.UUID], None]] = None,
+        now: Optional[datetime] = None,
     ) -> dict[str, Any]:
         """Apply the fixed effect exactly once, keyed by the execution identity."""
         from .contracts import ProposalStatus
@@ -1835,6 +1842,11 @@ class SQLiteAgentStore(P2V3StoreMixin):
             if proposal.canonical_command is None:
                 raise MockExecutionStateError("the confirmed proposal has no fixed command")
             effect = mock_effect_for_command(proposal.canonical_command)
+            # The dispatch-time decision is re-checked before the effect lands.
+            # An already-landed effect returned above is reported, not refused:
+            # history is not rewritten by a later archive.
+            if activity_guard is not None:
+                activity_guard(effect.activity_id)
             require_matching_financial_version(
                 proposal.preconditions,
                 self._mock_ledger_version(connection, str(effect.activity_id)),
@@ -1987,7 +1999,9 @@ class SQLiteAgentStore(P2V3StoreMixin):
 
     def reconcile_mock_execution(
         self, owner_user_id: UserId, turn_id: TurnId, *,
-        claim_token: Optional[str] = None, now: Optional[datetime] = None,
+        claim_token: Optional[str] = None,
+        activity_guard: Optional[Callable[[uuid.UUID], None]] = None,
+        now: Optional[datetime] = None,
     ) -> TurnAggregate:
         """Settle a recovering execution by looking up the original key.
 
@@ -1996,14 +2010,26 @@ class SQLiteAgentStore(P2V3StoreMixin):
         the same execution identity is applied — never a freshly minted one.
         """
         from .contracts import ExecutionResolution
-        from .p3_execution import MockExecutionStateError
+        from .p3_execution import MockExecutionStateError, MockWriteRefused
 
         aggregate = self.get_turn(owner_user_id, turn_id)
         turn = aggregate.record.turn
         if turn.execution is None or turn.state != TurnState.RECOVERING:
             raise MockExecutionStateError("only a recovering execution can be reconciled")
         proposal = self.get_proposal(owner_user_id, turn.execution.proposal_id)
-        applied = self.apply_mock_execution(owner_user_id, proposal.proposal_id, now=now)
+        try:
+            applied = self.apply_mock_execution(
+                owner_user_id, proposal.proposal_id, activity_guard=activity_guard, now=now,
+            )
+        except MockWriteRefused as exc:
+            # Authorized at dispatch, but the Activity no longer accepts the
+            # write. The effect never landed, so the honest outcome is a
+            # rejection under the original key, never a silent application.
+            return self.settle_mock_execution(
+                owner_user_id, proposal.proposal_id, ExecutionResolution.REJECTED,
+                result_code=exc.code, result_summary=str(exc),
+                claim_token=claim_token, now=now,
+            )
         summary = "mock expense effect applied" if applied["applied"] else "mock expense effect already applied"
         return self.settle_mock_execution(
             owner_user_id, proposal.proposal_id, ExecutionResolution.SUCCEEDED,

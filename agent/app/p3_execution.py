@@ -15,6 +15,7 @@ from __future__ import annotations
 import hashlib
 import json
 import uuid
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
@@ -29,6 +30,89 @@ class MockPreconditionConflict(RuntimeError):
 
 class MockExecutionStateError(RuntimeError):
     """The stored proposal/execution cannot legally take this step."""
+
+
+class MockWriteRefused(MockExecutionStateError):
+    """A write refused before any effect, because authorization or lifecycle forbids it."""
+
+    code = "mock_write_refused"
+
+
+class MockPermissionDenied(MockWriteRefused):
+    """The actor may not write to the proposed Activity."""
+
+    code = "actor_not_permitted"
+
+
+class MockActivityArchived(MockWriteRefused):
+    """The Activity is archived, so a new write must not be applied."""
+
+    code = "activity_archived"
+
+
+@dataclass(frozen=True, slots=True)
+class MockActivityAccess:
+    """Who may write to one mock Activity, and whether it still accepts writes."""
+
+    activity_id: uuid.UUID
+    member_ids: frozenset[uuid.UUID]
+    archived: bool = False
+
+
+class MockActivityRoster:
+    """Server-side permission and Activity lifecycle, as far as P3a can model them.
+
+    The Mock has no membership table and no Activity rows, so a check that only
+    read the fixture could never refuse. This roster makes the refusal explicit
+    and mutable, and the Store consults it at both commit boundaries — dispatch
+    and effect application — so a preview that was valid when rendered is
+    re-checked before anything lands. An unknown Activity is treated exactly like
+    one the actor may not touch: both refuse, and neither reveals which.
+    """
+
+    def __init__(self, activities: Iterable[MockActivityAccess] = ()) -> None:
+        self._by_id = {item.activity_id: item for item in activities}
+
+    def add(
+        self,
+        activity_id: uuid.UUID,
+        member_ids: Iterable[uuid.UUID],
+        *,
+        archived: bool = False,
+    ) -> MockActivityAccess:
+        access = MockActivityAccess(activity_id, frozenset(member_ids), archived)
+        self._by_id[activity_id] = access
+        return access
+
+    def archive(self, activity_id: uuid.UUID) -> None:
+        current = self._require(activity_id)
+        self._by_id[activity_id] = MockActivityAccess(
+            activity_id, current.member_ids, archived=True,
+        )
+
+    def remove_member(self, activity_id: uuid.UUID, actor_id: uuid.UUID) -> None:
+        current = self._require(activity_id)
+        self._by_id[activity_id] = MockActivityAccess(
+            activity_id, current.member_ids - {actor_id}, current.archived,
+        )
+
+    def _require(self, activity_id: uuid.UUID) -> MockActivityAccess:
+        activity = self._by_id.get(activity_id)
+        if activity is None:
+            raise MockPermissionDenied("the actor may not write to this activity")
+        return activity
+
+    def require_writable(self, actor_id: uuid.UUID, activity_id: uuid.UUID) -> None:
+        """Authorization first, then lifecycle; both refuse before any effect."""
+        activity = self._by_id.get(activity_id)
+        if activity is None or actor_id not in activity.member_ids:
+            raise MockPermissionDenied("the actor may not write to this activity")
+        if activity.archived:
+            raise MockActivityArchived("the activity is archived; new writes are refused")
+
+    def writable_guard(self, actor_id: uuid.UUID) -> Callable[[uuid.UUID], None]:
+        """Bind one actor so the Store can re-check without knowing about rosters."""
+        return lambda activity_id: self.require_writable(actor_id, activity_id)
 
 
 @dataclass(frozen=True, slots=True)

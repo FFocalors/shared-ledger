@@ -31,13 +31,14 @@ v3 candidate 的裁决现状见 [v3 profile 状态](p2/P2_V3_PROFILE_STATUS.md)�
 
 ## P3a Mock 写路径（2026-10-19）
 
-**引擎已实现并通过四条验收条件；HTTP 确认仍返回冻结的 501。** 详见 [P3a 实现记录](p3/P3A_MOCK_WRITE_PATH.md)。
+**引擎已实现并通过五条验收条件；HTTP 确认仍返回冻结的 501。** 详见 [P3a 实现记录](p3/P3A_MOCK_WRITE_PATH.md)。
 
 - 链条：预览（沿用 Mock Runtime 的 `WAIT_CONFIRM`）→ 确认 → 固定命令 → Mock 账本上的恰好一次效果 → 持久回执（提案 `execution`、Turn `execution_resolution`、`execution_result` 事件三者一致）。
 - **`execution_id` 是派生的**：确认时调用冻结契约的 `derive_execution_id(actor, proposal_id, revision)`，非派生 id 被契约拒绝。
 - **未知结果按原键恢复**：写路径两次提交（钉死键 → 落效果 → 记结果），死在中间时 Turn 进 `RECOVERING`，运行时按键先查账再结算，缺行才用同一个键补做；未知永不写成终态。
 - 四条验收条件各有对应用例：未确认不落账 / 同请求无重复效果 / 并发改账使旧预览失效 / 响应丢失可找回；另有正常闭环与"模拟提案不可执行"。
-- 全量：**753 passed + 1 xfailed**（调用方式前提同 P2：整目录一次调用 + 两个 store 根目录每轮新建）。
+- **第五条（2026-10-21 补齐）：无权限 / 已归档的写提案在执行前拒绝。** 补齐前并不存在——`permission_checked` 只是 `Literal[True]` 的声明、Mock 无成员表也无 `archived` 概念；现由 `MockActivityRoster` 显式建模，并在派发、落账、恢复三个边界检查，6 条用例覆盖。权限来源仍是注入的 Mock，不代表真实 RLS 已验收。
+- 全量：**760 passed + 1 xfailed**（调用方式前提同 P2：整目录一次调用 + 两个 store 根目录每轮新建）。
 - 边界：不碰真实业务写入与云端、不动 P2 v3 防火墙、不碰 T1；HTTP 成功响应需先批准 [确认响应差异提案](p3/P3A_CONFIRM_RESPONSE_DIFF.md)。
 - **pin 提示**：P3a 改动了 `store.py` 与 `runtime.py`，执行 pin `362e66ad…` 现已 2 处 mismatch、不再匹配当前树；新模块 `p3_execution.py` 不在该 manifest 的枚举组件内。
 

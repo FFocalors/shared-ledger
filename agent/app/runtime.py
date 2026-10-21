@@ -15,6 +15,7 @@ from typing import Any, Sequence
 from . import contracts as c, mock_fixtures
 from .backend import MockBackendAdapter
 from .harness import ModelOutputError, ModelPrompt, MockModelProvider, parse_model_output
+from .p3_execution import MockActivityRoster
 from .ports import (
     AgentControl, AgentStore, AuthVerifier, AgentDisabled, CapabilityUnavailable, ComponentHealth,
     Principal, ScopeAuthorizer, ScopeDenied, ScopeUnavailable,
@@ -88,6 +89,7 @@ class MockRuntime:
         model_timeout_seconds: float = 2.0,
         shutdown_timeout_seconds: float = 2.0,
         enabled_candidate_profile_ids: Sequence[str] | None = None,
+        activity_roster: MockActivityRoster | None = None,
     ) -> None:
         self._store = store
         self._provider = provider
@@ -95,6 +97,7 @@ class MockRuntime:
         self._auth = auth_verifier
         self._scope = scope_authorizer
         self._control = agent_control
+        self._activity_roster = activity_roster
         self._task_concurrency = max(1, min(int(task_concurrency), 8))
         self._model_timeout = max(0.05, min(float(model_timeout_seconds), 10.0))
         self._shutdown_timeout = max(0.1, min(float(shutdown_timeout_seconds), 10.0))
@@ -323,6 +326,10 @@ class MockRuntime:
             await asyncio.to_thread(
                 self._store.reconcile_mock_execution, owner_id, turn_id,
                 claim_token=claimed.claim_token,
+                activity_guard=(
+                    self._activity_roster.writable_guard(owner_id)
+                    if self._activity_roster is not None else None
+                ),
             )
         except Exception:
             self._deferred_recovery.add(turn_id)

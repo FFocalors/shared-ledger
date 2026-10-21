@@ -1,6 +1,6 @@
 # P3a — Mock 写路径（工程实现记录）
 
-**状态：引擎已实现并通过四条验收条件（Mock），HTTP 成功响应仍未开启（见差异提案）。** 本文记录 P3a 的实现、验收证据与边界。
+**状态：引擎已实现并通过五条验收条件（Mock；其中"无权限/已归档在执行前拒绝"于 2026-10-21 补齐），HTTP 成功响应仍未开启（见差异提案）。** 本文记录 P3a 的实现、验收证据与边界。
 
 ## 1. 范围与形状
 
@@ -35,8 +35,41 @@
 | 同请求无重复效果 | `test_repeated_confirmation_cannot_apply_a_second_effect`（第二次确认被拒；重复 `apply` 返回 `applied=False`；账本 1 行；财务版本只推进 1） |
 | 并发改账使旧预览失效 | `test_concurrent_ledger_change_invalidates_the_preview`（账本版本被第三方推进 → 确认抛 `MockPreconditionConflict`，且未派发、未落账） |
 | 响应丢失能找回 | `test_lost_response_is_reconciled_with_the_same_key` 与 `test_restart_recovery_reuses_the_original_key`（效果已落 → 标记 `UNKNOWN` 或重启恢复 → 按原键结算成功，账本仍 1 行、`execution_id` 不变） |
+| 无权限 / 已归档在执行前拒绝 | 见 §3.1 的 6 条用例 |
 
 补充：`test_confirmation_dispatches_deterministic_identity_and_applies_once`（正常闭环，逐段断言"派发本身不落账"）、`test_dispatch_refuses_a_simulation_proposal`（模拟提案不可执行）、`test_runtime_recovery_hook_settles_under_the_original_key`（直接驱动运行时 `_inspect_recovery_checkpoint`，而不是只测 store 方法）。
+
+### 3.1 无权限与已归档：执行前拒绝（2026-10-21 补齐）
+
+**先说清前提：这两条在补齐前不存在，不是"已实现、仅补证据"。** 补齐前的实际状态是：
+
+- `PreconditionSnapshot.permission_checked` 的类型是 `Literal[True]`——契约**要求**它是 `True`，但这是预览方的**声明**，Store 从不验证谁检查过；
+- `MockScopeAuthorizer` 只接受唯一夹具活动，且只在 HTTP/Runtime 的 scope 检查里使用，**不在 P3a 的派发/落账路径上**；
+- Mock 账本与固定命令里**完全没有** `archived` 概念（`mock_ledger_state` 只有财务版本）。
+
+所以一个"无权限"或"已归档"的提案在当时会照常派发并落账。现在补上的形状：
+
+| 概念 | 落点 |
+|---|---|
+| 权限与生命周期的显式模型 | `app/p3_execution.py` 的 `MockActivityRoster` / `MockActivityAccess`（成员集合 + `archived`）；Mock 没有成员表，只能显式建模，否则检查永远不可能拒绝 |
+| 拒绝类型 | `MockWriteRefused` → `MockPermissionDenied`（`code=actor_not_permitted`）/ `MockActivityArchived`（`code=activity_archived`） |
+| 派发前 | `confirm_and_dispatch(..., activity_guard=...)` 在推导出效果后、推进任何状态前调用 guard |
+| 落账前 | `apply_mock_execution(..., activity_guard=...)` 在插入账本行前调用；**已落账的重放（`existing is not None`）先返回，不被后来的归档改写** |
+| 恢复路径 | `reconcile_mock_execution(..., activity_guard=...)`：效果未落且此刻被拒 → 以原键结算为 `REJECTED`（Turn `FAILED`），而不是把写入偷偷落下去或把 Turn 挂在 `RECOVERING` |
+| 运行时接线 | `MockRuntime(..., activity_roster=...)`；恢复钩子把 `writable_guard(owner_id)` 传下去。未提供 roster 时行为与之前完全一致 |
+
+六条用例：
+
+| 用例 | 钉住什么 |
+|---|---|
+| `test_actor_without_permission_cannot_dispatch_a_write` | 非成员（或活动不存在）→ 派发抛 `MockPermissionDenied`；Turn 仍 `WAIT_CONFIRM`、提案仍 `PENDING`、账本 0 行、财务版本 0 |
+| `test_archived_activity_cannot_dispatch_a_write` | 已归档 → 派发抛 `MockActivityArchived`，同上全部不变量 |
+| `test_permission_revoked_after_preview_is_refused_at_dispatch` | **预览时是成员、确认前被移除** → 仍在派发前被拒（证明检查不是只在预览时做一次） |
+| `test_archived_after_dispatch_is_refused_before_the_effect_lands` | 派发成功后归档 → `apply` 被拒、账本 0 行；由调用方以同一键结算 `REJECTED`，Turn `FAILED`、提案 `REJECTED`、`execution_id` 不变 |
+| `test_recovery_hook_refuses_an_archived_activity_under_the_original_key` | 未知结果 + 归档 → 运行时恢复钩子**拒绝落账**并按原键结算 `REJECTED`，账本 0 行、财务版本 0 |
+| `test_an_already_applied_effect_is_reported_after_archive_not_refused` | 效果已落之后才归档 → 重放返回 `applied=False`，不抛错、不重复、不改写历史 |
+
+**边界（必须一并引用）**：guard 由调用方注入，Store 并不知道权限从哪来；在 P3b 接入真实后端前，"谁提供 roster、与真实 RLS 如何对齐"仍未建立。它证明的是**检查点位置正确且拒绝发生在效果之前**，不是真实权限模型正确。
 
 结算方法在**被 claim 的恢复路径**上必须携带 `claim_token`（`transition_turn` 的 CAS 要求）；运行时钩子已经把 `claimed.claim_token` 传下去，store 的三个结算方法也接受该可选参数。这是实现时踩到的一个真实约束，已在测试中覆盖。
 
@@ -45,10 +78,10 @@
 | 文件 | 内容 |
 |---|---|
 | `agent/app/p3_mock_execution_migration.sql` | 迁移 007：`mock_ledger_state`（每活动财务版本）、`mock_execution_ledger`（效果，`execution_id` 主键 + `(proposal_id, proposal_revision)` 唯一） |
-| `agent/app/p3_execution.py` | 纯语义：固定命令 → 确定性效果、期望财务版本校验、错误类型 |
-| `agent/app/store.py` | 迁移 007 接线；`confirm_and_dispatch` / `apply_mock_execution` / `settle_mock_execution` / `mark_execution_unknown` / `reconcile_mock_execution` / 账本读取与版本推进；`transition_turn` 新增 `execution_dispatch`（替代借用测试夹具门）与 `proposal_result_update`（结算时把已确认提案置为终态的窄门） |
-| `agent/app/runtime.py` | `_inspect_recovery_checkpoint` 由"无适配器，park"改为按原键核对并结算 |
-| `agent/tests/test_p3a_mock_write.py` | 上述 9 个用例（含直接驱动运行时恢复钩子的一条） |
+| `agent/app/p3_execution.py` | 纯语义：固定命令 → 确定性效果、期望财务版本校验、错误类型；`MockActivityRoster`（权限 + 归档的显式 Mock 模型） |
+| `agent/app/store.py` | 迁移 007 接线；`confirm_and_dispatch` / `apply_mock_execution` / `settle_mock_execution` / `mark_execution_unknown` / `reconcile_mock_execution` / 账本读取与版本推进；`transition_turn` 新增 `execution_dispatch`（替代借用测试夹具门）与 `proposal_result_update`（结算时把已确认提案置为终态的窄门）；三条写路径接受可选 `activity_guard` |
+| `agent/app/runtime.py` | `_inspect_recovery_checkpoint` 由"无适配器，park"改为按原键核对并结算；新增可选 `activity_roster` 并传给恢复路径 |
+| `agent/tests/test_p3a_mock_write.py` | 上述 15 个用例（含直接驱动运行时恢复钩子的一条，以及 §3.1 的 6 条权限/归档用例） |
 
 ## 5. 边界（明确不做）
 
@@ -62,7 +95,7 @@
 
 ```bash
 # 定向
-pytest agent/tests/test_p3a_mock_write.py -q   # 9 passed
+pytest agent/tests/test_p3a_mock_write.py -q   # 15 passed
 ```
 
 全量套件的调用方式前提与结果见本文件末尾「验证记录」一节（整目录一次调用 + 两个 store 根目录每轮新建）。
@@ -73,18 +106,19 @@ pytest agent/tests/test_p3a_mock_write.py -q   # 9 passed
 2. **`mark_execution_unknown` 的触发**：P3a 由测试显式调用以模拟响应丢失；真实后端接入时（P3b）应在"请求已发出但结果不可判定"时调用它。运行时钩子已覆盖重启恢复与未知结算路径（有专门用例），但"发出请求后立刻判未知"的时机仍由调用方决定。
 3. **单进程 Mock**：并发测试覆盖的是"账本被第三方改动使预览失效"，不是两个 agent 实例同时确认同一提案的竞争；后者依赖 Store 的 CAS（`proposal … status='pending'` 的 `rowcount`）已经具备，但没有专门的多进程用例。
 4. 待批准后才能做的：HTTP 202 + receipt kind（见差异提案）。
+5. **权限模型是注入的**：Store 只会在调用方给了 `activity_guard` 时才检查，roster 由调用方提供；"真实 RLS/角色如何映射成 roster"属 P3b，不能用本节的 Mock 用例推断真实权限已验收。
 
 ## 8. 验证记录
 
 ```bash
-# 定向（9 个用例）
-pytest agent/tests/test_p3a_mock_write.py -q                     # 9 passed
+# 定向（15 个用例）
+pytest agent/tests/test_p3a_mock_write.py -q                     # 15 passed
 # 全量：agent/tests 整个目录一次调用；两个 store 根目录每轮新建为空
-pytest agent/tests -q -p no:cacheprovider                        # 754 passed, 1 xfailed
+pytest agent/tests -q -p no:cacheprovider                        # 760 passed, 1 xfailed
 export_contracts --check                                         # exit 0
 ```
 
-证据目录：`D:/AI/runs/shared-ledger/p2/p3a-full-20261019-02/`（`baseline-result.json`、原始 stdout 与 SHA-256）。**调用方式前提与 P2 一致**：整目录一次调用 + 两个 store 根目录每轮新建；仅跑单文件或不新建目录时结果不保证一致。
+证据目录：`D:/AI/runs/shared-ledger/p2/p3a-full-20261019-02/`（`baseline-result.json`、原始 stdout 与 SHA-256）。**调用方式前提与 P2 一致**：整目录一次调用 + 两个 store 根目录每轮新建；仅跑单文件或不新建目录时结果不保证一致。2026-10-21 的权限/归档补齐按同一调用方式重跑为 `760 passed, 1 xfailed`（store 根目录：`D:/AI/runs/shared-ledger/p2/p3a-guard-20261021-01/{store-root,v3-store-root}`，每轮新建）。
 
 ## 9. 对执行 pin 的连带影响（重要）
 

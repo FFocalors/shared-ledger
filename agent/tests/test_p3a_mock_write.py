@@ -7,7 +7,9 @@ The four acceptance conditions this file pins:
 * an unconfirmed proposal posts nothing,
 * the same request never produces a second effect,
 * a concurrent ledger change invalidates the preview,
-* a lost response is reconciled under the original execution key.
+* a lost response is reconciled under the original execution key,
+* an unauthorized or archived Activity refuses the write before any effect,
+  at dispatch, at application, and in the recovery path.
 
 The execution identity itself is derived from (actor, proposal, revision), so it
 is reproducible across restarts and old backups; nothing here mints a random id.
@@ -21,7 +23,10 @@ import pytest
 
 from agent.app import contracts as c
 from agent.app import mock_fixtures
-from agent.app.p3_execution import MockExecutionStateError, MockPreconditionConflict
+from agent.app.p3_execution import (
+    MockActivityArchived, MockActivityRoster, MockExecutionStateError,
+    MockPermissionDenied, MockPreconditionConflict,
+)
 from agent.app.store import ProposalConflict, SQLiteAgentStore
 from agent.app.backend import MockBackendAdapter, MockScopeAuthorizer
 from agent.app.harness import MockModelProvider
@@ -53,7 +58,8 @@ def _waiting_turn(tmp_path, name: str) -> tuple[SQLiteAgentStore, c.TurnStateSna
 
 
 def _confirm(store: SQLiteAgentStore, waiting: c.TurnStateSnapshot, proposal: c.ProposalRecord, *,
-             request_id: uuid.UUID | None = None) -> c.TurnAggregate:
+             request_id: uuid.UUID | None = None,
+             activity_guard=None) -> c.TurnAggregate:
     request = c.ConfirmProposalRequest(
         client_request_id=request_id or uuid.uuid4(),
         expected_proposal_revision=proposal.revision,
@@ -64,7 +70,14 @@ def _confirm(store: SQLiteAgentStore, waiting: c.TurnStateSnapshot, proposal: c.
         OWNER, proposal.proposal_id, request,
         expected_state_revision=waiting.state_revision,
         expected_proposal_revision=proposal.revision,
+        activity_guard=activity_guard,
     )
+
+
+def _roster(*, members=(OWNER,), archived: bool = False) -> MockActivityRoster:
+    roster = MockActivityRoster()
+    roster.add(mock_fixtures.ACTIVITY_ID, members, archived=archived)
+    return roster
 
 
 def test_execution_id_is_deterministic_and_bound() -> None:
@@ -282,6 +295,148 @@ def test_runtime_recovery_hook_settles_under_the_original_key(tmp_path) -> None:
         assert settled.state is c.TurnState.COMPLETED
         assert settled.execution_resolution is c.ExecutionResolution.SUCCEEDED
         assert settled.execution.execution_id == execution_id
+        assert store.count_mock_executions(proposal.proposal_id) == 1
+        assert store.mock_ledger_financial_version(mock_fixtures.ACTIVITY_ID) == 1
+    finally:
+        store.close()
+
+
+# --- authorization and Activity lifecycle ----------------------------------
+#
+# P3a has no membership table: the roster is the explicit, mutable stand-in.
+# Every refusal below must happen before any effect reaches the mock ledger, and
+# must leave the Turn exactly where it was so nothing is silently half-done.
+
+
+def _assert_refused_without_effect(
+    store: SQLiteAgentStore, proposal: c.ProposalRecord,
+) -> None:
+    current = store.get_turn(OWNER, proposal.turn_id).record.turn
+    assert current.state is c.TurnState.WAIT_CONFIRM and current.execution is None
+    assert store.get_proposal(OWNER, proposal.proposal_id).status is c.ProposalStatus.PENDING
+    assert store.count_mock_executions(proposal.proposal_id) == 0
+    assert store.mock_ledger_financial_version(mock_fixtures.ACTIVITY_ID) == 0
+
+
+def test_actor_without_permission_cannot_dispatch_a_write(tmp_path) -> None:
+    store, waiting, proposal = _waiting_turn(tmp_path, "p3a-denied")
+    try:
+        # An Activity the actor is not a member of is indistinguishable from one
+        # that does not exist: both refuse at dispatch.
+        guard = MockActivityRoster().writable_guard(OWNER)
+        with pytest.raises(MockPermissionDenied) as refused:
+            _confirm(store, waiting, proposal, activity_guard=guard)
+        assert refused.value.code == "actor_not_permitted"
+        _assert_refused_without_effect(store, proposal)
+    finally:
+        store.close()
+
+
+def test_archived_activity_cannot_dispatch_a_write(tmp_path) -> None:
+    store, waiting, proposal = _waiting_turn(tmp_path, "p3a-archived")
+    try:
+        guard = _roster(archived=True).writable_guard(OWNER)
+        with pytest.raises(MockActivityArchived) as refused:
+            _confirm(store, waiting, proposal, activity_guard=guard)
+        assert refused.value.code == "activity_archived"
+        _assert_refused_without_effect(store, proposal)
+    finally:
+        store.close()
+
+
+def test_permission_revoked_after_preview_is_refused_at_dispatch(tmp_path) -> None:
+    store, waiting, proposal = _waiting_turn(tmp_path, "p3a-revoked")
+    try:
+        roster = _roster()  # the preview was rendered while the actor was a member
+        roster.remove_member(mock_fixtures.ACTIVITY_ID, OWNER)
+        with pytest.raises(MockPermissionDenied):
+            _confirm(store, waiting, proposal, activity_guard=roster.writable_guard(OWNER))
+        _assert_refused_without_effect(store, proposal)
+    finally:
+        store.close()
+
+
+def test_archived_after_dispatch_is_refused_before_the_effect_lands(tmp_path) -> None:
+    store, waiting, proposal = _waiting_turn(tmp_path, "p3a-late-archive")
+    try:
+        roster = _roster()
+        guard = roster.writable_guard(OWNER)
+        dispatched = _confirm(store, waiting, proposal, activity_guard=guard)
+        execution_id = dispatched.record.turn.execution.execution_id
+
+        roster.archive(mock_fixtures.ACTIVITY_ID)
+        with pytest.raises(MockActivityArchived):
+            store.apply_mock_execution(OWNER, proposal.proposal_id, activity_guard=guard)
+        assert store.count_mock_executions(proposal.proposal_id) == 0
+        assert store.mock_ledger_financial_version(mock_fixtures.ACTIVITY_ID) == 0
+
+        # The caller records the refusal as a rejection under the same key; the
+        # Turn must not stay in EXECUTING with an effect that will never land.
+        settled = store.settle_mock_execution(
+            OWNER, proposal.proposal_id, c.ExecutionResolution.REJECTED,
+            result_code=MockActivityArchived.code, result_summary="activity archived",
+        )
+        assert settled.record.turn.state is c.TurnState.FAILED
+        assert settled.record.turn.execution_resolution is c.ExecutionResolution.REJECTED
+        assert settled.record.turn.execution.execution_id == execution_id
+        assert store.get_proposal(OWNER, proposal.proposal_id).status is c.ProposalStatus.REJECTED
+    finally:
+        store.close()
+
+
+def test_recovery_hook_refuses_an_archived_activity_under_the_original_key(tmp_path) -> None:
+    """Recovery must reject, not apply, when the Activity stopped accepting writes."""
+    store, waiting, proposal = _waiting_turn(tmp_path, "p3a-recovery-archive")
+    try:
+        roster = _roster()
+        guard = roster.writable_guard(OWNER)
+        dispatched = _confirm(store, waiting, proposal, activity_guard=guard)
+        execution_id = dispatched.record.turn.execution.execution_id
+        # The outcome is unknown: dispatch committed, the effect may or may not
+        # have landed. Then the Activity is archived before reconciliation.
+        store.mark_execution_unknown(OWNER, proposal.proposal_id)
+        roster.archive(mock_fixtures.ACTIVITY_ID)
+
+        claimed = store.claim_runnable("p3a-recovery-archive-worker")
+        assert claimed is not None
+        runtime = MockRuntime(
+            store, MockModelProvider(), MockBackendAdapter(), _OwnerAuth(),
+            MockScopeAuthorizer(), _Control(), model_timeout_seconds=1,
+            activity_roster=roster,
+        )
+        runtime.bind_auth_grant(
+            Principal(OWNER, datetime.now(timezone.utc) + timedelta(hours=1)), "runtime-token",
+        )
+        asyncio.run(runtime._inspect_recovery_checkpoint(claimed))
+
+        settled = store.get_turn(OWNER, proposal.turn_id).record.turn
+        assert settled.state is c.TurnState.FAILED
+        assert settled.execution_resolution is c.ExecutionResolution.REJECTED
+        assert settled.execution.execution_id == execution_id
+        assert store.count_mock_executions(proposal.proposal_id) == 0
+        assert store.mock_ledger_financial_version(mock_fixtures.ACTIVITY_ID) == 0
+    finally:
+        store.close()
+
+
+def test_an_already_applied_effect_is_reported_after_archive_not_refused(tmp_path) -> None:
+    """A later archive does not rewrite an effect that already landed."""
+    store, waiting, proposal = _waiting_turn(tmp_path, "p3a-applied-then-archived")
+    try:
+        roster = _roster()
+        guard = roster.writable_guard(OWNER)
+        _confirm(store, waiting, proposal, activity_guard=guard)
+        applied = store.apply_mock_execution(
+            OWNER, proposal.proposal_id, activity_guard=guard,
+        )
+        assert applied["applied"] is True
+
+        roster.archive(mock_fixtures.ACTIVITY_ID)
+        again = store.apply_mock_execution(
+            OWNER, proposal.proposal_id, activity_guard=guard,
+        )
+        assert again["applied"] is False
+        assert again["execution_id"] == applied["execution_id"]
         assert store.count_mock_executions(proposal.proposal_id) == 1
         assert store.mock_ledger_financial_version(mock_fixtures.ACTIVITY_ID) == 1
     finally:
