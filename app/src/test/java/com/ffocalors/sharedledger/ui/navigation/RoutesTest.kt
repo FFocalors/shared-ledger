@@ -278,6 +278,15 @@ class RoutesTest {
     }
 
     @Test
+    fun activityManagementRouteSupportsParticipantFocus() {
+        assertEquals("activity-management/a1", SharedLedgerRoutes.activityManagement("a1"))
+        assertEquals(
+            "activity-management/a1?focus=participants",
+            SharedLedgerRoutes.activityManagement("a1", SharedLedgerRoutes.ACTIVITY_MANAGEMENT_FOCUS_PARTICIPANTS),
+        )
+    }
+
+    @Test
     fun archivedActivityDisablesWriteRouteCallbacks() {
         val role = com.ffocalors.sharedledger.data.activity.ActivityRole.Member
         val detail = com.ffocalors.sharedledger.data.activity.ActivityDetail(

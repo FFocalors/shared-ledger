@@ -662,7 +662,7 @@ private fun AuthenticatedNavHost(
                     }
                 } else null,
                 onAddParticipants = if (activityId.isNotBlank() && detailState.detail?.let { it.summary.archivedAt == null && it.permissions.canManageParticipants } == true) {
-                    { navController.navigate(SharedLedgerRoutes.activityManagement(activityId)) { launchSingleTop = true } }
+                    { navController.navigate(SharedLedgerRoutes.activityManagement(activityId, SharedLedgerRoutes.ACTIVITY_MANAGEMENT_FOCUS_PARTICIPANTS)) { launchSingleTop = true } }
                 } else null,
                 onExpenseClick = { expenseId ->
                     navController.navigate(SharedLedgerRoutes.expenseDetail(activityId, expenseId, defaultLedgerUnitId))
@@ -778,7 +778,7 @@ private fun AuthenticatedNavHost(
                     }
                 } else null,
                 onAddParticipants = if (activityId.isNotBlank() && detailState.detail?.let { it.summary.archivedAt == null && it.permissions.canManageParticipants } == true) {
-                    { navController.navigate(SharedLedgerRoutes.activityManagement(activityId)) { launchSingleTop = true } }
+                    { navController.navigate(SharedLedgerRoutes.activityManagement(activityId, SharedLedgerRoutes.ACTIVITY_MANAGEMENT_FOCUS_PARTICIPANTS)) { launchSingleTop = true } }
                 } else null,
             )
         }
@@ -1007,7 +1007,7 @@ private fun AuthenticatedNavHost(
                 attachments = attachmentState.toLedgerUnitUiState { item -> canDeleteAttachment(item, detailState.detail, currentUserId) },
                 attachmentMessage = attachmentMessage ?: attachmentState.errorMessage,
                 onAddParticipants = if (activityId.isNotBlank() && detailState.detail?.let { it.summary.archivedAt == null && it.permissions.canManageParticipants } == true) {
-                    { navController.navigate(SharedLedgerRoutes.activityManagement(activityId)) { launchSingleTop = true } }
+                    { navController.navigate(SharedLedgerRoutes.activityManagement(activityId, SharedLedgerRoutes.ACTIVITY_MANAGEMENT_FOCUS_PARTICIPANTS)) { launchSingleTop = true } }
                 } else null,
                 onAddAttachment = if (activityWritable && attachmentState.items.size < MAX_CLIENT_ATTACHMENTS) attachmentInput.requestSourceChooser else null,
                 onAttachmentClick = { attachmentId ->
@@ -1450,9 +1450,13 @@ private fun AuthenticatedNavHost(
         }
         composable(
             route = SharedLedgerRoutes.ACTIVITY_MANAGEMENT_PATTERN,
-            arguments = listOf(navArgument("activityId") { type = NavType.StringType }),
+            arguments = listOf(
+                navArgument("activityId") { type = NavType.StringType },
+                navArgument("focus") { type = NavType.StringType; nullable = true; defaultValue = null },
+            ),
         ) { backStackEntry ->
             val activityId = backStackEntry.arguments?.getString("activityId").orEmpty()
+            val focus = backStackEntry.arguments?.getString("focus")
             if (activityId.isBlank()) {
                 ExpenseRouteStatus("活动路由参数缺失", onBack = { navController.navigateUp() })
             } else {
@@ -1482,6 +1486,7 @@ private fun AuthenticatedNavHost(
                     isLoading = detailState.isLoading || managementState == null,
                     actionInProgress = actionLoading,
                     errorMessage = detailState.errorMessage,
+                    focusParticipants = focus == SharedLedgerRoutes.ACTIVITY_MANAGEMENT_FOCUS_PARTICIPANTS,
                     message = managementMessage,
                     onMessageShown = activityViewModel::clearMessage,
                     onRetry = { activityViewModel.loadDetail(activityId, force = true) },
