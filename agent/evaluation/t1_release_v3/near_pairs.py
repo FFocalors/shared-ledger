@@ -25,9 +25,9 @@ from typing import Any
 
 from . import hashing, profile
 
-REVIEWER_ID = "/assistant:t1-release-v3"
-REVIEW_KIND = "assistant_technical_review"
-PROVENANCE = "same session that generated the rows; not an independent review"
+REVIEWER_ID = "/root:codex:01a1582f-3757-7c03-a883-9fd20cd1e20e"
+REVIEW_KIND = "root_agent"
+PROVENANCE = "Independent root review in Codex chat 01a1582f-3757-7c03-a883-9fd20cd1e20e on 2026-10-20; not the producing session /assistant:t1-release-v3. Reconstructed all 417 rows, verified all four hash bindings and independently recomputed all 5429 pair categories; inspected 103 sample pairs (all 55 cross-operation pairs plus 48 stratified state-family pairs); confirmed 5429, corrected 0. Evidence: D:/AI/runs/shared-ledger/t1-release-v3-20261020-review-01a1582f. Candidate contents unchanged; boundary-gold runtime blockers are not waived; not a human review receipt."
 REPORT_NAME = "near-pair-review-v3.json"
 
 CATEGORIES = (
