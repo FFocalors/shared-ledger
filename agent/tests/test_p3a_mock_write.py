@@ -25,7 +25,7 @@ from agent.app import contracts as c
 from agent.app import mock_fixtures
 from agent.app.p3_execution import (
     MockActivityArchived, MockActivityRoster, MockExecutionStateError,
-    MockPermissionDenied, MockPreconditionConflict,
+    MockPermissionDenied, MockPreconditionConflict, mock_effect_for_command,
 )
 from agent.app.store import ProposalConflict, SQLiteAgentStore
 from agent.app.backend import MockBackendAdapter, MockScopeAuthorizer
@@ -441,3 +441,28 @@ def test_an_already_applied_effect_is_reported_after_archive_not_refused(tmp_pat
         assert store.mock_ledger_financial_version(mock_fixtures.ACTIVITY_ID) == 1
     finally:
         store.close()
+
+
+def test_effect_without_occurred_at_records_a_current_timestamp() -> None:
+    """The frozen command may omit occurred_at; the ledger payload must not crash."""
+    command = c.FixedExpenseCreateCommand(
+        operation="expense.create",
+        activity_id=mock_fixtures.ACTIVITY_ID,
+        ledger_unit_id=mock_fixtures.UNIT_ID,
+        title="Lunch",
+        original_amount="12.50",
+        original_currency="CNY",
+        payment_allocations=[
+            c.CanonicalPayment(participant_id=mock_fixtures.PARTICIPANT_1, amount="12.50"),
+        ],
+        split=c.CanonicalEqualSplit(
+            mode="equal",
+            participant_ids=[mock_fixtures.PARTICIPANT_1, mock_fixtures.PARTICIPANT_2],
+        ),
+        occurred_at=None,
+        expected_financial_version="0",
+    )
+    effect = mock_effect_for_command(command)
+    recorded = datetime.fromisoformat(effect.as_payload()["occurred_at"])
+    assert recorded.tzinfo is not None
+    assert abs((datetime.now(timezone.utc) - recorded).total_seconds()) < 60

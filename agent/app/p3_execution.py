@@ -17,7 +17,7 @@ import json
 import uuid
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any
 
@@ -125,7 +125,7 @@ class MockExpenseEffect:
     title: str
     original_amount: str
     original_currency: str
-    occurred_at: datetime
+    occurred_at: datetime | None
     payment_allocations: tuple[tuple[uuid.UUID, str], ...]
     split_mode: str
     split_participant_ids: tuple[uuid.UUID, ...]
@@ -141,7 +141,7 @@ class MockExpenseEffect:
             "title": self.title,
             "original_amount": self.original_amount,
             "original_currency": self.original_currency,
-            "occurred_at": self.occurred_at.isoformat(),
+            "occurred_at": (self.occurred_at or datetime.now(timezone.utc)).isoformat(),
             "payment_allocations": [
                 [str(participant_id), amount]
                 for participant_id, amount in self.payment_allocations
