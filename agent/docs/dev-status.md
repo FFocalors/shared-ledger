@@ -42,6 +42,16 @@ v3 candidate 的裁决现状见 [v3 profile 状态](p2/P2_V3_PROFILE_STATUS.md)�
 - 边界：不碰真实业务写入与云端、不动 P2 v3 防火墙、不碰 T1；HTTP 成功响应需先批准 [确认响应差异提案](p3/P3A_CONFIRM_RESPONSE_DIFF.md)。
 - **pin 提示**：P3a 改动了 `store.py` 与 `runtime.py`，执行 pin `362e66ad…` 现已 2 处 mismatch、不再匹配当前树；新模块 `p3_execution.py` 不在该 manifest 的枚举组件内。
 
+## P3b 端到端写路径（2026-10-21）
+
+**四条要求通过（Mock 后端 + T2 checkpoint），模型直连 transformers/PEFT，未启动 LM Studio。** 详见 [P3b 记录](p3/P3B_E2E_EDGE_R1.md)。
+
+- 真模型提议 → Harness 预览 → 确认 → 执行 → 回执全链路走通；`execution_id` 在提案、Turn、回执事件三处一致。
+- 无权限 / 已归档提案在执行前被 Harness 拒绝（`S2a`/`S2b` 复用同一份模型输出，只改 roster，证明拦截与模型是否配合无关）。
+- 未确认不落账；响应丢失按原键找回。
+- 失败样例两条：**F1** 模型在已归档上下文下仍提交新增提案（模型行为，Harness 门仍拦截）；**F2** `occurred_at=null` 使 `MockExpenseEffect.as_payload` 崩溃（产品缺陷，未修，harness 侧临时补时间）。
+- 边界：不接真实 RLS/云端；HTTP confirm 仍 501；未重跑全量 gate。
+
 日期：2026-10-12
 当前阶段：**P0 工程核查通过；T0 六步部署链验收通过；P1 限定工程范围通过；T1 protocol v1.1.0 离线协议冻结已批准；release-v2 数据准入及训练仍未完成，genuine human receipt、P2校准、T2授权pending**
 
