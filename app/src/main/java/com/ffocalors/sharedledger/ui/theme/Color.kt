@@ -36,6 +36,10 @@ val InvertedContent = Color(0xFFEBE4D6)
 val SoftDanger = Color(0xFFFBEAE8)
 val SoftDangerContent = Color(0xFFBA1A1A)
 
+/** Agent simulation draft header ("演示数据"); deliberately distinct from the real-draft amber. */
+val AgentSimulationContainer = Color(0xFFDCE3E8)
+val AgentSimulationContent = Color(0xFF34434F)
+
 @Immutable
 data class SharedLedgerButtonColorPair(
     val containerColor: Color,

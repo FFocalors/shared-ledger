@@ -77,6 +77,13 @@ if (supabaseEnvironment == "hosted") {
     }
 }
 
+val agentBaseUrl = (
+    localProperties.getProperty("agent.baseUrl")?.trim().orEmpty()
+        .ifBlank { System.getenv("AGENT_BASE_URL")?.trim().orEmpty() }
+    )
+
+val agentDemo = localProperties.getProperty("agent.demo")?.trim().equals("true", ignoreCase = true)
+
 fun quoteBuildConfig(value: String): String = "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
 
 android {
@@ -97,9 +104,15 @@ android {
             "SUPABASE_PUBLISHABLE_KEY",
             quoteBuildConfig(supabasePublishableKey),
         )
+        buildConfigField("String", "AGENT_BASE_URL", quoteBuildConfig(agentBaseUrl))
+        buildConfigField("boolean", "AGENT_DEMO", "false")
     }
 
     buildTypes {
+        debug {
+            // Offline Agent demo (local.properties: agent.demo=true). Release is always false.
+            buildConfigField("boolean", "AGENT_DEMO", agentDemo.toString())
+        }
         release {
             optimization {
                 enable = false
@@ -142,6 +155,7 @@ dependencies {
     implementation(libs.haze)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.ktor.client.mock)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

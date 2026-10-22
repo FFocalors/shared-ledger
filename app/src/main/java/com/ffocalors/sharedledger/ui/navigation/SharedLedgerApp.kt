@@ -366,10 +366,12 @@ private fun AuthenticatedNavHost(
         activityViewModel.invalidateActivity(activityId)
         expenseViewModel.invalidateActivity(activityId)
     }
+    // The Agent entry is overlaid once, above every destination (NavHost body indentation unchanged to keep the diff small).
+    androidx.compose.foundation.layout.Box(modifier = modifier) {
     NavHost(
         navController = navController,
         startDestination = SharedLedgerRoutes.HOME,
-        modifier = modifier,
+        modifier = Modifier.fillMaxSize(),
         enterTransition = {
             slideInHorizontally(
                 animationSpec = tween(
@@ -2119,6 +2121,13 @@ private fun AuthenticatedNavHost(
                 )
             }
         }
+    }
+    com.ffocalors.sharedledger.ui.agent.AgentAssistantHost(
+        backStackEntry = currentBackStackEntry,
+        currentUserId = currentUserId,
+        activityViewModel = activityViewModel,
+        modifier = Modifier.fillMaxSize(),
+    )
     }
 }
 
