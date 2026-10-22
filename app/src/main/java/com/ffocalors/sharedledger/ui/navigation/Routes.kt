@@ -20,7 +20,8 @@ object SharedLedgerRoutes {
     const val FUND_RECORDS_PATTERN = "fund-records/{activityId}?ledgerUnitId={ledgerUnitId}"
     const val FINAL_SETTLEMENT_PATTERN = "final-settlement/{activityId}"
     const val PREPAYMENT_PATTERN = "prepayment/{activityId}?mode={mode}"
-    const val ACTIVITY_MANAGEMENT_PATTERN = "activity-management/{activityId}"
+    const val ACTIVITY_MANAGEMENT_PATTERN = "activity-management/{activityId}?focus={focus}"
+    const val ACTIVITY_MANAGEMENT_FOCUS_PARTICIPANTS = "participants"
     const val EXPENSE_DETAIL_PATTERN = "expense-detail/{expenseId}?activityId={activityId}&ledgerUnitId={ledgerUnitId}"
     const val TRANSFER_DETAIL_PATTERN = "transfer-detail/{activityId}/{transferId}?ledgerUnitId={ledgerUnitId}"
     const val ACTIVITY_MANAGEMENT = ACTIVITY_MANAGEMENT_PATTERN
@@ -69,7 +70,10 @@ object SharedLedgerRoutes {
     }
     fun finalSettlement(activityId: String) = createRoute("final-settlement", activityId)
     fun prepayment(activityId: String, mode: String) = "${createRoute("prepayment", activityId)}?mode=$mode"
-    fun activityManagement(activityId: String) = createRoute("activity-management", activityId)
+    fun activityManagement(activityId: String, focus: String? = null): String {
+        val route = createRoute("activity-management", activityId)
+        return if (focus.isNullOrBlank()) route else "$route?focus=$focus"
+    }
     fun expenseDetail(expenseId: String) = createRoute("expense-detail", expenseId)
     fun expenseDetail(activityId: String, expenseId: String, ledgerUnitId: String? = null): String {
         val route = createRoute("expense-detail", expenseId)
