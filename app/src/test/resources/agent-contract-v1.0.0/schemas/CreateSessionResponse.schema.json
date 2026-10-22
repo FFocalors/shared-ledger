@@ -1,0 +1,69 @@
+{
+  "$defs": {
+    "SessionSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "active_turn_count": {
+          "minimum": 0,
+          "title": "Active Turn Count",
+          "type": "integer"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "session_id": {
+          "format": "uuid",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "title": "Updated At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "created_at",
+        "updated_at",
+        "active_turn_count"
+      ],
+      "title": "SessionSummary",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "api_version": {
+      "const": "1.0.0",
+      "default": "1.0.0",
+      "title": "Api Version",
+      "type": "string"
+    },
+    "session": {
+      "$ref": "#/$defs/SessionSummary"
+    }
+  },
+  "required": [
+    "session"
+  ],
+  "title": "CreateSessionResponse",
+  "type": "object"
+}

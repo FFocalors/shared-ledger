@@ -9,6 +9,8 @@ import com.ffocalors.sharedledger.data.agent.AgentRepository
 import com.ffocalors.sharedledger.data.agent.CancelResult
 import com.ffocalors.sharedledger.data.agent.CancelTurnRequest
 import com.ffocalors.sharedledger.data.agent.ClarificationEvent
+import com.ffocalors.sharedledger.data.agent.ConfirmProposalOutcome
+import com.ffocalors.sharedledger.data.agent.ConfirmProposalRequest
 import com.ffocalors.sharedledger.data.agent.CreateSessionRequest
 import com.ffocalors.sharedledger.data.agent.ErrorEvent
 import com.ffocalors.sharedledger.data.agent.ExecutionResolution
@@ -78,6 +80,21 @@ data class ProposalItem(
     val animateEntrance: Boolean = false,
 ) : TranscriptItem
 data class ExecutionResultItem(override val key: String, val line: String) : TranscriptItem
+
+/**
+ * Durable receipt for a confirmed draft: which execution was dispatched and how its turn is going.
+ * While the turn reconciles it says 正在核对结果 and never claims success or failure.
+ */
+data class ExecutionReceiptItem(
+    override val key: String,
+    val turnId: String,
+    val executionId: String,
+    val proposalRevision: Int,
+    val state: TurnState,
+    val resolution: ExecutionResolution? = null,
+) : TranscriptItem {
+    val reconciling: Boolean get() = state == TurnState.RECOVERING || resolution == ExecutionResolution.UNKNOWN
+}
 data class ErrorItem(override val key: String, val message: String, val retryable: Boolean) : TranscriptItem
 
 sealed interface ComposerMode {
@@ -109,6 +126,12 @@ data class AgentUiState(
     val panelOpen: Boolean = false,
     /** Item keys / proposal ids whose entrance animation already played; each plays at most once. */
     val playedEntrances: Set<String> = emptySet(),
+    /** The draft whose confirm request is in flight, if any. */
+    val confirmingProposalId: String? = null,
+    /** Drafts whose confirm was answered with the contract's 501 "execution unavailable". */
+    val confirmUnavailable: Set<String> = emptySet(),
+    /** Drafts whose confirmation dispatched an execution; their button never comes back. */
+    val submittedProposals: Set<String> = emptySet(),
 ) {
     val statusLine: String? get() = AgentStatusCopy.forTurn(turn)
     val isRunning: Boolean get() = composer == ComposerMode.Running
@@ -120,6 +143,9 @@ object AgentStatusCopy {
         return when (turn.state) {
             TurnState.COMPLETED, TurnState.CANCELLED, TurnState.FAILED, TurnState.UNKNOWN -> null
             TurnState.WAIT_CONFIRM -> "草稿已拟好，等你确认"
+            TurnState.EXECUTING -> "正在记账"
+            // An unknown execution outcome stays here until the runtime reconciles it.
+            TurnState.RECOVERING -> "正在核对结果"
             else -> forStep(turn.step)
         }
     }
@@ -155,7 +181,7 @@ object AgentStatusCopy {
         ExecutionResolution.SUCCEEDED -> "已记账"
         ExecutionResolution.REJECTED -> "没有记账：" + (summary?.takeIf { it.isNotBlank() } ?: "请求被拒绝")
         ExecutionResolution.CLOSED -> "已关闭"
-        ExecutionResolution.UNKNOWN -> "结果待核实"
+        ExecutionResolution.UNKNOWN -> "正在核对结果"
     }
 
     fun cancelNotice(result: CancelResult): String = when (result) {
@@ -207,6 +233,8 @@ class AgentAssistantViewModel(
             PendingAction
         data class Auth(val turnId: String, val request: ResumeAuthRequest) : PendingAction
         data class Cancel(val turnId: String, val request: CancelTurnRequest) : PendingAction
+
+        data class Confirm(val proposalId: String, val request: ConfirmProposalRequest) : PendingAction
         data class OpenSession(val sessionId: String) : PendingAction
         data object LoadSessions : PendingAction
     }
@@ -336,6 +364,7 @@ class AgentAssistantViewModel(
                 is PendingAction.Poll -> startPolling(action.turnId)
                 is PendingAction.Auth -> runAuthResume(action)
                 is PendingAction.Cancel -> runCancel(action)
+                is PendingAction.Confirm -> runConfirm(action)
                 is PendingAction.OpenSession -> openSessionInternal(action)
                 PendingAction.LoadSessions -> loadSessionsInternal()
             }
@@ -372,6 +401,76 @@ class AgentAssistantViewModel(
             }
             is AgentApiResult.Failure -> fail(result, canRetry = true)
         }
+    }
+
+    // ---- confirm ------------------------------------------------------------------------------
+
+    /**
+     * Confirms a backend draft. The request object (and its `client_request_id`) is created once per
+     * tap, so a retry never dispatches a second execution.
+     */
+    fun confirm(proposalId: String) {
+        val current = _state.value
+        if (current.confirmingProposalId != null) return
+        if (proposalId in current.submittedProposals) return
+        val card = current.cards[proposalId] as? ConfirmableProposalCard ?: return
+        val action = PendingAction.Confirm(
+            proposalId = proposalId,
+            request = ConfirmProposalRequest(
+                clientRequestId = newId(),
+                commandDigest = card.commandDigest,
+                confirmationNonce = card.confirmationNonce,
+                expectedProposalRevision = card.revision,
+            ),
+        )
+        pending = action
+        scope.launch { runConfirm(action) }
+    }
+
+    private suspend fun runConfirm(action: PendingAction.Confirm) {
+        _state.update {
+            it.copy(
+                confirmingProposalId = action.proposalId,
+                confirmUnavailable = it.confirmUnavailable - action.proposalId,
+                banner = null,
+                notice = null,
+            )
+        }
+        when (val result = repository.confirmProposal(action.proposalId, action.request)) {
+            is AgentApiResult.Success -> {
+                pending = null
+                when (val outcome = result.value) {
+                    is ConfirmProposalOutcome.ExecutionAccepted -> onExecutionAccepted(action.proposalId, outcome)
+                    is ConfirmProposalOutcome.Unavailable -> _state.update {
+                        it.copy(
+                            confirmingProposalId = null,
+                            confirmUnavailable = it.confirmUnavailable + action.proposalId,
+                        )
+                    }
+                }
+            }
+            is AgentApiResult.Failure -> {
+                _state.update { it.copy(confirmingProposalId = null) }
+                fail(result, canRetry = true)
+            }
+        }
+    }
+
+    /** 202: one execution was dispatched. Follow the turn from the returned cursor, never assume success. */
+    private fun onExecutionAccepted(proposalId: String, outcome: ConfirmProposalOutcome.ExecutionAccepted) {
+        val value = outcome.value
+        val turn = value.turn
+        cursors[turn.turnId] = maxOf(cursors[turn.turnId] ?: 0, value.eventCursor)
+        _state.update {
+            it.copy(
+                confirmingProposalId = null,
+                submittedProposals = it.submittedProposals + proposalId,
+                turn = turn,
+            )
+        }
+        upsertReceipt(proposalId, turn.turnId, value.execution.executionId, value.execution.proposalRevision, turn)
+        applyTurnToComposer(turn)
+        if (!shouldStopPolling(turn.state)) startPolling(turn.turnId)
     }
 
     // ---- polling ------------------------------------------------------------------------------
@@ -438,7 +537,8 @@ class AgentAssistantViewModel(
         cursors[turnId] = maxOf(cursors[turnId] ?: 0, response.nextAfterSeq)
         _state.update { s ->
             s.copy(
-                items = s.items + newItems.filter { item -> item !is ProposalItem || s.items.none { it.sameProposal(item) } },
+                items = (s.items + newItems.filter { item -> item !is ProposalItem || s.items.none { it.sameProposal(item) } })
+                    .map { refreshedReceipt(it, response.turn) },
                 cards = mergeCards(s.cards, response.proposalCards),
                 turn = response.turn,
             )
@@ -598,11 +698,55 @@ class AgentAssistantViewModel(
         clarificationSlots.clear()
         pending = null
         _state.update {
-            it.copy(items = emptyList(), cards = emptyMap(), turn = null, composer = ComposerMode.Normal)
+            it.copy(
+                items = emptyList(),
+                cards = emptyMap(),
+                turn = null,
+                composer = ComposerMode.Normal,
+                confirmingProposalId = null,
+                confirmUnavailable = emptySet(),
+                submittedProposals = emptySet(),
+            )
         }
     }
 
     private fun appendItem(item: TranscriptItem) = _state.update { it.copy(items = it.items + item) }
+
+    /** Receipts follow their turn's state, including a transition into RECOVERING. */
+    private fun refreshedReceipt(item: TranscriptItem, turn: TurnPublicStatus): TranscriptItem =
+        if (item is ExecutionReceiptItem && item.turnId == turn.turnId) {
+            item.copy(state = turn.state, resolution = turn.executionResolution)
+        } else {
+            item
+        }
+
+    private fun upsertReceipt(
+        proposalId: String,
+        turnId: String,
+        executionId: String,
+        proposalRevision: Int,
+        turn: TurnPublicStatus,
+    ) {
+        val key = "receipt:$proposalId"
+        val item = ExecutionReceiptItem(
+            key = key,
+            turnId = turnId,
+            executionId = executionId,
+            proposalRevision = proposalRevision,
+            state = turn.state,
+            resolution = turn.executionResolution,
+        )
+        _state.update { s ->
+            val index = s.items.indexOfFirst { it.key == key }
+            s.copy(
+                items = if (index >= 0) {
+                    s.items.toMutableList().also { it[index] = item }
+                } else {
+                    s.items + item
+                },
+            )
+        }
+    }
 
     private fun fail(failure: AgentApiResult.Failure, canRetry: Boolean) {
         _state.update { s ->

@@ -1,0 +1,213 @@
+{
+  "$defs": {
+    "ExecutionIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "format": "uuid",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "execution_id": {
+          "format": "uuid",
+          "title": "Execution Id",
+          "type": "string"
+        },
+        "operations_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Operations Version",
+          "type": "string"
+        },
+        "proposal_id": {
+          "format": "uuid",
+          "title": "Proposal Id",
+          "type": "string"
+        },
+        "proposal_revision": {
+          "minimum": 1,
+          "title": "Proposal Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "execution_id",
+        "actor_id",
+        "proposal_id",
+        "proposal_revision"
+      ],
+      "title": "ExecutionIdentity",
+      "type": "object"
+    },
+    "TurnStateSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "context_version": {
+          "minimum": 1,
+          "title": "Context Version",
+          "type": "integer"
+        },
+        "execution": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExecutionIdentity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "execution_resolution": {
+          "anyOf": [
+            {
+              "enum": [
+                "succeeded",
+                "rejected",
+                "closed",
+                "unknown"
+              ],
+              "title": "ExecutionResolution",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Execution Resolution"
+        },
+        "owner_user_id": {
+          "format": "uuid",
+          "title": "Owner User Id",
+          "type": "string"
+        },
+        "resume_state": {
+          "anyOf": [
+            {
+              "enum": [
+                "QUEUED",
+                "RUNNING",
+                "WAIT_CONFIRM",
+                "EXECUTING",
+                "RECOVERING"
+              ],
+              "title": "ResumeState",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resume State"
+        },
+        "session_id": {
+          "format": "uuid",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "QUEUED",
+            "RUNNING",
+            "WAIT_INPUT",
+            "WAIT_CONFIRM",
+            "EXECUTING",
+            "RECOVERING",
+            "COMPLETED",
+            "CANCELLED",
+            "FAILED"
+          ],
+          "title": "TurnState",
+          "type": "string"
+        },
+        "state_revision": {
+          "minimum": 1,
+          "title": "State Revision",
+          "type": "integer"
+        },
+        "step": {
+          "enum": [
+            "accepted",
+            "build_context",
+            "model_decision",
+            "tool_read",
+            "prepare_proposal",
+            "awaiting_user",
+            "auth_required",
+            "dispatch",
+            "reconcile",
+            "finalize",
+            "terminal"
+          ],
+          "title": "TurnStep",
+          "type": "string"
+        },
+        "turn_id": {
+          "format": "uuid",
+          "title": "Turn Id",
+          "type": "string"
+        },
+        "wait_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "missing_fields",
+                "auth_required",
+                "confirm_required",
+                "execution_result_unknown"
+              ],
+              "title": "WaitReason",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Wait Reason"
+        }
+      },
+      "required": [
+        "turn_id",
+        "session_id",
+        "owner_user_id",
+        "state",
+        "step",
+        "state_revision",
+        "context_version"
+      ],
+      "title": "TurnStateSnapshot",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "after": {
+      "$ref": "#/$defs/TurnStateSnapshot"
+    },
+    "before": {
+      "$ref": "#/$defs/TurnStateSnapshot"
+    },
+    "expected_state_revision": {
+      "minimum": 1,
+      "title": "Expected State Revision",
+      "type": "integer"
+    },
+    "kind": {
+      "const": "state_transition",
+      "title": "Kind",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "before",
+    "after",
+    "expected_state_revision"
+  ],
+  "title": "StateTransitionStep",
+  "type": "object"
+}

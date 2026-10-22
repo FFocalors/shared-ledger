@@ -1,0 +1,79 @@
+{
+  "$defs": {
+    "ErrorEventPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "enum": [
+            "unauthenticated",
+            "forbidden",
+            "not_found",
+            "idempotency_conflict",
+            "state_revision_conflict",
+            "proposal_revision_conflict",
+            "proposal_expired",
+            "execution_capability_unavailable",
+            "agent_disabled",
+            "rate_limited",
+            "dependency_unavailable",
+            "invalid_request"
+          ],
+          "title": "ApiErrorCode",
+          "type": "string"
+        },
+        "message": {
+          "maxLength": 240,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "retryable": {
+          "title": "Retryable",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "retryable"
+      ],
+      "title": "ErrorEventPayload",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "occurred_at": {
+      "format": "date-time",
+      "title": "Occurred At",
+      "type": "string"
+    },
+    "payload": {
+      "$ref": "#/$defs/ErrorEventPayload"
+    },
+    "seq": {
+      "minimum": 1,
+      "title": "Seq",
+      "type": "integer"
+    },
+    "simulation": {
+      "title": "Simulation",
+      "type": "boolean"
+    },
+    "type": {
+      "const": "error",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "seq",
+    "occurred_at",
+    "simulation",
+    "payload"
+  ],
+  "title": "ErrorEvent",
+  "type": "object"
+}

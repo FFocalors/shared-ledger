@@ -12,19 +12,26 @@ import com.ffocalors.sharedledger.data.agent.CancelTurnRequest
 import com.ffocalors.sharedledger.data.agent.CancelTurnResponse
 import com.ffocalors.sharedledger.data.agent.ClarificationEvent
 import com.ffocalors.sharedledger.data.agent.ClarificationEventPayload
+import com.ffocalors.sharedledger.data.agent.ConfirmProposalOutcome
 import com.ffocalors.sharedledger.data.agent.ConfirmProposalRequest
+import com.ffocalors.sharedledger.data.agent.ConfirmableProposalCard
 import com.ffocalors.sharedledger.data.agent.ConfirmationUnavailableResponse
 import com.ffocalors.sharedledger.data.agent.CreateSessionRequest
 import com.ffocalors.sharedledger.data.agent.CreateSessionResponse
 import com.ffocalors.sharedledger.data.agent.ExpenseAmountChange
 import com.ffocalors.sharedledger.data.agent.ExpensePreview
 import com.ffocalors.sharedledger.data.agent.ExpenseSnapshot
+import com.ffocalors.sharedledger.data.agent.ExecutionReference
+import com.ffocalors.sharedledger.data.agent.ExecutionResolution
+import com.ffocalors.sharedledger.data.agent.ExecutionResultEvent
+import com.ffocalors.sharedledger.data.agent.ExecutionResultPayload
 import com.ffocalors.sharedledger.data.agent.ListSessionsResponse
 import com.ffocalors.sharedledger.data.agent.MessageEvent
 import com.ffocalors.sharedledger.data.agent.MessageEventPayload
 import com.ffocalors.sharedledger.data.agent.MissingSlot
 import com.ffocalors.sharedledger.data.agent.PollEventsResponse
 import com.ffocalors.sharedledger.data.agent.ProposalCard
+import com.ffocalors.sharedledger.data.agent.ProposalExecutionAccepted
 import com.ffocalors.sharedledger.data.agent.ProposalEvent
 import com.ffocalors.sharedledger.data.agent.ProposalEventPayload
 import com.ffocalors.sharedledger.data.agent.ProposalOperation
@@ -61,6 +68,8 @@ private fun status(
     revision: Int = 1,
     waitReason: WaitReason? = null,
     turnId: String = "t1",
+    executionAssigned: Boolean = false,
+    resolution: ExecutionResolution? = null,
 ) = TurnPublicStatus(
     turnId = turnId,
     sessionId = "s1",
@@ -68,8 +77,23 @@ private fun status(
     stateRevision = revision,
     step = step,
     contextVersion = 1,
-    executionAssigned = false,
+    executionAssigned = executionAssigned,
+    executionResolution = resolution,
     waitReason = waitReason,
+)
+
+private fun execution(executionId: String = "exec-1", proposalId: String = "pr1") =
+    ExecutionReference(executionId, proposalId, 1)
+
+private fun accepted(
+    turn: TurnPublicStatus,
+    cursor: Int,
+    executionId: String = "exec-1",
+    proposalId: String = "pr1",
+) = AgentApiResult.Success<ConfirmProposalOutcome>(
+    ConfirmProposalOutcome.ExecutionAccepted(
+        ProposalExecutionAccepted(turn, execution(executionId, proposalId), cursor),
+    ),
 )
 
 private fun message(seq: Int, text: String = "m$seq"): AgentEvent =
@@ -84,29 +108,42 @@ private fun poll(
     cards: List<ProposalCard> = emptyList(),
 ) = PollEventsResponse(after, next, hasMore, turn, events, cards)
 
+private fun preview(simulation: Boolean, revision: Int = 1) = ExpensePreview(
+    activityFinancialVersion = "1",
+    after = ExpenseSnapshot(
+        baseAmount = "10.00",
+        expenseVersion = "1",
+        financialLocked = false,
+        ledgerUnitId = "lu",
+        originalAmount = "10.00",
+        originalCurrency = "CNY",
+        paymentAllocations = emptyList(),
+        split = CanonicalEqualSplit(listOf("a")),
+        title = "t$revision",
+    ),
+    changes = listOf(ExpenseAmountChange(AmountField.ORIGINAL_AMOUNT, "10.00")),
+    generatedAt = "2026-10-22T08:00:00Z",
+    simulation = simulation,
+    summary = "s",
+)
+
 private fun card(id: String = "pr1", revision: Int = 1): ProposalCard = SimulationProposalCard(
     proposalId = id,
     revision = revision,
     operation = ProposalOperation.EXPENSE_CREATE,
-    preview = ExpensePreview(
-        activityFinancialVersion = "1",
-        after = ExpenseSnapshot(
-            baseAmount = "10.00",
-            expenseVersion = "1",
-            financialLocked = false,
-            ledgerUnitId = "lu",
-            originalAmount = "10.00",
-            originalCurrency = "CNY",
-            paymentAllocations = emptyList(),
-            split = CanonicalEqualSplit(listOf("a")),
-            title = "t$revision",
-        ),
-        changes = listOf(ExpenseAmountChange(AmountField.ORIGINAL_AMOUNT, "10.00")),
-        generatedAt = "2026-10-22T08:00:00Z",
-        simulation = true,
-        summary = "s",
-    ),
+    preview = preview(simulation = true, revision = revision),
 )
+
+private fun confirmableCard(id: String = "pr1", revision: Int = 1): ConfirmableProposalCard =
+    ConfirmableProposalCard(
+        proposalId = id,
+        revision = revision,
+        operation = ProposalOperation.EXPENSE_CREATE,
+        preview = preview(simulation = false, revision = revision),
+        commandDigest = "a".repeat(64),
+        confirmationNonce = "n".repeat(32),
+        expiresAt = "2026-10-22T09:00:00Z",
+    )
 
 private class FakeAgentRepository : AgentRepository {
     val createRequests = mutableListOf<CreateSessionRequest>()
@@ -116,6 +153,8 @@ private class FakeAgentRepository : AgentRepository {
     val clarifyRequests = mutableListOf<ResumeClarificationRequest>()
     val cancelRequests = mutableListOf<CancelTurnRequest>()
     var confirmCalls = 0
+    val confirmRequests = mutableListOf<ConfirmProposalRequest>()
+    val confirmResults = ArrayDeque<AgentApiResult<ConfirmProposalOutcome>>()
 
     var createResults = ArrayDeque<AgentApiResult<CreateSessionResponse>>()
     var submitResults = ArrayDeque<AgentApiResult<SubmitTurnAccepted>>()
@@ -177,9 +216,10 @@ private class FakeAgentRepository : AgentRepository {
     override suspend fun confirmProposal(
         proposalId: String,
         request: ConfirmProposalRequest,
-    ): AgentApiResult<ConfirmationUnavailableResponse> {
+    ): AgentApiResult<ConfirmProposalOutcome> {
         confirmCalls++
-        error("confirmProposal must never be called in this phase")
+        confirmRequests += request
+        return confirmResults.removeFirstOrNull() ?: error("unexpected confirm #$confirmCalls")
     }
 }
 
@@ -460,12 +500,153 @@ class AgentAssistantViewModelTest {
         assertEquals("正在拟草稿", line(TurnState.RUNNING, TurnStep.PREPARE_PROPOSAL))
         assertEquals("等你补充", line(TurnState.WAIT_INPUT, TurnStep.AWAITING_USER))
         assertEquals("需要重新登录", line(TurnState.WAIT_INPUT, TurnStep.AUTH_REQUIRED))
-        assertEquals("正在处理", line(TurnState.EXECUTING, TurnStep.DISPATCH))
-        assertEquals("正在处理", line(TurnState.EXECUTING, TurnStep.RECONCILE))
-        assertEquals("正在处理", line(TurnState.EXECUTING, TurnStep.FINALIZE))
+        assertEquals("正在记账", line(TurnState.EXECUTING, TurnStep.DISPATCH))
+        assertEquals("正在记账", line(TurnState.EXECUTING, TurnStep.RECONCILE))
+        assertEquals("正在记账", line(TurnState.EXECUTING, TurnStep.FINALIZE))
+        assertEquals(
+            "正在核对结果",
+            line(TurnState.RECOVERING, TurnStep.RECONCILE),
+        )
         assertEquals("草稿已拟好，等你确认", line(TurnState.WAIT_CONFIRM, TurnStep.AWAITING_USER))
         assertNull(line(TurnState.COMPLETED, TurnStep.TERMINAL))
         assertNull(line(TurnState.FAILED, TurnStep.TERMINAL))
         assertNull(line(TurnState.CANCELLED, TurnStep.TERMINAL))
+    }
+
+    // ---- confirm ----------------------------------------------------------------------------
+
+    /** Drives the view model to a WAIT_CONFIRM draft and returns the harness. */
+    private fun harnessAtConfirmCard(): Harness {
+        val h = Harness()
+        val waiting = status(TurnState.WAIT_CONFIRM, TurnStep.AWAITING_USER, revision = 3, waitReason = WaitReason.CONFIRM_REQUIRED)
+        h.repo.pollResults += AgentApiResult.Success(
+            poll(
+                0, 4, waiting,
+                listOf(ProposalEvent(4, "2026-10-22T08:00:00Z", false, ProposalEventPayload(ProposalOperation.EXPENSE_CREATE, "pr1", 1))),
+                cards = listOf(confirmableCard()),
+            ),
+        )
+        h.vm.submit("烧烤 750", null)
+        return h
+    }
+
+    @Test
+    fun confirmAcceptedShowsReceiptAndPollsFromEventCursor() {
+        val h = harnessAtConfirmCard()
+        h.repo.confirmResults += accepted(
+            status(TurnState.EXECUTING, TurnStep.DISPATCH, revision = 4, executionAssigned = true),
+            cursor = 7,
+            executionId = "exec-abcdef12-3456",
+        )
+        h.repo.pollResults += AgentApiResult.Success(
+            poll(7, 9, status(TurnState.COMPLETED, TurnStep.TERMINAL, revision = 5, executionAssigned = true), listOf(message(8))),
+        )
+
+        h.vm.confirm("pr1")
+
+        val request = h.repo.confirmRequests.single()
+        assertEquals("a".repeat(64), request.commandDigest)
+        assertEquals("n".repeat(32), request.confirmationNonce)
+        assertEquals(1, request.expectedProposalRevision)
+        // Polling resumes at the cursor the 202 returned, not at 0.
+        assertEquals("t1" to 7, h.repo.pollAfter.last())
+        assertTrue("pr1" in h.state.submittedProposals)
+        assertNull(h.state.confirmingProposalId)
+        val receipt = h.state.items.filterIsInstance<ExecutionReceiptItem>().single()
+        assertEquals("exec-abcdef12-3456", receipt.executionId)
+        assertTrue(ProposalPresentation.receiptLine(receipt).startsWith("已提交执行 · 回执 execabcd"))
+    }
+
+    @Test
+    fun confirmUnavailableKeepsDraftAndShowsUnavailable() {
+        val h = harnessAtConfirmCard()
+        h.repo.confirmResults += AgentApiResult.Success<ConfirmProposalOutcome>(
+            ConfirmProposalOutcome.Unavailable(
+                ConfirmationUnavailableResponse(
+                    code = AgentErrorCode.EXECUTION_CAPABILITY_UNAVAILABLE,
+                    message = "not enabled",
+                ),
+            ),
+        )
+
+        h.vm.confirm("pr1")
+
+        assertTrue("pr1" in h.state.confirmUnavailable)
+        assertTrue(h.state.submittedProposals.isEmpty())
+        assertTrue(h.state.items.none { it is ExecutionReceiptItem })
+        assertNull(h.state.banner)
+        assertEquals(1, h.repo.pollAfter.size) // no new polling was started
+    }
+
+    @Test
+    fun recoveringReceiptNeverClaimsSuccessOrFailure() {
+        val h = harnessAtConfirmCard()
+        h.repo.confirmResults += accepted(
+            status(
+                TurnState.RECOVERING, TurnStep.RECONCILE, revision = 5,
+                waitReason = WaitReason.EXECUTION_RESULT_UNKNOWN,
+                executionAssigned = true,
+                resolution = ExecutionResolution.UNKNOWN,
+            ),
+            cursor = 8,
+            executionId = "exec-recovering",
+        )
+        h.repo.pollResults += AgentApiResult.Success(
+            poll(
+                8, 10,
+                status(TurnState.COMPLETED, TurnStep.TERMINAL, revision = 6, executionAssigned = true, resolution = ExecutionResolution.UNKNOWN),
+                listOf(
+                    ExecutionResultEvent(
+                        9, "2026-10-22T08:00:00Z", false,
+                        ExecutionResultPayload(execution("exec-recovering"), ExecutionResolution.UNKNOWN),
+                    ),
+                ),
+            ),
+        )
+
+        h.vm.confirm("pr1")
+
+        val receipt = h.state.items.filterIsInstance<ExecutionReceiptItem>().single()
+        assertTrue(receipt.reconciling)
+        assertEquals("已提交执行 · 回执 execreco · 正在核对结果", ProposalPresentation.receiptLine(receipt))
+        val result = h.state.items.filterIsInstance<ExecutionResultItem>().single()
+        assertEquals("正在核对结果", result.line)
+        assertFalse(h.state.items.any { it is ExecutionResultItem && it.line.contains("已记账") })
+    }
+
+    @Test
+    fun confirmFailureRetryReusesTheSameRequestId() {
+        val h = harnessAtConfirmCard()
+        h.repo.confirmResults += AgentApiResult.ApiError(AgentErrorCode.DEPENDENCY_UNAVAILABLE, "down", true, 503)
+        h.repo.confirmResults += accepted(
+            status(TurnState.EXECUTING, TurnStep.DISPATCH, revision = 4, executionAssigned = true),
+            cursor = 6,
+        )
+        h.repo.pollResults += AgentApiResult.Success(poll(6, 7, status(TurnState.COMPLETED, TurnStep.TERMINAL, revision = 5, executionAssigned = true)))
+
+        h.vm.confirm("pr1")
+        assertEquals(AgentErrorMessages.DEPENDENCY_UNAVAILABLE, h.state.banner?.message)
+        assertNull(h.state.confirmingProposalId)
+
+        h.vm.retry()
+
+        assertEquals(2, h.repo.confirmRequests.size)
+        assertEquals(h.repo.confirmRequests[0].clientRequestId, h.repo.confirmRequests[1].clientRequestId)
+        assertTrue("pr1" in h.state.submittedProposals)
+    }
+
+    @Test
+    fun doubleTapWhileConfirmingSendsOneRequest() {
+        val h = harnessAtConfirmCard()
+        h.repo.confirmResults += accepted(
+            status(TurnState.EXECUTING, TurnStep.DISPATCH, revision = 4, executionAssigned = true),
+            cursor = 5,
+        )
+        h.repo.pollResults += AgentApiResult.Success(poll(5, 6, status(TurnState.COMPLETED, TurnStep.TERMINAL, revision = 5, executionAssigned = true)))
+        // The first call runs synchronously under the unconfined dispatcher, so the second sees the
+        // submitted state; either guard (in-flight or submitted) must prevent a second dispatch.
+        h.vm.confirm("pr1")
+        h.vm.confirm("pr1")
+        assertEquals(1, h.repo.confirmCalls)
     }
 }

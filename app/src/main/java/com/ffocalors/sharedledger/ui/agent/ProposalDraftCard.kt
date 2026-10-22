@@ -34,6 +34,7 @@ import com.ffocalors.sharedledger.ui.theme.AgentSimulationContainer
 import com.ffocalors.sharedledger.ui.theme.AgentSimulationContent
 import com.ffocalors.sharedledger.ui.theme.AppOutline
 import com.ffocalors.sharedledger.ui.theme.DeepCharcoal
+import com.ffocalors.sharedledger.ui.theme.ErrorRed
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerRadius
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerSpacing
 import com.ffocalors.sharedledger.ui.theme.SharedLedgerTextStyles
@@ -56,6 +57,8 @@ fun ProposalDraftCard(
     /** Play the draw-on entrance. Callers pass true once per proposal_id and only for live drafts. */
     animateEntrance: Boolean = false,
     onEntranceStarted: () -> Unit = {},
+    confirmState: ProposalConfirmUiState = ProposalConfirmUiState(),
+    onConfirm: (String) -> Unit = {},
 ) {
     // A newer revision of the same draft only cross-fades; the draw-on belongs to the first card.
     val firstCard = remember { card }
@@ -71,9 +74,18 @@ fun ProposalDraftCard(
             modifier = modifier,
             animateEntrance = animateEntrance && shown === firstCard,
             onEntranceStarted = onEntranceStarted,
+            confirmState = confirmState,
+            onConfirm = onConfirm,
         )
     }
 }
+
+/** Per-draft confirm affordance: in flight, answered 501, or already dispatched. */
+data class ProposalConfirmUiState(
+    val confirming: Boolean = false,
+    val unavailable: Boolean = false,
+    val submitted: Boolean = false,
+)
 
 @Composable
 private fun DraftCardContent(
@@ -82,9 +94,12 @@ private fun DraftCardContent(
     modifier: Modifier,
     animateEntrance: Boolean,
     onEntranceStarted: () -> Unit,
+    confirmState: ProposalConfirmUiState,
+    onConfirm: (String) -> Unit,
 ) {
     when (card) {
         is SimulationProposalCard -> DraftCardFrame(
+            proposalId = card.proposalId,
             operation = card.operation,
             mode = ProposalMode.SIMULATION,
             headerNote = ProposalPresentation.SIMULATION_NOTICE,
@@ -95,20 +110,26 @@ private fun DraftCardContent(
             modifier = modifier,
             animateEntrance = animateEntrance,
             onEntranceStarted = onEntranceStarted,
+            confirmState = ProposalConfirmUiState(),
+            onConfirm = {},
         )
         is ConfirmableProposalCard -> DraftCardFrame(
+            proposalId = card.proposalId,
             operation = card.operation,
             mode = ProposalMode.BACKEND,
             headerNote = null,
             preview = card.preview,
-            showConfirm = true,
+            showConfirm = !confirmState.submitted,
             inactive = false,
             names = names,
             modifier = modifier,
             animateEntrance = animateEntrance,
             onEntranceStarted = onEntranceStarted,
+            confirmState = confirmState,
+            onConfirm = onConfirm,
         )
         is InactiveProposalCard -> DraftCardFrame(
+            proposalId = card.proposalId,
             operation = card.operation,
             mode = card.mode,
             headerNote = ProposalPresentation.statusLabel(card.status),
@@ -119,6 +140,8 @@ private fun DraftCardContent(
             modifier = modifier,
             animateEntrance = false,
             onEntranceStarted = {},
+            confirmState = ProposalConfirmUiState(),
+            onConfirm = {},
         )
         else -> Unit
     }
@@ -126,6 +149,7 @@ private fun DraftCardContent(
 
 @Composable
 private fun DraftCardFrame(
+    proposalId: String,
     operation: ProposalOperation,
     mode: ProposalMode,
     headerNote: String?,
@@ -136,6 +160,8 @@ private fun DraftCardFrame(
     modifier: Modifier,
     animateEntrance: Boolean,
     onEntranceStarted: () -> Unit,
+    confirmState: ProposalConfirmUiState,
+    onConfirm: (String) -> Unit,
 ) {
     val drawOn = rememberDraftDrawOn(animateEntrance, onEntranceStarted)
     val simulation = mode == ProposalMode.SIMULATION
@@ -183,7 +209,16 @@ private fun DraftCardFrame(
             }
         }
         if (preview != null) {
-            DraftBody(preview, names, showConfirm) { drawOn.amount.value }
+            DraftBody(
+                preview = preview,
+                names = names,
+                showConfirm = showConfirm,
+                simulation = simulation,
+                proposalId = proposalId,
+                confirmState = confirmState,
+                onConfirm = onConfirm,
+                amountProgress = { drawOn.amount.value },
+            )
         }
     }
 }
@@ -193,6 +228,10 @@ private fun DraftBody(
     preview: ExpensePreview,
     names: AgentNameResolver,
     showConfirm: Boolean,
+    simulation: Boolean,
+    proposalId: String,
+    confirmState: ProposalConfirmUiState,
+    onConfirm: (String) -> Unit,
     amountProgress: () -> Float,
 ) {
     Column(
@@ -233,16 +272,38 @@ private fun DraftBody(
         }
         if (showConfirm) {
             Spacer(Modifier.height(SharedLedgerSpacing.XSmall))
-            SharedLedgerButton(
-                text = ProposalPresentation.CONFIRM_LABEL,
-                onClick = {},
-                enabled = false,
-            )
-            Text(
-                text = ProposalPresentation.CONFIRM_UNAVAILABLE,
-                style = SharedLedgerTextStyles.BodySecondary,
-                color = SoftCharcoal,
-            )
+            if (simulation) {
+                // Simulation drafts never write the ledger, so their button never becomes usable.
+                SharedLedgerButton(
+                    text = ProposalPresentation.CONFIRM_LABEL,
+                    onClick = {},
+                    enabled = false,
+                )
+                Text(
+                    text = ProposalPresentation.SIMULATION_CONFIRM_NOTE,
+                    style = SharedLedgerTextStyles.BodySecondary,
+                    color = SoftCharcoal,
+                )
+            } else {
+                SharedLedgerButton(
+                    text = if (confirmState.confirming) {
+                        ProposalPresentation.CONFIRMING_LABEL
+                    } else {
+                        ProposalPresentation.CONFIRM_LABEL
+                    },
+                    onClick = { onConfirm(proposalId) },
+                    enabled = !confirmState.confirming,
+                )
+                Text(
+                    text = if (confirmState.unavailable) {
+                        ProposalPresentation.EXECUTION_UNAVAILABLE
+                    } else {
+                        ProposalPresentation.CONFIRM_NOTE
+                    },
+                    style = SharedLedgerTextStyles.BodySecondary,
+                    color = if (confirmState.unavailable) ErrorRed else SoftCharcoal,
+                )
+            }
         }
     }
 }

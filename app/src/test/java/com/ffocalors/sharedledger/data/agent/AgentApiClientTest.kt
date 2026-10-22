@@ -117,16 +117,38 @@ class AgentApiClientTest {
             )
         }
         val result = api.confirmProposal(AgentTestFixtures.PROPOSAL_ID, confirmRequest())
-        val value = (result as AgentApiResult.Success).value
-        assertEquals(AgentErrorCode.EXECUTION_CAPABILITY_UNAVAILABLE, value.code)
-        assertFalse(value.businessWritePerformed)
-        assertFalse(value.executionEnabled)
+        val value = (result as AgentApiResult.Success).value as ConfirmProposalOutcome.Unavailable
+        assertEquals(AgentErrorCode.EXECUTION_CAPABILITY_UNAVAILABLE, value.value.code)
+        assertFalse(value.value.businessWritePerformed)
+        assertFalse(value.value.executionEnabled)
         assertEquals("/v1/proposals/${AgentTestFixtures.PROPOSAL_ID}/confirm", requests.single().url.encodedPath)
     }
 
     @Test
-    fun confirmWith2xxIsContractViolation() = runBlocking {
-        val api = client { json(HttpStatusCode.Accepted, """{"anything":true}""") }
+    fun confirm202DecodesTheDispatchedExecution() = runBlocking {
+        val api = client {
+            json(
+                HttpStatusCode.Accepted,
+                """
+                {"api_version":"1.0.0","event_cursor":7,
+                 "execution":{"execution_id":"e1","proposal_id":"p1","proposal_revision":2,"operations_version":"1.0.0"},
+                 "turn":{"turn_id":"t1","session_id":"s1","state":"EXECUTING","state_revision":4,
+                         "step":"dispatch","context_version":1,"execution_assigned":true}}
+                """.trimIndent(),
+            )
+        }
+        val result = api.confirmProposal("p1", confirmRequest())
+        val accepted = (result as AgentApiResult.Success).value as ConfirmProposalOutcome.ExecutionAccepted
+        assertEquals(7, accepted.value.eventCursor)
+        assertEquals("e1", accepted.value.execution.executionId)
+        assertEquals(2, accepted.value.execution.proposalRevision)
+        assertEquals(TurnState.EXECUTING, accepted.value.turn.state)
+        assertTrue(accepted.value.turn.executionAssigned)
+    }
+
+    @Test
+    fun confirmWithOther2xxIsContractViolation() = runBlocking {
+        val api = client { json(HttpStatusCode.OK, """{"anything":true}""") }
         assertTrue(api.confirmProposal("p", confirmRequest()) is AgentApiResult.ContractViolation)
     }
 

@@ -1,0 +1,1546 @@
+{
+  "$defs": {
+    "BoundActivityEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "context_version": {
+          "minimum": 1,
+          "title": "Context Version",
+          "type": "integer"
+        },
+        "entity_id": {
+          "format": "uuid",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "evidence_ref": {
+          "enum": [
+            "fact_activity_1",
+            "fact_activity_2",
+            "fact_activity_3",
+            "fact_activity_4",
+            "fact_activity_5",
+            "fact_activity_6",
+            "fact_activity_7",
+            "fact_activity_8",
+            "fact_activity_9",
+            "fact_activity_10",
+            "fact_activity_11",
+            "fact_activity_12",
+            "fact_activity_13",
+            "fact_activity_14",
+            "fact_activity_15",
+            "fact_activity_16"
+          ],
+          "title": "ActivityEvidenceRef",
+          "type": "string"
+        },
+        "kind": {
+          "const": "activity",
+          "title": "Kind",
+          "type": "string"
+        },
+        "scope_activity_id": {
+          "format": "uuid",
+          "title": "Scope Activity Id",
+          "type": "string"
+        },
+        "source_result_id": {
+          "format": "uuid",
+          "title": "Source Result Id",
+          "type": "string"
+        },
+        "source_turn_id": {
+          "format": "uuid",
+          "title": "Source Turn Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "evidence_ref",
+        "entity_id",
+        "scope_activity_id",
+        "source_result_id",
+        "source_turn_id",
+        "context_version"
+      ],
+      "title": "BoundActivityEvidence",
+      "type": "object"
+    },
+    "BoundActivityReference": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "format": "uuid",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "activity",
+          "title": "Kind",
+          "type": "string"
+        },
+        "ref": {
+          "enum": [
+            "activity_selected",
+            "activity_1",
+            "activity_2",
+            "activity_3",
+            "activity_4",
+            "activity_5",
+            "activity_6",
+            "activity_7",
+            "activity_8",
+            "activity_9",
+            "activity_10",
+            "activity_11",
+            "activity_12",
+            "activity_13",
+            "activity_14",
+            "activity_15",
+            "activity_16"
+          ],
+          "title": "ActivityRef",
+          "type": "string"
+        },
+        "scope_activity_id": {
+          "format": "uuid",
+          "title": "Scope Activity Id",
+          "type": "string"
+        },
+        "source_turn_id": {
+          "format": "uuid",
+          "title": "Source Turn Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "ref",
+        "entity_id",
+        "source_turn_id",
+        "scope_activity_id"
+      ],
+      "title": "BoundActivityReference",
+      "type": "object"
+    },
+    "BoundDebtEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "context_version": {
+          "minimum": 1,
+          "title": "Context Version",
+          "type": "integer"
+        },
+        "entity_id": {
+          "format": "uuid",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "evidence_ref": {
+          "enum": [
+            "fact_debt_1",
+            "fact_debt_2",
+            "fact_debt_3",
+            "fact_debt_4",
+            "fact_debt_5",
+            "fact_debt_6",
+            "fact_debt_7",
+            "fact_debt_8",
+            "fact_debt_9",
+            "fact_debt_10",
+            "fact_debt_11",
+            "fact_debt_12",
+            "fact_debt_13",
+            "fact_debt_14",
+            "fact_debt_15",
+            "fact_debt_16"
+          ],
+          "title": "DebtEvidenceRef",
+          "type": "string"
+        },
+        "kind": {
+          "const": "debt",
+          "title": "Kind",
+          "type": "string"
+        },
+        "scope_activity_id": {
+          "format": "uuid",
+          "title": "Scope Activity Id",
+          "type": "string"
+        },
+        "source_result_id": {
+          "format": "uuid",
+          "title": "Source Result Id",
+          "type": "string"
+        },
+        "source_turn_id": {
+          "format": "uuid",
+          "title": "Source Turn Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "evidence_ref",
+        "entity_id",
+        "scope_activity_id",
+        "source_result_id",
+        "source_turn_id",
+        "context_version"
+      ],
+      "title": "BoundDebtEvidence",
+      "type": "object"
+    },
+    "BoundExpenseEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "context_version": {
+          "minimum": 1,
+          "title": "Context Version",
+          "type": "integer"
+        },
+        "entity_id": {
+          "format": "uuid",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "evidence_ref": {
+          "enum": [
+            "fact_expense_1",
+            "fact_expense_2",
+            "fact_expense_3",
+            "fact_expense_4",
+            "fact_expense_5",
+            "fact_expense_6",
+            "fact_expense_7",
+            "fact_expense_8",
+            "fact_expense_9",
+            "fact_expense_10",
+            "fact_expense_11",
+            "fact_expense_12",
+            "fact_expense_13",
+            "fact_expense_14",
+            "fact_expense_15",
+            "fact_expense_16"
+          ],
+          "title": "ExpenseEvidenceRef",
+          "type": "string"
+        },
+        "kind": {
+          "const": "expense",
+          "title": "Kind",
+          "type": "string"
+        },
+        "scope_activity_id": {
+          "format": "uuid",
+          "title": "Scope Activity Id",
+          "type": "string"
+        },
+        "source_result_id": {
+          "format": "uuid",
+          "title": "Source Result Id",
+          "type": "string"
+        },
+        "source_turn_id": {
+          "format": "uuid",
+          "title": "Source Turn Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "evidence_ref",
+        "entity_id",
+        "scope_activity_id",
+        "source_result_id",
+        "source_turn_id",
+        "context_version"
+      ],
+      "title": "BoundExpenseEvidence",
+      "type": "object"
+    },
+    "BoundExpenseReference": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "format": "uuid",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "expense",
+          "title": "Kind",
+          "type": "string"
+        },
+        "ref": {
+          "enum": [
+            "expense_selected",
+            "expense_1",
+            "expense_2",
+            "expense_3",
+            "expense_4",
+            "expense_5",
+            "expense_6",
+            "expense_7",
+            "expense_8",
+            "expense_9",
+            "expense_10",
+            "expense_11",
+            "expense_12",
+            "expense_13",
+            "expense_14",
+            "expense_15",
+            "expense_16"
+          ],
+          "title": "ExpenseRef",
+          "type": "string"
+        },
+        "scope_activity_id": {
+          "format": "uuid",
+          "title": "Scope Activity Id",
+          "type": "string"
+        },
+        "source_turn_id": {
+          "format": "uuid",
+          "title": "Source Turn Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "ref",
+        "entity_id",
+        "source_turn_id",
+        "scope_activity_id"
+      ],
+      "title": "BoundExpenseReference",
+      "type": "object"
+    },
+    "BoundLedgerUnitReference": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "format": "uuid",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "ledger_unit",
+          "title": "Kind",
+          "type": "string"
+        },
+        "ref": {
+          "enum": [
+            "ledger_unit_selected",
+            "ledger_unit_1",
+            "ledger_unit_2",
+            "ledger_unit_3",
+            "ledger_unit_4",
+            "ledger_unit_5",
+            "ledger_unit_6",
+            "ledger_unit_7",
+            "ledger_unit_8",
+            "ledger_unit_9",
+            "ledger_unit_10",
+            "ledger_unit_11",
+            "ledger_unit_12",
+            "ledger_unit_13",
+            "ledger_unit_14",
+            "ledger_unit_15",
+            "ledger_unit_16"
+          ],
+          "title": "LedgerUnitRef",
+          "type": "string"
+        },
+        "scope_activity_id": {
+          "format": "uuid",
+          "title": "Scope Activity Id",
+          "type": "string"
+        },
+        "source_turn_id": {
+          "format": "uuid",
+          "title": "Source Turn Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "ref",
+        "entity_id",
+        "source_turn_id",
+        "scope_activity_id"
+      ],
+      "title": "BoundLedgerUnitReference",
+      "type": "object"
+    },
+    "BoundParticipantReference": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "format": "uuid",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "participant",
+          "title": "Kind",
+          "type": "string"
+        },
+        "ref": {
+          "enum": [
+            "participant_selected",
+            "participant_1",
+            "participant_2",
+            "participant_3",
+            "participant_4",
+            "participant_5",
+            "participant_6",
+            "participant_7",
+            "participant_8",
+            "participant_9",
+            "participant_10",
+            "participant_11",
+            "participant_12",
+            "participant_13",
+            "participant_14",
+            "participant_15",
+            "participant_16",
+            "participant_17",
+            "participant_18",
+            "participant_19",
+            "participant_20",
+            "participant_21",
+            "participant_22",
+            "participant_23",
+            "participant_24",
+            "participant_25",
+            "participant_26",
+            "participant_27",
+            "participant_28",
+            "participant_29",
+            "participant_30",
+            "participant_31",
+            "participant_32"
+          ],
+          "title": "ParticipantRef",
+          "type": "string"
+        },
+        "scope_activity_id": {
+          "format": "uuid",
+          "title": "Scope Activity Id",
+          "type": "string"
+        },
+        "source_turn_id": {
+          "format": "uuid",
+          "title": "Source Turn Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "ref",
+        "entity_id",
+        "source_turn_id",
+        "scope_activity_id"
+      ],
+      "title": "BoundParticipantReference",
+      "type": "object"
+    },
+    "BoundReadResultReference": {
+      "additionalProperties": false,
+      "properties": {
+        "context_version": {
+          "minimum": 1,
+          "title": "Context Version",
+          "type": "integer"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "title": "Observed At",
+          "type": "string"
+        },
+        "operation": {
+          "enum": [
+            "read.activities",
+            "read.expenses",
+            "read.debts"
+          ],
+          "title": "ReadOperation",
+          "type": "string"
+        },
+        "result_id": {
+          "format": "uuid",
+          "title": "Result Id",
+          "type": "string"
+        },
+        "result_ref": {
+          "enum": [
+            "read_result_1",
+            "read_result_2",
+            "read_result_3",
+            "read_result_4",
+            "read_result_5",
+            "read_result_6",
+            "read_result_7",
+            "read_result_8",
+            "read_result_9",
+            "read_result_10",
+            "read_result_11",
+            "read_result_12",
+            "read_result_13",
+            "read_result_14",
+            "read_result_15",
+            "read_result_16"
+          ],
+          "title": "ReadResultRef",
+          "type": "string"
+        },
+        "source_turn_id": {
+          "format": "uuid",
+          "title": "Source Turn Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result_ref",
+        "result_id",
+        "source_turn_id",
+        "operation",
+        "observed_at",
+        "context_version"
+      ],
+      "title": "BoundReadResultReference",
+      "type": "object"
+    },
+    "CancelTurnResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "api_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Api Version",
+          "type": "string"
+        },
+        "result": {
+          "enum": [
+            "cancelled",
+            "cancel_requested",
+            "reconciling"
+          ],
+          "title": "Result",
+          "type": "string"
+        },
+        "turn": {
+          "$ref": "#/$defs/TurnPublicStatus"
+        }
+      },
+      "required": [
+        "turn",
+        "result"
+      ],
+      "title": "CancelTurnResponse",
+      "type": "object"
+    },
+    "ConfirmationUnavailableResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "api_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Api Version",
+          "type": "string"
+        },
+        "business_write_performed": {
+          "const": false,
+          "default": false,
+          "title": "Business Write Performed",
+          "type": "boolean"
+        },
+        "code": {
+          "const": "execution_capability_unavailable",
+          "title": "Code",
+          "type": "string"
+        },
+        "execution_enabled": {
+          "const": false,
+          "default": false,
+          "title": "Execution Enabled",
+          "type": "boolean"
+        },
+        "message": {
+          "maxLength": 240,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "ConfirmationUnavailableResponse",
+      "type": "object"
+    },
+    "CreateSessionResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "api_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Api Version",
+          "type": "string"
+        },
+        "session": {
+          "$ref": "#/$defs/SessionSummary"
+        }
+      },
+      "required": [
+        "session"
+      ],
+      "title": "CreateSessionResponse",
+      "type": "object"
+    },
+    "ExecutionIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "format": "uuid",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "execution_id": {
+          "format": "uuid",
+          "title": "Execution Id",
+          "type": "string"
+        },
+        "operations_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Operations Version",
+          "type": "string"
+        },
+        "proposal_id": {
+          "format": "uuid",
+          "title": "Proposal Id",
+          "type": "string"
+        },
+        "proposal_revision": {
+          "minimum": 1,
+          "title": "Proposal Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "execution_id",
+        "actor_id",
+        "proposal_id",
+        "proposal_revision"
+      ],
+      "title": "ExecutionIdentity",
+      "type": "object"
+    },
+    "ExecutionReference": {
+      "additionalProperties": false,
+      "properties": {
+        "execution_id": {
+          "format": "uuid",
+          "title": "Execution Id",
+          "type": "string"
+        },
+        "operations_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Operations Version",
+          "type": "string"
+        },
+        "proposal_id": {
+          "format": "uuid",
+          "title": "Proposal Id",
+          "type": "string"
+        },
+        "proposal_revision": {
+          "minimum": 1,
+          "title": "Proposal Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "execution_id",
+        "proposal_id",
+        "proposal_revision"
+      ],
+      "title": "ExecutionReference",
+      "type": "object"
+    },
+    "ProposalAdjustedAccepted": {
+      "additionalProperties": false,
+      "properties": {
+        "api_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Api Version",
+          "type": "string"
+        },
+        "event_cursor": {
+          "minimum": 0,
+          "title": "Event Cursor",
+          "type": "integer"
+        },
+        "proposal_id": {
+          "format": "uuid",
+          "title": "Proposal Id",
+          "type": "string"
+        },
+        "proposal_revision": {
+          "minimum": 1,
+          "title": "Proposal Revision",
+          "type": "integer"
+        },
+        "state": {
+          "const": "WAIT_CONFIRM",
+          "title": "State",
+          "type": "string"
+        },
+        "state_revision": {
+          "minimum": 1,
+          "title": "State Revision",
+          "type": "integer"
+        },
+        "turn_id": {
+          "format": "uuid",
+          "title": "Turn Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "proposal_id",
+        "proposal_revision",
+        "turn_id",
+        "state",
+        "state_revision",
+        "event_cursor"
+      ],
+      "title": "ProposalAdjustedAccepted",
+      "type": "object"
+    },
+    "ProposalExecutionAccepted": {
+      "additionalProperties": false,
+      "description": "HTTP 202: the confirmation dispatched exactly one durable execution.\n\nThe response reports the Turn as it stands *after* dispatch. An unknown\noutcome is presented as RECOVERING/UNKNOWN, never as a success claim.",
+      "properties": {
+        "api_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Api Version",
+          "type": "string"
+        },
+        "event_cursor": {
+          "minimum": 0,
+          "title": "Event Cursor",
+          "type": "integer"
+        },
+        "execution": {
+          "$ref": "#/$defs/ExecutionReference"
+        },
+        "turn": {
+          "$ref": "#/$defs/TurnPublicStatus"
+        }
+      },
+      "required": [
+        "turn",
+        "execution",
+        "event_cursor"
+      ],
+      "title": "ProposalExecutionAccepted",
+      "type": "object"
+    },
+    "RequestReceipt": {
+      "additionalProperties": false,
+      "description": "Four-table placement is defined in the freeze document; response snapshots contain no nonce.",
+      "properties": {
+        "client_request_id": {
+          "format": "uuid",
+          "title": "Client Request Id",
+          "type": "string"
+        },
+        "http_status": {
+          "maximum": 599,
+          "minimum": 200,
+          "title": "Http Status",
+          "type": "integer"
+        },
+        "key_scope": {
+          "enum": [
+            "sessions.create",
+            "turns.submit",
+            "turns.resume.clarification",
+            "turns.resume.auth",
+            "turns.resume.proposal_adjust",
+            "turns.cancel",
+            "proposals.confirm"
+          ],
+          "title": "ApiActionKind",
+          "type": "string"
+        },
+        "owner_user_id": {
+          "format": "uuid",
+          "title": "Owner User Id",
+          "type": "string"
+        },
+        "payload_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Payload Hash",
+          "type": "string"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "title": "Recorded At",
+          "type": "string"
+        },
+        "resource_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resource Id"
+        },
+        "response_kind": {
+          "enum": [
+            "session_created",
+            "turn_accepted",
+            "turn_resumed",
+            "proposal_adjusted",
+            "turn_cancelled",
+            "confirmation_unavailable",
+            "execution_dispatched"
+          ],
+          "title": "RequestReceiptKind",
+          "type": "string"
+        },
+        "response_snapshot": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CreateSessionResponse"
+            },
+            {
+              "$ref": "#/$defs/SubmitTurnAccepted"
+            },
+            {
+              "$ref": "#/$defs/TurnMutationAccepted"
+            },
+            {
+              "$ref": "#/$defs/CancelTurnResponse"
+            },
+            {
+              "$ref": "#/$defs/ProposalAdjustedAccepted"
+            },
+            {
+              "$ref": "#/$defs/ConfirmationUnavailableResponse"
+            },
+            {
+              "$ref": "#/$defs/ProposalExecutionAccepted"
+            }
+          ],
+          "title": "Response Snapshot"
+        }
+      },
+      "required": [
+        "key_scope",
+        "owner_user_id",
+        "client_request_id",
+        "payload_hash",
+        "http_status",
+        "response_kind",
+        "response_snapshot",
+        "recorded_at"
+      ],
+      "title": "RequestReceipt",
+      "type": "object"
+    },
+    "SessionSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "active_turn_count": {
+          "minimum": 0,
+          "title": "Active Turn Count",
+          "type": "integer"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "session_id": {
+          "format": "uuid",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "title": "Updated At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "created_at",
+        "updated_at",
+        "active_turn_count"
+      ],
+      "title": "SessionSummary",
+      "type": "object"
+    },
+    "SubmitTurnAccepted": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted_at": {
+          "format": "date-time",
+          "title": "Accepted At",
+          "type": "string"
+        },
+        "api_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Api Version",
+          "type": "string"
+        },
+        "state": {
+          "const": "QUEUED",
+          "title": "State",
+          "type": "string"
+        },
+        "state_revision": {
+          "const": 1,
+          "default": 1,
+          "title": "State Revision",
+          "type": "integer"
+        },
+        "turn_id": {
+          "format": "uuid",
+          "title": "Turn Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "turn_id",
+        "state",
+        "accepted_at"
+      ],
+      "title": "SubmitTurnAccepted",
+      "type": "object"
+    },
+    "TurnMutationAccepted": {
+      "additionalProperties": false,
+      "properties": {
+        "api_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Api Version",
+          "type": "string"
+        },
+        "event_cursor": {
+          "minimum": 0,
+          "title": "Event Cursor",
+          "type": "integer"
+        },
+        "state": {
+          "enum": [
+            "QUEUED",
+            "RUNNING",
+            "WAIT_INPUT",
+            "WAIT_CONFIRM",
+            "EXECUTING",
+            "RECOVERING",
+            "COMPLETED",
+            "CANCELLED",
+            "FAILED"
+          ],
+          "title": "TurnState",
+          "type": "string"
+        },
+        "state_revision": {
+          "minimum": 1,
+          "title": "State Revision",
+          "type": "integer"
+        },
+        "turn_id": {
+          "format": "uuid",
+          "title": "Turn Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "turn_id",
+        "state",
+        "state_revision",
+        "event_cursor"
+      ],
+      "title": "TurnMutationAccepted",
+      "type": "object"
+    },
+    "TurnPublicStatus": {
+      "additionalProperties": false,
+      "description": "Client-visible state; owner identity and private bindings remain server-side.",
+      "properties": {
+        "context_version": {
+          "minimum": 1,
+          "title": "Context Version",
+          "type": "integer"
+        },
+        "execution_assigned": {
+          "title": "Execution Assigned",
+          "type": "boolean"
+        },
+        "execution_resolution": {
+          "anyOf": [
+            {
+              "enum": [
+                "succeeded",
+                "rejected",
+                "closed",
+                "unknown"
+              ],
+              "title": "ExecutionResolution",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Execution Resolution"
+        },
+        "resume_state": {
+          "anyOf": [
+            {
+              "enum": [
+                "QUEUED",
+                "RUNNING",
+                "WAIT_CONFIRM",
+                "EXECUTING",
+                "RECOVERING"
+              ],
+              "title": "ResumeState",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resume State"
+        },
+        "session_id": {
+          "format": "uuid",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "QUEUED",
+            "RUNNING",
+            "WAIT_INPUT",
+            "WAIT_CONFIRM",
+            "EXECUTING",
+            "RECOVERING",
+            "COMPLETED",
+            "CANCELLED",
+            "FAILED"
+          ],
+          "title": "TurnState",
+          "type": "string"
+        },
+        "state_revision": {
+          "minimum": 1,
+          "title": "State Revision",
+          "type": "integer"
+        },
+        "step": {
+          "enum": [
+            "accepted",
+            "build_context",
+            "model_decision",
+            "tool_read",
+            "prepare_proposal",
+            "awaiting_user",
+            "auth_required",
+            "dispatch",
+            "reconcile",
+            "finalize",
+            "terminal"
+          ],
+          "title": "TurnStep",
+          "type": "string"
+        },
+        "turn_id": {
+          "format": "uuid",
+          "title": "Turn Id",
+          "type": "string"
+        },
+        "wait_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "missing_fields",
+                "auth_required",
+                "confirm_required",
+                "execution_result_unknown"
+              ],
+              "title": "WaitReason",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Wait Reason"
+        }
+      },
+      "required": [
+        "turn_id",
+        "session_id",
+        "state",
+        "step",
+        "state_revision",
+        "execution_assigned",
+        "context_version"
+      ],
+      "title": "TurnPublicStatus",
+      "type": "object"
+    },
+    "TurnStateSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "context_version": {
+          "minimum": 1,
+          "title": "Context Version",
+          "type": "integer"
+        },
+        "execution": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExecutionIdentity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "execution_resolution": {
+          "anyOf": [
+            {
+              "enum": [
+                "succeeded",
+                "rejected",
+                "closed",
+                "unknown"
+              ],
+              "title": "ExecutionResolution",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Execution Resolution"
+        },
+        "owner_user_id": {
+          "format": "uuid",
+          "title": "Owner User Id",
+          "type": "string"
+        },
+        "resume_state": {
+          "anyOf": [
+            {
+              "enum": [
+                "QUEUED",
+                "RUNNING",
+                "WAIT_CONFIRM",
+                "EXECUTING",
+                "RECOVERING"
+              ],
+              "title": "ResumeState",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resume State"
+        },
+        "session_id": {
+          "format": "uuid",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "QUEUED",
+            "RUNNING",
+            "WAIT_INPUT",
+            "WAIT_CONFIRM",
+            "EXECUTING",
+            "RECOVERING",
+            "COMPLETED",
+            "CANCELLED",
+            "FAILED"
+          ],
+          "title": "TurnState",
+          "type": "string"
+        },
+        "state_revision": {
+          "minimum": 1,
+          "title": "State Revision",
+          "type": "integer"
+        },
+        "step": {
+          "enum": [
+            "accepted",
+            "build_context",
+            "model_decision",
+            "tool_read",
+            "prepare_proposal",
+            "awaiting_user",
+            "auth_required",
+            "dispatch",
+            "reconcile",
+            "finalize",
+            "terminal"
+          ],
+          "title": "TurnStep",
+          "type": "string"
+        },
+        "turn_id": {
+          "format": "uuid",
+          "title": "Turn Id",
+          "type": "string"
+        },
+        "wait_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "missing_fields",
+                "auth_required",
+                "confirm_required",
+                "execution_result_unknown"
+              ],
+              "title": "WaitReason",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Wait Reason"
+        }
+      },
+      "required": [
+        "turn_id",
+        "session_id",
+        "owner_user_id",
+        "state",
+        "step",
+        "state_revision",
+        "context_version"
+      ],
+      "title": "TurnStateSnapshot",
+      "type": "object"
+    },
+    "UIContext": {
+      "additionalProperties": false,
+      "description": "Untrusted navigation hints. These values never establish identity or permission.",
+      "properties": {
+        "activity_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activity Id"
+        },
+        "captured_at": {
+          "format": "date-time",
+          "title": "Captured At",
+          "type": "string"
+        },
+        "client_version": {
+          "maxLength": 240,
+          "minLength": 1,
+          "title": "Client Version",
+          "type": "string"
+        },
+        "filters": {
+          "$ref": "#/$defs/UiFilters"
+        },
+        "ledger_unit_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ledger Unit Id"
+        },
+        "page_type": {
+          "enum": [
+            "home",
+            "activity_overview",
+            "expense_list",
+            "expense_detail",
+            "debt_list",
+            "prepayment",
+            "settlement",
+            "settings"
+          ],
+          "title": "PageType",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "selected_entity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UiEntityHint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "page_type",
+        "captured_at",
+        "client_version"
+      ],
+      "title": "UIContext",
+      "type": "object"
+    },
+    "UiEntityHint": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "format": "uuid",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "entity_type": {
+          "enum": [
+            "activity",
+            "ledger_unit",
+            "expense",
+            "participant"
+          ],
+          "title": "UiEntityType",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_type",
+        "entity_id"
+      ],
+      "title": "UiEntityHint",
+      "type": "object"
+    },
+    "UiFilters": {
+      "additionalProperties": false,
+      "properties": {
+        "from_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "From Date"
+        },
+        "participant_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 32,
+          "title": "Participant Ids",
+          "type": "array"
+        },
+        "to_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "To Date"
+        }
+      },
+      "title": "UiFilters",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Typed turn-row payload, including the append-only request receipts for resume replay.",
+  "properties": {
+    "bound_evidence_references": {
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "activity": "#/$defs/BoundActivityEvidence",
+            "debt": "#/$defs/BoundDebtEvidence",
+            "expense": "#/$defs/BoundExpenseEvidence"
+          },
+          "propertyName": "kind"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/BoundActivityEvidence"
+          },
+          {
+            "$ref": "#/$defs/BoundExpenseEvidence"
+          },
+          {
+            "$ref": "#/$defs/BoundDebtEvidence"
+          }
+        ]
+      },
+      "maxItems": 48,
+      "title": "Bound Evidence References",
+      "type": "array"
+    },
+    "bound_read_results": {
+      "items": {
+        "$ref": "#/$defs/BoundReadResultReference"
+      },
+      "maxItems": 16,
+      "title": "Bound Read Results",
+      "type": "array"
+    },
+    "bound_references": {
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "activity": "#/$defs/BoundActivityReference",
+            "expense": "#/$defs/BoundExpenseReference",
+            "ledger_unit": "#/$defs/BoundLedgerUnitReference",
+            "participant": "#/$defs/BoundParticipantReference"
+          },
+          "propertyName": "kind"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/BoundActivityReference"
+          },
+          {
+            "$ref": "#/$defs/BoundLedgerUnitReference"
+          },
+          {
+            "$ref": "#/$defs/BoundExpenseReference"
+          },
+          {
+            "$ref": "#/$defs/BoundParticipantReference"
+          }
+        ]
+      },
+      "maxItems": 64,
+      "title": "Bound References",
+      "type": "array"
+    },
+    "client_request_id": {
+      "format": "uuid",
+      "title": "Client Request Id",
+      "type": "string"
+    },
+    "original_text": {
+      "maxLength": 4000,
+      "minLength": 1,
+      "title": "Original Text",
+      "type": "string"
+    },
+    "request_payload_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Request Payload Hash",
+      "type": "string"
+    },
+    "request_receipts": {
+      "items": {
+        "$ref": "#/$defs/RequestReceipt"
+      },
+      "maxItems": 256,
+      "title": "Request Receipts",
+      "type": "array"
+    },
+    "turn": {
+      "$ref": "#/$defs/TurnStateSnapshot"
+    },
+    "ui_context_snapshot": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/UIContext"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "turn",
+    "client_request_id",
+    "request_payload_hash",
+    "original_text",
+    "bound_references",
+    "bound_evidence_references",
+    "request_receipts"
+  ],
+  "title": "TurnRecord",
+  "type": "object"
+}

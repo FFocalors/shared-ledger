@@ -39,6 +39,15 @@ sealed interface AgentApiResult<out T> {
 }
 
 /**
+ * Confirm answers with one of two contract-legal bodies: 202 (an execution was dispatched) or 501
+ * (execution is unavailable; the rollback mode of the frozen contract).
+ */
+sealed interface ConfirmProposalOutcome {
+    data class ExecutionAccepted(val value: ProposalExecutionAccepted) : ConfirmProposalOutcome
+    data class Unavailable(val value: ConfirmationUnavailableResponse) : ConfirmProposalOutcome
+}
+
+/**
  * Thin Ktor wrapper over the v1.0.0 Agent HTTP contract: one suspend function per endpoint.
  *
  * Every mutating call takes a caller-supplied `client_request_id` inside its request object; a retry
@@ -147,7 +156,7 @@ class AgentApiClient(
     suspend fun confirmProposal(
         proposalId: String,
         body: ConfirmProposalRequest,
-    ): AgentApiResult<ConfirmationUnavailableResponse> {
+    ): AgentApiResult<ConfirmProposalOutcome> {
         val raw = send(
             HttpMethod.Post,
             "/v1/proposals/${proposalId.encodeURLPathPart()}/confirm",
@@ -156,9 +165,14 @@ class AgentApiClient(
         return when (raw) {
             is RawOutcome.Failed -> raw.failure
             is RawOutcome.Received -> when (raw.status) {
-                501 -> decode(raw.text, ConfirmationUnavailableResponse.serializer())
+                202 -> ifDecoded(raw.text, ProposalExecutionAccepted.serializer()) {
+                    ConfirmProposalOutcome.ExecutionAccepted(it)
+                }
+                501 -> ifDecoded(raw.text, ConfirmationUnavailableResponse.serializer()) {
+                    ConfirmProposalOutcome.Unavailable(it)
+                }
                 in 200..299 -> AgentApiResult.ContractViolation(
-                    "confirm returned HTTP ${raw.status}; v1 only allows 501",
+                    "confirm returned HTTP ${raw.status}; v1 allows only 202 or 501",
                 )
                 else -> raw.toApiError()
             }
@@ -233,6 +247,15 @@ class AgentApiClient(
         AgentApiResult.ContractViolation("cannot decode ${serializer.descriptor.serialName}: ${error.message}")
     } catch (error: IllegalArgumentException) {
         AgentApiResult.ContractViolation("cannot decode ${serializer.descriptor.serialName}: ${error.message}")
+    }
+
+    private fun <T, R> ifDecoded(
+        text: String,
+        serializer: KSerializer<T>,
+        wrap: (T) -> R,
+    ): AgentApiResult<R> = when (val decoded = decode(text, serializer)) {
+        is AgentApiResult.Success -> AgentApiResult.Success(wrap(decoded.value))
+        is AgentApiResult.Failure -> decoded
     }
 
     private fun RawOutcome.Received.toApiError(): AgentApiResult.Failure {

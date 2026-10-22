@@ -1,0 +1,838 @@
+{
+  "$defs": {
+    "CanonicalEqualSplit": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "const": "equal",
+          "title": "Mode",
+          "type": "string"
+        },
+        "participant_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "Participant Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "mode",
+        "participant_ids"
+      ],
+      "title": "CanonicalEqualSplit",
+      "type": "object"
+    },
+    "CanonicalManualSplit": {
+      "additionalProperties": false,
+      "properties": {
+        "allocations": {
+          "items": {
+            "$ref": "#/$defs/CanonicalPayment"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "Allocations",
+          "type": "array"
+        },
+        "mode": {
+          "const": "manual",
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "mode",
+        "allocations"
+      ],
+      "title": "CanonicalManualSplit",
+      "type": "object"
+    },
+    "CanonicalPayment": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Amount",
+          "type": "string"
+        },
+        "participant_id": {
+          "format": "uuid",
+          "title": "Participant Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "participant_id",
+        "amount"
+      ],
+      "title": "CanonicalPayment",
+      "type": "object"
+    },
+    "ExpenseAmountChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "After",
+          "type": "string"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Before"
+        },
+        "field": {
+          "enum": [
+            "original_amount",
+            "base_amount"
+          ],
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "after"
+      ],
+      "title": "ExpenseAmountChange",
+      "type": "object"
+    },
+    "ExpenseCurrencyChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "After",
+          "type": "string"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z]{3}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Before"
+        },
+        "field": {
+          "const": "original_currency",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "after"
+      ],
+      "title": "ExpenseCurrencyChange",
+      "type": "object"
+    },
+    "ExpenseFxChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FxSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "before": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FxSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "field": {
+          "const": "fx_snapshot",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field"
+      ],
+      "title": "ExpenseFxChange",
+      "type": "object"
+    },
+    "ExpenseIconChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9_]{1,48}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "After"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9_]{1,48}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Before"
+        },
+        "field": {
+          "const": "icon_key",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field"
+      ],
+      "title": "ExpenseIconChange",
+      "type": "object"
+    },
+    "ExpenseLedgerUnitChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "format": "uuid",
+          "title": "After",
+          "type": "string"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Before"
+        },
+        "field": {
+          "const": "ledger_unit_id",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "after"
+      ],
+      "title": "ExpenseLedgerUnitChange",
+      "type": "object"
+    },
+    "ExpenseNoteChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "After"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Before"
+        },
+        "field": {
+          "const": "note",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field"
+      ],
+      "title": "ExpenseNoteChange",
+      "type": "object"
+    },
+    "ExpenseOccurredAtChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "After"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Before"
+        },
+        "field": {
+          "const": "occurred_at",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field"
+      ],
+      "title": "ExpenseOccurredAtChange",
+      "type": "object"
+    },
+    "ExpensePaymentsChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "items": {
+            "$ref": "#/$defs/CanonicalPayment"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "After",
+          "type": "array"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/CanonicalPayment"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Before"
+        },
+        "field": {
+          "const": "payment_allocations",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "after"
+      ],
+      "title": "ExpensePaymentsChange",
+      "type": "object"
+    },
+    "ExpensePreview": {
+      "additionalProperties": false,
+      "properties": {
+        "activity_financial_version": {
+          "pattern": "^(?:0|[1-9]|[1-9][0-9]{1}|[1-9][0-9]{2}|[1-9][0-9]{3}|[1-9][0-9]{4}|[1-9][0-9]{5}|[1-9][0-9]{6}|[1-9][0-9]{7}|[1-9][0-9]{8}|[1-9][0-9]{9}|[1-9][0-9]{10}|[1-9][0-9]{11}|[1-9][0-9]{12}|[1-9][0-9]{13}|[1-9][0-9]{14}|[1-9][0-9]{15}|[1-9][0-9]{16}|[1-9][0-9]{17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6]|9223372036854775807)$",
+          "title": "Activity Financial Version",
+          "type": "string",
+          "x-database-type": "signed-bigint",
+          "x-maximum": "9223372036854775807",
+          "x-minimum": "0"
+        },
+        "after": {
+          "$ref": "#/$defs/ExpenseSnapshot"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExpenseSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "changes": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "base_amount": "#/$defs/ExpenseAmountChange",
+                "fx_snapshot": "#/$defs/ExpenseFxChange",
+                "icon_key": "#/$defs/ExpenseIconChange",
+                "ledger_unit_id": "#/$defs/ExpenseLedgerUnitChange",
+                "note": "#/$defs/ExpenseNoteChange",
+                "occurred_at": "#/$defs/ExpenseOccurredAtChange",
+                "original_amount": "#/$defs/ExpenseAmountChange",
+                "original_currency": "#/$defs/ExpenseCurrencyChange",
+                "payment_allocations": "#/$defs/ExpensePaymentsChange",
+                "split": "#/$defs/ExpenseSplitChange",
+                "title": "#/$defs/ExpenseTitleChange"
+              },
+              "propertyName": "field"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ExpenseTitleChange"
+              },
+              {
+                "$ref": "#/$defs/ExpenseAmountChange"
+              },
+              {
+                "$ref": "#/$defs/ExpenseCurrencyChange"
+              },
+              {
+                "$ref": "#/$defs/ExpenseLedgerUnitChange"
+              },
+              {
+                "$ref": "#/$defs/ExpensePaymentsChange"
+              },
+              {
+                "$ref": "#/$defs/ExpenseSplitChange"
+              },
+              {
+                "$ref": "#/$defs/ExpenseNoteChange"
+              },
+              {
+                "$ref": "#/$defs/ExpenseOccurredAtChange"
+              },
+              {
+                "$ref": "#/$defs/ExpenseIconChange"
+              },
+              {
+                "$ref": "#/$defs/ExpenseFxChange"
+              }
+            ]
+          },
+          "maxItems": 12,
+          "minItems": 1,
+          "title": "Changes",
+          "type": "array"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        },
+        "kind": {
+          "const": "expense",
+          "title": "Kind",
+          "type": "string"
+        },
+        "simulation": {
+          "title": "Simulation",
+          "type": "boolean"
+        },
+        "summary": {
+          "maxLength": 240,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "summary",
+        "after",
+        "changes",
+        "activity_financial_version",
+        "generated_at",
+        "simulation"
+      ],
+      "title": "ExpensePreview",
+      "type": "object"
+    },
+    "ExpenseSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "base_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Base Amount",
+          "type": "string"
+        },
+        "expense_version": {
+          "pattern": "^(?:[1-9]|[1-9][0-9]{1}|[1-9][0-9]{2}|[1-9][0-9]{3}|[1-9][0-9]{4}|[1-9][0-9]{5}|[1-9][0-9]{6}|[1-9][0-9]{7}|[1-9][0-9]{8}|[1-9][0-9]{9}|[1-9][0-9]{10}|[1-9][0-9]{11}|[1-9][0-9]{12}|[1-9][0-9]{13}|[1-9][0-9]{14}|[1-9][0-9]{15}|[1-9][0-9]{16}|[1-9][0-9]{17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6]|9223372036854775807)$",
+          "title": "Expense Version",
+          "type": "string",
+          "x-database-type": "signed-bigint",
+          "x-maximum": "9223372036854775807",
+          "x-minimum": "1"
+        },
+        "financial_locked": {
+          "title": "Financial Locked",
+          "type": "boolean"
+        },
+        "fx_snapshot": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FxSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "icon_key": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9_]{1,48}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Icon Key"
+        },
+        "ledger_unit_id": {
+          "format": "uuid",
+          "title": "Ledger Unit Id",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "occurred_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Occurred At"
+        },
+        "original_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Original Amount",
+          "type": "string"
+        },
+        "original_currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Original Currency",
+          "type": "string"
+        },
+        "payment_allocations": {
+          "items": {
+            "$ref": "#/$defs/CanonicalPayment"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "Payment Allocations",
+          "type": "array"
+        },
+        "split": {
+          "discriminator": {
+            "mapping": {
+              "equal": "#/$defs/CanonicalEqualSplit",
+              "manual": "#/$defs/CanonicalManualSplit"
+            },
+            "propertyName": "mode"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/CanonicalEqualSplit"
+            },
+            {
+              "$ref": "#/$defs/CanonicalManualSplit"
+            }
+          ],
+          "title": "Split"
+        },
+        "title": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ledger_unit_id",
+        "title",
+        "original_amount",
+        "original_currency",
+        "base_amount",
+        "payment_allocations",
+        "split",
+        "expense_version",
+        "financial_locked"
+      ],
+      "title": "ExpenseSnapshot",
+      "type": "object"
+    },
+    "ExpenseSplitChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "discriminator": {
+            "mapping": {
+              "equal": "#/$defs/CanonicalEqualSplit",
+              "manual": "#/$defs/CanonicalManualSplit"
+            },
+            "propertyName": "mode"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/CanonicalEqualSplit"
+            },
+            {
+              "$ref": "#/$defs/CanonicalManualSplit"
+            }
+          ],
+          "title": "After"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "discriminator": {
+                "mapping": {
+                  "equal": "#/$defs/CanonicalEqualSplit",
+                  "manual": "#/$defs/CanonicalManualSplit"
+                },
+                "propertyName": "mode"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/CanonicalEqualSplit"
+                },
+                {
+                  "$ref": "#/$defs/CanonicalManualSplit"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Before"
+        },
+        "field": {
+          "const": "split",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "after"
+      ],
+      "title": "ExpenseSplitChange",
+      "type": "object"
+    },
+    "ExpenseTitleChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "After"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Before"
+        },
+        "field": {
+          "const": "title",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field"
+      ],
+      "title": "ExpenseTitleChange",
+      "type": "object"
+    },
+    "FxSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "base_currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Base Currency",
+          "type": "string"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "title": "Observed At",
+          "type": "string"
+        },
+        "original_currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Original Currency",
+          "type": "string"
+        },
+        "rate": {
+          "pattern": "^(0|[1-9][0-9]{0,19})(\\.[0-9]{1,10})?$",
+          "title": "Rate",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "ecb_snapshot",
+            "server_snapshot",
+            "identity"
+          ],
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "base_currency",
+        "original_currency",
+        "rate",
+        "source",
+        "observed_at"
+      ],
+      "title": "FxSnapshot",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "card_kind": {
+      "const": "simulation_pending",
+      "title": "Card Kind",
+      "type": "string"
+    },
+    "confirmation_enabled": {
+      "const": false,
+      "default": false,
+      "title": "Confirmation Enabled",
+      "type": "boolean"
+    },
+    "mode": {
+      "const": "simulation",
+      "title": "Mode",
+      "type": "string"
+    },
+    "operation": {
+      "enum": [
+        "expense.create",
+        "expense.update",
+        "expense.presentation.update"
+      ],
+      "title": "Operation",
+      "type": "string"
+    },
+    "preview": {
+      "$ref": "#/$defs/ExpensePreview"
+    },
+    "proposal_id": {
+      "format": "uuid",
+      "title": "Proposal Id",
+      "type": "string"
+    },
+    "revision": {
+      "minimum": 1,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "simulation": {
+      "const": true,
+      "default": true,
+      "title": "Simulation",
+      "type": "boolean"
+    },
+    "status": {
+      "const": "pending",
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "card_kind",
+    "mode",
+    "status",
+    "proposal_id",
+    "revision",
+    "operation",
+    "preview"
+  ],
+  "title": "SimulationProposalCard",
+  "type": "object"
+}

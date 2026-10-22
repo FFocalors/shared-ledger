@@ -20,6 +20,7 @@ import com.ffocalors.sharedledger.data.agent.ExpenseTitleChange
 import com.ffocalors.sharedledger.data.agent.FxSnapshot
 import com.ffocalors.sharedledger.data.agent.ProposalOperation
 import com.ffocalors.sharedledger.data.agent.ProposalStatus
+import com.ffocalors.sharedledger.data.agent.TurnState
 import com.ffocalors.sharedledger.ui.util.UiDateTimeFormatter
 
 /** One change row in a draft: a Chinese field label and the value (`before → after` when updating). */
@@ -27,8 +28,14 @@ data class DraftRow(val label: String, val before: String?, val after: String)
 
 object ProposalPresentation {
     const val SIMULATION_NOTICE = "演示数据，不会记账"
+    const val SIMULATION_CONFIRM_NOTE = "演示数据只用于预览，不会写入账本。"
     const val CONFIRM_LABEL = "确认记账"
-    const val CONFIRM_UNAVAILABLE = "确认功能还没开放，这张草稿不会写入账本。"
+    const val CONFIRMING_LABEL = "确认中…"
+    const val CONFIRM_NOTE = "确认后会立即记入账本。"
+    const val EXECUTION_UNAVAILABLE = "执行暂不可用"
+    const val RECEIPT_PREFIX = "已提交执行 · 回执"
+    const val EXECUTING_LABEL = "执行中"
+    const val RECONCILING_LABEL = "正在核对结果"
 
     fun operationTitle(operation: ProposalOperation): String = when (operation) {
         ProposalOperation.EXPENSE_CREATE -> "新增账目草稿"
@@ -49,6 +56,19 @@ object ProposalPresentation {
 
     fun amountText(preview: ExpensePreview): String =
         "${preview.after.originalAmount} ${preview.after.originalCurrency}"
+
+    /** Short, human-scannable form of an execution id; the full id is never shown. */
+    fun shortExecutionId(executionId: String): String =
+        executionId.filter { it != '-' }.take(8)
+
+    fun receiptLine(receipt: ExecutionReceiptItem): String {
+        val base = "${RECEIPT_PREFIX} ${shortExecutionId(receipt.executionId)}"
+        return when {
+            receipt.reconciling -> "$base · $RECONCILING_LABEL"
+            receipt.state == TurnState.EXECUTING -> "$base · $EXECUTING_LABEL"
+            else -> base
+        }
+    }
 
     fun splitText(split: CanonicalSplit, names: AgentNameResolver): String = when (split) {
         is CanonicalEqualSplit -> "${split.participantIds.size} 人平分"
