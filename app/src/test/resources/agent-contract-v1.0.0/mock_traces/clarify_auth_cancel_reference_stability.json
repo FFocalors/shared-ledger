@@ -1,0 +1,559 @@
+{
+  "scenario": "clarify_auth_cancel_reference_stability",
+  "simulation": true,
+  "steps": [
+    {
+      "context": {
+        "available_permissions": [
+          "read.activities",
+          "read.expenses",
+          "read.debts",
+          "propose.expense.create",
+          "propose.expense.update",
+          "propose.expense.presentation.update"
+        ],
+        "bound_references": [
+          {
+            "kind": "activity",
+            "ref": "activity_1"
+          },
+          {
+            "kind": "expense",
+            "ref": "expense_1"
+          },
+          {
+            "kind": "ledger_unit",
+            "ref": "ledger_unit_1"
+          },
+          {
+            "kind": "participant",
+            "ref": "participant_1"
+          },
+          {
+            "kind": "participant",
+            "ref": "participant_2"
+          }
+        ],
+        "context_version": 1,
+        "input_text": "查一下这笔消费并记录午餐",
+        "pending_slots": [],
+        "policy_evidence": [
+          {
+            "evidence_ref": "policy_fact_1",
+            "observed_at": "2026-10-07T00:00:00Z",
+            "rule": "execution_requires_confirmation",
+            "source": "development_guide_v0_4_2",
+            "text": "写入提议必须由用户确认；模型不能确认或直接写入。",
+            "version": "guide-v0.4.2"
+          }
+        ],
+        "read_results": [
+          {
+            "body": {
+              "items": [
+                {
+                  "activity_kind": "normal",
+                  "activity_ref": "activity_1",
+                  "base_currency": "CNY",
+                  "context_version": 1,
+                  "evidence_ref": "fact_activity_1",
+                  "kind": "activity",
+                  "name": "Trip",
+                  "observed_at": "2026-10-07T00:00:00Z",
+                  "status": "active"
+                }
+              ],
+              "kind": "activities"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.activities",
+            "result_ref": "read_result_1",
+            "simulation": true
+          },
+          {
+            "body": {
+              "items": [
+                {
+                  "context_version": 1,
+                  "evidence_ref": "fact_expense_1",
+                  "expense_ref": "expense_1",
+                  "expense_version": "1",
+                  "financial_locked": false,
+                  "kind": "expense",
+                  "observed_at": "2026-10-07T00:00:00Z",
+                  "occurred_at": "2026-10-07T00:00:00Z",
+                  "original_amount": "12.50",
+                  "original_currency": "CNY",
+                  "participant_refs": [
+                    "participant_2",
+                    "participant_1"
+                  ],
+                  "title": "Lunch"
+                }
+              ],
+              "kind": "expenses"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.expenses",
+            "result_ref": "read_result_2",
+            "simulation": true
+          },
+          {
+            "body": {
+              "items": [
+                {
+                  "amount": "6.25",
+                  "context_version": 1,
+                  "creditor_ref": "participant_1",
+                  "currency": "CNY",
+                  "debtor_ref": "participant_2",
+                  "evidence_ref": "fact_debt_1",
+                  "kind": "debt",
+                  "observed_at": "2026-10-07T00:00:00Z"
+                }
+              ],
+              "kind": "debts"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.debts",
+            "result_ref": "read_result_3",
+            "simulation": true
+          }
+        ],
+        "recent_messages": [],
+        "verified_scope": {
+          "activity_ref": "activity_1",
+          "kind": "activity",
+          "permissions": [
+            "read.activities",
+            "read.expenses",
+            "read.debts",
+            "propose.expense.create",
+            "propose.expense.update",
+            "propose.expense.presentation.update"
+          ]
+        }
+      },
+      "decision": {
+        "kind": "clarify",
+        "missing_slots": [
+          "payment_allocations",
+          "split_participant_refs"
+        ],
+        "prompt": "请告诉我付款人和分摊对象。"
+      },
+      "kind": "model_decision"
+    },
+    {
+      "after": {
+        "context_version": 1,
+        "execution": null,
+        "execution_resolution": null,
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": null,
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "RUNNING",
+        "state_revision": 2,
+        "step": "build_context",
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f",
+        "wait_reason": null
+      },
+      "before": {
+        "context_version": 1,
+        "execution": null,
+        "execution_resolution": null,
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": "RUNNING",
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "WAIT_INPUT",
+        "state_revision": 1,
+        "step": "awaiting_user",
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f",
+        "wait_reason": "missing_fields"
+      },
+      "kind": "resume_clarification",
+      "request": {
+        "client_request_id": "d214ee97-1a6c-52d5-a311-3d5bd50339a1",
+        "expected_state_revision": 1,
+        "text": "我付了 12.50 元，两人平摊。",
+        "versions": {
+          "api": "1.0.0",
+          "operations": "1.0.0",
+          "semantic": "1.0.0"
+        }
+      },
+      "response": {
+        "api_version": "1.0.0",
+        "event_cursor": 3,
+        "state": "RUNNING",
+        "state_revision": 2,
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f"
+      }
+    },
+    {
+      "after": {
+        "context_version": 1,
+        "execution": null,
+        "execution_resolution": null,
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": null,
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "WAIT_CONFIRM",
+        "state_revision": 3,
+        "step": "awaiting_user",
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f",
+        "wait_reason": "confirm_required"
+      },
+      "before": {
+        "context_version": 1,
+        "execution": null,
+        "execution_resolution": null,
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": null,
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "RUNNING",
+        "state_revision": 2,
+        "step": "build_context",
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f",
+        "wait_reason": null
+      },
+      "expected_state_revision": 2,
+      "kind": "state_transition"
+    },
+    {
+      "after": {
+        "context_version": 1,
+        "execution": null,
+        "execution_resolution": null,
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": "WAIT_CONFIRM",
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "WAIT_INPUT",
+        "state_revision": 4,
+        "step": "auth_required",
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f",
+        "wait_reason": "auth_required"
+      },
+      "before": {
+        "context_version": 1,
+        "execution": null,
+        "execution_resolution": null,
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": null,
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "WAIT_CONFIRM",
+        "state_revision": 3,
+        "step": "awaiting_user",
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f",
+        "wait_reason": "confirm_required"
+      },
+      "expected_state_revision": 3,
+      "kind": "state_transition"
+    },
+    {
+      "after": {
+        "context_version": 1,
+        "execution": null,
+        "execution_resolution": null,
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": null,
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "WAIT_CONFIRM",
+        "state_revision": 5,
+        "step": "awaiting_user",
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f",
+        "wait_reason": "confirm_required"
+      },
+      "before": {
+        "context_version": 1,
+        "execution": null,
+        "execution_resolution": null,
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": "WAIT_CONFIRM",
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "WAIT_INPUT",
+        "state_revision": 4,
+        "step": "auth_required",
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f",
+        "wait_reason": "auth_required"
+      },
+      "kind": "resume_auth",
+      "request": {
+        "client_request_id": "5a03d80c-b5b3-5459-bd7f-335d943282ee",
+        "expected_state_revision": 4,
+        "versions": {
+          "api": "1.0.0",
+          "operations": "1.0.0",
+          "semantic": "1.0.0"
+        }
+      },
+      "response": {
+        "api_version": "1.0.0",
+        "event_cursor": 4,
+        "state": "WAIT_CONFIRM",
+        "state_revision": 5,
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f"
+      }
+    },
+    {
+      "after": {
+        "context_version": 1,
+        "execution": {
+          "actor_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+          "execution_id": "97791dd7-c7a1-55c2-8f9a-2da2861417d0",
+          "operations_version": "1.0.0",
+          "proposal_id": "8bbb5b01-80ea-5996-9a00-1537b736a7df",
+          "proposal_revision": 1
+        },
+        "execution_resolution": null,
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": null,
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "EXECUTING",
+        "state_revision": 6,
+        "step": "dispatch",
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f",
+        "wait_reason": null
+      },
+      "before": {
+        "context_version": 1,
+        "execution": null,
+        "execution_resolution": null,
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": null,
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "WAIT_CONFIRM",
+        "state_revision": 5,
+        "step": "awaiting_user",
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f",
+        "wait_reason": "confirm_required"
+      },
+      "expected_state_revision": 5,
+      "kind": "state_transition"
+    },
+    {
+      "after": {
+        "context_version": 1,
+        "execution": {
+          "actor_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+          "execution_id": "97791dd7-c7a1-55c2-8f9a-2da2861417d0",
+          "operations_version": "1.0.0",
+          "proposal_id": "8bbb5b01-80ea-5996-9a00-1537b736a7df",
+          "proposal_revision": 1
+        },
+        "execution_resolution": "unknown",
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": null,
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "RECOVERING",
+        "state_revision": 7,
+        "step": "reconcile",
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f",
+        "wait_reason": null
+      },
+      "before": {
+        "context_version": 1,
+        "execution": {
+          "actor_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+          "execution_id": "97791dd7-c7a1-55c2-8f9a-2da2861417d0",
+          "operations_version": "1.0.0",
+          "proposal_id": "8bbb5b01-80ea-5996-9a00-1537b736a7df",
+          "proposal_revision": 1
+        },
+        "execution_resolution": null,
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": null,
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "EXECUTING",
+        "state_revision": 6,
+        "step": "dispatch",
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f",
+        "wait_reason": null
+      },
+      "expected_state_revision": 6,
+      "kind": "state_transition"
+    },
+    {
+      "after": {
+        "context_version": 1,
+        "execution": {
+          "actor_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+          "execution_id": "97791dd7-c7a1-55c2-8f9a-2da2861417d0",
+          "operations_version": "1.0.0",
+          "proposal_id": "8bbb5b01-80ea-5996-9a00-1537b736a7df",
+          "proposal_revision": 1
+        },
+        "execution_resolution": "unknown",
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": "RECOVERING",
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "WAIT_INPUT",
+        "state_revision": 8,
+        "step": "auth_required",
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f",
+        "wait_reason": "auth_required"
+      },
+      "before": {
+        "context_version": 1,
+        "execution": {
+          "actor_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+          "execution_id": "97791dd7-c7a1-55c2-8f9a-2da2861417d0",
+          "operations_version": "1.0.0",
+          "proposal_id": "8bbb5b01-80ea-5996-9a00-1537b736a7df",
+          "proposal_revision": 1
+        },
+        "execution_resolution": "unknown",
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": null,
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "RECOVERING",
+        "state_revision": 7,
+        "step": "reconcile",
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f",
+        "wait_reason": null
+      },
+      "expected_state_revision": 7,
+      "kind": "state_transition"
+    },
+    {
+      "after": {
+        "context_version": 1,
+        "execution": {
+          "actor_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+          "execution_id": "97791dd7-c7a1-55c2-8f9a-2da2861417d0",
+          "operations_version": "1.0.0",
+          "proposal_id": "8bbb5b01-80ea-5996-9a00-1537b736a7df",
+          "proposal_revision": 1
+        },
+        "execution_resolution": "unknown",
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": null,
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "RECOVERING",
+        "state_revision": 9,
+        "step": "reconcile",
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f",
+        "wait_reason": null
+      },
+      "before": {
+        "context_version": 1,
+        "execution": {
+          "actor_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+          "execution_id": "97791dd7-c7a1-55c2-8f9a-2da2861417d0",
+          "operations_version": "1.0.0",
+          "proposal_id": "8bbb5b01-80ea-5996-9a00-1537b736a7df",
+          "proposal_revision": 1
+        },
+        "execution_resolution": "unknown",
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": "RECOVERING",
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "WAIT_INPUT",
+        "state_revision": 8,
+        "step": "auth_required",
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f",
+        "wait_reason": "auth_required"
+      },
+      "kind": "resume_auth",
+      "request": {
+        "client_request_id": "f6710ea0-097a-553d-b2ae-625930f1b696",
+        "expected_state_revision": 8,
+        "versions": {
+          "api": "1.0.0",
+          "operations": "1.0.0",
+          "semantic": "1.0.0"
+        }
+      },
+      "response": {
+        "api_version": "1.0.0",
+        "event_cursor": 5,
+        "state": "RECOVERING",
+        "state_revision": 9,
+        "turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f"
+      }
+    },
+    {
+      "after": {
+        "context_version": 1,
+        "execution": null,
+        "execution_resolution": null,
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": null,
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "CANCELLED",
+        "state_revision": 2,
+        "step": "terminal",
+        "turn_id": "775565ff-a185-5317-a4d1-d45e45a32d28",
+        "wait_reason": null
+      },
+      "before": {
+        "context_version": 1,
+        "execution": null,
+        "execution_resolution": null,
+        "owner_user_id": "28a2273b-2c93-52be-bde0-9540f46a749a",
+        "resume_state": null,
+        "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+        "state": "RUNNING",
+        "state_revision": 1,
+        "step": "tool_read",
+        "turn_id": "775565ff-a185-5317-a4d1-d45e45a32d28",
+        "wait_reason": null
+      },
+      "kind": "cancel",
+      "request": {
+        "client_request_id": "77eab394-b9a0-5cfa-9565-e2334ab18dd9",
+        "expected_state_revision": 1,
+        "reason": null,
+        "versions": {
+          "api": "1.0.0",
+          "operations": "1.0.0",
+          "semantic": "1.0.0"
+        }
+      },
+      "response": {
+        "api_version": "1.0.0",
+        "result": "cancelled",
+        "turn": {
+          "context_version": 1,
+          "execution_assigned": false,
+          "execution_resolution": null,
+          "resume_state": null,
+          "session_id": "e2156f15-78a7-58cb-b502-8fad683c91d4",
+          "state": "CANCELLED",
+          "state_revision": 2,
+          "step": "terminal",
+          "turn_id": "775565ff-a185-5317-a4d1-d45e45a32d28",
+          "wait_reason": null
+        }
+      }
+    },
+    {
+      "after_restart": {
+        "entity_id": "cb844ed2-2b59-5775-91db-16aa7247a7e4",
+        "kind": "activity",
+        "ref": "activity_1",
+        "scope_activity_id": "cb844ed2-2b59-5775-91db-16aa7247a7e4",
+        "source_turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f"
+      },
+      "after_resume": {
+        "entity_id": "cb844ed2-2b59-5775-91db-16aa7247a7e4",
+        "kind": "activity",
+        "ref": "activity_1",
+        "scope_activity_id": "cb844ed2-2b59-5775-91db-16aa7247a7e4",
+        "source_turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f"
+      },
+      "kind": "reference_assertion",
+      "reference": {
+        "entity_id": "cb844ed2-2b59-5775-91db-16aa7247a7e4",
+        "kind": "activity",
+        "ref": "activity_1",
+        "scope_activity_id": "cb844ed2-2b59-5775-91db-16aa7247a7e4",
+        "source_turn_id": "66a32511-91eb-5d92-950e-2cc10220c69f"
+      }
+    }
+  ],
+  "trajectory_version": "1.0.0"
+}

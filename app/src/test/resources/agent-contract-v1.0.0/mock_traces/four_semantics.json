@@ -1,0 +1,919 @@
+{
+  "scenario": "four_semantics",
+  "simulation": true,
+  "steps": [
+    {
+      "context": {
+        "available_permissions": [
+          "read.activities",
+          "read.expenses",
+          "read.debts",
+          "propose.expense.create",
+          "propose.expense.update",
+          "propose.expense.presentation.update"
+        ],
+        "bound_references": [
+          {
+            "kind": "activity",
+            "ref": "activity_1"
+          },
+          {
+            "kind": "expense",
+            "ref": "expense_1"
+          },
+          {
+            "kind": "ledger_unit",
+            "ref": "ledger_unit_1"
+          },
+          {
+            "kind": "participant",
+            "ref": "participant_1"
+          },
+          {
+            "kind": "participant",
+            "ref": "participant_2"
+          }
+        ],
+        "context_version": 1,
+        "input_text": "查一下这笔消费并记录午餐",
+        "pending_slots": [],
+        "policy_evidence": [
+          {
+            "evidence_ref": "policy_fact_1",
+            "observed_at": "2026-10-07T00:00:00Z",
+            "rule": "execution_requires_confirmation",
+            "source": "development_guide_v0_4_2",
+            "text": "写入提议必须由用户确认；模型不能确认或直接写入。",
+            "version": "guide-v0.4.2"
+          }
+        ],
+        "read_results": [
+          {
+            "body": {
+              "items": [
+                {
+                  "activity_kind": "normal",
+                  "activity_ref": "activity_1",
+                  "base_currency": "CNY",
+                  "context_version": 1,
+                  "evidence_ref": "fact_activity_1",
+                  "kind": "activity",
+                  "name": "Trip",
+                  "observed_at": "2026-10-07T00:00:00Z",
+                  "status": "active"
+                }
+              ],
+              "kind": "activities"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.activities",
+            "result_ref": "read_result_1",
+            "simulation": true
+          },
+          {
+            "body": {
+              "items": [
+                {
+                  "context_version": 1,
+                  "evidence_ref": "fact_expense_1",
+                  "expense_ref": "expense_1",
+                  "expense_version": "1",
+                  "financial_locked": false,
+                  "kind": "expense",
+                  "observed_at": "2026-10-07T00:00:00Z",
+                  "occurred_at": "2026-10-07T00:00:00Z",
+                  "original_amount": "12.50",
+                  "original_currency": "CNY",
+                  "participant_refs": [
+                    "participant_2",
+                    "participant_1"
+                  ],
+                  "title": "Lunch"
+                }
+              ],
+              "kind": "expenses"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.expenses",
+            "result_ref": "read_result_2",
+            "simulation": true
+          },
+          {
+            "body": {
+              "items": [
+                {
+                  "amount": "6.25",
+                  "context_version": 1,
+                  "creditor_ref": "participant_1",
+                  "currency": "CNY",
+                  "debtor_ref": "participant_2",
+                  "evidence_ref": "fact_debt_1",
+                  "kind": "debt",
+                  "observed_at": "2026-10-07T00:00:00Z"
+                }
+              ],
+              "kind": "debts"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.debts",
+            "result_ref": "read_result_3",
+            "simulation": true
+          }
+        ],
+        "recent_messages": [],
+        "verified_scope": {
+          "activity_ref": "activity_1",
+          "kind": "activity",
+          "permissions": [
+            "read.activities",
+            "read.expenses",
+            "read.debts",
+            "propose.expense.create",
+            "propose.expense.update",
+            "propose.expense.presentation.update"
+          ]
+        }
+      },
+      "decision": {
+        "basis": "grounded",
+        "citations": [
+          "policy_fact_1"
+        ],
+        "kind": "answer",
+        "text": "确认操作前需要用户确认。"
+      },
+      "kind": "model_decision"
+    },
+    {
+      "context": {
+        "available_permissions": [
+          "read.activities",
+          "read.expenses",
+          "read.debts",
+          "propose.expense.create",
+          "propose.expense.update",
+          "propose.expense.presentation.update"
+        ],
+        "bound_references": [
+          {
+            "kind": "activity",
+            "ref": "activity_1"
+          },
+          {
+            "kind": "expense",
+            "ref": "expense_1"
+          },
+          {
+            "kind": "ledger_unit",
+            "ref": "ledger_unit_1"
+          },
+          {
+            "kind": "participant",
+            "ref": "participant_1"
+          },
+          {
+            "kind": "participant",
+            "ref": "participant_2"
+          }
+        ],
+        "context_version": 1,
+        "input_text": "查一下这笔消费并记录午餐",
+        "pending_slots": [],
+        "policy_evidence": [
+          {
+            "evidence_ref": "policy_fact_1",
+            "observed_at": "2026-10-07T00:00:00Z",
+            "rule": "execution_requires_confirmation",
+            "source": "development_guide_v0_4_2",
+            "text": "写入提议必须由用户确认；模型不能确认或直接写入。",
+            "version": "guide-v0.4.2"
+          }
+        ],
+        "read_results": [
+          {
+            "body": {
+              "items": [
+                {
+                  "activity_kind": "normal",
+                  "activity_ref": "activity_1",
+                  "base_currency": "CNY",
+                  "context_version": 1,
+                  "evidence_ref": "fact_activity_1",
+                  "kind": "activity",
+                  "name": "Trip",
+                  "observed_at": "2026-10-07T00:00:00Z",
+                  "status": "active"
+                }
+              ],
+              "kind": "activities"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.activities",
+            "result_ref": "read_result_1",
+            "simulation": true
+          },
+          {
+            "body": {
+              "items": [
+                {
+                  "context_version": 1,
+                  "evidence_ref": "fact_expense_1",
+                  "expense_ref": "expense_1",
+                  "expense_version": "1",
+                  "financial_locked": false,
+                  "kind": "expense",
+                  "observed_at": "2026-10-07T00:00:00Z",
+                  "occurred_at": "2026-10-07T00:00:00Z",
+                  "original_amount": "12.50",
+                  "original_currency": "CNY",
+                  "participant_refs": [
+                    "participant_2",
+                    "participant_1"
+                  ],
+                  "title": "Lunch"
+                }
+              ],
+              "kind": "expenses"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.expenses",
+            "result_ref": "read_result_2",
+            "simulation": true
+          },
+          {
+            "body": {
+              "items": [
+                {
+                  "amount": "6.25",
+                  "context_version": 1,
+                  "creditor_ref": "participant_1",
+                  "currency": "CNY",
+                  "debtor_ref": "participant_2",
+                  "evidence_ref": "fact_debt_1",
+                  "kind": "debt",
+                  "observed_at": "2026-10-07T00:00:00Z"
+                }
+              ],
+              "kind": "debts"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.debts",
+            "result_ref": "read_result_3",
+            "simulation": true
+          }
+        ],
+        "recent_messages": [],
+        "verified_scope": {
+          "activity_ref": "activity_1",
+          "kind": "activity",
+          "permissions": [
+            "read.activities",
+            "read.expenses",
+            "read.debts",
+            "propose.expense.create",
+            "propose.expense.update",
+            "propose.expense.presentation.update"
+          ]
+        }
+      },
+      "decision": {
+        "kind": "clarify",
+        "missing_slots": [
+          "payment_allocations",
+          "split_participant_refs"
+        ],
+        "prompt": "请补充付款人和分摊参与人。"
+      },
+      "kind": "model_decision"
+    },
+    {
+      "context": {
+        "available_permissions": [
+          "read.activities",
+          "read.expenses",
+          "read.debts",
+          "propose.expense.create",
+          "propose.expense.update",
+          "propose.expense.presentation.update"
+        ],
+        "bound_references": [
+          {
+            "kind": "activity",
+            "ref": "activity_1"
+          },
+          {
+            "kind": "expense",
+            "ref": "expense_1"
+          },
+          {
+            "kind": "ledger_unit",
+            "ref": "ledger_unit_1"
+          },
+          {
+            "kind": "participant",
+            "ref": "participant_1"
+          },
+          {
+            "kind": "participant",
+            "ref": "participant_2"
+          }
+        ],
+        "context_version": 1,
+        "input_text": "查一下这笔消费并记录午餐",
+        "pending_slots": [],
+        "policy_evidence": [
+          {
+            "evidence_ref": "policy_fact_1",
+            "observed_at": "2026-10-07T00:00:00Z",
+            "rule": "execution_requires_confirmation",
+            "source": "development_guide_v0_4_2",
+            "text": "写入提议必须由用户确认；模型不能确认或直接写入。",
+            "version": "guide-v0.4.2"
+          }
+        ],
+        "read_results": [
+          {
+            "body": {
+              "items": [
+                {
+                  "activity_kind": "normal",
+                  "activity_ref": "activity_1",
+                  "base_currency": "CNY",
+                  "context_version": 1,
+                  "evidence_ref": "fact_activity_1",
+                  "kind": "activity",
+                  "name": "Trip",
+                  "observed_at": "2026-10-07T00:00:00Z",
+                  "status": "active"
+                }
+              ],
+              "kind": "activities"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.activities",
+            "result_ref": "read_result_1",
+            "simulation": true
+          },
+          {
+            "body": {
+              "items": [
+                {
+                  "context_version": 1,
+                  "evidence_ref": "fact_expense_1",
+                  "expense_ref": "expense_1",
+                  "expense_version": "1",
+                  "financial_locked": false,
+                  "kind": "expense",
+                  "observed_at": "2026-10-07T00:00:00Z",
+                  "occurred_at": "2026-10-07T00:00:00Z",
+                  "original_amount": "12.50",
+                  "original_currency": "CNY",
+                  "participant_refs": [
+                    "participant_2",
+                    "participant_1"
+                  ],
+                  "title": "Lunch"
+                }
+              ],
+              "kind": "expenses"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.expenses",
+            "result_ref": "read_result_2",
+            "simulation": true
+          },
+          {
+            "body": {
+              "items": [
+                {
+                  "amount": "6.25",
+                  "context_version": 1,
+                  "creditor_ref": "participant_1",
+                  "currency": "CNY",
+                  "debtor_ref": "participant_2",
+                  "evidence_ref": "fact_debt_1",
+                  "kind": "debt",
+                  "observed_at": "2026-10-07T00:00:00Z"
+                }
+              ],
+              "kind": "debts"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.debts",
+            "result_ref": "read_result_3",
+            "simulation": true
+          }
+        ],
+        "recent_messages": [],
+        "verified_scope": {
+          "activity_ref": "activity_1",
+          "kind": "activity",
+          "permissions": [
+            "read.activities",
+            "read.expenses",
+            "read.debts",
+            "propose.expense.create",
+            "propose.expense.update",
+            "propose.expense.presentation.update"
+          ]
+        }
+      },
+      "decision": {
+        "criteria": {
+          "activity_ref": "activity_1",
+          "from_date": null,
+          "kind": "expenses",
+          "participant_ref": null,
+          "to_date": null
+        },
+        "kind": "read",
+        "operation": "read.expenses"
+      },
+      "kind": "model_decision"
+    },
+    {
+      "context": {
+        "available_permissions": [
+          "read.activities",
+          "read.expenses",
+          "read.debts",
+          "propose.expense.create",
+          "propose.expense.update",
+          "propose.expense.presentation.update"
+        ],
+        "bound_references": [
+          {
+            "kind": "activity",
+            "ref": "activity_1"
+          },
+          {
+            "kind": "expense",
+            "ref": "expense_1"
+          },
+          {
+            "kind": "ledger_unit",
+            "ref": "ledger_unit_1"
+          },
+          {
+            "kind": "participant",
+            "ref": "participant_1"
+          },
+          {
+            "kind": "participant",
+            "ref": "participant_2"
+          }
+        ],
+        "context_version": 1,
+        "input_text": "查一下这笔消费并记录午餐",
+        "pending_slots": [],
+        "policy_evidence": [
+          {
+            "evidence_ref": "policy_fact_1",
+            "observed_at": "2026-10-07T00:00:00Z",
+            "rule": "execution_requires_confirmation",
+            "source": "development_guide_v0_4_2",
+            "text": "写入提议必须由用户确认；模型不能确认或直接写入。",
+            "version": "guide-v0.4.2"
+          }
+        ],
+        "read_results": [
+          {
+            "body": {
+              "items": [
+                {
+                  "activity_kind": "normal",
+                  "activity_ref": "activity_1",
+                  "base_currency": "CNY",
+                  "context_version": 1,
+                  "evidence_ref": "fact_activity_1",
+                  "kind": "activity",
+                  "name": "Trip",
+                  "observed_at": "2026-10-07T00:00:00Z",
+                  "status": "active"
+                }
+              ],
+              "kind": "activities"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.activities",
+            "result_ref": "read_result_1",
+            "simulation": true
+          },
+          {
+            "body": {
+              "items": [
+                {
+                  "context_version": 1,
+                  "evidence_ref": "fact_expense_1",
+                  "expense_ref": "expense_1",
+                  "expense_version": "1",
+                  "financial_locked": false,
+                  "kind": "expense",
+                  "observed_at": "2026-10-07T00:00:00Z",
+                  "occurred_at": "2026-10-07T00:00:00Z",
+                  "original_amount": "12.50",
+                  "original_currency": "CNY",
+                  "participant_refs": [
+                    "participant_2",
+                    "participant_1"
+                  ],
+                  "title": "Lunch"
+                }
+              ],
+              "kind": "expenses"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.expenses",
+            "result_ref": "read_result_2",
+            "simulation": true
+          },
+          {
+            "body": {
+              "items": [
+                {
+                  "amount": "6.25",
+                  "context_version": 1,
+                  "creditor_ref": "participant_1",
+                  "currency": "CNY",
+                  "debtor_ref": "participant_2",
+                  "evidence_ref": "fact_debt_1",
+                  "kind": "debt",
+                  "observed_at": "2026-10-07T00:00:00Z"
+                }
+              ],
+              "kind": "debts"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.debts",
+            "result_ref": "read_result_3",
+            "simulation": true
+          }
+        ],
+        "recent_messages": [],
+        "verified_scope": {
+          "activity_ref": "activity_1",
+          "kind": "activity",
+          "permissions": [
+            "read.activities",
+            "read.expenses",
+            "read.debts",
+            "propose.expense.create",
+            "propose.expense.update",
+            "propose.expense.presentation.update"
+          ]
+        }
+      },
+      "decision": {
+        "fields": {
+          "kind": "expense.create",
+          "ledger_unit_ref": "ledger_unit_1",
+          "note": null,
+          "occurred_at": "2026-10-07T00:00:00Z",
+          "original_amount": "12.50",
+          "original_currency": "CNY",
+          "payment_allocations": [
+            {
+              "amount": "12.50",
+              "participant_ref": "participant_2"
+            }
+          ],
+          "split": {
+            "mode": "equal",
+            "participant_refs": [
+              "participant_2",
+              "participant_1"
+            ]
+          },
+          "title": "Lunch"
+        },
+        "kind": "propose",
+        "operation": "expense.create"
+      },
+      "kind": "model_decision"
+    },
+    {
+      "context": {
+        "available_permissions": [
+          "read.activities",
+          "read.expenses",
+          "read.debts",
+          "propose.expense.create",
+          "propose.expense.update",
+          "propose.expense.presentation.update"
+        ],
+        "bound_references": [
+          {
+            "kind": "activity",
+            "ref": "activity_1"
+          },
+          {
+            "kind": "expense",
+            "ref": "expense_1"
+          },
+          {
+            "kind": "ledger_unit",
+            "ref": "ledger_unit_1"
+          },
+          {
+            "kind": "participant",
+            "ref": "participant_1"
+          },
+          {
+            "kind": "participant",
+            "ref": "participant_2"
+          }
+        ],
+        "context_version": 1,
+        "input_text": "查一下这笔消费并记录午餐",
+        "pending_slots": [],
+        "policy_evidence": [
+          {
+            "evidence_ref": "policy_fact_1",
+            "observed_at": "2026-10-07T00:00:00Z",
+            "rule": "execution_requires_confirmation",
+            "source": "development_guide_v0_4_2",
+            "text": "写入提议必须由用户确认；模型不能确认或直接写入。",
+            "version": "guide-v0.4.2"
+          }
+        ],
+        "read_results": [
+          {
+            "body": {
+              "items": [
+                {
+                  "activity_kind": "normal",
+                  "activity_ref": "activity_1",
+                  "base_currency": "CNY",
+                  "context_version": 1,
+                  "evidence_ref": "fact_activity_1",
+                  "kind": "activity",
+                  "name": "Trip",
+                  "observed_at": "2026-10-07T00:00:00Z",
+                  "status": "active"
+                }
+              ],
+              "kind": "activities"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.activities",
+            "result_ref": "read_result_1",
+            "simulation": true
+          },
+          {
+            "body": {
+              "items": [
+                {
+                  "context_version": 1,
+                  "evidence_ref": "fact_expense_1",
+                  "expense_ref": "expense_1",
+                  "expense_version": "1",
+                  "financial_locked": false,
+                  "kind": "expense",
+                  "observed_at": "2026-10-07T00:00:00Z",
+                  "occurred_at": "2026-10-07T00:00:00Z",
+                  "original_amount": "12.50",
+                  "original_currency": "CNY",
+                  "participant_refs": [
+                    "participant_2",
+                    "participant_1"
+                  ],
+                  "title": "Lunch"
+                }
+              ],
+              "kind": "expenses"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.expenses",
+            "result_ref": "read_result_2",
+            "simulation": true
+          },
+          {
+            "body": {
+              "items": [
+                {
+                  "amount": "6.25",
+                  "context_version": 1,
+                  "creditor_ref": "participant_1",
+                  "currency": "CNY",
+                  "debtor_ref": "participant_2",
+                  "evidence_ref": "fact_debt_1",
+                  "kind": "debt",
+                  "observed_at": "2026-10-07T00:00:00Z"
+                }
+              ],
+              "kind": "debts"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.debts",
+            "result_ref": "read_result_3",
+            "simulation": true
+          }
+        ],
+        "recent_messages": [],
+        "verified_scope": {
+          "activity_ref": "activity_1",
+          "kind": "activity",
+          "permissions": [
+            "read.activities",
+            "read.expenses",
+            "read.debts",
+            "propose.expense.create",
+            "propose.expense.update",
+            "propose.expense.presentation.update"
+          ]
+        }
+      },
+      "decision": {
+        "fields": {
+          "expense_ref": "expense_1",
+          "kind": "expense.update",
+          "note": null,
+          "occurred_at": null,
+          "original_amount": "15.00",
+          "original_currency": null,
+          "payment_allocations": [
+            {
+              "amount": "15.00",
+              "participant_ref": "participant_2"
+            }
+          ],
+          "split": {
+            "mode": "equal",
+            "participant_refs": [
+              "participant_2",
+              "participant_1"
+            ]
+          },
+          "title": null
+        },
+        "kind": "propose",
+        "operation": "expense.update"
+      },
+      "kind": "model_decision"
+    },
+    {
+      "context": {
+        "available_permissions": [
+          "read.activities",
+          "read.expenses",
+          "read.debts",
+          "propose.expense.create",
+          "propose.expense.update",
+          "propose.expense.presentation.update"
+        ],
+        "bound_references": [
+          {
+            "kind": "activity",
+            "ref": "activity_1"
+          },
+          {
+            "kind": "expense",
+            "ref": "expense_1"
+          },
+          {
+            "kind": "ledger_unit",
+            "ref": "ledger_unit_1"
+          },
+          {
+            "kind": "participant",
+            "ref": "participant_1"
+          },
+          {
+            "kind": "participant",
+            "ref": "participant_2"
+          }
+        ],
+        "context_version": 1,
+        "input_text": "查一下这笔消费并记录午餐",
+        "pending_slots": [],
+        "policy_evidence": [
+          {
+            "evidence_ref": "policy_fact_1",
+            "observed_at": "2026-10-07T00:00:00Z",
+            "rule": "execution_requires_confirmation",
+            "source": "development_guide_v0_4_2",
+            "text": "写入提议必须由用户确认；模型不能确认或直接写入。",
+            "version": "guide-v0.4.2"
+          }
+        ],
+        "read_results": [
+          {
+            "body": {
+              "items": [
+                {
+                  "activity_kind": "normal",
+                  "activity_ref": "activity_1",
+                  "base_currency": "CNY",
+                  "context_version": 1,
+                  "evidence_ref": "fact_activity_1",
+                  "kind": "activity",
+                  "name": "Trip",
+                  "observed_at": "2026-10-07T00:00:00Z",
+                  "status": "active"
+                }
+              ],
+              "kind": "activities"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.activities",
+            "result_ref": "read_result_1",
+            "simulation": true
+          },
+          {
+            "body": {
+              "items": [
+                {
+                  "context_version": 1,
+                  "evidence_ref": "fact_expense_1",
+                  "expense_ref": "expense_1",
+                  "expense_version": "1",
+                  "financial_locked": false,
+                  "kind": "expense",
+                  "observed_at": "2026-10-07T00:00:00Z",
+                  "occurred_at": "2026-10-07T00:00:00Z",
+                  "original_amount": "12.50",
+                  "original_currency": "CNY",
+                  "participant_refs": [
+                    "participant_2",
+                    "participant_1"
+                  ],
+                  "title": "Lunch"
+                }
+              ],
+              "kind": "expenses"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.expenses",
+            "result_ref": "read_result_2",
+            "simulation": true
+          },
+          {
+            "body": {
+              "items": [
+                {
+                  "amount": "6.25",
+                  "context_version": 1,
+                  "creditor_ref": "participant_1",
+                  "currency": "CNY",
+                  "debtor_ref": "participant_2",
+                  "evidence_ref": "fact_debt_1",
+                  "kind": "debt",
+                  "observed_at": "2026-10-07T00:00:00Z"
+                }
+              ],
+              "kind": "debts"
+            },
+            "context_version": 1,
+            "observed_at": "2026-10-07T00:00:00Z",
+            "operation": "read.debts",
+            "result_ref": "read_result_3",
+            "simulation": true
+          }
+        ],
+        "recent_messages": [],
+        "verified_scope": {
+          "activity_ref": "activity_1",
+          "kind": "activity",
+          "permissions": [
+            "read.activities",
+            "read.expenses",
+            "read.debts",
+            "propose.expense.create",
+            "propose.expense.update",
+            "propose.expense.presentation.update"
+          ]
+        }
+      },
+      "decision": {
+        "fields": {
+          "expense_ref": "expense_1",
+          "icon_key": null,
+          "kind": "expense.presentation.update",
+          "note": "录入备注修正",
+          "title": null
+        },
+        "kind": "propose",
+        "operation": "expense.presentation.update"
+      },
+      "kind": "model_decision"
+    }
+  ],
+  "trajectory_version": "1.0.0"
+}
