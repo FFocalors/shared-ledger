@@ -440,6 +440,19 @@ data class ProposalAdjustedAccepted(
     val apiVersion: String = AGENT_API_VERSION,
 )
 
+/**
+ * HTTP 202 from the confirm endpoint: the confirmation dispatched exactly one durable execution.
+ * An unknown outcome arrives as `turn.state = RECOVERING` / `executionResolution = unknown` — it is
+ * never a success claim.
+ */
+@Serializable
+data class ProposalExecutionAccepted(
+    val turn: TurnPublicStatus,
+    val execution: ExecutionReference,
+    val eventCursor: Int,
+    val apiVersion: String = AGENT_API_VERSION,
+)
+
 @Serializable
 data class TurnPublicStatus(
     val turnId: String,

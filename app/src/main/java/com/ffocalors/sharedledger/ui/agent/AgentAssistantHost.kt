@@ -116,6 +116,7 @@ fun AgentAssistantHost(
                     onCloseHistory = viewModel::closeHistory,
                     onNewConversation = viewModel::newConversation,
                     onOpenSession = viewModel::openSession,
+                    onConfirm = viewModel::confirm,
                     onEntrancePlayed = viewModel::markEntrancePlayed,
                 ),
             )

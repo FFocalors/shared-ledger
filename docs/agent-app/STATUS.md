@@ -1,14 +1,15 @@
 # Agent 应用端：当前状态与后续接入（2026-10-22）
 
-分支 `feature/agent-app-ui`，基于 `main@d5ff4f0`。对应 Agent 侧契约 `shared-ledger-agent/agent/contracts/v1.0.0`（api 1.0.0）。视觉与交互方案见 [UI_PLAN.md](UI_PLAN.md)。
+分支 `feature/agent-app-ui`，基于 `main@d5ff4f0`。对应 Agent 侧契约 `shared-ledger-agent/agent/contracts/v1.0.0`（api 1.0.0，快照 manifest 56 个文件 / `c1f7775ad…`，已复制到 `app/src/test/resources/agent-contract-v1.0.0/`）。视觉与交互方案见 [UI_PLAN.md](UI_PLAN.md)。
 
 ## 已完成（只读阶段）
 
 | 模块 | 位置 | 说明 |
 |---|---|---|
-| 契约数据层 | `data/agent/` | v1 全部请求/响应/事件/草稿卡片 DTO；Ktor 客户端，Bearer 取 Supabase 当前会话 token；结果统一为 `AgentApiResult`；未知枚举/事件类型降级为 `UNKNOWN`/`Unknown`，不让整次轮询失败；确认接口按 v1 只认 501。 |
+| 契约数据层 | `data/agent/` | v1 全部请求/响应/事件/草稿卡片 DTO；Ktor 客户端，Bearer 取 Supabase 当前会话 token；结果统一为 `AgentApiResult`；未知枚举/事件类型降级为 `UNKNOWN`/`Unknown`，不让整次轮询失败；确认接口同时接受 202 与 501，其他 2xx 视为契约违约。 |
 | 配置 | `app/build.gradle.kts`、`AgentConfig.kt` | `local.properties`：`agent.baseUrl`（https；http 只允许 debug 下的 10.0.2.2/127.0.0.1/localhost）、`agent.demo`（仅 debug 生效）。 |
-| 会话逻辑 | `ui/agent/AgentAssistantViewModel.kt` | 建会话、提交回合、按 `after_seq` 轮询并按 `seq` 去重、草稿按 revision 合并、`auth_required` 自动恢复一次、澄清续答、停止、历史重建；同一请求重试复用 `client_request_id`。不调用 `confirmProposal`。 |
+| 会话逻辑 | `ui/agent/AgentAssistantViewModel.kt` | 建会话、提交回合、按 `after_seq` 轮询并按 `seq` 去重、草稿按 revision 合并、`auth_required` 自动恢复一次、澄清续答、停止、历史重建；同一请求重试复用 `client_request_id`。 |
+| 确认执行 | `ui/agent/AgentAssistantViewModel.kt`、`ProposalDraftCard.kt` | 后端草稿的「确认记账」可用：按钮进入「确认中…」，202 后记录执行回执（执行 ID + 回合状态）并从返回的 `event_cursor` 继续轮询；执行中显示「正在记账」，`RECOVERING`/unknown 一律显示「正在核对结果」，绝不显示成功或失败；501 显示「执行暂不可用」；失败可重试且复用同一 `client_request_id`。演示草稿（simulation）永远不可执行。 |
 | 页面上下文 | `ui/agent/AgentUiContext.kt` | 当前路由 → `UiContext.page_type` / `activity_id` / `selected_entity`，以及面板的「正在看：…」文案；参与人/账本 UUID 用已加载的活动详情解析成名字。 |
 | 悬浮入口 | `AgentFloatingEntry.kt`、`AgentEntryController.kt` | 左下边缘索引贴：点一下滑出、再点打开；4 秒/面板关闭/换页自动收回；可拖动并排除系统返回手势；有进行中回合时握条变琥珀色。 |
 | 底部抽屉 | `AgentBottomSheet.kt`、`AgentSheetPhysics.kt` | 全开/半开/关闭三档；上拉过头橡皮筋阻尼；松手按速度投射选锚点；与对话列表嵌套滚动联动。 |
@@ -28,10 +29,11 @@
 
 | 缺口 | 现状 | 影响 | 需要 |
 |---|---|---|---|
-| 确认写入无成功响应 | `/v1/proposals/{id}/confirm` 冻结为只返回 501 | 「确认记账」只能常驻禁用 | 批准 [P3A 确认响应差异提案](../../../shared-ledger-agent/agent/docs/p3/P3A_CONFIRM_RESPONSE_DIFF.md)（202 + 执行回执），App 再接确认按钮、执行中状态与回执展示 |
 | 历史里没有用户原话 | `TurnSummary` 与事件都不带用户提交的文字 | 从历史打开的对话只显示助手一侧 | 在 `TurnSummary` 或事件里加入用户输入文本（或 App 本地缓存，二选一） |
 | 草稿只有参与人 UUID | `ExpensePreview` 不含名字 | 不在当前活动页时只能显示「N 位参与人」 | 预览附带显示名，或 App 按 `activity_id` 主动加载活动详情 |
 | 调整草稿 | `resume/proposal-adjust` 已有客户端方法，未做界面 | 用户只能重新描述 | 确定交互后补 UI |
+
+已解决：确认写入的成功响应（Agent `627d534`，202 `ProposalExecutionAccepted`）。服务端 `execution_enabled` 仍可回滚到冻结的 501，App 两条路径都已处理。
 
 ## 已知限制
 

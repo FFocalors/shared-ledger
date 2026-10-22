@@ -23,6 +23,7 @@ class DemoAgentRepository(
         val entries = mutableListOf<Entry>()
         var lastAt = startMs
         val cards = mutableMapOf<String, ProposalCard>()
+        var executionId: String? = null
         val createdAt: String = Instant.ofEpochMilli(startMs).toString()
     }
 
@@ -82,7 +83,8 @@ class DemoAgentRepository(
                     val s = current(it)
                     TurnSummary(it.id, s.state, s.stateRevision, it.createdAt, iso(it.lastAt))
                 },
-                proposalCards = session.turns.flatMap { t -> released(t).mapNotNull { cardFor(t, it) } },
+                proposalCards = session.turns.flatMap { t -> released(t).mapNotNull { cardFor(t, it) } + currentCards(t) }
+                    .distinctBy { "${it.proposalIdOrEmpty()}:${it.revisionOrZero()}" },
             ),
         )
     }
@@ -124,7 +126,7 @@ class DemoAgentRepository(
                     hasMore = page.size < newer.size,
                     turn = current(turn),
                     events = events,
-                    proposalCards = page.mapNotNull { cardFor(turn, it) },
+                    proposalCards = page.mapNotNull { cardFor(turn, it) } + currentCards(turn),
                 ),
             )
         }
@@ -179,12 +181,95 @@ class DemoAgentRepository(
     override suspend fun confirmProposal(
         proposalId: String,
         request: ConfirmProposalRequest,
-    ): AgentApiResult<ConfirmationUnavailableResponse> = call {
+    ): AgentApiResult<ConfirmProposalOutcome> = call {
+        val turn = turns.values.firstOrNull { proposalId in it.cards }
+            ?: return@call err(AgentErrorCode.NOT_FOUND, "proposal not found", 404)
+        val card = turn.cards.getValue(proposalId)
+        val replayExecution = turn.executionId
+        // A replayed confirm returns the original execution instead of dispatching a second one.
+        if (replayExecution != null) {
+            return@call AgentApiResult.Success(
+                ConfirmProposalOutcome.ExecutionAccepted(
+                    ProposalExecutionAccepted(
+                        turn = current(turn),
+                        execution = ExecutionReference(replayExecution, proposalId, request.expectedProposalRevision),
+                        eventCursor = released(turn).size,
+                    ),
+                ),
+            )
+        }
+        if (DemoScripts.confirmScenario(turn.text) == DemoConfirmScenario.UNAVAILABLE) {
+            return@call AgentApiResult.Success(
+                ConfirmProposalOutcome.Unavailable(
+                    ConfirmationUnavailableResponse(
+                        code = AgentErrorCode.EXECUTION_CAPABILITY_UNAVAILABLE,
+                        message = "演示：执行暂不可用",
+                    ),
+                ),
+            )
+        }
+        val executionId = newId()
+        turn.executionId = executionId
+        turn.lastAt = maxOf(now(), turn.lastAt)
+        append(turn, TurnState.EXECUTING, TurnStep.DISPATCH, 0, assigned = true)
+        val execution = ExecutionReference(executionId, proposalId, request.expectedProposalRevision)
+        when (DemoScripts.confirmScenario(turn.text)) {
+            // The effect may or may not have landed: report RECOVERING/unknown, never success.
+            DemoConfirmScenario.RECOVERING -> {
+                append(
+                    turn, TurnState.RECOVERING, TurnStep.RECONCILE, 900,
+                    wait = WaitReason.EXECUTION_RESULT_UNKNOWN,
+                    assigned = true,
+                    resolution = ExecutionResolution.UNKNOWN,
+                )
+            }
+            else -> {
+                emit(turn, 1_200) { seq, at ->
+                    ExecutionResultEvent(
+                        seq, at, true,
+                        ExecutionResultPayload(
+                            execution = execution,
+                            resolution = ExecutionResolution.SUCCEEDED,
+                            resultSummary = "已记入演示账本",
+                        ),
+                    )
+                }
+                append(turn, TurnState.COMPLETED, TurnStep.TERMINAL, 0, assigned = true, resolution = ExecutionResolution.SUCCEEDED)
+            }
+        }
+        turn.cards[proposalId] = closedCard(card, proposalId)
+        sessions[turn.sessionId]?.updatedAt = iso()
         AgentApiResult.Success(
-            ConfirmationUnavailableResponse(
-                code = AgentErrorCode.EXECUTION_CAPABILITY_UNAVAILABLE,
-                message = "demo mode never executes",
+            ConfirmProposalOutcome.ExecutionAccepted(
+                ProposalExecutionAccepted(
+                    turn = current(turn),
+                    execution = execution,
+                    eventCursor = released(turn).size,
+                ),
             ),
+        )
+    }
+
+    private fun closedCard(card: ProposalCard, proposalId: String): InactiveProposalCard {
+        val preview = when (card) {
+            is ConfirmableProposalCard -> card.preview
+            is SimulationProposalCard -> card.preview
+            is InactiveProposalCard -> card.preview
+            else -> null
+        }
+        return InactiveProposalCard(
+            proposalId = proposalId,
+            revision = card.revisionOrZero(),
+            operation = when (card) {
+                is ConfirmableProposalCard -> card.operation
+                is SimulationProposalCard -> card.operation
+                is InactiveProposalCard -> card.operation
+                else -> ProposalOperation.EXPENSE_CREATE
+            },
+            mode = ProposalMode.BACKEND,
+            status = ProposalStatus.CONFIRMED,
+            simulation = false,
+            preview = preview,
         )
     }
 
@@ -212,6 +297,10 @@ class DemoAgentRepository(
     private fun cardFor(turn: Turn, entry: Entry): ProposalCard? =
         (entry.event as? ProposalEvent)?.let { turn.cards[it.payload.proposalId] }
 
+    /** Closed drafts are re-sent on every poll so a client that missed the transition catches up. */
+    private fun currentCards(turn: Turn): List<ProposalCard> =
+        turn.cards.values.filterIsInstance<InactiveProposalCard>()
+
     /** Appends a status event [gapMs] after the previous entry; bumps the revision on state change. */
     private fun append(
         turn: Turn,
@@ -220,6 +309,8 @@ class DemoAgentRepository(
         gapMs: Long,
         wait: WaitReason? = null,
         resume: TurnState? = null,
+        assigned: Boolean? = null,
+        resolution: ExecutionResolution? = null,
     ) {
         val prev = tail(turn)
         val at = turn.lastAt + gapMs
@@ -229,7 +320,15 @@ class DemoAgentRepository(
             prev.state != state -> prev.stateRevision + 1
             else -> prev.stateRevision
         }
-        val after = prev.copy(state = state, stateRevision = revision, step = step, waitReason = wait, resumeState = resume)
+        val after = prev.copy(
+            state = state,
+            stateRevision = revision,
+            step = step,
+            waitReason = wait,
+            resumeState = resume,
+            executionAssigned = assigned ?: prev.executionAssigned,
+            executionResolution = resolution ?: prev.executionResolution,
+        )
         val event = StatusEvent(
             seq = turn.entries.size + 1,
             occurredAt = iso(at),
@@ -327,7 +426,7 @@ class DemoAgentRepository(
         )
     }
 
-    private fun buildCard(text: String, generatedAt: String): SimulationProposalCard {
+    private fun buildCard(text: String, generatedAt: String): ConfirmableProposalCard {
         val amount = DemoScripts.parseAmount(text) ?: "0.00"
         val count = DemoScripts.parseParticipantCount(text)
         val title = DemoScripts.guessTitle(text)
@@ -346,7 +445,8 @@ class DemoAgentRepository(
             title = title,
             fxSnapshot = FxSnapshot("CNY", generatedAt, "CNY", "1", FxSource.IDENTITY),
         )
-        return SimulationProposalCard(
+        val digest = newId().replace("-", "") + newId().replace("-", "")
+        return ConfirmableProposalCard(
             proposalId = newId(),
             revision = 1,
             operation = ProposalOperation.EXPENSE_CREATE,
@@ -361,9 +461,13 @@ class DemoAgentRepository(
                     ExpenseSplitChange(split),
                 ),
                 generatedAt = generatedAt,
-                simulation = true,
-                summary = "$title $amount 元，我先付，$count 人平均分摊（演示，不会记账）",
+                simulation = false,
+                summary = "$title $amount 元，我先付，$count 人平均分摊（演示模式）",
             ),
+            // Demo values: a valid 64-hex digest and a nonce matching the contract's charset.
+            commandDigest = digest.take(64).ifEmpty { "0".repeat(64) },
+            confirmationNonce = (newId() + newId()).replace("-", ""),
+            expiresAt = Instant.ofEpochMilli(now() + 5 * 60_000).toString(),
         )
     }
 
@@ -371,4 +475,18 @@ class DemoAgentRepository(
         const val TITLE_LENGTH = 20
         const val SLOW_STEP_MS = 2_000L
     }
+}
+
+private fun ProposalCard.revisionOrZero(): Int = when (this) {
+    is SimulationProposalCard -> revision
+    is ConfirmableProposalCard -> revision
+    is InactiveProposalCard -> revision
+    else -> 0
+}
+
+private fun ProposalCard.proposalIdOrEmpty(): String = when (this) {
+    is SimulationProposalCard -> proposalId
+    is ConfirmableProposalCard -> proposalId
+    is InactiveProposalCard -> proposalId
+    else -> ""
 }

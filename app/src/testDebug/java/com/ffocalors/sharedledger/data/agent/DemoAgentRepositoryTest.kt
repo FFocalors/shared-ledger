@@ -81,15 +81,16 @@ class DemoAgentRepositoryTest {
         assertTrue(poll(turn, after = seqs.last()).events.isEmpty())
     }
 
-    @Test fun draftProducesSimulationCardAndWaitsForConfirm() {
+    @Test fun draftProducesConfirmableCardAndWaitsForConfirm() {
         val r = runTurn("记一笔“昨天烧烤 750，我付的，四个人平分”", 20_000)
         assertEquals(TurnState.WAIT_CONFIRM, r.turn.state)
         assertEquals(WaitReason.CONFIRM_REQUIRED, r.turn.waitReason)
-        val card = r.proposalCards.single() as SimulationProposalCard
+        val card = r.proposalCards.single() as ConfirmableProposalCard
         assertEquals("750.00", card.preview.after.originalAmount)
         assertEquals("烧烤", card.preview.after.title)
         assertEquals(4, (card.preview.after.split as CanonicalEqualSplit).participantIds.size)
-        assertTrue(card.simulation && card.preview.simulation && r.events.all { it.isSimulated() })
+        assertFalse(card.simulation || card.preview.simulation)
+        assertTrue(r.events.all { it.isSimulated() })
         assertTrue(r.events.filterIsInstance<StatusEvent>().last().payload.stateRevision >= 1)
     }
 
@@ -112,7 +113,7 @@ class DemoAgentRepositoryTest {
         val done = poll(turn, ask.nextAfterSeq)
         assertEquals(TurnState.WAIT_CONFIRM, done.turn.state)
         assertTrue(done.turn.stateRevision > ask.turn.stateRevision)
-        assertEquals("300.00", (done.proposalCards.single() as SimulationProposalCard).preview.after.originalAmount)
+        assertEquals("300.00", (done.proposalCards.single() as ConfirmableProposalCard).preview.after.originalAmount)
         assertEquals(ask.nextAfterSeq + 1, done.events.first().seq)
     }
 
@@ -162,13 +163,70 @@ class DemoAgentRepositoryTest {
         assertNotNull(list.items.single().updatedAt)
     }
 
-    @Test fun adjustIsRejectedAndConfirmUnavailable() {
-        val sid = sessionId()
-        val turn = ok(submit(sid, "你好")).turnId
+    @Test fun confirmScenarioByKeyword() {
+        assertEquals(DemoConfirmScenario.EXECUTE, DemoScripts.confirmScenario("昨天烧烤 750，我付的"))
+        assertEquals(DemoConfirmScenario.RECOVERING, DemoScripts.confirmScenario("烧烤 750 核对一下"))
+        assertEquals(DemoConfirmScenario.UNAVAILABLE, DemoScripts.confirmScenario("烧烤 750 不可用"))
+    }
+
+    @Test fun adjustIsRejected() {
+        val turn = ok(submit(sessionId(), "你好")).turnId
         val adjust = runBlocking { repo.resumeProposalAdjust(turn, ResumeProposalAdjustRequest("a", 1, 1, "改")) }
         assertEquals(AgentErrorCode.INVALID_REQUEST, (adjust as AgentApiResult.ApiError).code)
-        val confirm = ok(runBlocking { repo.confirmProposal("p", ConfirmProposalRequest("c", "d", "n", 1)) })
-        assertFalse(confirm.businessWritePerformed)
+    }
+
+    @Test fun confirmDispatchesOnceAndReplayReturnsTheSameExecution() {
+        val sid = sessionId()
+        val turn = ok(submit(sid, "昨天烧烤 750，我付的")).turnId
+        clock += 10_000
+        val card = poll(turn).proposalCards.filterIsInstance<ConfirmableProposalCard>().single()
+        val request = ConfirmProposalRequest("confirm-1", card.commandDigest, card.confirmationNonce, card.revision)
+
+        val first = ok(runBlocking { repo.confirmProposal(card.proposalId, request) })
+        val accepted = first as ConfirmProposalOutcome.ExecutionAccepted
+        assertEquals(TurnState.EXECUTING, accepted.value.turn.state)
+        assertTrue(accepted.value.turn.executionAssigned)
+
+        val replay = ok(runBlocking { repo.confirmProposal(card.proposalId, request) })
+        val replayed = replay as ConfirmProposalOutcome.ExecutionAccepted
+        assertEquals(accepted.value.execution.executionId, replayed.value.execution.executionId)
+
+        clock += 2_000
+        val later = poll(turn, accepted.value.eventCursor)
+        val result = later.events.filterIsInstance<ExecutionResultEvent>().single()
+        assertEquals(ExecutionResolution.SUCCEEDED, result.payload.resolution)
+        assertEquals(accepted.value.execution.executionId, result.payload.execution.executionId)
+        assertEquals(TurnState.COMPLETED, later.turn.state)
+        val closed = later.proposalCards.filterIsInstance<InactiveProposalCard>().single()
+        assertEquals(ProposalStatus.CONFIRMED, closed.status)
+    }
+
+    @Test fun confirmWithUnavailableKeywordReturnsFrozen501() {
+        val turn = ok(submit(sessionId(), "记 750 不可用")).turnId
+        clock += 10_000
+        val card = poll(turn).proposalCards.filterIsInstance<ConfirmableProposalCard>().single()
+        val outcome = ok(runBlocking {
+            repo.confirmProposal(card.proposalId, ConfirmProposalRequest("c", card.commandDigest, card.confirmationNonce, 1))
+        })
+        val unavailable = outcome as ConfirmProposalOutcome.Unavailable
+        assertEquals(AgentErrorCode.EXECUTION_CAPABILITY_UNAVAILABLE, unavailable.value.code)
+        assertFalse(unavailable.value.businessWritePerformed)
+    }
+
+    @Test fun confirmWithReconcileKeywordNeverClaimsSuccess() {
+        val turn = ok(submit(sessionId(), "记 750 核对一下")).turnId
+        clock += 10_000
+        val card = poll(turn).proposalCards.filterIsInstance<ConfirmableProposalCard>().single()
+        val accepted = ok(runBlocking {
+            repo.confirmProposal(card.proposalId, ConfirmProposalRequest("c", card.commandDigest, card.confirmationNonce, 1))
+        }) as ConfirmProposalOutcome.ExecutionAccepted
+        assertEquals(TurnState.EXECUTING, accepted.value.turn.state)
+
+        clock += 2_000
+        val later = poll(turn, accepted.value.eventCursor)
+        assertEquals(TurnState.RECOVERING, later.turn.state)
+        assertEquals(ExecutionResolution.UNKNOWN, later.turn.executionResolution)
+        assertTrue(later.events.none { it is ExecutionResultEvent })
     }
 
     private fun AgentEvent.isSimulated(): Boolean = when (this) {

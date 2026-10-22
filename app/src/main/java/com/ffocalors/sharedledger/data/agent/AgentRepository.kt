@@ -29,11 +29,11 @@ interface AgentRepository {
         request: ResumeProposalAdjustRequest,
     ): AgentApiResult<ProposalAdjustedAccepted>
 
-    /** v1: Success carries the 501 "confirmation unavailable" body; there is no real success. */
+    /** 202 carries the dispatched execution; 501 keeps the frozen "execution unavailable" answer. */
     suspend fun confirmProposal(
         proposalId: String,
         request: ConfirmProposalRequest,
-    ): AgentApiResult<ConfirmationUnavailableResponse>
+    ): AgentApiResult<ConfirmProposalOutcome>
 }
 
 class DefaultAgentRepository(private val client: AgentApiClient) : AgentRepository {
@@ -81,7 +81,7 @@ class UnavailableAgentRepository : AgentRepository {
         unavailable<ProposalAdjustedAccepted>()
 
     override suspend fun confirmProposal(proposalId: String, request: ConfirmProposalRequest) =
-        unavailable<ConfirmationUnavailableResponse>()
+        unavailable<ConfirmProposalOutcome>()
 }
 
 object AgentRepositoryFactory {

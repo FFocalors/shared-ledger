@@ -1,0 +1,197 @@
+{
+  "$defs": {
+    "ExecutionReference": {
+      "additionalProperties": false,
+      "properties": {
+        "execution_id": {
+          "format": "uuid",
+          "title": "Execution Id",
+          "type": "string"
+        },
+        "operations_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Operations Version",
+          "type": "string"
+        },
+        "proposal_id": {
+          "format": "uuid",
+          "title": "Proposal Id",
+          "type": "string"
+        },
+        "proposal_revision": {
+          "minimum": 1,
+          "title": "Proposal Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "execution_id",
+        "proposal_id",
+        "proposal_revision"
+      ],
+      "title": "ExecutionReference",
+      "type": "object"
+    },
+    "TurnPublicStatus": {
+      "additionalProperties": false,
+      "description": "Client-visible state; owner identity and private bindings remain server-side.",
+      "properties": {
+        "context_version": {
+          "minimum": 1,
+          "title": "Context Version",
+          "type": "integer"
+        },
+        "execution_assigned": {
+          "title": "Execution Assigned",
+          "type": "boolean"
+        },
+        "execution_resolution": {
+          "anyOf": [
+            {
+              "enum": [
+                "succeeded",
+                "rejected",
+                "closed",
+                "unknown"
+              ],
+              "title": "ExecutionResolution",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Execution Resolution"
+        },
+        "resume_state": {
+          "anyOf": [
+            {
+              "enum": [
+                "QUEUED",
+                "RUNNING",
+                "WAIT_CONFIRM",
+                "EXECUTING",
+                "RECOVERING"
+              ],
+              "title": "ResumeState",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resume State"
+        },
+        "session_id": {
+          "format": "uuid",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "QUEUED",
+            "RUNNING",
+            "WAIT_INPUT",
+            "WAIT_CONFIRM",
+            "EXECUTING",
+            "RECOVERING",
+            "COMPLETED",
+            "CANCELLED",
+            "FAILED"
+          ],
+          "title": "TurnState",
+          "type": "string"
+        },
+        "state_revision": {
+          "minimum": 1,
+          "title": "State Revision",
+          "type": "integer"
+        },
+        "step": {
+          "enum": [
+            "accepted",
+            "build_context",
+            "model_decision",
+            "tool_read",
+            "prepare_proposal",
+            "awaiting_user",
+            "auth_required",
+            "dispatch",
+            "reconcile",
+            "finalize",
+            "terminal"
+          ],
+          "title": "TurnStep",
+          "type": "string"
+        },
+        "turn_id": {
+          "format": "uuid",
+          "title": "Turn Id",
+          "type": "string"
+        },
+        "wait_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "missing_fields",
+                "auth_required",
+                "confirm_required",
+                "execution_result_unknown"
+              ],
+              "title": "WaitReason",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Wait Reason"
+        }
+      },
+      "required": [
+        "turn_id",
+        "session_id",
+        "state",
+        "step",
+        "state_revision",
+        "execution_assigned",
+        "context_version"
+      ],
+      "title": "TurnPublicStatus",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "HTTP 202: the confirmation dispatched exactly one durable execution.\n\nThe response reports the Turn as it stands *after* dispatch. An unknown\noutcome is presented as RECOVERING/UNKNOWN, never as a success claim.",
+  "properties": {
+    "api_version": {
+      "const": "1.0.0",
+      "default": "1.0.0",
+      "title": "Api Version",
+      "type": "string"
+    },
+    "event_cursor": {
+      "minimum": 0,
+      "title": "Event Cursor",
+      "type": "integer"
+    },
+    "execution": {
+      "$ref": "#/$defs/ExecutionReference"
+    },
+    "turn": {
+      "$ref": "#/$defs/TurnPublicStatus"
+    }
+  },
+  "required": [
+    "turn",
+    "execution",
+    "event_cursor"
+  ],
+  "title": "ProposalExecutionAccepted",
+  "type": "object"
+}

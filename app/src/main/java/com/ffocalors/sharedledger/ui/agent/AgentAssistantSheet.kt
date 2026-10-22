@@ -85,6 +85,8 @@ data class AgentSheetActions(
     val onCloseHistory: () -> Unit = {},
     val onNewConversation: () -> Unit = {},
     val onOpenSession: (String) -> Unit = {},
+    /** Confirms a backend draft; the host owns the request so a retry reuses its id. */
+    val onConfirm: (String) -> Unit = {},
     /** Called when an item's entrance animation starts, so it never plays twice. */
     val onEntrancePlayed: (String) -> Unit = {},
 )
@@ -149,7 +151,7 @@ fun AgentAssistantContent(
             }
             if (demoMode) {
                 Text(
-                    text = "演示模式：回复由本机模拟，不会连接助手服务，也不会记账。",
+                    text = "演示模式：回复由本机模拟，确认只会记入演示账本，不会影响真实数据。",
                     style = SharedLedgerTextStyles.Label,
                     color = SoftCharcoal,
                     modifier = Modifier.padding(horizontal = SharedLedgerSpacing.Medium),
@@ -290,14 +292,27 @@ private fun TranscriptRow(
         is ClarificationItem -> StreamedReply(item.prompt, animate, playKey, actions, modifier)
         is ExecutionResultItem ->
             Text(item.line, style = SharedLedgerTextStyles.BodySecondary, color = SoftCharcoal, modifier = modifier)
+        is ExecutionReceiptItem ->
+            Text(
+                text = ProposalPresentation.receiptLine(item),
+                style = SharedLedgerTextStyles.BodySecondary,
+                color = SoftCharcoal,
+                modifier = modifier,
+            )
         is ErrorItem -> ErrorRow(item.message, item.retryable, actions.onRetryMessage, modifier)
-        is ProposalItem -> state.cards[item.proposalId]?.let {
+        is ProposalItem -> state.cards[item.proposalId]?.let { card ->
             ProposalDraftCard(
-                card = it,
+                card = card,
                 names = names,
                 modifier = modifier,
                 animateEntrance = animate,
                 onEntranceStarted = { actions.onEntrancePlayed(playKey) },
+                confirmState = ProposalConfirmUiState(
+                    confirming = state.confirmingProposalId == item.proposalId,
+                    unavailable = item.proposalId in state.confirmUnavailable,
+                    submitted = item.proposalId in state.submittedProposals,
+                ),
+                onConfirm = actions.onConfirm,
             )
         }
     }

@@ -1,0 +1,580 @@
+{
+  "$defs": {
+    "CancelTurnResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "api_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Api Version",
+          "type": "string"
+        },
+        "result": {
+          "enum": [
+            "cancelled",
+            "cancel_requested",
+            "reconciling"
+          ],
+          "title": "Result",
+          "type": "string"
+        },
+        "turn": {
+          "$ref": "#/$defs/TurnPublicStatus"
+        }
+      },
+      "required": [
+        "turn",
+        "result"
+      ],
+      "title": "CancelTurnResponse",
+      "type": "object"
+    },
+    "ConfirmationUnavailableResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "api_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Api Version",
+          "type": "string"
+        },
+        "business_write_performed": {
+          "const": false,
+          "default": false,
+          "title": "Business Write Performed",
+          "type": "boolean"
+        },
+        "code": {
+          "const": "execution_capability_unavailable",
+          "title": "Code",
+          "type": "string"
+        },
+        "execution_enabled": {
+          "const": false,
+          "default": false,
+          "title": "Execution Enabled",
+          "type": "boolean"
+        },
+        "message": {
+          "maxLength": 240,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "ConfirmationUnavailableResponse",
+      "type": "object"
+    },
+    "CreateSessionResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "api_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Api Version",
+          "type": "string"
+        },
+        "session": {
+          "$ref": "#/$defs/SessionSummary"
+        }
+      },
+      "required": [
+        "session"
+      ],
+      "title": "CreateSessionResponse",
+      "type": "object"
+    },
+    "ExecutionReference": {
+      "additionalProperties": false,
+      "properties": {
+        "execution_id": {
+          "format": "uuid",
+          "title": "Execution Id",
+          "type": "string"
+        },
+        "operations_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Operations Version",
+          "type": "string"
+        },
+        "proposal_id": {
+          "format": "uuid",
+          "title": "Proposal Id",
+          "type": "string"
+        },
+        "proposal_revision": {
+          "minimum": 1,
+          "title": "Proposal Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "execution_id",
+        "proposal_id",
+        "proposal_revision"
+      ],
+      "title": "ExecutionReference",
+      "type": "object"
+    },
+    "ProposalAdjustedAccepted": {
+      "additionalProperties": false,
+      "properties": {
+        "api_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Api Version",
+          "type": "string"
+        },
+        "event_cursor": {
+          "minimum": 0,
+          "title": "Event Cursor",
+          "type": "integer"
+        },
+        "proposal_id": {
+          "format": "uuid",
+          "title": "Proposal Id",
+          "type": "string"
+        },
+        "proposal_revision": {
+          "minimum": 1,
+          "title": "Proposal Revision",
+          "type": "integer"
+        },
+        "state": {
+          "const": "WAIT_CONFIRM",
+          "title": "State",
+          "type": "string"
+        },
+        "state_revision": {
+          "minimum": 1,
+          "title": "State Revision",
+          "type": "integer"
+        },
+        "turn_id": {
+          "format": "uuid",
+          "title": "Turn Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "proposal_id",
+        "proposal_revision",
+        "turn_id",
+        "state",
+        "state_revision",
+        "event_cursor"
+      ],
+      "title": "ProposalAdjustedAccepted",
+      "type": "object"
+    },
+    "ProposalExecutionAccepted": {
+      "additionalProperties": false,
+      "description": "HTTP 202: the confirmation dispatched exactly one durable execution.\n\nThe response reports the Turn as it stands *after* dispatch. An unknown\noutcome is presented as RECOVERING/UNKNOWN, never as a success claim.",
+      "properties": {
+        "api_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Api Version",
+          "type": "string"
+        },
+        "event_cursor": {
+          "minimum": 0,
+          "title": "Event Cursor",
+          "type": "integer"
+        },
+        "execution": {
+          "$ref": "#/$defs/ExecutionReference"
+        },
+        "turn": {
+          "$ref": "#/$defs/TurnPublicStatus"
+        }
+      },
+      "required": [
+        "turn",
+        "execution",
+        "event_cursor"
+      ],
+      "title": "ProposalExecutionAccepted",
+      "type": "object"
+    },
+    "SessionSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "active_turn_count": {
+          "minimum": 0,
+          "title": "Active Turn Count",
+          "type": "integer"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "session_id": {
+          "format": "uuid",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "title": "Updated At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "created_at",
+        "updated_at",
+        "active_turn_count"
+      ],
+      "title": "SessionSummary",
+      "type": "object"
+    },
+    "SubmitTurnAccepted": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted_at": {
+          "format": "date-time",
+          "title": "Accepted At",
+          "type": "string"
+        },
+        "api_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Api Version",
+          "type": "string"
+        },
+        "state": {
+          "const": "QUEUED",
+          "title": "State",
+          "type": "string"
+        },
+        "state_revision": {
+          "const": 1,
+          "default": 1,
+          "title": "State Revision",
+          "type": "integer"
+        },
+        "turn_id": {
+          "format": "uuid",
+          "title": "Turn Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "turn_id",
+        "state",
+        "accepted_at"
+      ],
+      "title": "SubmitTurnAccepted",
+      "type": "object"
+    },
+    "TurnMutationAccepted": {
+      "additionalProperties": false,
+      "properties": {
+        "api_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Api Version",
+          "type": "string"
+        },
+        "event_cursor": {
+          "minimum": 0,
+          "title": "Event Cursor",
+          "type": "integer"
+        },
+        "state": {
+          "enum": [
+            "QUEUED",
+            "RUNNING",
+            "WAIT_INPUT",
+            "WAIT_CONFIRM",
+            "EXECUTING",
+            "RECOVERING",
+            "COMPLETED",
+            "CANCELLED",
+            "FAILED"
+          ],
+          "title": "TurnState",
+          "type": "string"
+        },
+        "state_revision": {
+          "minimum": 1,
+          "title": "State Revision",
+          "type": "integer"
+        },
+        "turn_id": {
+          "format": "uuid",
+          "title": "Turn Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "turn_id",
+        "state",
+        "state_revision",
+        "event_cursor"
+      ],
+      "title": "TurnMutationAccepted",
+      "type": "object"
+    },
+    "TurnPublicStatus": {
+      "additionalProperties": false,
+      "description": "Client-visible state; owner identity and private bindings remain server-side.",
+      "properties": {
+        "context_version": {
+          "minimum": 1,
+          "title": "Context Version",
+          "type": "integer"
+        },
+        "execution_assigned": {
+          "title": "Execution Assigned",
+          "type": "boolean"
+        },
+        "execution_resolution": {
+          "anyOf": [
+            {
+              "enum": [
+                "succeeded",
+                "rejected",
+                "closed",
+                "unknown"
+              ],
+              "title": "ExecutionResolution",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Execution Resolution"
+        },
+        "resume_state": {
+          "anyOf": [
+            {
+              "enum": [
+                "QUEUED",
+                "RUNNING",
+                "WAIT_CONFIRM",
+                "EXECUTING",
+                "RECOVERING"
+              ],
+              "title": "ResumeState",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resume State"
+        },
+        "session_id": {
+          "format": "uuid",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "QUEUED",
+            "RUNNING",
+            "WAIT_INPUT",
+            "WAIT_CONFIRM",
+            "EXECUTING",
+            "RECOVERING",
+            "COMPLETED",
+            "CANCELLED",
+            "FAILED"
+          ],
+          "title": "TurnState",
+          "type": "string"
+        },
+        "state_revision": {
+          "minimum": 1,
+          "title": "State Revision",
+          "type": "integer"
+        },
+        "step": {
+          "enum": [
+            "accepted",
+            "build_context",
+            "model_decision",
+            "tool_read",
+            "prepare_proposal",
+            "awaiting_user",
+            "auth_required",
+            "dispatch",
+            "reconcile",
+            "finalize",
+            "terminal"
+          ],
+          "title": "TurnStep",
+          "type": "string"
+        },
+        "turn_id": {
+          "format": "uuid",
+          "title": "Turn Id",
+          "type": "string"
+        },
+        "wait_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "missing_fields",
+                "auth_required",
+                "confirm_required",
+                "execution_result_unknown"
+              ],
+              "title": "WaitReason",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Wait Reason"
+        }
+      },
+      "required": [
+        "turn_id",
+        "session_id",
+        "state",
+        "step",
+        "state_revision",
+        "execution_assigned",
+        "context_version"
+      ],
+      "title": "TurnPublicStatus",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Four-table placement is defined in the freeze document; response snapshots contain no nonce.",
+  "properties": {
+    "client_request_id": {
+      "format": "uuid",
+      "title": "Client Request Id",
+      "type": "string"
+    },
+    "http_status": {
+      "maximum": 599,
+      "minimum": 200,
+      "title": "Http Status",
+      "type": "integer"
+    },
+    "key_scope": {
+      "enum": [
+        "sessions.create",
+        "turns.submit",
+        "turns.resume.clarification",
+        "turns.resume.auth",
+        "turns.resume.proposal_adjust",
+        "turns.cancel",
+        "proposals.confirm"
+      ],
+      "title": "ApiActionKind",
+      "type": "string"
+    },
+    "owner_user_id": {
+      "format": "uuid",
+      "title": "Owner User Id",
+      "type": "string"
+    },
+    "payload_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Payload Hash",
+      "type": "string"
+    },
+    "recorded_at": {
+      "format": "date-time",
+      "title": "Recorded At",
+      "type": "string"
+    },
+    "resource_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Resource Id"
+    },
+    "response_kind": {
+      "enum": [
+        "session_created",
+        "turn_accepted",
+        "turn_resumed",
+        "proposal_adjusted",
+        "turn_cancelled",
+        "confirmation_unavailable",
+        "execution_dispatched"
+      ],
+      "title": "RequestReceiptKind",
+      "type": "string"
+    },
+    "response_snapshot": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CreateSessionResponse"
+        },
+        {
+          "$ref": "#/$defs/SubmitTurnAccepted"
+        },
+        {
+          "$ref": "#/$defs/TurnMutationAccepted"
+        },
+        {
+          "$ref": "#/$defs/CancelTurnResponse"
+        },
+        {
+          "$ref": "#/$defs/ProposalAdjustedAccepted"
+        },
+        {
+          "$ref": "#/$defs/ConfirmationUnavailableResponse"
+        },
+        {
+          "$ref": "#/$defs/ProposalExecutionAccepted"
+        }
+      ],
+      "title": "Response Snapshot"
+    }
+  },
+  "required": [
+    "key_scope",
+    "owner_user_id",
+    "client_request_id",
+    "payload_hash",
+    "http_status",
+    "response_kind",
+    "response_snapshot",
+    "recorded_at"
+  ],
+  "title": "RequestReceipt",
+  "type": "object"
+}

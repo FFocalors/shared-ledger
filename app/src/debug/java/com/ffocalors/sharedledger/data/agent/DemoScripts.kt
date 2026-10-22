@@ -6,6 +6,9 @@ import java.util.Locale
 /** Which scripted timeline a submitted text triggers. Pure, so it can be unit tested. */
 enum class DemoScript { OFFLINE, ERROR, SLOW, DRAFT, CLARIFY, ANSWER, DEFAULT }
 
+/** What the confirm endpoint does for a demo draft, chosen from the draft's own text. */
+enum class DemoConfirmScenario { EXECUTE, RECOVERING, UNAVAILABLE }
+
 object DemoScripts {
     private val amountRegex = Regex("""\d+(?:\.\d+)?(?!\d|\.\d|\s*个?人)""")
     private val countRegex = Regex("""(\d+|[两二三四五六七八九十])\s*个?人""")
@@ -25,6 +28,13 @@ object DemoScripts {
                 DemoScript.ANSWER
             else -> DemoScript.DEFAULT
         }
+    }
+
+    /** 「不可用」 exercises the frozen 501; 「核对」 exercises the RECOVERING/unknown path. */
+    fun confirmScenario(text: String): DemoConfirmScenario = when {
+        text.contains("不可用") -> DemoConfirmScenario.UNAVAILABLE
+        text.contains("核对") -> DemoConfirmScenario.RECOVERING
+        else -> DemoConfirmScenario.EXECUTE
     }
 
     /** First number in the text (ignoring head counts like "4个人"), formatted to 2 decimals. */
