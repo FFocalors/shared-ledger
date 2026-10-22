@@ -103,9 +103,13 @@ def _openapi() -> dict[str, Any]:
             )
             responses[success_status] = response(success)
         else:
+            responses["202"] = response(
+                "ProposalExecutionAccepted",
+                "Confirmation dispatched a durable execution",
+            )
             responses["501"] = response(
                 "ConfirmationUnavailableResponse",
-                "Confirmation capability is deliberately disabled in P1-01",
+                "Confirmation capability is disabled by configuration",
             )
         item: dict[str, Any] = {
             "operationId": operation_id,

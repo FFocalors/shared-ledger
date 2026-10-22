@@ -88,6 +88,39 @@
       "title": "CreateSessionResponse",
       "type": "object"
     },
+    "ExecutionReference": {
+      "additionalProperties": false,
+      "properties": {
+        "execution_id": {
+          "format": "uuid",
+          "title": "Execution Id",
+          "type": "string"
+        },
+        "operations_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Operations Version",
+          "type": "string"
+        },
+        "proposal_id": {
+          "format": "uuid",
+          "title": "Proposal Id",
+          "type": "string"
+        },
+        "proposal_revision": {
+          "minimum": 1,
+          "title": "Proposal Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "execution_id",
+        "proposal_id",
+        "proposal_revision"
+      ],
+      "title": "ExecutionReference",
+      "type": "object"
+    },
     "ProposalAdjustedAccepted": {
       "additionalProperties": false,
       "properties": {
@@ -137,6 +170,36 @@
         "event_cursor"
       ],
       "title": "ProposalAdjustedAccepted",
+      "type": "object"
+    },
+    "ProposalExecutionAccepted": {
+      "additionalProperties": false,
+      "description": "HTTP 202: the confirmation dispatched exactly one durable execution.\n\nThe response reports the Turn as it stands *after* dispatch. An unknown\noutcome is presented as RECOVERING/UNKNOWN, never as a success claim.",
+      "properties": {
+        "api_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Api Version",
+          "type": "string"
+        },
+        "event_cursor": {
+          "minimum": 0,
+          "title": "Event Cursor",
+          "type": "integer"
+        },
+        "execution": {
+          "$ref": "#/$defs/ExecutionReference"
+        },
+        "turn": {
+          "$ref": "#/$defs/TurnPublicStatus"
+        }
+      },
+      "required": [
+        "turn",
+        "execution",
+        "event_cursor"
+      ],
+      "title": "ProposalExecutionAccepted",
       "type": "object"
     },
     "SessionSummary": {
@@ -469,7 +532,8 @@
         "turn_resumed",
         "proposal_adjusted",
         "turn_cancelled",
-        "confirmation_unavailable"
+        "confirmation_unavailable",
+        "execution_dispatched"
       ],
       "title": "RequestReceiptKind",
       "type": "string"
@@ -493,6 +557,9 @@
         },
         {
           "$ref": "#/$defs/ConfirmationUnavailableResponse"
+        },
+        {
+          "$ref": "#/$defs/ProposalExecutionAccepted"
         }
       ],
       "title": "Response Snapshot"

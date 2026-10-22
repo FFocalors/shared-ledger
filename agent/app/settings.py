@@ -81,6 +81,8 @@ class Settings(BaseSettings):
     allow_insecure_loopback_auth_http: bool = False
     cursor_signing_secret: SecretStr | None = None
     agent_enabled: bool = False
+    # P3a rollback switch: disabled keeps the frozen 501 on /confirm.
+    execution_enabled: bool = False
     disable_revision: int = Field(default=1, ge=0)
     max_request_bytes: int = Field(default=65536, ge=1024, le=1048576)
     api_requests_per_minute: int = Field(default=120, ge=1, le=10000)

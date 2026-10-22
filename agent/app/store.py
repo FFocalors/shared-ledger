@@ -1659,6 +1659,67 @@ class SQLiteAgentStore(P2V3StoreMixin):
         self._fault("record_confirmation_unavailable.after_commit")
         return receipt
 
+    def record_execution_dispatch(
+        self,
+        owner_user_id: UserId,
+        proposal_id: uuid.UUID,
+        request: object,
+        response: object,
+        *,
+        expected_revision: int,
+        now: Optional[datetime] = None,
+    ) -> RequestReceipt:
+        """Persist the P3a 202 after the execution identity is durable.
+
+        Receipt lookup precedes every mutable check, so an exact retry returns
+        the original 202 even after the Turn has moved on. The proposal must
+        already carry its dispatched execution: a 202 never invents one.
+        """
+        from .contracts import ConfirmProposalRequest, ProposalExecutionAccepted, ProposalStatus
+
+        if not isinstance(request, ConfirmProposalRequest) or not isinstance(response, ProposalExecutionAccepted):
+            raise TypeError("execution receipt requires the frozen request and accepted response models")
+        self._require_started()
+        instant = _aware_now(now)
+        scope = ApiActionKind.PROPOSAL_CONFIRM
+        payload_hash = canonical_payload_hash(scope, request, resource_id=proposal_id)
+        with self._transaction() as connection:
+            current = self._proposal_by_id(connection, owner_user_id, proposal_id)
+            stored = next(
+                (item for item in current.request_receipts if item.client_request_id == request.client_request_id),
+                None,
+            )
+            if stored is not None:
+                return self._replay_or_conflict(
+                    stored, scope=scope, owner_user_id=owner_user_id, resource_id=proposal_id,
+                    request_id=request.client_request_id, payload_hash=payload_hash,
+                )
+            if current.revision != expected_revision:
+                raise ProposalConflict("proposal revision precondition failed")
+            if current.status != ProposalStatus.CONFIRMED or current.execution is None:
+                raise ProposalConflict("proposal has no dispatched execution")
+            receipt = RequestReceipt(
+                key_scope=scope, owner_user_id=owner_user_id, resource_id=proposal_id,
+                client_request_id=request.client_request_id, payload_hash=payload_hash,
+                http_status=202, response_kind=RequestReceiptKind.EXECUTION_DISPATCHED,
+                response_snapshot=response, recorded_at=instant,
+            )
+            document = current.model_dump(mode="python", by_alias=True, exclude_none=False)
+            document["request_receipts"] = [
+                *[item.model_dump(mode="python", by_alias=True, exclude_none=False) for item in current.request_receipts],
+                receipt.model_dump(mode="python", by_alias=True, exclude_none=False),
+            ]
+            updated = ProposalRecord.model_validate(document)
+            changed = connection.execute(
+                "UPDATE proposals SET record_json = ?, updated_at = ? WHERE proposal_id = ? AND owner_user_id = ? AND revision = ? AND status = 'confirmed'",
+                (_dump_json(updated), _timestamp(instant), str(proposal_id), str(owner_user_id), expected_revision),
+            ).rowcount
+            if changed != 1:
+                raise ProposalConflict("proposal changed while recording the execution receipt")
+            self._fault("record_execution_dispatch.before_commit")
+        self._fault("record_execution_dispatch.after_commit")
+        return receipt
+
     # --- P3a mock write path -------------------------------------------------
     #
     # The business effect happens outside the agent, so this path is deliberately

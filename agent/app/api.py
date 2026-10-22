@@ -28,9 +28,10 @@ from .components import AppComponents
 from .contracts import (
     ApiActionKind, ApiErrorCode, ApiErrorResponse, CancelTurnRequest, CancelTurnResponse,
     ConfirmProposalRequest, ConfirmationUnavailableResponse, CreateSessionRequest,
-    EventPollQuery, InactiveProposalCard,
+    EventPollQuery, ExecutionReference, ExecutionResolution, InactiveProposalCard,
     ListSessionsResponse, PollEventsResponse,
-    ProposalEventPayload, ProposalRecord, ProposalStatus, ResumeAuthRequest,
+    ProposalEventPayload, ProposalExecutionAccepted, ProposalRecord, ProposalStatus,
+    ResumeAuthRequest,
     ResumeClarificationRequest, ResumeProposalAdjustRequest, ResumeState,
     SessionDetailResponse, SessionListQuery,
     SimulationProposalCard, SubmitTurnRequest,
@@ -38,6 +39,7 @@ from .contracts import (
     TurnStep, WaitReason, ConfirmableProposalCard, EventType,
     StatusEventPayload, validate_auth_resume,
 )
+from .p3_execution import MockExecutionStateError, MockPreconditionConflict
 from .ports import (
     AgentControlSnapshot, AgentDisabled, CapabilityUnavailable, Principal, ScopeDenied,
     ScopeUnavailable,
@@ -282,6 +284,12 @@ async def _store_call(operation: Any, *args: Any, **kwargs: Any) -> Any:
         raise _ApiFailure(409, ApiErrorCode.PROPOSAL_EXPIRED, "The proposal has expired.") from None
     except ProposalConflict:
         raise _ApiFailure(409, ApiErrorCode.PROPOSAL_REVISION_CONFLICT, "The proposal is no longer current.") from None
+    except MockPreconditionConflict:
+        raise _ApiFailure(409, ApiErrorCode.PROPOSAL_REVISION_CONFLICT,
+                          "The proposal preview is stale; request a new preview.") from None
+    except MockExecutionStateError:
+        raise _ApiFailure(409, ApiErrorCode.PROPOSAL_REVISION_CONFLICT,
+                          "This proposal cannot be executed.") from None
     except StoreError:
         raise _ApiFailure(503, ApiErrorCode.DEPENDENCY_UNAVAILABLE, "Durable storage is temporarily unavailable.", retryable=True) from None
     except ValueError:
@@ -519,6 +527,74 @@ def _public_status(snapshot: TurnStateSnapshot) -> TurnPublicStatus:
         state_revision=snapshot.state_revision, execution_assigned=snapshot.execution is not None,
         execution_resolution=snapshot.execution_resolution, context_version=snapshot.context_version,
     )
+
+
+async def _accepted_execution_response(
+    components: AppComponents,
+    principal: Principal,
+    proposal: ProposalRecord,
+    request: ConfirmProposalRequest,
+) -> JSONResponse:
+    """Build and persist the 202 for an execution that is already dispatched."""
+    aggregate = await _store_call(components.store.get_turn, principal.user_id, proposal.turn_id)
+    snapshot = aggregate.record.turn
+    if snapshot.execution is None:
+        raise _ApiFailure(503, ApiErrorCode.DEPENDENCY_UNAVAILABLE,
+                          "The dispatched execution identity is unavailable.", retryable=True)
+    view = await _store_call(
+        components.store.read_turn_view, principal.user_id, proposal.turn_id, limit=1,
+    )
+    response = ProposalExecutionAccepted(
+        turn=_public_status(snapshot),
+        execution=ExecutionReference(
+            execution_id=snapshot.execution.execution_id,
+            proposal_id=proposal.proposal_id,
+            proposal_revision=proposal.revision,
+        ),
+        event_cursor=view.event_cursor,
+    )
+    receipt = await _store_call(
+        components.store.record_execution_dispatch, principal.user_id,
+        proposal.proposal_id, request, response,
+        expected_revision=proposal.revision,
+    )
+    return _receipt(receipt)
+
+
+async def _execute_confirmation(
+    components: AppComponents,
+    principal: Principal,
+    proposal: ProposalRecord,
+    request: ConfirmProposalRequest,
+    expected_state_revision: int,
+) -> JSONResponse:
+    """Dispatch, apply, and settle one proposal; an unknown outcome is never success."""
+    await _store_call(
+        components.store.confirm_and_dispatch, principal.user_id,
+        proposal.proposal_id, request,
+        expected_state_revision=expected_state_revision,
+        expected_proposal_revision=proposal.revision,
+    )
+    try:
+        await _store_call(
+            components.store.apply_mock_execution, principal.user_id, proposal.proposal_id,
+        )
+        await _store_call(
+            components.store.settle_mock_execution, principal.user_id, proposal.proposal_id,
+            ExecutionResolution.SUCCEEDED,
+            result_code="mock_expense_created",
+            result_summary="mock expense effect applied",
+        )
+    except _ApiFailure:
+        # The effect may already have landed. Park the Turn as UNKNOWN under the
+        # original key and let the runtime reconcile it; never claim success.
+        try:
+            await _store_call(
+                components.store.mark_execution_unknown, principal.user_id, proposal.proposal_id,
+            )
+        except _ApiFailure:
+            pass
+    return await _accepted_execution_response(components, principal, proposal, request)
 
 
 def _cards(proposals: tuple[ProposalRecord, ...], states: dict[uuid.UUID, TurnStateSnapshot], control: AgentControlSnapshot) -> list[Any]:
@@ -984,6 +1060,12 @@ def install_api_routes(app: FastAPI) -> None:
         if replay is not None:
             return _receipt(replay)
         control = await _require_enabled(components)
+        if components.execution_enabled and proposal.execution is not None:
+            # A previous confirmation already dispatched this proposal. Return the
+            # same execution under the caller's request key; never dispatch again.
+            if proposal.command_digest is None or not hmac.compare_digest(body.command_digest, proposal.command_digest):
+                raise _ApiFailure(409, ApiErrorCode.PROPOSAL_REVISION_CONFLICT, "The confirmation input does not match the dispatched command.") from None
+            return await _accepted_execution_response(components, principal, proposal, body)
         if turn.record.turn.state != TurnState.WAIT_CONFIRM:
             raise _ApiFailure(409, ApiErrorCode.STATE_REVISION_CONFLICT, "The turn is no longer awaiting confirmation.")
         if body.expected_proposal_revision != proposal.revision:
@@ -1004,14 +1086,18 @@ def install_api_routes(app: FastAPI) -> None:
                 or not hmac.compare_digest(body.confirmation_nonce, proposal.confirmation_nonce)
             ):
                 raise _ApiFailure(409, ApiErrorCode.PROPOSAL_REVISION_CONFLICT, "The proposal revision or confirmation input has changed.") from None
-        response = ConfirmationUnavailableResponse(code="execution_capability_unavailable",
-            message="Execution is unavailable in this service phase.")
         latest_control = await _require_enabled(components)
         if latest_control.disable_revision != control.disable_revision:
             raise _ApiFailure(409, ApiErrorCode.AGENT_DISABLED, "The proposal was invalidated by an Agent control change.")
-        receipt = await _store_call(components.store.record_confirmation_unavailable, principal.user_id,
-            identity, body, response, expected_revision=proposal.revision)
-        return _receipt(receipt)
+        if not components.execution_enabled:
+            response = ConfirmationUnavailableResponse(code="execution_capability_unavailable",
+                message="Execution is unavailable in this service phase.")
+            receipt = await _store_call(components.store.record_confirmation_unavailable, principal.user_id,
+                identity, body, response, expected_revision=proposal.revision)
+            return _receipt(receipt)
+        return await _execute_confirmation(
+            components, principal, proposal, body, turn.record.turn.state_revision,
+        )
 
 
 def install_health_routes(app: FastAPI) -> None:

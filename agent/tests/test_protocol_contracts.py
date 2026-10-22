@@ -502,4 +502,9 @@ def test_capability_registry_and_openapi_are_complete_and_interoperable() -> Non
     assert "ApiErrorResponse" in components
     assert document["paths"]["/v1/turns/{turn_id}/events"]["get"]["responses"].get("200")
     confirm_responses = document["paths"]["/v1/proposals/{proposal_id}/confirm"]["post"]["responses"]
-    assert "501" in confirm_responses and "202" not in confirm_responses
+    # P3a approved response: 202 on dispatch, 501 retained as the rollback path.
+    assert "501" in confirm_responses and "202" in confirm_responses
+    accepted = confirm_responses["202"]["content"]["application/json"]["schema"]["$ref"]
+    assert accepted.endswith("/ProposalExecutionAccepted")
+    unavailable = confirm_responses["501"]["content"]["application/json"]["schema"]["$ref"]
+    assert unavailable.endswith("/ConfirmationUnavailableResponse")

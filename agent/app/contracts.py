@@ -1938,6 +1938,27 @@ class TurnPublicStatus(ContractModel):
         return self
 
 
+class ProposalExecutionAccepted(ContractModel):
+    """HTTP 202: the confirmation dispatched exactly one durable execution.
+
+    The response reports the Turn as it stands *after* dispatch. An unknown
+    outcome is presented as RECOVERING/UNKNOWN, never as a success claim.
+    """
+
+    api_version: Literal["1.0.0"] = API_VERSION
+    turn: TurnPublicStatus
+    execution: ExecutionReference
+    event_cursor: Annotated[int, Field(strict=True, ge=0)]
+
+    @model_validator(mode="after")
+    def execution_matches_turn(self) -> "ProposalExecutionAccepted":
+        if not self.turn.execution_assigned:
+            raise ValueError("an accepted execution must be assigned to its turn")
+        if self.turn.state in (TurnState.QUEUED, TurnState.RUNNING, TurnState.WAIT_CONFIRM):
+            raise ValueError("an accepted execution cannot still be planning")
+        return self
+
+
 STATE_TRANSITIONS: dict[str, list[str]] = {
     TurnState.QUEUED.value: [
         TurnState.RUNNING.value,
@@ -2531,6 +2552,7 @@ class RequestReceiptKind(ContractEnum):
     PROPOSAL_ADJUSTED = "proposal_adjusted"
     TURN_CANCELLED = "turn_cancelled"
     CONFIRMATION_UNAVAILABLE = "confirmation_unavailable"
+    EXECUTION_DISPATCHED = "execution_dispatched"
 
 
 class ApiErrorCode(ContractEnum):
@@ -2743,6 +2765,7 @@ class RequestReceipt(ContractModel):
         CancelTurnResponse,
         ProposalAdjustedAccepted,
         ConfirmationUnavailableResponse,
+        ProposalExecutionAccepted,
     ]
     recorded_at: datetime
 
@@ -2762,6 +2785,7 @@ class RequestReceipt(ContractModel):
             RequestReceiptKind.PROPOSAL_ADJUSTED: ProposalAdjustedAccepted,
             RequestReceiptKind.TURN_CANCELLED: CancelTurnResponse,
             RequestReceiptKind.CONFIRMATION_UNAVAILABLE: ConfirmationUnavailableResponse,
+            RequestReceiptKind.EXECUTION_DISPATCHED: ProposalExecutionAccepted,
         }[self.response_kind]
         if not isinstance(self.response_snapshot, expected):
             raise ValueError("receipt response_kind must match the stored original response")
@@ -2774,7 +2798,12 @@ class RequestReceipt(ContractModel):
             ApiActionKind.TURN_CANCEL: RequestReceiptKind.TURN_CANCELLED,
             ApiActionKind.PROPOSAL_CONFIRM: RequestReceiptKind.CONFIRMATION_UNAVAILABLE,
         }
-        if self.response_kind != expected_kind_by_scope[self.key_scope]:
+        if self.response_kind not in {
+            expected_kind_by_scope[self.key_scope],
+        } | (
+            {RequestReceiptKind.EXECUTION_DISPATCHED}
+            if self.key_scope == ApiActionKind.PROPOSAL_CONFIRM else set()
+        ):
             raise ValueError("receipt response kind must match its action-key scope")
         if self.key_scope == ApiActionKind.SESSION_CREATE and self.resource_id is not None:
             raise ValueError("session creation keys are owner-scoped and have no pre-existing resource")
@@ -3980,6 +4009,7 @@ def schema_catalog() -> list[type[BaseModel]]:
         CancelTurnResponse,
         ConfirmProposalRequest,
         ConfirmationUnavailableResponse,
+        ProposalExecutionAccepted,
         PollEventsResponse,
         SessionListQuery,
         EventPollQuery,

@@ -62,6 +62,7 @@ class AppComponents:
     scope_authorizer: ScopeAuthorizer | None = None
     agent_control: AgentControl | None = None
     proposal_adjustment_preparer: ProposalAdjustmentPreparer | None = None
+    execution_enabled: bool = False
 
 
 @dataclass(frozen=True)
@@ -257,6 +258,7 @@ def build_components(settings: Settings) -> AppComponents:
         scope_authorizer=scope,
         agent_control=control,
         proposal_adjustment_preparer=_UnavailableProposalAdjustmentPreparer(),
+        execution_enabled=settings.execution_enabled,
     )
 
 

@@ -1,6 +1,8 @@
-# P3a 确认路由的成功响应：契约差异提案（未实施）
+# P3a 确认路由的成功响应：契约差异提案（已实施）
 
-**状态：提案，待 root 评审；未实施。** 冻结的 v1 契约里 `/v1/proposals/{proposal_id}/confirm` **没有成功响应**，只有 `400/401/403/404/409/422/429/501/503`。因此 P3a 的引擎虽然已能真实执行，HTTP 面**仍返回冻结的 501**。要让确认在 HTTP 上"打通"，必须先批准一份响应契约。
+> **已批准（2026-10-22，所有者）并已实施。** 新增 `ProposalExecutionAccepted`（HTTP 202）与 `RequestReceiptKind.EXECUTION_DISPATCHED`；`501 ConfirmationUnavailableResponse` 保留，由 `execution_enabled` 配置开关控制（默认 false，即回滚到冻结行为）。新契约快照 `agent/contracts/v1.0.0/manifest.json` 文件 SHA-256：`c1f7775add9cf1e66986d3a56d4358c4f263d083fd518317539a545f5650f864`（本机工作树字节；干净 checkout 因行尾不同会得到不同哈希，见 P2 复核 R1-1）。实施细节与测试见文末「实施记录」。
+
+**历史状态（提案阶段）：** 冻结的 v1 契约里 `/v1/proposals/{proposal_id}/confirm` **没有成功响应**，只有 `400/401/403/404/409/422/429/501/503`；因此 P3a 的引擎虽然已能真实执行，HTTP 面当时仍返回冻结的 501。要让确认在 HTTP 上"打通"，必须先批准一份响应契约——本提案即是该契约。
 
 ## 现状证据
 
@@ -50,3 +52,19 @@
 ## 与 P3a 引擎的关系
 
 引擎与四条验收条件**不依赖**本提案：它们已在 `agent/app/store.py` 的 P3a 方法上实现并有测试（`agent/tests/test_p3a_mock_write.py`）。本提案只解锁"HTTP 上把确认当作成功返回"这一层。
+
+## 实施记录（2026-10-22）
+
+| 项 | 内容 |
+|---|---|
+| 开关 | `Settings.execution_enabled`（默认 `False`）→ `AppComponents.execution_enabled`；`False` 时路由原样返回冻结的 501 |
+| 新响应模型 | `ProposalExecutionAccepted`：`api_version / turn: TurnPublicStatus / execution: ExecutionReference / event_cursor`；校验器要求 Turn 已分配执行身份且不处于规划态 |
+| 新 receipt kind | `RequestReceiptKind.EXECUTION_DISPATCHED`；`RequestReceipt` 联合与 `response_kind_matches_snapshot` 均已允许该组合（`PROPOSAL_CONFIRM` 现在允许 501 或 202 两种 receipt） |
+| store | 新 `record_execution_dispatch(...)`：提案必须已 `CONFIRMED` 且带 execution；同 `client_request_id` 重放返回原 202；CAS 限定 `status='confirmed'` |
+| API 处理器 | 校验通过后：`confirm_and_dispatch` → `apply_mock_execution` → `settle_mock_execution` → 202 + receipt |
+| 重复确认 | 同一 `client_request_id` 走 receipt 重放；不同 id 但提案已派发时，校验 `command_digest` 后返回同一个 execution，不再次派发 |
+| 未知结果 | `apply`/`settle` 任一步失败 → `mark_execution_unknown`，仍返回 202 但 `turn.state=RECOVERING`、`execution_resolution=unknown`；**不声称成功**，由运行时按原键结算 |
+| 契约导出 | `openapi.json` 新增 202；新增 `schemas/ProposalExecutionAccepted.schema.json`；`manifest.json` 56 个生成文件（原 55） |
+| 测试 | 新增 `agent/tests/test_p3b_confirm_api.py` 6 条；`test_protocol_contracts.py` 改为断言 202 与 501 并存 |
+
+明确未做：未接真实后端（仍写 Mock 账本）、未接云端、未改 `ConfirmProposalRequest`/`ExecutionResultPayload`/状态转移表、未改 P2 v3 契约。
