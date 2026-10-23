@@ -47,6 +47,8 @@
 
 ### 从零到真机可用
 
+AgentRoot 默认依次检查 `AGENT_DEV_ROOT`、`D:\project\Android\shared-ledger-agent\agent`、脚本目录上两级的 `agent/`，选择包含 `.venv/Scripts/python.exe` 和 `app/main.py` 的首个目录。环境不同请给两个脚本显式传入 `-AgentRoot "E:\your-agent-repo\agent"`；Android Studio External Tool 参数也加上同一参数。显式路径无效时直接报错，不回退。登录任务保存解析后的绝对 AgentRoot；路径变更后重新运行安装脚本。卸载任务不依赖 AgentRoot 仍然存在。
+
 1. 在普通 PowerShell 终端进入 Agent 仓库 `agent/deploy/scripts`，确认 agent/.env 已由本机配置、venv 依赖已安装、LM Studio 模型可用。不要从沙箱进程启动服务。
 2. 执行 `powershell -ExecutionPolicy Bypass -File .\install-dev-autostart.ps1` 一次安装登录任务，再执行 `powershell -ExecutionPolicy Bypass -File .\dev-up.ps1` 准备当前会话。不需要提升权限；若系统策略拒绝注册，请联系管理员，不自动提权。
 3. USB：手机打开 USB 调试并授权，只连接一个设备。脚本等待设备最多 30 秒，验证 `adb reverse --list`。App debug 设置 `agent.demo=false`、`agent.baseUrl=http://127.0.0.1:8765` 后重建。
@@ -83,3 +85,4 @@ agent\.venv\Scripts\python.exe -m pytest agent/tests -q
 ```
 
 本次 Agent 全量实际结果（2026-10-23）：764 passed、7 failed、1 xfailed。整个 agent/tests 目录一次调用，两个 store 根每轮新建。7 项失败均位于 test_p2_read_backend.py，报 `candidate Turn deadline is outside the reviewed bound`；本次未修改这些业务代码或测试，不能宣称全套通过。App 单测尚未执行成功，阻断为既有 toolchain 指向缺少 jlink.exe 的 JRE。
+
