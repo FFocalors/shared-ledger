@@ -40,3 +40,46 @@
 - 面板打开时旋转屏幕，抽屉不会重新吸附到锚点。
 - 思考流光固定扫过 200dp，短状态文字每圈有一小段空白。
 - 读屏的抽屉自定义操作、系统关闭动画下的降级路径已实现，未做专门验证。
+
+## 本机联调：推荐流程
+
+脚本位于 `agent/deploy/scripts/`：`dev-up.ps1` 准备 LM Studio、模型、Agent 和 USB reverse；`dev-agent-watch.ps1` 每 5 秒恢复映射（`-Once` 单次）；`install-dev-autostart.ps1` 安装当前用户登录任务（`-Uninstall` 撤销）。脚本支持 AgentRoot、Lms、Adb、LogRoot 参数；日志根必须保留在 D:。不读取或打印 .env 内容。
+
+### 从零到真机可用
+
+1. 在普通 PowerShell 终端进入 Agent 仓库 `agent/deploy/scripts`，确认 agent/.env 已由本机配置、venv 依赖已安装、LM Studio 模型可用。不要从沙箱进程启动服务。
+2. 执行 `powershell -ExecutionPolicy Bypass -File .\install-dev-autostart.ps1` 一次安装登录任务，再执行 `powershell -ExecutionPolicy Bypass -File .\dev-up.ps1` 准备当前会话。不需要提升权限；若系统策略拒绝注册，请联系管理员，不自动提权。
+3. USB：手机打开 USB 调试并授权，只连接一个设备。脚本等待设备最多 30 秒，验证 `adb reverse --list`。App debug 设置 `agent.demo=false`、`agent.baseUrl=http://127.0.0.1:8765` 后重建。
+4. Android Studio：Settings → Tools → External Tools → Add。Program 为 `powershell.exe`；Arguments 为 `-NoProfile -ExecutionPolicy Bypass -File "<Agent仓库>\agent\deploy\scripts\dev-up.ps1"`；Working directory 为 `<Agent仓库>\agent`。Run/Debug Configurations → Before launch → Add → Run External Tool，选择此工具。路径填本机实际值，不提交 IDE 私有配置。
+5. LAN：先停止自己启动的 USB 模式 Agent，再在普通终端运行 `dev-up.ps1 -Lan`。它使用 `AGENT_LISTEN_HOST=0.0.0.0` 并列出私有 IPv4，跳过 adb。登录任务改为 `install-dev-autostart.ps1 -Uninstall` 后 `install-dev-autostart.ps1 -Lan`；External Tool 参数也加 `-Lan`。local.properties 设置 `agent.demo=false`、`agent.baseUrl=http://<局域网IP>:8765`，重新构建 debug。release 仍只允许 HTTPS。
+
+LAN 仅限同一可信局域网，不向公网暴露 8765，不开放公用网络配置文件。以下命令仅供用户在管理员 PowerShell 手动执行（脚本不会自动执行）：
+
+```powershell
+New-NetFirewallRule -DisplayName 'SharedLedger Agent Dev' -Direction Inbound -Action Allow -Protocol TCP -LocalPort 8765 -Profile Private -RemoteAddress LocalSubnet
+# Revert:
+Remove-NetFirewallRule -DisplayName 'SharedLedger Agent Dev'
+```
+
+停止：先用 `install-dev-autostart.ps1 -Uninstall` 停止/删除登录任务。Agent 是独立后台进程，卸载任务不会停止它；根据 dev-up 输出的 PID，在任务管理器确认其命令行为指定 venv 的 `python.exe -m app.main` 后结束该进程。不得批量结束所有 Python。移除 USB 映射可运行 `adb reverse --remove tcp:8765`。LM Studio 模型保持加载，脚本不卸载模型、不杀无关进程。切换监听模式时不会自动重启已有 Agent。
+
+### 验证与限制
+
+App：`./gradlew.bat :app:testDebugUnitTest --no-configuration-cache`。新增 `AgentPrivateAddressTest` 覆盖私网、非法/公网/保留地址及 release 配置语义。本机执行受既有 Java toolchain 缺少 jlink.exe 阻断；请在 Android Studio 选择完整 JDK 后运行，不能视为测试通过。
+
+Agent：在 Agent 仓库根运行 `agent\.venv\Scripts\python.exe -m pytest agent/tests -q`，必须整个目录一次调用，并为每轮设置全新且不同的 `P2_STORE_TEST_ROOT` 和 `P2_V3_STORE_TEST_ROOT`（D: 盘）。不要在 agent 子目录直接执行此测试命令。
+
+PowerShell 三个脚本通过语法解析；LM Studio `server status --json` 只读检查已验证。尚未实际安装登录任务、启动模型/服务、验证真机 USB 重连或 LAN 防火墙。多设备需通过 ANDROID_SERIAL 选择设备；LAN 地址可能包含虚拟网卡，请选择手机可达的网卡。现有模型若已加载，脚本不会重载以修改其上下文参数。
+
+Agent 测试还需同时设置模块路径。在仓库根执行：
+
+```powershell
+$env:PYTHONPATH="$PWD;$PWD\agent"
+$stamp=[guid]::NewGuid().ToString('N')
+$env:P2_STORE_TEST_ROOT="D:\AI\runtime\shared-ledger-agent\tests-$stamp\store"
+$env:P2_V3_STORE_TEST_ROOT="D:\AI\runtime\shared-ledger-agent\tests-$stamp\v3"
+New-Item -ItemType Directory -Force $env:P2_STORE_TEST_ROOT,$env:P2_V3_STORE_TEST_ROOT | Out-Null
+agent\.venv\Scripts\python.exe -m pytest agent/tests -q
+```
+
+本次 Agent 全量实际结果（2026-10-23）：764 passed、7 failed、1 xfailed。整个 agent/tests 目录一次调用，两个 store 根每轮新建。7 项失败均位于 test_p2_read_backend.py，报 `candidate Turn deadline is outside the reviewed bound`；本次未修改这些业务代码或测试，不能宣称全套通过。App 单测尚未执行成功，阻断为既有 toolchain 指向缺少 jlink.exe 的 JRE。
