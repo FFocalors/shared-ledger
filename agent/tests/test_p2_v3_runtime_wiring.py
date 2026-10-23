@@ -75,16 +75,18 @@ def test_p2_v3_server_policy_routes_only_narrow_decision_sets() -> None:
 
 
 def test_p2_v3_candidate_settings_are_default_off_and_require_the_cohort_gate() -> None:
-    settings = Settings(storage_path="D:/tmp/p2-settings.sqlite3")
+    settings = Settings(_env_file=None, storage_path="D:/tmp/p2-settings.sqlite3")
     assert settings.p2_v3_candidate_enabled is False
     assert settings.p2_v3_native_candidate_enabled is False
     with pytest.raises(ValueError, match="requires the P2 provider"):
         Settings(
+            _env_file=None,
             storage_path="D:/tmp/p2-settings.sqlite3",
             p2_v3_candidate_enabled=True,
         )
     with pytest.raises(ValueError, match="requires the v3 candidate gate"):
         Settings(
+            _env_file=None,
             storage_path="D:/tmp/p2-settings.sqlite3",
             p2_v3_native_candidate_enabled=True,
         )

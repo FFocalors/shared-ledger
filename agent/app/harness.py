@@ -50,9 +50,32 @@ def parse_model_output(raw: str, context: c.ModelContext) -> c.SemanticDecision:
         # reject a valid wire timestamp such as ``2026-10-07T00:00:00Z``.
         decision = c.SEMANTIC_DECISION_ADAPTER.validate_json(raw)
         c.validate_decision_against_context(decision, context)
-        return decision
     except (ValueError, ValidationError, TypeError, json.JSONDecodeError, RecursionError):
         raise ModelOutputError("model response failed closed semantic validation") from None
+    _reject_self_contradictory_clarification(decision, context)
+    return decision
+
+
+def _reject_self_contradictory_clarification(
+    decision: c.SemanticDecision, context: c.ModelContext,
+) -> None:
+    """A model may not ask for an activity the Harness already verified.
+
+    This applies to model output only. Internal Harness clarifications (for
+    example the restart clarification) are built server-side and bypass this
+    check; rejecting them would turn a safe pause into a failure.
+    """
+    if not isinstance(decision, c.ClarifyDecision):
+        return
+    if c.ClarificationSlot.ACTIVITY not in decision.missing_slots:
+        return
+    has_activity_scope = isinstance(context.verified_scope, c.ModelActivityScope)
+    has_activity_ref = any(
+        isinstance(reference, c.ModelActivityReference)
+        for reference in context.bound_references
+    )
+    if has_activity_scope or has_activity_ref:
+        raise ModelOutputError("model asked for an already verified activity")
 
 
 class MockModelProvider:

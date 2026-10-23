@@ -17,6 +17,7 @@ import hashlib
 import http.client
 import inspect
 import json
+import logging
 import math
 import re
 import socket
@@ -50,6 +51,8 @@ from .p2_token_budget import (
 )
 from .p2_prompt_policy import P2_PROMPT_VERSION, P2_SYSTEM_INSTRUCTIONS
 from .p2_local_endpoint import parse_local_p2_endpoint
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class LMStudioProviderErrorCode(str, Enum):
@@ -794,7 +797,9 @@ class LMStudioOpenAIProvider:
             # phase, separate from the unchanged five-second JIT count. It is
             # lazy so provider construction/start/health remain local-only, and
             # the checker reuses one current helper for later requests.
+            counter_started = monotonic()
             await self._prepare_token_counter_session()
+            counter_ready = monotonic()
             checker_worker = asyncio.create_task(
                 asyncio.to_thread(self._token_budget_checker.measure, budget_request),
                 name="p2-lmstudio-token-budget-check",
@@ -811,6 +816,7 @@ class LMStudioOpenAIProvider:
             except BaseException:
                 self._mark_failure()
                 raise LMStudioProviderError(LMStudioProviderErrorCode.INPUT_BUDGET_UNVERIFIED) from None
+            measured_at = monotonic()
             try:
                 _validate_budget_measurement(measurement, self._config, budget_request)
             except P2TokenBudgetError as exc:
@@ -833,6 +839,7 @@ class LMStudioOpenAIProvider:
                         hook_rejected = True
                 # Creating the worker while holding the state lock defines the
                 # dispatch boundary: a close before this point prevents I/O.
+                post_started = monotonic()
                 if not hook_rejected:
                     http_call = asyncio.to_thread(
                         self._transport,
@@ -873,6 +880,12 @@ class LMStudioOpenAIProvider:
                 self._raise_transport_error(exc)
             if isinstance(result, tuple):
                 result = _TransportResult(status=result[0], body=result[1])
+            _LOGGER.info(
+                "p2 model call timing: counter_prepare=%.2fs measure=%.2fs post=%.2fs",
+                counter_ready - counter_started,
+                measured_at - counter_ready,
+                monotonic() - post_started,
+            )
             if not isinstance(result, _TransportResult) or not isinstance(result.body, bytes):
                 self._mark_failure()
                 raise LMStudioProviderError(LMStudioProviderErrorCode.PARSER_ERROR)

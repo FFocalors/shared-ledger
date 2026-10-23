@@ -221,7 +221,7 @@ def test_p2_factory_is_no_io_and_token_budget_requires_explicit_binding(tmp_path
         "disable_revision": 0,
     }
 
-    disabled = build_components(Settings(**common))
+    disabled = build_components(Settings(_env_file=None, **common))
     assert not database.exists()
 
 
@@ -231,6 +231,7 @@ def test_p2_factory_is_no_io_and_token_budget_requires_explicit_binding(tmp_path
     assert not database.with_suffix(".p2journal.sqlite3").exists()
 
     explicit = build_components(Settings(
+        _env_file=None,
         **common,
         p2_lmstudio_enabled=True,
         p2_token_budget_enabled=True,
@@ -265,7 +266,7 @@ def test_default_assembly_does_not_import_candidate_or_lmstudio_sdk(monkeypatch,
 
     monkeypatch.setattr(builtins, "__import__", guarded_import)
     database = tmp_path / "default-candidate-off.sqlite3"
-    components = build_components(Settings(storage_path=database))
+    components = build_components(Settings(_env_file=None, storage_path=database))
 
     assert components.provider.health().status == "disabled"
     assert not database.exists()

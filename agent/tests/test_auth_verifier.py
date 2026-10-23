@@ -194,7 +194,15 @@ def test_loopback_http_auth_requires_explicit_development_opt_in(tmp_path: Path)
 
 def test_env_example_parses_without_creating_storage_and_unconfigured_auth_keeps_health_available(tmp_path: Path) -> None:
     example = Path(__file__).resolve().parents[1] / ".env.example"
-    settings = Settings(_env_file=example)
+    # Keep the default storage path inside this test: a developer's running
+    # service may legitimately own agent/data/agent.sqlite3.
+    example_text = example.read_text(encoding="utf-8").replace(
+        "AGENT_STORAGE_PATH=./data/agent.sqlite3",
+        f"AGENT_STORAGE_PATH={tmp_path / 'example-storage.sqlite3'}",
+    )
+    isolated = tmp_path / "example.env"
+    isolated.write_text(example_text, encoding="utf-8")
+    settings = Settings(_env_file=isolated)
     assert settings.supabase_auth_base_url is None
     assert settings.supabase_api_key is None
     assert settings.cursor_signing_secret is None
@@ -204,7 +212,7 @@ def test_env_example_parses_without_creating_storage_and_unconfigured_auth_keeps
 
     with pytest.raises(ValidationError):
         Settings(_env_file=None, storage_path="")
-    app_settings = Settings(storage_path=tmp_path / "health-only.sqlite3")
+    app_settings = Settings(_env_file=None, storage_path=tmp_path / "health-only.sqlite3")
     with TestClient(create_app(app_settings)) as client:
         assert client.get("/health/live").status_code == 200
         unavailable = client.get("/v1/sessions", headers={"Authorization": "Bearer ignored"})

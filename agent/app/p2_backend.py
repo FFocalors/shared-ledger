@@ -180,8 +180,11 @@ class BackendReadError(RuntimeError):
         "response_too_large", "read_limit_exceeded", "data_changed_during_read",
         "auth_rejected", "access_denied", "rate_limited", "upstream_timeout",
         "upstream_unavailable",
-    ]) -> None:
+    ], *, status: int | None = None) -> None:
         self.code = code
+        # Optional upstream HTTP status for diagnostics and logs. It never
+        # carries a URL, credential, or response body.
+        self.status = status
         super().__init__(code)
 
 
@@ -996,17 +999,17 @@ class P2BackendAdapter:
                 raise BackendReadError("upstream_timeout")
             self._check_budget(budget, verified)
             if response.status == 401:
-                raise BackendReadError("auth_rejected")
+                raise BackendReadError("auth_rejected", status=response.status)
             if response.status == 403:
-                raise BackendReadError("access_denied")
+                raise BackendReadError("access_denied", status=response.status)
             if response.status == 429:
-                raise BackendReadError("rate_limited")
+                raise BackendReadError("rate_limited", status=response.status)
             if response.status in (408, 504):
-                raise BackendReadError("upstream_timeout")
+                raise BackendReadError("upstream_timeout", status=response.status)
             if response.status in (502, 503):
-                raise BackendReadError("upstream_unavailable")
+                raise BackendReadError("upstream_unavailable", status=response.status)
             if response.status not in (200, 206):
-                raise BackendReadError("upstream_failure")
+                raise BackendReadError("upstream_failure", status=response.status)
             if not isinstance(response.body, bytes):
                 raise BackendReadError("invalid_upstream_response")
             if len(response.body) > self._max_response_bytes:

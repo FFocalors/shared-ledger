@@ -7,6 +7,7 @@ import base64
 import hashlib
 import hmac
 import json
+import logging
 import math
 import re
 import secrets
@@ -54,6 +55,8 @@ from .runtime import RuntimeAuthRequired
 
 
 T = TypeVar("T")
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class _ApiFailure(Exception):
@@ -335,6 +338,12 @@ async def _scope_authorize(
             )
             return
         except BackendReadError as exc:
+            # Diagnostic only: status code and stable error code, never the token,
+            # request URL, headers, or upstream body.
+            _LOGGER.warning(
+                "scope authorization failed: action=%s activities=%d code=%s upstream_status=%s",
+                action, len(ids), exc.code, getattr(exc, "status", None),
+            )
             if exc.code in ("invalid_auth_context", "auth_rejected"):
                 raise _ApiFailure(401, ApiErrorCode.UNAUTHENTICATED,
                                   "The access token is invalid or no longer active.") from None
@@ -346,8 +355,12 @@ async def _scope_authorize(
                                   "Activity access verification is temporarily rate limited.", retryable=True) from None
             raise _ApiFailure(503, ApiErrorCode.DEPENDENCY_UNAVAILABLE,
                               "Activity access verification is temporarily unavailable.", retryable=True) from None
-        except Exception:
+        except Exception as exc:
             # Never return the adapter's URL, headers, or raw upstream body.
+            _LOGGER.warning(
+                "scope authorization error: action=%s activities=%d type=%s upstream_status=%s",
+                action, len(ids), type(exc).__name__, getattr(exc, "status", None),
+            )
             raise _ApiFailure(503, ApiErrorCode.DEPENDENCY_UNAVAILABLE,
                               "Activity access verification is temporarily unavailable.", retryable=True) from None
     if components.scope_authorizer is None:

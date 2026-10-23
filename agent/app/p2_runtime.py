@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 import hashlib
 import json
+import logging
 import math
 import secrets
 import time
@@ -47,6 +48,8 @@ from .p2_source_store_v3 import (
     P2V3StoreConflict, P2V3StoreNotFound, P2V3UnsupportedProfile,
     P2_V3_MAX_ACTIVE_US,
 )
+
+_LOGGER = logging.getLogger(__name__)
 from .p2_v3_runtime_policy import P2V3IntentPlan, classify_p2_v3_input
 from .p2_v3_sent_guard import validate_sent_p2_v3_decision
 from .p2_v3_store_ports import P2V3StoreBudgetPort
@@ -497,6 +500,7 @@ class P2Runtime(MockRuntime):
             return
         turn_id = claimed.turn.record.turn.turn_id
         owner_id = claimed.turn.record.turn.owner_user_id
+        turn_started = time.monotonic()
         aggregate = await asyncio.to_thread(self._store.get_turn, owner_id, turn_id)
         if aggregate.record.turn.execution is not None or aggregate.record.turn.state != c.TurnState.RUNNING:
             return
@@ -504,6 +508,12 @@ class P2Runtime(MockRuntime):
         state = self._p2_states.setdefault(turn_id, _TurnP2State())
         references = list(aggregate.record.bound_references)
         await self._resolve_scope(aggregate, references, state, gate.disable_revision)
+        # Scope resolution performs the sequential Supabase reads; this is the
+        # largest pre-model phase on a high-latency link.
+        _LOGGER.info(
+            "p2 turn %s scope resolved in %.2fs",
+            turn_id, time.monotonic() - turn_started,
+        )
 
         while not self._closing:
             stage = aggregate.checkpoint.resume_step or aggregate.record.turn.step
@@ -568,19 +578,28 @@ class P2Runtime(MockRuntime):
                 )
 
             aggregate = await self._prepare_p2_model_call(aggregate, context, references, claimed.claim_token)
+            model_started = time.monotonic()
             raw, charged = await self._generate_p2_model(
                 aggregate, context, claimed.claim_token, gate_revision=gate.disable_revision,
                 state=state,
+            )
+            _LOGGER.info(
+                "p2 turn %s first model call took %.2fs (turn age %.2fs)",
+                turn_id, time.monotonic() - model_started, time.monotonic() - turn_started,
             )
             await self._ensure_p2_generation(charged, claimed.claim_token, context, gate.disable_revision)
             try:
                 parsed = P2Harness.parse(raw, context)
                 decision = self._accepted_decision(parsed, context)
             except ModelOutputError:
+                repair_started = time.monotonic()
                 raw, charged = await self._generate_p2_model(
                     charged, context, claimed.claim_token, gate_revision=gate.disable_revision,
                     repair_feedback="Return one valid closed decision using only current listed references and citations.",
                     repair=True, state=state,
+                )
+                _LOGGER.info(
+                    "p2 turn %s repair model call took %.2fs", turn_id, time.monotonic() - repair_started,
                 )
                 await self._ensure_p2_generation(charged, claimed.claim_token, context, gate.disable_revision)
                 parsed = P2Harness.parse(raw, context)
