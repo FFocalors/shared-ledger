@@ -1,3 +1,13 @@
+<#
+.SYNOPSIS
+Prepare the development Agent and USB adb reverse workflow.
+.PARAMETER Lan
+EXPERIMENTAL, NOT CURRENTLY IN USE. Opt-in trusted-LAN testing only.
+Binds to all IPv4 interfaces and skips adb. Default USB behavior is unchanged.
+Never use this option for production or public networks.
+.PARAMETER AgentRoot
+Explicit Agent directory containing app/main.py and the local virtual environment.
+#>
 param([switch]$Lan,[string]$AgentRoot,[string]$Lms="$env:USERPROFILE\.lmstudio\bin\lms.exe",[string]$Adb='adb',[string]$LogRoot='D:\AI\runtime\shared-ledger-agent')
 $ErrorActionPreference='Stop'
 # Explicit parameters are authoritative; defaults are tried in priority order.

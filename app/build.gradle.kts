@@ -1,4 +1,36 @@
 import java.util.Properties
+import java.net.URI
+import java.net.InetAddress
+
+abstract class CheckReleaseAgentEndpoint : DefaultTask() {
+    @get:Input
+    abstract val endpoint: Property<String>
+
+    @TaskAction
+    fun checkEndpoint() {
+        val value = endpoint.get().trim()
+        if (value.isEmpty()) return // An unconfigured Agent remains supported.
+        val uri = runCatching { URI(value) }.getOrNull()
+        val host = uri?.host?.lowercase()?.removeSurrounding("[", "]")
+        val literal = host?.takeIf { it.contains(':') || it.matches(Regex("[0-9.]+")) }
+        // Parse literals only: never resolve DNS during a build.
+        val address = literal?.let { runCatching { InetAddress.getByName(it) }.getOrNull() }
+        val local = host == "localhost" || host?.endsWith(".localhost") == true ||
+            address?.let {
+                it.isAnyLocalAddress || it.isLoopbackAddress || it.isLinkLocalAddress ||
+                    it.isSiteLocalAddress || it.isMulticastAddress ||
+                    (it.address.size == 16 && (it.address[0].toInt() and 0xfe) == 0xfc)
+            } == true
+        if (uri?.scheme?.lowercase() != "https" || host.isNullOrBlank() || local ||
+            (literal != null && address == null)) {
+            throw GradleException(
+                "Release AGENT_BASE_URL must be HTTPS with a non-local, non-private host, or blank. " +
+                    "HTTP and development/private addresses are forbidden. Check agent.baseUrl in " +
+                    "local.properties (takes precedence) and AGENT_BASE_URL. Endpoint omitted from logs.",
+            )
+        }
+    }
+}
 
 plugins {
     alias(libs.plugins.android.application)
@@ -83,6 +115,17 @@ val agentBaseUrl = (
     )
 
 val agentDemo = localProperties.getProperty("agent.demo")?.trim().equals("true", ignoreCase = true)
+
+val checkReleaseAgentEndpoint = tasks.register<CheckReleaseAgentEndpoint>("checkReleaseAgentEndpoint") {
+    group = "verification"
+    description = "Reject development Agent endpoints in release builds."
+    endpoint.set(agentBaseUrl)
+}
+tasks.configureEach {
+    if (name == "preReleaseBuild" || name == "generateReleaseBuildConfig") {
+        dependsOn(checkReleaseAgentEndpoint)
+    }
+}
 
 fun quoteBuildConfig(value: String): String = "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
 

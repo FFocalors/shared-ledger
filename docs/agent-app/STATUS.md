@@ -86,3 +86,22 @@ agent\.venv\Scripts\python.exe -m pytest agent/tests -q
 
 本次 Agent 全量实际结果（2026-10-23）：764 passed、7 failed、1 xfailed。整个 agent/tests 目录一次调用，两个 store 根每轮新建。7 项失败均位于 test_p2_read_backend.py，报 `candidate Turn deadline is outside the reviewed bound`；本次未修改这些业务代码或测试，不能宣称全套通过。App 单测尚未执行成功，阻断为既有 toolchain 指向缺少 jlink.exe 的 JRE。
 
+
+## 开发环境 vs 正式发布
+
+当前推荐且使用的本机流程是 USB + adb reverse。`dev-up.ps1 -Lan` 为**实验性，当前不使用**；此前 LAN 配置步骤仅作未来参考。debug-only 私有地址支持**当前未启用，保留待用**：代码保留允许能力，但本流程不配置 LAN 地址，也不启用 LAN 登录任务。它不是新增的运行时功能开关。
+
+| 内容 | 开发用途 | 与正式发布的隔离 |
+|---|---|---|
+| `local.properties` | 本机 SDK、`agent.baseUrl`、`agent.demo` | 不提交；文件不会作为配置文件打包，但 URL 会进入 BuildConfig，不能仅靠 gitignore 隔离。release 构建期检查最终 URL；CI 使用正式配置或留空。 |
+| Agent `.env` | 本机 Agent 配置及凭据 | 不提交、不打印、不复制到 App；正式部署独立提供配置与密钥，不能复用开发 .env。 |
+| `src/debug` | 调试网络配置、预览 Activity、Demo 实现 | Android source set 隔离，不进入 release。 |
+| `agent.demo` | debug 离线演示 | 仅 debug 读取此值；release 的 AGENT_DEMO 固定 false。 |
+| debug-only 私有地址 | RFC1918 本机 LAN 联调能力 | 当前未启用，保留待用；只有 debug 的 allowLocalHttp 可放行 HTTP。release 运行时仍只允许 HTTPS，逻辑不变。 |
+| `agent/deploy/scripts` 中 `dev-up`、`dev-agent-watch`、`install-dev-autostart` | LM Studio、本机 Agent、adb、当前用户登录任务 | 开发运维脚本不属于 APK source set，不作为正式服务部署入口；登录任务仅本机当前用户。目录中其他部署脚本按各自部署文档使用，不能将整个目录认定为开发专用。 |
+
+正式构建新增 `:app:checkReleaseAgentEndpoint`，挂到 `preReleaseBuild` 与 `generateReleaseBuildConfig`。最终 `AGENT_BASE_URL` 为空时保留 Agent 未配置语义；非空必须为 HTTPS，拒绝 HTTP、私有 IPv4/IPv6、本地/回环/链路本地地址。错误仅说明配置来源和原因，不打印 URL。`local.properties` 的 `agent.baseUrl` 优先于环境变量，正式构建前应检查该来源。检查不进行 DNS 查询，因此域名解析到内网的情况仍由正式发布配置审核负责。此任务只在构建期拦截，不改变 release 运行时行为。
+
+可单独执行 `./gradlew.bat :app:checkReleaseAgentEndpoint --no-configuration-cache`，不需要编译 Android Java 源码。查看 LAN 帮助：`Get-Help .\agent\deploy\scripts\dev-up.ps1 -Parameter Lan`。
+
+本次验证：9 项地址用例通过（留空、公网 HTTPS 允许；HTTP、RFC1918、回环、IPv6 ULA/链路本地拒绝），两个 release 任务依赖检查通过。当前开发配置下直接运行检查任务按预期失败。未修改 local.properties/.env，未执行发布或改变运行时逻辑。
