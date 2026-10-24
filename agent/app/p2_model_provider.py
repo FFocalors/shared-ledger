@@ -399,6 +399,25 @@ def _serialize_envelope(prompt: PromptEnvelope) -> bytes:
         raise LMStudioProviderError(LMStudioProviderErrorCode.INVALID_PROMPT) from None
 
 
+def _order_request_for_wire(node: Any) -> Any:
+    """Canonicalize JSON keys while keeping schema object ``properties`` in field order."""
+    if not isinstance(node, dict):
+        if isinstance(node, list):
+            return [_order_request_for_wire(item) for item in node]
+        return node
+    ordered: dict[str, Any] = {}
+    for key in sorted(node):
+        value = node[key]
+        if key == "properties" and isinstance(value, dict):
+            ordered[key] = {
+                prop_key: _order_request_for_wire(prop_val)
+                for prop_key, prop_val in value.items()
+            }
+        else:
+            ordered[key] = _order_request_for_wire(value)
+    return ordered
+
+
 def _build_request(
     config: LMStudioOpenAIConfig,
     envelope: bytes,
@@ -448,7 +467,13 @@ def _build_request(
                     "schema": schema,
                 },
             }
-        body = json.dumps(request, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
+        body = json.dumps(
+            _order_request_for_wire(request),
+            ensure_ascii=False,
+            sort_keys=False,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
     except LMStudioProviderError:
         raise
     except (TypeError, ValueError, UnicodeError, RecursionError):

@@ -178,9 +178,14 @@ def build_components(settings: Settings) -> AppComponents:
             api_token=settings.p2_lmstudio_api_token.get_secret_value()
             if settings.p2_lmstudio_api_token is not None else None,
         ), token_budget_checker=token_budget_checker)
+        backend_timeouts = {
+            "timeout_seconds": settings.p2_backend_request_timeout_seconds,
+            "max_total_seconds": settings.p2_backend_max_total_seconds,
+        }
         backend_config = P2BackendConfig(
             project_url=project_url,
             publishable_key=settings.supabase_api_key.get_secret_value(),
+            **backend_timeouts,
         )
         backend = P2BackendAdapter(backend_config)
         v3_backend_config = None
@@ -196,8 +201,8 @@ def build_components(settings: Settings) -> AppComponents:
                 max_rows_per_query=64,
                 max_requests_per_read=48,
                 max_total_response_bytes=4_194_304,
-                max_total_seconds=20.0,
                 max_facts=16,
+                **backend_timeouts,
             )
         scope = _FailClosedScopeAuthorizer()
         journal_path = settings.p2_journal_path or settings.storage_path.with_suffix(".p2journal.sqlite3")

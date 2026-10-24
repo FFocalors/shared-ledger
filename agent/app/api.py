@@ -681,14 +681,35 @@ def _receipt(receipt: Any) -> JSONResponse:
 
 def install_api_routes(app: FastAPI) -> None:
     async def handle_api_failure(request: Request, exc: _ApiFailure) -> JSONResponse:
+        request.state.api_failure = exc
         return _error_response(exc.status, exc.code, exc.message, retryable=exc.retryable)
 
     app.add_exception_handler(_ApiFailure, handle_api_failure)  # type: ignore[arg-type]
+
+    def _log_5xx(request: Request, status: int, failure: Any, started: float) -> None:
+        # Never log token, raw URL/query, headers, or upstream bodies: only the
+        # route template, error code, the fixed failure message, the suppressed
+        # cause type and an optional numeric upstream status.
+        route = request.scope.get("route")
+        endpoint = f"{request.method} {getattr(route, 'path', 'unmatched')}"
+        cause = getattr(failure, "__context__", None) if isinstance(failure, _ApiFailure) else failure
+        upstream = getattr(cause, "upstream_status", None)
+        _LOGGER.warning(
+            "api 5xx: endpoint=%s status=%d code=%s reason=%r cause=%s upstream_status=%s elapsed_ms=%d",
+            endpoint, status,
+            getattr(getattr(failure, "code", None), "value", "unknown"),
+            getattr(failure, "message", "unhandled"),
+            type(cause).__name__ if cause is not None else "none",
+            upstream if isinstance(upstream, int) else None,
+            int((time.monotonic() - started) * 1000),
+        )
 
     @app.middleware("http")
     async def api_guard(request: Request, call_next: Any) -> Any:
         if request.url.path != "/v1" and not request.url.path.startswith("/v1/"):
             return await call_next(request)
+        started = time.monotonic()
+        failure: Any = None
         limiter: _RequestRateLimiter = request.app.state.ip_limiter
         client_host = request.client.host if request.client else "unknown"
         if not limiter.allow("ip:" + client_host):
@@ -697,9 +718,17 @@ def install_api_routes(app: FastAPI) -> None:
             try:
                 response = await call_next(request)
             except _ApiFailure as exc:
+                failure = exc
                 response = _error_response(exc.status, exc.code, exc.message, retryable=exc.retryable)
-            except Exception:
+            except Exception as exc:
+                failure = exc
                 response = _error_response(503, ApiErrorCode.DEPENDENCY_UNAVAILABLE, "The request could not be completed safely.", retryable=True)
+        if response.status_code >= 500:
+            try:
+                _log_5xx(request, response.status_code,
+                         failure if failure is not None else getattr(request.state, "api_failure", None), started)
+            except Exception:
+                pass
         if response.status_code in (404, 405):
             response = _error_response(response.status_code, ApiErrorCode.NOT_FOUND if response.status_code == 404 else ApiErrorCode.INVALID_REQUEST,
                 "The requested API route was not found." if response.status_code == 404 else "The HTTP method is not allowed for this route.")

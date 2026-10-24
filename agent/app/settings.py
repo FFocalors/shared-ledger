@@ -78,6 +78,11 @@ class Settings(BaseSettings):
     runtime_shutdown_timeout_seconds: float = Field(default=2.0, ge=0.1, le=10.0)
     supabase_auth_base_url: str | None = None
     supabase_api_key: SecretStr | None = None
+    # Per-attempt timeout for the Supabase Auth `/user` check (one transient retry).
+    supabase_auth_timeout_seconds: float = Field(default=3.0, ge=0.5, le=10.0)
+    # P2 PostgREST read bounds (defaults equal the adapter's reviewed defaults).
+    p2_backend_request_timeout_seconds: float = Field(default=5.0, gt=0.0, le=30.0)
+    p2_backend_max_total_seconds: float = Field(default=20.0, ge=1.0, le=120.0)
     allow_insecure_loopback_auth_http: bool = False
     cursor_signing_secret: SecretStr | None = None
     agent_enabled: bool = False

@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 import json
 import logging
+import traceback
 import math
 import secrets
 import time
@@ -406,6 +407,8 @@ class P2Runtime(MockRuntime):
             await self._pause_for_auth(claimed, resume_state=auth_resume_state,
                                        code=code, message=message)
         except (ModelOutputError, CapabilityUnavailable) as exc:
+            if not isinstance(exc, _P2TerminalFailure):
+                _log_internal_failure(turn_id, exc)
             await self._terminal_error(claimed, c.ApiErrorCode.DEPENDENCY_UNAVAILABLE,
                                        _safe_internal_error(exc), retryable=False)
         except P2V3StoreConflict as exc:
@@ -417,9 +420,11 @@ class P2Runtime(MockRuntime):
                 await self._terminal_error(claimed, c.ApiErrorCode.DEPENDENCY_UNAVAILABLE,
                                            _V3_RESULT_CAPACITY_REACHED, retryable=False)
             else:
+                _log_internal_failure(turn_id, exc)
                 await self._terminal_error(claimed, c.ApiErrorCode.DEPENDENCY_UNAVAILABLE,
                                            "P2 dependency unavailable: internal_failure.", retryable=True)
-        except Exception:
+        except Exception as exc:
+            _log_internal_failure(turn_id, exc)
             await self._terminal_error(claimed, c.ApiErrorCode.DEPENDENCY_UNAVAILABLE,
                                        "P2 dependency unavailable: internal_failure.", retryable=True)
         finally:
@@ -3192,9 +3197,23 @@ def _closed_error(
         (c.ApiErrorCode.DEPENDENCY_UNAVAILABLE, "当前 Turn 已绑定到不同活动范围。请从所需活动页面创建新 Turn 后重试。", False),
     }
     if (code, message, retryable) not in allowed:
+        _LOGGER.warning("p2 closed error fallback: code=%s retryable=%s (message not in allowlist)",
+                        getattr(code, "value", code), retryable)
         return (c.ApiErrorCode.DEPENDENCY_UNAVAILABLE,
                 "P2 dependency unavailable: internal_failure.", True)
     return code, message, retryable
+
+
+def _log_internal_failure(turn_id: object, error: BaseException) -> None:
+    """Log only the exception type and raising code locations (no values/messages)."""
+    try:
+        frames = traceback.extract_tb(error.__traceback__)[-3:]
+        where = " <- ".join(
+            f"{Path(frame.filename).name}:{frame.lineno}:{frame.name}" for frame in reversed(frames)
+        )
+        _LOGGER.warning("p2 turn %s internal_failure: type=%s at %s", turn_id, type(error).__name__, where)
+    except Exception:
+        pass
 
 
 def _safe_internal_error(error: BaseException) -> str:

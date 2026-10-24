@@ -103,7 +103,8 @@ class SupabaseAuthVerifier:
 
     @classmethod
     def from_settings(cls, settings: Settings) -> "SupabaseAuthVerifier":
-        return cls(settings.supabase_auth_base_url, settings.supabase_api_key)
+        return cls(settings.supabase_auth_base_url, settings.supabase_api_key,
+                   timeout_seconds=getattr(settings, "supabase_auth_timeout_seconds", 3.0))
 
     @property
     def configured(self) -> bool:
@@ -131,29 +132,7 @@ class SupabaseAuthVerifier:
         # ProxyHandler({}) is intentional. This request contains a user's access
         # token and must go only to the configured, validated Supabase endpoint.
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect())
-        try:
-            with opener.open(request, timeout=self._timeout) as response:
-                status = int(response.status)
-                if status != 200:
-                    raise AuthDependencyUnavailable("Auth verification service returned an unexpected response") from None
-                raw = response.read(self._MAX_RESPONSE_BYTES + 1)
-                if len(raw) > self._MAX_RESPONSE_BYTES:
-                    raise AuthDependencyUnavailable("Auth verification service returned an oversized response") from None
-        except urllib.error.HTTPError as exc:
-            # Never include an upstream body or URL in errors; they can contain
-            # credential material and are not part of the client contract.
-            code = exc.code
-            try:
-                exc.close()
-            except Exception:
-                pass
-            if code in (400, 401, 403):
-                raise Unauthenticated("invalid bearer token") from None
-            raise AuthDependencyUnavailable("Auth verification service is unavailable") from None
-        except (urllib.error.URLError, TimeoutError, OSError, ValueError):
-            raise AuthDependencyUnavailable("Auth verification service is unavailable") from None
-        except AuthDependencyUnavailable:
-            raise
+        raw = self._fetch_user(opener, request)
 
         try:
             user = json.loads(raw, object_pairs_hook=_unique_json_object, parse_constant=_reject_json_constant)
@@ -186,6 +165,43 @@ class SupabaseAuthVerifier:
         self._validate_ban(user)
         expires_at = datetime.fromtimestamp(float(claims["exp"]), timezone.utc)
         return Principal(user_id=user_id, expires_at=expires_at)
+
+    def _fetch_user(self, opener: Any, request: urllib.request.Request) -> bytes:
+        # The `/user` GET is read-only, so one retry of a transient failure
+        # (network error, timeout, or upstream 5xx) is safe. Identity rejections
+        # (400/401/403) and malformed responses are never retried.
+        attempts = 2
+        for attempt in range(attempts):
+            transient = False
+            try:
+                with opener.open(request, timeout=self._timeout) as response:
+                    status = int(response.status)
+                    if status != 200:
+                        raise AuthDependencyUnavailable("Auth verification service returned an unexpected response") from None
+                    raw = response.read(self._MAX_RESPONSE_BYTES + 1)
+                    if len(raw) > self._MAX_RESPONSE_BYTES:
+                        raise AuthDependencyUnavailable("Auth verification service returned an oversized response") from None
+                    return raw
+            except urllib.error.HTTPError as exc:
+                # Never include an upstream body or URL in errors; they can contain
+                # credential material and are not part of the client contract.
+                code = exc.code
+                try:
+                    exc.close()
+                except Exception:
+                    pass
+                if code in (400, 401, 403):
+                    raise Unauthenticated("invalid bearer token") from None
+                transient = code >= 500
+                if not transient or attempt + 1 >= attempts:
+                    raise AuthDependencyUnavailable("Auth verification service is unavailable") from None
+            except (urllib.error.URLError, TimeoutError, OSError, ValueError) as exc:
+                transient = not isinstance(exc, ValueError)
+                if not transient or attempt + 1 >= attempts:
+                    raise AuthDependencyUnavailable("Auth verification service is unavailable") from None
+            except AuthDependencyUnavailable:
+                raise
+        raise AuthDependencyUnavailable("Auth verification service is unavailable") from None
 
     @staticmethod
     def _validate_times(claims: dict[str, Any]) -> None:
