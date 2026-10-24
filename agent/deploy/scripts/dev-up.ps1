@@ -45,22 +45,38 @@ try {
  $models=& $Lms ps --json
  if ($LASTEXITCODE) { throw 'Cannot inspect loaded models.' }
  if (($models -join "`n") -notmatch 't0-cp36-20261007') { & $Lms load t0-cp36-20261007 --context-length 8192 --parallel 1 --yes; if ($LASTEXITCODE) { throw 'Model load failed.' } }
- $live=$false
- try { $live=(Invoke-WebRequest http://127.0.0.1:8765/health/live -UseBasicParsing -TimeoutSec 2).StatusCode -eq 200 } catch {}
- if (!$live) {
-  if (Get-NetTCPConnection -LocalPort 8765 -State Listen -ErrorAction SilentlyContinue) { throw 'Port occupied with failed health. Inspect owner; no process stopped.' }
-  $null=New-Item -ItemType Directory -Force $LogRoot
-  $stamp=Get-Date -Format yyyyMMdd-HHmmss-ffff
-  $old=$env:AGENT_LISTEN_HOST
-  try {
-   $env:AGENT_LISTEN_HOST=if ($Lan) {'0.0.0.0'} else {'127.0.0.1'}
-   $p=Start-Process $python -ArgumentList '-m app.main' -WorkingDirectory $AgentRoot -WindowStyle Hidden -RedirectStandardOutput "$LogRoot/dev-up-$stamp.log" -RedirectStandardError "$LogRoot/dev-up-$stamp-error.log" -PassThru
-   Write-Output "Started Agent PID=$($p.Id). Logs: $LogRoot"
-  } finally { $env:AGENT_LISTEN_HOST=$old }
+ # Single instance: stop every existing Agent (command line '-m app.main' only; other
+ # Python processes are never touched). A venv python.exe is a launcher that spawns the
+ # base interpreter with the same command line, so one Agent shows up as two PIDs.
+ $agentPattern='(^|\s)-m\s+app\.main(\s|$)'
+ $existing=@(Get-CimInstance Win32_Process -Filter "Name like 'python%'" | Where-Object { $_.CommandLine -match $agentPattern })
+ foreach ($proc in $existing) {
+  Write-Output "Stopping existing Agent PID=$($proc.ProcessId) ($($proc.ExecutablePath))"
+  Stop-Process -Id $proc.ProcessId -Force -ErrorAction SilentlyContinue
  }
+ $end=(Get-Date).AddSeconds(15)
+ while ((Get-NetTCPConnection -LocalPort 8765 -State Listen -ErrorAction SilentlyContinue) -and (Get-Date) -lt $end) { Start-Sleep -Milliseconds 300 }
+ $owner=Get-NetTCPConnection -LocalPort 8765 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+ if ($owner) {
+  $op=Get-CimInstance Win32_Process -Filter "ProcessId=$($owner.OwningProcess)"
+  throw "Port 8765 is held by PID=$($owner.OwningProcess) ($($op.Name)), which is not an Agent ('-m app.main'). Stop it manually, then rerun dev-up."
+ }
+ $null=New-Item -ItemType Directory -Force $LogRoot
+ $stamp=Get-Date -Format yyyyMMdd-HHmmss-ffff
+ $oldHost=$env:AGENT_LISTEN_HOST; $oldAccess=$env:AGENT_DEV_ACCESS_LOG
+ try {
+  $env:AGENT_LISTEN_HOST=if ($Lan) {'0.0.0.0'} else {'127.0.0.1'}
+  # Development-only: uvicorn access log (query stripped) + app INFO logs to stderr.
+  $env:AGENT_DEV_ACCESS_LOG='1'
+  $p=Start-Process $python -ArgumentList '-m app.main' -WorkingDirectory $AgentRoot -WindowStyle Hidden -RedirectStandardOutput "$LogRoot/dev-up-$stamp.log" -RedirectStandardError "$LogRoot/dev-up-$stamp-error.log" -PassThru
+  Write-Output "Started Agent PID=$($p.Id). Access log: $LogRoot/dev-up-$stamp.log; app/503 log: $LogRoot/dev-up-$stamp-error.log"
+ } finally { $env:AGENT_LISTEN_HOST=$oldHost; $env:AGENT_DEV_ACCESS_LOG=$oldAccess }
  $ready=$false; $end=(Get-Date).AddSeconds(60)
  do { try { $ready=(Invoke-WebRequest http://127.0.0.1:8765/health/ready -UseBasicParsing -TimeoutSec 2).StatusCode -eq 200 } catch {}; if (!$ready) { Start-Sleep 1 } } until ($ready -or (Get-Date) -ge $end)
- if (!$ready) { throw "Readiness timeout. Inspect $LogRoot and LM Studio model/server status." }
+ if (!$ready) {
+  if ($p.HasExited) { throw "Agent exited with code $($p.ExitCode). Inspect $LogRoot/dev-up-$stamp-error.log (exit 3 = another instance holds the storage lock)." }
+  throw "Readiness timeout. Inspect $LogRoot and LM Studio model/server status."
+ }
  if ($Lan) {
   if (!(Get-NetTCPConnection -LocalPort 8765 -State Listen | Where-Object LocalAddress -eq '0.0.0.0')) { throw 'Existing Agent is not LAN-bound. Stop it explicitly, then rerun -Lan.' }
   Get-NetIPAddress -AddressFamily IPv4 | Where-Object IPAddress -Match '^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.)' | ForEach-Object { Write-Output "LAN endpoint: http://$($_.IPAddress):8765" }
