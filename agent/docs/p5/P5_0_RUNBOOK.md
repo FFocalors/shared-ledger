@@ -1,8 +1,8 @@
 # P5.0 真机验收 Runbook（USB，不启用 LAN）
 
-状态：**写通路与测试已完成；真机端到端被“预览来源”阻断**（见 §2）。
+状态：**可执行**（确定性开发桥已实现）
 日期：2026-10-25
-适用提交：本文件所在提交（见 `git rev-parse HEAD`）
+适用提交：本文件所在提交（`git rev-parse HEAD`）
 
 ## 1. 环境前提
 
@@ -10,27 +10,40 @@
 |---|---|
 | 手机 | USB 调试已授权，只连接一台设备 |
 | Agent | `D:/project/Android/shared-ledger-agent`，分支 `agent`，venv 已安装 |
-| 模型 | LM Studio 已加载当前 P2 使用的模型（`AGENT_P2_LMSTUDIO_MODEL_KEY`） |
+| 模型 | 不要求可用：`记账` 桥不会调用模型 |
 | Supabase | Agent 的 `AGENT_SUPABASE_AUTH_BASE_URL` / `AGENT_SUPABASE_API_KEY` 与 App 当前项目一致 |
 | 业务数据 | 只在一个**专用测试 Activity** 中写入；不要使用真实账本 |
 | 网络 | `adb reverse tcp:8765 tcp:8765`；**不运行** `dev-up.ps1 -Lan` |
 
-## 2. 当前阻断：没有真实预览来源
+## 2. 预览来源：p5_dev 确定性桥
 
-P2 运行时的模型输出契约只允许 `P2ProposalRecognition`（operation + 识别文本），明确禁止生成预览字段；`P2Runtime._make_proposal` 直接抛 `CapabilityUnavailable`。
+P2 的非 v3 profile 支持完整的 `expense.create` 语义。开启开发桥后，Agent 对以 `记账` 开头的输入**不调用模型**，而是按当前服务端 scope 直接生成 live 预览：
 
-因此以下流程在选定预览来源前**无法执行**：
-
-```
-App 发消息 → Agent 生成 live proposal → App 显示确认卡 → 用户点击 → 真实 RPC
+```text
+记账 <标题> <金额> [付款人=<名字>] [分摊=<名字1>,<名字2>] [账本=<名字>]
 ```
 
-可选方案：
+示例：
 
-- **A（推荐先做）**：`AGENT_P5_DEV_INTENT=true` 的确定性意图桥，仅用于 P5.0 真机验收。它从当前 Activity scope 绑定参与人/账本单元，从文本提取金额、标题、付款人、分摊；不训练、不改冻结协议、默认关闭。日志与预览标记 `p5_dev`。
-- **B**：新增 P5 模型 profile（结构化 propose schema + prompt + 新 execution pin）。这是产品路径，但工作量和验证面显著更大。
+```text
+记账 午餐 12.50
+记账 打车 30 付款人=Rin 分摊=Alex
+记账 晚餐 88 付款人=Alex 分摊=所有人
+```
 
-选定 A 或 B 后，先在 `agent/docs/p5/P5_0_SCOPE.md` §1.1 记录决定，再继续下面的步骤。
+默认值：
+
+- 付款人 = 当前 Activity 的第一个参与人
+- 分摊 = 当前 Activity 的全部参与人（等额）
+- 账本单元 = 第一个可用账本单元
+- 币种 = Activity 基础币种
+
+限制：
+
+- 只支持基础币种；出现 `USD/美元/$/EUR/欧元/JPY/日元` 会拒绝走桥，交给普通路径。
+- 只支持等额分摊；手动分摊留给后续切片。
+- 名字必须与当前 scope 的显示名精确或唯一匹配；匹配不到或多义时拒绝走桥。
+- 预览摘要带 `【P5 开发验证】`，`policy_version=p5-dev-intent-v1`。它不是产品模型输出，只用于验证写通路。
 
 ## 3. Agent 配置
 
@@ -38,10 +51,12 @@ App 发消息 → Agent 生成 live proposal → App 显示确认卡 → 用户�
 
 ```dotenv
 AGENT_PROVIDER_MODE=p2
-AGENT_EXECUTION_ENABLED=true
-AGENT_LIVE_WRITE_ENABLED=true
 AGENT_AGENT_ENABLED=true
 AGENT_DISABLE_REVISION=1
+AGENT_EXECUTION_ENABLED=true
+AGENT_LIVE_WRITE_ENABLED=true
+AGENT_P5_DEV_INTENT_ENABLED=true
+AGENT_P2_V3_CANDIDATE_ENABLED=false
 AGENT_SUPABASE_AUTH_BASE_URL=https://<project>.supabase.co/auth/v1
 AGENT_SUPABASE_API_KEY=<publishable/anon key>
 ```
@@ -83,12 +98,12 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 | # | 操作 | 预期 | 证据 |
 |---|---|---|---|
-| 1 | 输入一条新增消费请求，等待确认卡 | 卡片显示金额、币种、付款人、分摊；业务库无新 Expense；Agent 日志没有 `create_expense_auto_rate` | 预览截图 / 卡片 JSON；`select count(*) from expenses where ...` |
+| 1 | 输入 `记账 午餐 12.50`，等待确认卡 | 卡片显示金额、币种、付款人、分摊，摘要以 `【P5 开发验证】` 开头；业务库无新 Expense；Agent 日志没有 `create_expense_auto_rate` | 卡片截图；`select count(*) from expenses ...` |
 | 2 | 连续点击确认 3 次 | 只有 1 次 RPC、1 条 Expense；三次返回同一 `execution_id` | Agent 日志请求计数；Expense 行；执行回执 |
-| 3 | 重新生成预览后，在另一台设备/客户端修改同一 Activity 的任意财务字段，再确认 | 不发 RPC；App 显示预览失效；Proposal `closed`；Turn `CANCELLED` | Agent 日志无 RPC；`activities.financial_version` 前后值 |
-| 4 | 在确认请求发出后立即断网/拔 USB（或在测试传输层注入超时） | App 只显示“正在核对结果”；Turn `RECOVERING`；重复确认不再发 RPC | 状态 JSON；日志中只有一次派发 |
+| 3 | 重新发一条 `记账 ...`，在另一台设备/客户端修改同一 Activity 的任意财务字段，再确认 | 不发 RPC；App 显示预览失效；Proposal `closed`；Turn `CANCELLED` | Agent 日志无 RPC；`activities.financial_version` 前后值 |
+| 4 | 确认请求发出后立即断网/拔 USB（或在测试传输层注入超时） | App 只显示“正在核对结果”；Turn `RECOVERING`；重复确认不再发 RPC | 状态 JSON；日志中只有一次派发 |
 
-补充拒绝分支（任选一条即可）：非成员账号、已归档 Activity、外币、负金额都应被拒绝且不产生写入。
+补充拒绝分支（任选一条）：非成员账号、已归档 Activity、外币命令、负金额都应被拒绝且不产生写入。
 
 ## 6. 证据记录模板
 
@@ -98,6 +113,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 App: <versionName> debug
 Agent 启动时间:
 Activity ID: <专用测试 Activity>
+命令: 记账 <标题> <金额> [付款人=...] [分摊=...]
 预览:
   proposal_id:
   command_digest:
@@ -112,13 +128,13 @@ Activity ID: <专用测试 Activity>
 
 ## 7. 回滚
 
-1. 将 `AGENT_LIVE_WRITE_ENABLED=false`，重启 Agent。确认接口回到冻结的 501。
+1. 将 `AGENT_P5_DEV_INTENT_ENABLED=false`，`AGENT_LIVE_WRITE_ENABLED=false`，重启 Agent。确认接口回到冻结的 501，`记账` 输入回到普通路径。
 2. 如果已写入测试 Expense，在专用测试 Activity 中用 App 原生删除；不要直接改业务表。
 3. 不改业务 schema，因此无需数据库回滚。
 
 ## 8. Pin 提醒
 
-本次提交修改了 `agent/app/store.py`、`api.py`、`components.py`、`settings.py`，它们都在 P2 v3 execution manifest 的 49 个 component 内。因此：
+本次提交修改了 `agent/app/store.py`、`api.py`、`components.py`、`settings.py`、`p2_runtime.py`，它们都在 P2 v3 execution manifest 的 49 个 component 内。因此：
 
 - **文档里的“当前 pin”已失效**，live P2 v3 运行会被 fail-closed。
 - 需要 live 运行时，用 `python -m agent.app.p2_v3_manifest_cli` 重新生成 manifest，并在状态文档中显式记录新 pin。

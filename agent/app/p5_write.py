@@ -190,6 +190,7 @@ class LiveExpenseGateway:
         expires_at: datetime,
         agent_disable_revision: int,
         policy_version: str | None = None,
+        summary_prefix: str = "",
         now: datetime | None = None,
     ) -> c.ProposalRecord:
         """Build a live proposal from a trusted intent and a fresh server read.
@@ -259,7 +260,7 @@ class LiveExpenseGateway:
         )
         preview = c.ExpensePreview(
             kind="expense",
-            summary=f"新增消费 {command.title} {command.original_amount} {command.original_currency}",
+            summary=f"{summary_prefix}新增消费 {command.title} {command.original_amount} {command.original_currency}",
             before=None,
             after=after,
             changes=_create_changes(after),

@@ -1,6 +1,6 @@
 # P5.0 真实写通路：范围、幂等与验收
 
-状态：**写通路与三类测试已完成；真机端到端待预览来源决定**（2026-10-25）
+状态：**写通路、确定性开发桥与测试已完成；真机证据待用户执行**（2026-10-25）
 分支：`agent`
 业务基线：`D:/project/Android/shared-ledger`（只读参考；本切片不改业务 schema 或 RPC）
 
@@ -21,20 +21,16 @@
 | 训练数据 | 否 | 不改 `docs/ai/dataset`、`dataset_contracts` 或任何训练资产 |
 | LAN | 否 | 只用真机 USB 联调 |
 
-### 1.1 一个必须先解决的缺口
+### 1.1 预览来源：已选方案 A
 
-当前 P2 运行时的模型输出契约是**只读识别**：
+P2 运行时的 v3 模型输出契约是只读识别（`P2ProposalRecognition` 只有 operation 与识别文本），不能生成预览字段。P5.0 因此采用**默认关闭的确定性开发桥**：
 
-- `P2ProposalRecognition` 只有 `kind/operation/recognized_intent_text`，没有任何金额、参与人、分摊字段。
-- `p2_read_prompt.py` 明确要求模型“不得生成预览、确认卡、执行命令”。
-- `P2Runtime._make_proposal` 直接抛 `CapabilityUnavailable("P2 never creates or previews proposals")`。
+- `AGENT_P5_DEV_INTENT_ENABLED=true` 时，运行时不调用模型，而是解析以 `记账` 开头的输入，按当前服务端 scope 绑定参与人/账本单元，生成 live 预览。
+- 只支持非 v3 P2 profile（`AGENT_P2_V3_CANDIDATE_ENABLED=false`）；v3 下该桥被配置检查拒绝。
+- 只支持 Activity 基础币种、等额分摊；外币、手动分摊留给后续切片。
+- 不是产品模型路径：预览摘要带 `【P5 开发验证】`，`policy_version=p5-dev-intent-v1`，默认关闭，日志明确记录。
 
-因此“模型产出结构化 `expense.create` 预览”这条路径**目前不存在**。P5.0 的写通路本身可以独立实现并用固定意图验证；真机端到端必须先选定预览来源：
-
-- **方案 A（推荐先做）**：新增一个 P5 专用、默认关闭的确定性意图桥，仅用于真机验收写通路；不是产品模型路径，文档和日志明确标注 `p5_dev`。
-- **方案 B**：新增 P5 模型 profile（结构化 propose schema + prompt + 新 pin），真正由模型产出字段；工作量和验证成本显著更大。
-
-在选定方案前，本切片交付：真实 Gateway、真实写适配器、预览构造、执行/幂等/四终态、三类测试。真机证据待方案选定后补。
+语法与示例见 `P5_0_RUNBOOK.md` §2。该桥只验证写通路、幂等、版本保护与 App 202 流程，不构成模型质量评测。
 
 ## 2. 能力卡
 
@@ -98,7 +94,8 @@
 
 - 单元/契约：`agent/tests/test_p5_live_write.py`（假 PostgREST 传输，断言请求体与四终态）。
 - API：`agent/tests/test_p5_confirm_api.py`（未确认、重复确认、并发改账走 confirm 路由）。
-- 全量（2026-10-25，本提交）：`783 passed, 1 xfailed`。
+- 开发桥：`agent/tests/test_p5_dev_bridge.py`（`记账` 解析 + 不调用模型生成 live 预览 + confirm 到真实 RPC 形状）。
+- 全量（2026-10-25，本提交）：`788 passed, 1 xfailed`。
   调用方式：
 
   ```powershell
@@ -115,7 +112,7 @@
 
 ## 7.1 P2 v3 execution pin
 
-本切片修改了 `agent/app/store.py`、`api.py`、`components.py`、`settings.py`，它们都在 P2 v3 execution manifest 的 49 个 component 中。**文档中的“当前 pin”因此失效**；live P2 v3 运行会 fail-closed。需要时用 `python -m agent.app.p2_v3_manifest_cli` 重新生成，并显式记录新 pin；不要静默替换，也不要声称旧证据在新源码上有效。
+本切片修改了 `agent/app/store.py`、`api.py`、`components.py`、`settings.py`、`p2_runtime.py`，它们都在 P2 v3 execution manifest 的 49 个 component 中。**文档中的“当前 pin”因此失效**；live P2 v3 运行会 fail-closed。需要时用 `python -m agent.app.p2_v3_manifest_cli` 重新生成，并显式记录新 pin；不要静默替换，也不要声称旧证据在新源码上有效。
 
 ## 8. 回滚
 

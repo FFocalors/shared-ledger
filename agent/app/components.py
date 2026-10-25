@@ -105,6 +105,10 @@ def build_components(settings: Settings) -> AppComponents:
     """Construct objects only; resource acquisition happens in lifespan."""
     if settings.live_write_enabled and settings.provider_mode != "p2":
         raise ConfigurationError("live write requires provider_mode=p2")
+    if settings.p5_dev_intent_enabled and not settings.live_write_enabled:
+        raise ConfigurationError("p5 dev intent requires live_write_enabled")
+    if settings.p5_dev_intent_enabled and settings.p2_v3_candidate_enabled:
+        raise ConfigurationError("p5 dev intent requires the non-v3 P2 profile")
     v3_store_args = {}
     if settings.p2_v3_candidate_enabled:
         v3_store_args = {
@@ -264,6 +268,8 @@ def build_components(settings: Settings) -> AppComponents:
                 (P2_CANDIDATE_PROFILE_ID, P2_V3_CANDIDATE_PROFILE_ID)
                 if settings.p2_v3_candidate_enabled else None
             ),
+            live_gateway=live_gateway,
+            p5_dev_intent_enabled=settings.p5_dev_intent_enabled,
         )
     else:
         provider = DisabledModelProvider()

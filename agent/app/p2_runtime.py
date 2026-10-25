@@ -56,7 +56,7 @@ from .p2_v3_sent_guard import validate_sent_p2_v3_decision
 from .p2_v3_store_ports import P2V3StoreBudgetPort
 from .ports import (
     AgentControl, AgentStore, AuthVerifier, CapabilityUnavailable, ComponentHealth,
-    Principal, ScopeAuthorizer,
+    Principal, ScopeAuthorizer, ScopeDenied,
 )
 from .runtime import MockRuntime, _AuthRequired, _CallBudgetReached, _GateClosed, _ModelTimeout
 from .store import (
@@ -66,6 +66,8 @@ from .store import (
 
 
 _ACTIVE_TURN: ContextVar[uuid.UUID | None] = ContextVar("p2_active_turn", default=None)
+P5_DEV_POLICY_VERSION = "p5-dev-intent-v1"
+P5_DEV_SUMMARY_PREFIX = "【P5 开发验证】"
 _ACTIVE_CANDIDATE_PROFILE: ContextVar[str | None] = ContextVar(
     "p2_active_candidate_profile", default=None,
 )
@@ -120,6 +122,7 @@ class _TurnP2State:
     resolved_scope: Any = None
     scope_activity_id: uuid.UUID | None = None
     scope_fingerprint: str | None = None
+    base_currency: str | None = None
     provenance: dict[c.ReadResultRef, P2ResultProvenance] = field(default_factory=dict)
     supplements: dict[c.ReadResultRef, list[P2ExpenseSupplement]] = field(default_factory=dict)
     labels: dict[c.ModelRefToken, P2ReferenceLabel] = field(default_factory=dict)
@@ -214,6 +217,8 @@ class P2Runtime(MockRuntime):
         v3_prompt_config: P2V3PromptBuildConfig | None = None,
         v3_backend_config: Any | None = None,
         enabled_candidate_profile_ids: Sequence[str] | None = None,
+        live_gateway: Any | None = None,
+        p5_dev_intent_enabled: bool = False,
     ) -> None:
         if (
             not isinstance(model_timeout_seconds, (int, float))
@@ -240,6 +245,8 @@ class P2Runtime(MockRuntime):
         self._p2_v3_provider = v3_provider
         self._p2_v3_prompt_config = v3_prompt_config
         self._p2_v3_backend_config = v3_backend_config
+        self._live_gateway = live_gateway
+        self._p5_dev_intent_enabled = bool(p5_dev_intent_enabled)
         # Without an enabled provider no candidate Turn may be claimed as ready.
         self._p2_v3_ready = False
         self._journal = journal
@@ -581,6 +588,21 @@ class P2Runtime(MockRuntime):
                 context, references = await self._build_p2_context(
                     aggregate, references, state, gate.disable_revision,
                 )
+
+            # P5.0 device-acceptance bridge. It only intercepts a fresh Turn with
+            # no prior read, and only when the server flag and live Gateway are
+            # both installed. Everything else keeps the frozen v1 proposal
+            # acknowledgement path.
+            if (
+                self._p5_dev_intent_enabled
+                and self._live_gateway is not None
+                and aggregate.checkpoint.last_decision is None
+                and not context.read_results
+            ):
+                if await self._p5_dev_live_proposal(
+                    aggregate, context, references, claimed, gate.disable_revision, state,
+                ):
+                    return
 
             aggregate = await self._prepare_p2_model_call(aggregate, context, references, claimed.claim_token)
             model_started = time.monotonic()
@@ -1845,6 +1867,7 @@ class P2Runtime(MockRuntime):
                 raise _P2TerminalFailure(c.ApiErrorCode.DEPENDENCY_UNAVAILABLE,
                                          self._SCOPE_CONFLICT_TEXT, retryable=False) from None
             state.scope_activity_id = activity_id
+            state.base_currency = resolved.activity.base_currency
             state.scope_fingerprint = _fingerprint({
                 "owner": str(owner_id), "turn": str(turn_id), "activity": str(activity_id),
             })
@@ -1869,6 +1892,7 @@ class P2Runtime(MockRuntime):
                 raise _P2TerminalFailure(c.ApiErrorCode.DEPENDENCY_UNAVAILABLE,
                                          self._SCOPE_CONFLICT_TEXT, retryable=False)
             state.scope_activity_id = None
+            state.base_currency = None
             state.scope_fingerprint = _fingerprint({"owner": str(owner_id), "turn": str(turn_id), "scope": "none"})
             state.labels = {
                 token: label for token, label in state.labels.items()
@@ -3104,6 +3128,74 @@ class P2Runtime(MockRuntime):
                 wait_reason=snapshot.wait_reason, resume_state=snapshot.resume_state,
             ),
         )
+
+    async def _p5_dev_live_proposal(
+        self,
+        aggregate: TurnAggregate,
+        context: c.ModelContext,
+        references: Sequence[c.BoundReference],
+        claimed: ClaimedTurn,
+        gate_revision: int,
+        state: _TurnP2State,
+    ) -> bool:
+        """Build a live preview from the documented dev command.
+
+        Returning False keeps the frozen v1 path (including its proposal
+        acknowledgement). Any failure to bind, read, or preview also declines
+        rather than inventing a fallback write.
+        """
+        from .p5_dev_intent import parse_dev_expense_create
+        from .p5_write import LiveWriteError
+
+        intent = parse_dev_expense_create(
+            context.input_text, references, state.labels, state.base_currency,
+        )
+        if intent is None:
+            return False
+        owner_id = aggregate.record.turn.owner_user_id
+        turn_id = aggregate.record.turn.turn_id
+        grant = self._active_grant(owner_id, turn_id)
+        try:
+            proposal = await self._live_gateway.build_preview(
+                owner_user_id=owner_id,
+                session_id=aggregate.record.turn.session_id,
+                turn_id=turn_id,
+                intent=intent,
+                bound_references=references,
+                access_token=grant.token,
+                expires_at=grant.expires_at,
+                agent_disable_revision=gate_revision,
+                policy_version=P5_DEV_POLICY_VERSION,
+                summary_prefix=P5_DEV_SUMMARY_PREFIX,
+                now=datetime.now(timezone.utc),
+            )
+        except (BackendReadError, LiveWriteError, ScopeDenied, ValueError) as exc:
+            _LOGGER.warning(
+                "p5 dev intent declined: turn=%s type=%s", turn_id, type(exc).__name__,
+            )
+            return False
+        before = aggregate.record.turn
+        after = self._next_state(
+            before, c.TurnState.WAIT_CONFIRM, c.TurnStep.AWAITING_USER,
+            wait_reason=c.WaitReason.CONFIRM_REQUIRED, resume_state=None,
+        )
+        events = [
+            EventDraft(
+                type=c.EventType.PROPOSAL, occurred_at=datetime.now(timezone.utc),
+                simulation=False,
+                payload=c.ProposalEventPayload(
+                    proposal_id=proposal.proposal_id, revision=proposal.revision,
+                    operation=proposal.operation,
+                ),
+            ),
+            self._status_event(after),
+        ]
+        checkpoint = aggregate.checkpoint.model_copy(update={"resume_step": None})
+        await self._transition(
+            aggregate, after, events, claimed.claim_token,
+            checkpoint=checkpoint, new_proposal=proposal,
+        )
+        return True
 
     async def _wait_for_confirmation(
         self, aggregate: TurnAggregate, decision: c.ProposeDecision, context: c.ModelContext,
