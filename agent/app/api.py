@@ -608,8 +608,17 @@ async def _execute_confirmation(
                               "The write path is temporarily unavailable.",
                               retryable=exc.retryable) from None
         if outcome.resolution is ExecutionResolution.CLOSED:
-            raise _ApiFailure(409, ApiErrorCode.PROPOSAL_REVISION_CONFLICT,
-                              "The preview is no longer valid. Refresh it before confirming again.")
+            # A pre-dispatch close has no execution and is a conflict for this
+            # confirmation. A dispatched execution closed by the RPC's own
+            # version guard still returns the 202 shape, but its resolution is
+            # "closed", never "succeeded".
+            aggregate = await _store_call(
+                components.store.get_turn, principal.user_id, proposal.turn_id,
+            )
+            if aggregate.record.turn.execution is None:
+                raise _ApiFailure(409, ApiErrorCode.PROPOSAL_REVISION_CONFLICT,
+                                  "The preview is no longer valid. Refresh it before confirming again.")
+            return await _accepted_execution_response(components, principal, proposal, request)
         return await _accepted_execution_response(components, principal, proposal, request)
 
     await _store_call(

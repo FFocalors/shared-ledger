@@ -37,6 +37,11 @@ _UPDATE_COMMAND = re.compile(
 _DIRECTIVE = re.compile(r"(付款人|分摊|账本)\s*=\s*([^\s]+)")
 _FOREIGN_MARKERS = ("USD", "美元", "$", "EUR", "欧元", "JPY", "日元")
 _ALL_TOKENS = ("所有人", "全部", "全员")
+_PRESENTATION_COMMANDS = {
+    "改名": "title",
+    "改图标": "icon",
+    "改备注": "note",
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,6 +51,89 @@ class DevUpdateCommand:
     payer_name: str | None = None
     split_token: str | None = None
     unit_name: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class DevPresentationCommand:
+    kind: str  # "title" | "icon" | "note"
+    target_title: str
+    value: str
+
+
+def is_dev_presentation_command(text: str) -> bool:
+    if not isinstance(text, str):
+        return False
+    stripped = text.lstrip()
+    return any(stripped.startswith(key) for key in _PRESENTATION_COMMANDS)
+
+
+def parse_dev_presentation_command(
+    text: str, titles: Sequence[str],
+) -> DevPresentationCommand | None:
+    """Resolve the target title by longest unique prefix.
+
+    The target title may contain spaces, so the split is not "first token".
+    A title that matches more than one Expense, or a remainder that matches
+    more than one title, declines the bridge.
+    """
+    if not isinstance(text, str):
+        return None
+    stripped = text.lstrip()
+    command = next(
+        (key for key in _PRESENTATION_COMMANDS if stripped.startswith(key)), None,
+    )
+    if command is None:
+        return None
+    remainder = stripped[len(command):].strip()
+    if not remainder:
+        return None
+    candidates: list[tuple[str, str]] = []
+    for title in sorted(set(titles)):
+        if titles.count(title) != 1:
+            continue
+        if remainder == title:
+            return None
+        if remainder.startswith(title + " "):
+            candidates.append((title, remainder[len(title):].strip()))
+    if len(candidates) != 1:
+        return None
+    target_title, value = candidates[0]
+    if not value:
+        return None
+    return DevPresentationCommand(
+        kind=_PRESENTATION_COMMANDS[command],
+        target_title=target_title,
+        value=value,
+    )
+
+
+def build_dev_presentation_intent(
+    cmd: DevPresentationCommand,
+    *,
+    expense_id: Any,
+    source_turn_id: Any,
+    activity_id: Any,
+) -> tuple[c.ExpensePresentationUpdateIntent, c.BoundExpenseReference]:
+    from .p5_write import SUPPORTED_ICON_KEYS
+
+    if cmd.kind == "icon" and cmd.value not in SUPPORTED_ICON_KEYS:
+        raise DevIntentRefused("图标不在支持列表：money/dining/shopping/transport/hotel/ticket/fuel/entertainment/medical/gift/grocery/flight。")
+    try:
+        intent = c.ExpensePresentationUpdateIntent(
+            kind="expense.presentation.update",
+            expense_ref=c.ExpenseRef.SELECTED,
+            title=cmd.value if cmd.kind == "title" else None,
+            note=cmd.value if cmd.kind == "note" else None,
+            icon_key=cmd.value if cmd.kind == "icon" else None,
+        )
+    except ValueError as exc:
+        raise DevIntentRefused("展示字段不合法。") from exc
+    binding = c.BoundExpenseReference(
+        kind="expense", ref=c.ExpenseRef.SELECTED, entity_id=expense_id,
+        source_turn_id=source_turn_id, scope_activity_id=activity_id,
+    )
+    return intent, binding
+
 
 
 def is_dev_update_command(text: str) -> bool:

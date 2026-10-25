@@ -18,7 +18,10 @@ from app.components import AppComponents
 from app.p2_harness import P2ReferenceLabel
 from app.p2_journal import P2ErrorProofJournal
 from app.p2_runtime import P2Runtime
-from app.p5_dev_intent import parse_dev_expense_update, parse_dev_expense_create
+from app.p5_dev_intent import (
+    parse_dev_expense_create, parse_dev_expense_update,
+    parse_dev_presentation_command,
+)
 from app.p5_write import LiveExpenseGateway, LiveWriteConfig
 from app.settings import Settings
 from app.store import SQLiteAgentStore
@@ -99,6 +102,7 @@ class _Transport:
         self.calls: list[dict] = []
         self.get_calls: list[str] = []
         self.expense_id = uuid.uuid4()
+        self.duplicate_title = False
         self.expense = {
             "id": str(self.expense_id),
             "ledger_unit_id": str(UNIT),
@@ -122,6 +126,11 @@ class _Transport:
         table = parsed.path.rsplit("/", 1)[-1]
         params = dict(parse_qsl(parsed.query))
         if table == "expenses":
+            if self.duplicate_title:
+                return 200, json.dumps([
+                    self.expense,
+                    {**self.expense, "id": str(uuid.uuid4())},
+                ]).encode()
             return 200, json.dumps([self.expense]).encode()
         if table == "payments":
             return 200, json.dumps([{
@@ -141,6 +150,13 @@ class _Transport:
 
     def post_json(self, url, headers, payload, *, timeout, max_response_bytes):  # noqa: ANN001
         self.calls.append({"url": url, "headers": dict(headers), "payload": dict(payload)})
+        if url.endswith("/update_expense_presentation"):
+            return 200, json.dumps([{
+                "updated_expense_id": str(self.expense_id),
+                "version": 4,
+                "financial_version": 1,
+                "financial_locked": self.expense["financial_locked"],
+            }]).encode()
         if url.endswith("/update_expense_auto_rate"):
             return 200, json.dumps([{
                 "updated_expense_id": str(self.expense_id),
@@ -307,3 +323,129 @@ def test_dev_update_bridge_refuses_a_locked_expense_without_a_model_call(tmp_pat
             if item.get("type") == "message"
         ]
         assert any("锁定" in text for text in messages)
+
+
+def test_dev_presentation_parser_resolves_unique_prefix_and_rejects_ambiguity() -> None:
+    cmd = parse_dev_presentation_command("改名 Lunch Dinner", ["Lunch", "Dinner"])
+    assert cmd is not None
+    assert (cmd.kind, cmd.target_title, cmd.value) == ("title", "Lunch", "Dinner")
+
+    spaced = parse_dev_presentation_command("改图标 Team Lunch dining", ["Team Lunch"])
+    assert spaced is not None
+    assert (spaced.kind, spaced.target_title, spaced.value) == ("icon", "Team Lunch", "dining")
+
+    assert parse_dev_presentation_command("改名 Lunch X", ["Lunch", "Lunch"]) is None
+    assert parse_dev_presentation_command("改名 Lunch 2 X", ["Lunch", "Lunch 2"]) is None
+    assert parse_dev_presentation_command("改名 Lunch", ["Lunch"]) is None
+    assert parse_dev_presentation_command("记账 Lunch 5", ["Lunch"]) is None
+
+
+def _confirm(client, proposal):
+    return client.post(
+        f"/v1/proposals/{proposal.proposal_id}/confirm",
+        headers=_auth(),
+        json={
+            "client_request_id": str(uuid.uuid4()),
+            "expected_proposal_revision": proposal.revision,
+            "command_digest": proposal.command_digest,
+            "confirmation_nonce": proposal.confirmation_nonce,
+        },
+    )
+
+
+def test_dev_presentation_bridge_renames_and_reaches_the_rpc(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(tmp_path / "p5dev-rename.sqlite3", transport)
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "改名 Lunch Dinner", scoped=True)
+        _wait(components, turn_id, {c.TurnState.WAIT_CONFIRM})
+
+        assert provider.prompts == []
+        details = components.store.get_session_detail(OWNER, session)
+        proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert proposal.operation == "expense.presentation.update"
+        assert proposal.policy_version == "p5-dev-expense-presentation-v1"
+        assert proposal.preview is not None
+        assert proposal.preview.summary.startswith("【P5 开发验证·展示】")
+        assert transport.calls == []
+
+        response = _confirm(client, proposal)
+        assert response.status_code == 202, response.text
+        assert response.json()["turn"]["execution_resolution"] == "succeeded"
+        assert len(transport.calls) == 1
+        assert transport.calls[0]["url"].endswith("/rest/v1/rpc/update_expense_presentation")
+        assert transport.calls[0]["payload"] == {
+            "expense_id": str(transport.expense_id),
+            "title": "Dinner",
+            "note": None,
+            "icon_key": "money",
+            "expected_version": 3,
+        }
+
+
+def test_dev_presentation_bridge_changes_icon_and_note(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(tmp_path / "p5dev-icon-note.sqlite3", transport)
+    with client:
+        session = _create_session(client)
+
+        icon_turn = _submit(client, session, "改图标 Lunch dining", scoped=True)
+        _wait(components, icon_turn, {c.TurnState.WAIT_CONFIRM})
+        details = components.store.get_session_detail(OWNER, session)
+        icon_proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert _confirm(client, icon_proposal).status_code == 202
+        assert transport.calls[-1]["payload"]["icon_key"] == "dining"
+
+        note_turn = _submit(client, session, "改备注 Lunch team lunch", scoped=True)
+        _wait(components, note_turn, {c.TurnState.WAIT_CONFIRM})
+        details = components.store.get_session_detail(OWNER, session)
+        note_proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert _confirm(client, note_proposal).status_code == 202
+        assert transport.calls[-1]["payload"]["note"] == "team lunch"
+        assert provider.prompts == []
+
+
+def test_dev_presentation_bridge_refuses_bad_icon_no_change_and_unknown_target(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(tmp_path / "p5dev-presentation-refusals.sqlite3", transport)
+    with client:
+        session = _create_session(client)
+
+        for text, marker in (
+            ("改图标 Lunch not_an_icon", "图标"),
+            ("改名 Lunch Lunch", "新值"),
+            ("改名 Missing X", "用法"),
+        ):
+            turn_id = _submit(client, session, text, scoped=True)
+            _wait(components, turn_id, {c.TurnState.COMPLETED})
+            details = components.store.get_session_detail(OWNER, session)
+            assert not any(item.status is c.ProposalStatus.PENDING for item in details.proposals)
+            messages = [
+                item["payload"]["text"] for item in _events(client, turn_id)["events"]
+                if item.get("type") == "message"
+            ]
+            assert any(marker in text_value for text_value in messages), (text, messages)
+
+        assert provider.prompts == []
+        assert transport.calls == []
+
+
+def test_dev_presentation_bridge_refuses_duplicate_titles(tmp_path) -> None:
+    transport = _Transport()
+    transport.duplicate_title = True
+    client, components, provider, _ = _build_client(tmp_path / "p5dev-duplicate-title.sqlite3", transport)
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "改名 Lunch Dinner", scoped=True)
+        _wait(components, turn_id, {c.TurnState.COMPLETED})
+
+        details = components.store.get_session_detail(OWNER, session)
+        assert not any(item.status is c.ProposalStatus.PENDING for item in details.proposals)
+        messages = [
+            item["payload"]["text"] for item in _events(client, turn_id)["events"]
+            if item.get("type") == "message"
+        ]
+        assert any("用法" in text_value for text_value in messages)
+        assert provider.prompts == []
+        assert transport.calls == []

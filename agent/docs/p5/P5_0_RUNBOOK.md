@@ -138,6 +138,63 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 如果当前 Expense 是手动分摊且命令没有 `分摊=`，或标题匹配到多笔，也会被拒绝；这是设计行为，不是故障。
 
+## 5.2 P5.2 展示更新（改名 / 改图标 / 改备注）
+
+命令：
+
+```text
+改名 <标题> <新标题>
+改图标 <标题> <icon_key>
+改备注 <标题> <备注文本>
+```
+
+示例：
+
+```text
+改名 Lunch Dinner
+改图标 Lunch dining
+改备注 Lunch 团队午餐
+```
+
+规则：
+
+- `<标题>` 是目标选择器：当前 Activity 内未删除 Expense 的标题必须唯一；标题可以包含空格，解析使用“最长唯一前缀”。
+- 只修改 `title` / `note` / `icon_key`；请求体不包含任何财务字段。
+- **`financial_locked` 的 Expense 允许改展示**，这是该 RPC 的用途。
+- 已删除、Activity 归档、关联退款不在 Agent 预检拒绝，由 RPC 实际返回；App 会看到对应的拒绝结果。
+- `icon_key` 只能是：`money dining shopping transport hotel ticket fuel entertainment medical gift grocery flight`。
+- 匹配不到、标题重名、新值为空、没有实际变化、非法 icon_key：Turn 完成一条拒绝消息，不调用模型。
+
+验收：
+
+**四条通用检查点**
+
+1. **未确认不写**：生成预览但不点确认 → 业务库无变化、无 RPC。
+2. **重复确认只写一次**：连续确认 3 次 → 只有 1 次 `update_expense_presentation`，三次同一 `execution_id`。
+3. **版本冲突作废旧预览**：预览后修改同一 Expense → 预检 0 次 RPC、Proposal `closed`、Turn `CANCELLED`；若 40001 在派发后返回，也关闭为 `closed`，不显示成功。
+4. **未知不冒充成功**：确认后断网/注入超时 → Turn `RECOVERING` + `UNKNOWN`；重复确认不再发 RPC。
+
+**展示更新专项**
+
+| # | 操作 | 预期 |
+|---|---|---|
+| 9 | 对一笔**已锁定**（有退款或真实转账来源）的消费执行 `改图标 <标题> dining` | 生成预览卡；确认后成功；金额/付款/分摊/发生时间完全不变；`financial_locked` 仍为 true |
+| 10 | 对未锁定消费执行 `改名 <标题> <新标题>` | 成功；Expense version +1；只有展示字段变化 |
+| 11 | 执行 `改名 <标题> <当前同名>`、`改图标 <标题> not_an_icon`、`改名 不存在 X`、标题重名 | Turn 完成拒绝消息；无 RPC；无提案卡 |
+| 12 | 预览后，在另一客户端修改同一 Expense 的展示或财务字段，再确认 | 预检版本冲突：0 次 RPC、Proposal `closed`、Turn `CANCELLED` |
+
+证据模板追加：
+
+```text
+展示命令: 改名/改图标/改备注 <标题> <新值>
+  旧值 -> 新值:
+  expected_version:
+  execution_id:
+  resolution: succeeded / rejected / closed / unknown
+  financial_locked: true / false
+  财务字段是否变化: 否
+```
+
 ## 6. 证据记录模板
 
 ```text

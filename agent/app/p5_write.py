@@ -45,8 +45,17 @@ from .store import (
 
 P5_POLICY_VERSION = "p5-live-expense-create-v1"
 P5_UPDATE_POLICY_VERSION = "p5-live-expense-update-v1"
+P5_PRESENTATION_POLICY_VERSION = "p5-live-expense-presentation-v1"
 RPC_CREATE_EXPENSE = "/rest/v1/rpc/create_expense_auto_rate"
 RPC_UPDATE_EXPENSE = "/rest/v1/rpc/update_expense_auto_rate"
+RPC_UPDATE_PRESENTATION = "/rest/v1/rpc/update_expense_presentation"
+
+# Public schema constraint `expenses_icon_key_supported`. The server normalizes
+# an unknown key to "money"; P5.2 rejects it instead of silently changing it.
+SUPPORTED_ICON_KEYS = frozenset({
+    "money", "dining", "shopping", "transport", "hotel", "ticket",
+    "fuel", "entertainment", "medical", "gift", "grocery", "flight",
+})
 
 _EXPENSE_SELECT = (
     "id,ledger_unit_id,title,original_amount,original_currency,base_amount,"
@@ -67,6 +76,9 @@ _PREFLIGHT_CLOSE_SUMMARY = {
     "expense_not_found": "the Expense was not found",
     "invalid_command": "the fixed update command is incomplete",
     "amount_allocation_mismatch": "payments or manual splits do not match the new amount",
+    "expense_version_conflict": "the Expense version changed after the preview",
+    "invalid_icon_key": "the icon key is not supported",
+    "no_change": "the presentation fields did not change",
 }
 
 
@@ -359,6 +371,34 @@ class LiveExpenseGateway:
             for item in rows
             if str(item.get("title")) == title
         ]
+
+    async def list_expenses(
+        self, access_token: str, activity_id: uuid.UUID,
+    ) -> list[tuple[uuid.UUID, str, int]]:
+        units = await self._get_rows(
+            "ledger_units",
+            [
+                ("activity_id", f"eq.{activity_id}"), ("is_deleted", "eq.false"),
+                ("select", "id,is_deleted"), ("order", "id.asc"),
+            ],
+            access_token,
+        )
+        unit_ids = [
+            _uuid(item.get("id")) for item in units if not _bool(item.get("is_deleted"))
+        ]
+        if not unit_ids:
+            return []
+        rows = await self._get_rows(
+            "expenses",
+            [
+                ("ledger_unit_id", "in.(" + ",".join(str(item) for item in unit_ids) + ")"),
+                ("is_deleted", "eq.false"),
+                ("select", "id,title,version"),
+                ("order", "id.asc"),
+            ],
+            access_token,
+        )
+        return [(_uuid(item.get("id")), str(item.get("title")), _int(item.get("version"))) for item in rows]
 
     async def _get_rows(
         self, route: str, params: Sequence[tuple[str, str]], access_token: str,
@@ -688,6 +728,142 @@ class LiveExpenseGateway:
             request_receipts=[],
         )
 
+    # ----------------------------------------------------------- presentation preview
+
+    async def build_presentation_preview(
+        self,
+        *,
+        owner_user_id: uuid.UUID,
+        session_id: uuid.UUID,
+        turn_id: uuid.UUID,
+        intent: c.ExpensePresentationUpdateIntent,
+        bound_references: Sequence[c.BoundReference],
+        access_token: str,
+        expires_at: datetime,
+        agent_disable_revision: int,
+        policy_version: str | None = None,
+        summary_prefix: str = "",
+        now: datetime | None = None,
+    ) -> c.ProposalRecord:
+        """Build a presentation-only proposal.
+
+        The RPC is explicitly allowed on financially locked Expenses. This
+        builder therefore does **not** reject locked, deleted, archived or
+        linked-refund rows; those outcomes are the RPC's to return. The only
+        Agent-side rejection is a missing/ambiguous binding, an unsupported
+        icon key, or a request that changes nothing.
+        """
+        if not isinstance(intent, c.ExpensePresentationUpdateIntent):
+            raise LiveWriteError("unsupported_operation")
+        instant = _aware(now)
+        binding = _resolve_expense_binding(intent, bound_references, turn_id)
+        expense_id = binding.entity_id
+        activity_id = binding.scope_activity_id
+        grant = _activity_grant(
+            owner_user_id=owner_user_id, turn_id=turn_id,
+            access_token=access_token, expires_at=expires_at,
+            activity_id=activity_id,
+        )
+        # The activity read supplies membership and the preview's informational
+        # financial version. It is NOT used as the presentation version guard.
+        scope = await self._read_backend.resolve_scope(
+            grant, ScopeRequest(mode="activity", ui_activity_id_hint=activity_id),
+        )
+        state = await self.read_expense_state(access_token, expense_id)
+        if intent.icon_key is not None and intent.icon_key not in SUPPORTED_ICON_KEYS:
+            raise LiveWriteError("invalid_icon_key")
+
+        current_icon = state.icon_key or "money"
+        merged_title = intent.title or state.title
+        merged_note = intent.note if intent.note is not None else state.note
+        merged_icon = intent.icon_key if intent.icon_key is not None else current_icon
+        if (merged_title, merged_note, merged_icon) == (state.title, state.note, current_icon):
+            raise LiveWriteError("no_change")
+
+        before = c.ExpenseSnapshot(
+            ledger_unit_id=state.ledger_unit_id,
+            title=state.title,
+            original_amount=state.original_amount,
+            original_currency=state.original_currency,
+            base_amount=state.base_amount,
+            payment_allocations=state.canonical_payments(),
+            split=state.canonical_split(),
+            occurred_at=state.occurred_at,
+            note=state.note,
+            icon_key=current_icon,
+            expense_version=str(state.version),
+            financial_locked=state.financial_locked,
+        )
+        after = c.ExpenseSnapshot(
+            ledger_unit_id=state.ledger_unit_id,
+            title=merged_title,
+            original_amount=state.original_amount,
+            original_currency=state.original_currency,
+            base_amount=state.base_amount,
+            payment_allocations=state.canonical_payments(),
+            split=state.canonical_split(),
+            occurred_at=state.occurred_at,
+            note=merged_note,
+            icon_key=merged_icon,
+            expense_version=str(state.version + 1),
+            financial_locked=state.financial_locked,
+        )
+        changes = _presentation_changes(before, after)
+        if not changes:
+            raise LiveWriteError("no_change")
+
+        patch = c.CanonicalExpensePresentationPatch(
+            title=merged_title, note=merged_note, icon_key=merged_icon,
+        )
+        command = c.FixedExpensePresentationCommand(
+            operation="expense.presentation.update",
+            activity_id=activity_id,
+            expense_id=expense_id,
+            expected_expense_version=str(state.version),
+            patch=patch,
+        )
+        preview = c.ExpensePreview(
+            kind="expense",
+            summary=f"{summary_prefix}修改消费展示 {merged_title}",
+            before=before,
+            after=after,
+            changes=changes,
+            activity_financial_version=str(scope.activity.financial_version),
+            generated_at=instant,
+            simulation=False,
+        )
+        policy = policy_version or self._config.policy_version
+        preconditions = c.PreconditionSnapshot(
+            activity_id=activity_id,
+            permission_checked=True,
+            agent_disable_revision=agent_disable_revision,
+            activity_financial_version=str(scope.activity.financial_version),
+            expense_version=str(state.version),
+            policy_version=policy,
+            verified_at=instant,
+        )
+        digest = c.canonical_command_digest(command, preconditions, policy_version=policy)
+        return c.ProposalRecord(
+            proposal_id=uuid.uuid4(),
+            owner_user_id=owner_user_id,
+            session_id=session_id,
+            turn_id=turn_id,
+            revision=1,
+            operation="expense.presentation.update",
+            mode="backend",
+            status=c.ProposalStatus.PENDING,
+            intent=intent,
+            canonical_command=command,
+            preview=preview,
+            preconditions=preconditions,
+            command_digest=digest,
+            confirmation_nonce=_new_nonce(),
+            policy_version=policy,
+            expires_at=instant.replace(microsecond=0) + timedelta(minutes=10),
+            execution=None,
+            request_receipts=[],
+        )
+
     # ---------------------------------------------------------------- execution
 
     async def execute(
@@ -701,11 +877,15 @@ class LiveExpenseGateway:
     ) -> LiveWriteOutcome:
         """Preflight, dispatch once, call the real RPC, settle one outcome."""
         command = proposal.canonical_command
-        if not isinstance(command, (c.FixedExpenseCreateCommand, c.FixedExpenseUpdateCommand)):
+        if not isinstance(command, (
+            c.FixedExpenseCreateCommand,
+            c.FixedExpenseUpdateCommand,
+            c.FixedExpensePresentationCommand,
+        )):
             return await self._close(
                 principal, proposal,
                 code="unsupported_operation",
-                summary="P5 only executes expense.create and expense.update",
+                summary="P5 only executes create, update and presentation update",
                 expected_state_revision=expected_state_revision,
             )
         if proposal.execution is not None:
@@ -718,43 +898,59 @@ class LiveExpenseGateway:
                 expected_state_revision=expected_state_revision,
             )
         is_create = isinstance(command, c.FixedExpenseCreateCommand)
+        is_presentation = isinstance(command, c.FixedExpensePresentationCommand)
         grant = _activity_grant(
             owner_user_id=principal.user_id, turn_id=proposal.turn_id,
             access_token=access_token, expires_at=_grant_expiry(principal),
             activity_id=command.activity_id,
         )
         try:
-            if not is_create:
-                _require_full_update_patch(command)
-            # Re-read the authoritative Activity version immediately before
-            # dispatch. A mismatch means another financial change landed after
-            # the preview was rendered.
-            await self._read_backend.verify_financial_versions(
-                grant, {command.activity_id: int(command.expected_financial_version)},
-            )
-            scope = await self._read_backend.resolve_scope(
-                grant, ScopeRequest(mode="activity", ui_activity_id_hint=command.activity_id),
-            )
-            if scope.activity.financial_version != int(command.expected_financial_version):
-                raise LiveWriteError("preview_stale")
-            _require_writable_activity(
-                scope,
-                original_currency=(
-                    command.original_currency if is_create
-                    else (command.patch.original_currency or "")
-                ),
-            )
-            if not is_create:
-                # The RPC cannot compare the Expense version itself, so P5.1
-                # re-reads every mutable precondition it relies on.
-                await self._validate_update_preflight(command, scope, access_token)
+            if is_presentation:
+                # Presentation update: only the Expense's own version guards it.
+                # Do NOT use activities.financial_version, and do NOT pre-reject
+                # locked, deleted, archived or linked-refund rows: those are the
+                # RPC's actual responses to return.
+                _require_full_presentation_patch(command)
+                state = await self.read_expense_state(access_token, command.expense_id)
+                if state.version != int(command.expected_expense_version):
+                    raise LiveWriteError("expense_version_conflict")
+            else:
+                if not is_create:
+                    _require_full_update_patch(command)
+                # Re-read the authoritative Activity version immediately before
+                # dispatch. A mismatch means another financial change landed after
+                # the preview was rendered.
+                await self._read_backend.verify_financial_versions(
+                    grant, {command.activity_id: int(command.expected_financial_version)},
+                )
+                scope = await self._read_backend.resolve_scope(
+                    grant, ScopeRequest(mode="activity", ui_activity_id_hint=command.activity_id),
+                )
+                if scope.activity.financial_version != int(command.expected_financial_version):
+                    raise LiveWriteError("preview_stale")
+                _require_writable_activity(
+                    scope,
+                    original_currency=(
+                        command.original_currency if is_create
+                        else (command.patch.original_currency or "")
+                    ),
+                )
+                if not is_create:
+                    # The RPC cannot compare the Expense version itself, so P5.1
+                    # re-reads every mutable precondition it relies on.
+                    await self._validate_update_preflight(command, scope, access_token)
         except LiveWriteError as exc:
+            if exc.code in ("invalid_auth_context", "auth_rejected"):
+                raise LiveWriteError("invalid_auth_context", retryable=False) from exc
             if exc.code in (
                 "foreign_currency_not_in_p5", "preview_stale", "expense_changed",
                 "expense_deleted", "expense_financial_locked", "refund_update_not_in_p5",
                 "expense_not_found",
                 "invalid_command",
                 "amount_allocation_mismatch",
+                "expense_version_conflict",
+                "invalid_icon_key",
+                "no_change",
             ):
                 return await self._close(
                     principal, proposal,
@@ -804,6 +1000,9 @@ class LiveExpenseGateway:
         if is_create:
             rpc_path = RPC_CREATE_EXPENSE
             payload = _rpc_payload(command)
+        elif is_presentation:
+            rpc_path = RPC_UPDATE_PRESENTATION
+            payload = _rpc_payload_presentation(command)
         else:
             rpc_path = RPC_UPDATE_EXPENSE
             payload = _rpc_payload_update(command)
@@ -929,8 +1128,15 @@ class LiveExpenseGateway:
                 # A 2xx without the expected row is NOT proof of success.
                 await _call_store(self._store.mark_execution_unknown, principal.user_id, proposal.proposal_id)
                 return LiveWriteOutcome(c.ExecutionResolution.UNKNOWN, "upstream_invalid_success", "write outcome is unresolved")
-            updated = proposal.operation == "expense.update"
-            code = "expense_updated" if updated else "expense_created"
+            if proposal.operation == "expense.presentation.update":
+                code = "expense_presentation_updated"
+                summary_text = "expense presentation updated"
+            elif proposal.operation == "expense.update":
+                code = "expense_updated"
+                summary_text = "expense updated"
+            else:
+                code = "expense_created"
+                summary_text = "expense created"
             await _call_store(
                 self._store.settle_mock_execution,
                 principal.user_id, proposal.proposal_id,
@@ -938,9 +1144,25 @@ class LiveExpenseGateway:
                 result_code=code,
                 result_summary=f"expense_id={expense_id};version={version}",
             )
+            return LiveWriteOutcome(c.ExecutionResolution.SUCCEEDED, code, summary_text)
+
+        raw_code = _raw_error_code(parsed)
+        if (
+            proposal.operation == "expense.presentation.update"
+            and raw_code == "40001"
+        ):
+            # The RPC's explicit version guard fired after dispatch. Close the
+            # dispatched execution; this is not a success.
+            await _call_store(
+                self._store.settle_mock_execution,
+                principal.user_id, proposal.proposal_id,
+                c.ExecutionResolution.CLOSED,
+                result_code="expense_version_conflict",
+                result_summary="expense version changed before the RPC",
+            )
             return LiveWriteOutcome(
-                c.ExecutionResolution.SUCCEEDED, code,
-                "expense updated" if updated else "expense created",
+                c.ExecutionResolution.CLOSED, "expense_version_conflict",
+                "expense version conflict",
             )
 
         code = _business_error_code(status, parsed)
@@ -955,6 +1177,45 @@ class LiveExpenseGateway:
             result_summary="server rejected the write",
         )
         return LiveWriteOutcome(c.ExecutionResolution.REJECTED, code or "rpc_rejected", "server rejected the write")
+
+
+def _presentation_changes(
+    before: c.ExpenseSnapshot, after: c.ExpenseSnapshot,
+) -> list[c.ExpenseFieldChange]:
+    changes: list[c.ExpenseFieldChange] = []
+    if before.title != after.title:
+        changes.append(c.ExpenseTitleChange(field="title", before=before.title, after=after.title))
+    if before.note != after.note:
+        changes.append(c.ExpenseNoteChange(field="note", before=before.note, after=after.note))
+    if before.icon_key != after.icon_key:
+        changes.append(c.ExpenseIconChange(
+            field="icon_key", before=before.icon_key, after=after.icon_key,
+        ))
+    return changes
+
+
+def _require_full_presentation_patch(command: c.FixedExpensePresentationCommand) -> None:
+    if command.patch.title is None or command.patch.icon_key is None:
+        raise LiveWriteError("invalid_command")
+
+
+def _rpc_payload_presentation(command: c.FixedExpensePresentationCommand) -> dict[str, Any]:
+    _require_full_presentation_patch(command)
+    patch = command.patch
+    return {
+        "expense_id": str(command.expense_id),
+        "title": patch.title,
+        "note": patch.note,
+        "icon_key": patch.icon_key,
+        "expected_version": int(command.expected_expense_version),
+    }
+
+
+def _raw_error_code(rows: list[Any]) -> str | None:
+    if not rows or not isinstance(rows[0], dict):
+        return None
+    code = rows[0].get("code")
+    return code if isinstance(code, str) else None
 
 
 def _resolve_expense_binding(

@@ -1892,7 +1892,8 @@ class SQLiteAgentStore(P2V3StoreMixin):
     ) -> TurnAggregate:
         """Assign the deterministic execution identity and enter EXECUTING."""
         from .contracts import (
-            ConfirmProposalRequest, ExecutionIdentity, ExecutionReference, FixedExpenseCreateCommand,
+            ConfirmProposalRequest, ExecutionIdentity, ExecutionReference,
+            FixedExpenseCreateCommand, FixedExpensePresentationCommand,
             FixedExpenseUpdateCommand, ProposalRecord, ProposalStatus, derive_execution_id,
         )
         from .p3_execution import MockExecutionStateError, mock_effect_for_command, require_matching_financial_version
@@ -1917,8 +1918,14 @@ class SQLiteAgentStore(P2V3StoreMixin):
         if proposal.mode != "backend" or proposal.canonical_command is None:
             raise MockExecutionStateError("the mock write path requires a backend proposal with a fixed command")
         if execution_kind == "live":
-            if not isinstance(proposal.canonical_command, (FixedExpenseCreateCommand, FixedExpenseUpdateCommand)):
-                raise MockExecutionStateError("the live write path supports expense.create and expense.update only")
+            if not isinstance(proposal.canonical_command, (
+                FixedExpenseCreateCommand,
+                FixedExpenseUpdateCommand,
+                FixedExpensePresentationCommand,
+            )):
+                raise MockExecutionStateError(
+                    "the live write path supports create, update and presentation update only"
+                )
         if (
             proposal.command_digest is None
             or not hmac.compare_digest(proposal.command_digest, request.command_digest)
@@ -2058,8 +2065,14 @@ class SQLiteAgentStore(P2V3StoreMixin):
 
         self._require_started()
         instant = _aware_now(now)
-        if resolution not in (ExecutionResolution.SUCCEEDED, ExecutionResolution.REJECTED):
-            raise MockExecutionStateError("settlement records a succeeded or rejected execution only")
+        if resolution not in (
+            ExecutionResolution.SUCCEEDED,
+            ExecutionResolution.REJECTED,
+            ExecutionResolution.CLOSED,
+        ):
+            raise MockExecutionStateError(
+                "settlement records a succeeded, rejected or closed execution only"
+            )
         proposal = self.get_proposal(owner_user_id, proposal_id)
         aggregate = self.get_turn(owner_user_id, proposal.turn_id)
         before = aggregate.record.turn
@@ -2072,7 +2085,34 @@ class SQLiteAgentStore(P2V3StoreMixin):
             raise MockExecutionStateError("only a dispatched or recovering execution can be settled")
         if before.execution_resolution not in (None, ExecutionResolution.UNKNOWN, resolution):
             raise MockExecutionStateError("a terminal execution resolution is immutable")
-        terminal = TurnState.COMPLETED if resolution == ExecutionResolution.SUCCEEDED else TurnState.FAILED
+        if resolution == ExecutionResolution.CLOSED and before.state == TurnState.EXECUTING:
+            # The frozen state machine has no EXECUTING -> CANCELLED edge. A
+            # dispatched-but-closed execution passes through RECOVERING so the
+            # cancellation remains a legal, auditable transition.
+            recovering = TurnStateSnapshot.model_validate(
+                before.model_dump(mode="python")
+                | {
+                    "state": TurnState.RECOVERING, "step": TurnStep.RECONCILE,
+                    "state_revision": before.state_revision + 1,
+                    "wait_reason": None, "resume_state": None,
+                    "execution_resolution": None,
+                }
+            )
+            aggregate = self.transition_turn(
+                owner_user_id, recovering,
+                expected_state_revision=before.state_revision,
+                expected_checkpoint_revision=aggregate.checkpoint_revision,
+                events=[self._status_draft(recovering, instant)],
+                claim_token=claim_token,
+                now=instant,
+            )
+            before = aggregate.record.turn
+        if resolution == ExecutionResolution.SUCCEEDED:
+            terminal = TurnState.COMPLETED
+        elif resolution == ExecutionResolution.CLOSED:
+            terminal = TurnState.CANCELLED
+        else:
+            terminal = TurnState.FAILED
         after = TurnStateSnapshot.model_validate(
             before.model_dump(mode="python")
             | {
@@ -2093,10 +2133,16 @@ class SQLiteAgentStore(P2V3StoreMixin):
             result_summary=result_summary,
         )
         rejected_proposal = None
-        if resolution == ExecutionResolution.REJECTED:
+        if resolution in (ExecutionResolution.REJECTED, ExecutionResolution.CLOSED):
             rejected_proposal = ProposalRecord.model_validate(
                 proposal.model_dump(mode="python", by_alias=True, exclude_none=False)
-                | {"status": ProposalStatus.REJECTED.value}
+                | {
+                    "status": (
+                        ProposalStatus.REJECTED.value
+                        if resolution == ExecutionResolution.REJECTED
+                        else ProposalStatus.CLOSED.value
+                    )
+                }
             )
         return self.transition_turn(
             owner_user_id, after,
