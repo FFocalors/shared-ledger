@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import uuid
+from typing import Any
 from urllib.parse import urlsplit
 
 from .backend import MockBackendAdapter, MockScopeAuthorizer, UnimplementedBackendAdapter
@@ -17,7 +18,7 @@ from .ports import (
     Runtime, ScopeAuthorizer, ScopeUnavailable,
 )
 from .runtime import MockRuntime, UnimplementedRuntime
-from .settings import Settings
+from .settings import ConfigurationError, Settings
 from .p2_backend import P2BackendAdapter, P2BackendConfig
 from .p2_journal import P2ErrorProofJournal
 from .p2_model_provider import LMStudioOpenAIConfig, LMStudioOpenAIProvider
@@ -63,6 +64,7 @@ class AppComponents:
     agent_control: AgentControl | None = None
     proposal_adjustment_preparer: ProposalAdjustmentPreparer | None = None
     execution_enabled: bool = False
+    live_gateway: Any | None = None
 
 
 @dataclass(frozen=True)
@@ -101,6 +103,8 @@ class _UnavailableProposalAdjustmentPreparer:
 
 def build_components(settings: Settings) -> AppComponents:
     """Construct objects only; resource acquisition happens in lifespan."""
+    if settings.live_write_enabled and settings.provider_mode != "p2":
+        raise ConfigurationError("live write requires provider_mode=p2")
     v3_store_args = {}
     if settings.p2_v3_candidate_enabled:
         v3_store_args = {
@@ -118,6 +122,7 @@ def build_components(settings: Settings) -> AppComponents:
     )
     verifier = SupabaseAuthVerifier.from_settings(settings)
     control = _ConfiguredAgentControl(settings.agent_enabled, settings.disable_revision)
+    live_gateway: Any | None = None
     if settings.provider_mode == "mock":
         provider = MockModelProvider()
         backend = MockBackendAdapter()
@@ -188,6 +193,18 @@ def build_components(settings: Settings) -> AppComponents:
             **backend_timeouts,
         )
         backend = P2BackendAdapter(backend_config)
+        if settings.live_write_enabled:
+            from .p5_write import LiveExpenseGateway, LiveWriteConfig
+
+            live_gateway = LiveExpenseGateway(
+                LiveWriteConfig(
+                    project_url=project_url,
+                    publishable_key=settings.supabase_api_key.get_secret_value(),
+                    timeout_seconds=settings.p2_backend_request_timeout_seconds,
+                ),
+                store,
+                backend,
+            )
         v3_backend_config = None
         if settings.p2_v3_candidate_enabled:
             # V3's immutable candidate fixes physical source pages at 16 rows,
@@ -264,6 +281,7 @@ def build_components(settings: Settings) -> AppComponents:
         agent_control=control,
         proposal_adjustment_preparer=_UnavailableProposalAdjustmentPreparer(),
         execution_enabled=settings.execution_enabled,
+        live_gateway=live_gateway,
     )
 
 

@@ -41,6 +41,7 @@ from .contracts import (
     StatusEventPayload, validate_auth_resume,
 )
 from .p3_execution import MockExecutionStateError, MockPreconditionConflict
+from .p5_write import LiveWriteError
 from .ports import (
     AgentControlSnapshot, AgentDisabled, CapabilityUnavailable, Principal, ScopeDenied,
     ScopeUnavailable,
@@ -580,8 +581,37 @@ async def _execute_confirmation(
     proposal: ProposalRecord,
     request: ConfirmProposalRequest,
     expected_state_revision: int,
+    *,
+    access_token: str | None = None,
 ) -> JSONResponse:
-    """Dispatch, apply, and settle one proposal; an unknown outcome is never success."""
+    """Dispatch and settle one proposal; an unknown outcome is never success.
+
+    With a live Gateway installed, the real business RPC owns the effect. The
+    Gateway re-reads the authoritative Activity version first and refuses to
+    write when the preview is stale. Without it, the frozen P3a mock path runs.
+    """
+    if components.live_gateway is not None:
+        if not isinstance(access_token, str) or not access_token:
+            raise _ApiFailure(401, ApiErrorCode.UNAUTHENTICATED,
+                              "The access token must be refreshed before this proposal can execute.")
+        try:
+            outcome = await components.live_gateway.execute(
+                principal=principal, proposal=proposal, request=request,
+                expected_state_revision=expected_state_revision,
+                access_token=access_token,
+            )
+        except LiveWriteError as exc:
+            if exc.code in ("invalid_auth_context", "auth_rejected"):
+                raise _ApiFailure(401, ApiErrorCode.UNAUTHENTICATED,
+                                  "The access token is invalid or no longer active.") from None
+            raise _ApiFailure(503, ApiErrorCode.DEPENDENCY_UNAVAILABLE,
+                              "The write path is temporarily unavailable.",
+                              retryable=exc.retryable) from None
+        if outcome.resolution is ExecutionResolution.CLOSED:
+            raise _ApiFailure(409, ApiErrorCode.PROPOSAL_REVISION_CONFLICT,
+                              "The preview is no longer valid. Refresh it before confirming again.")
+        return await _accepted_execution_response(components, principal, proposal, request)
+
     await _store_call(
         components.store.confirm_and_dispatch, principal.user_id,
         proposal.proposal_id, request,
@@ -1139,6 +1169,7 @@ def install_api_routes(app: FastAPI) -> None:
             return _receipt(receipt)
         return await _execute_confirmation(
             components, principal, proposal, body, turn.record.turn.state_revision,
+            access_token=getattr(request.state, "p2_access_token", None),
         )
 
 

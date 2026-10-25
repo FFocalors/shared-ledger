@@ -804,6 +804,7 @@ class SQLiteAgentStore(P2V3StoreMixin):
         fixture_execution: bool = False,
         execution_dispatch: bool = False,
         proposal_result_update: bool = False,
+        pending_proposal_close: bool = False,
         claim_token: Optional[str] = None,
         candidate_profile_id: Optional[str] = None,
         p2_v3_protected_output: Any = None,
@@ -876,32 +877,62 @@ class SQLiteAgentStore(P2V3StoreMixin):
                 if changed != 1:
                     raise ProposalConflict("proposal changed before execution identity dispatch")
             elif updated_proposal is not None:
-                if not proposal_result_update:
-                    raise InvariantViolation("proposal status updates require an explicit execution dispatch")
-                # Settling a dispatched execution may move an already-confirmed
-                # proposal to a terminal status. It may not reassign the execution
-                # identity, resurrect a pending proposal, or touch another turn.
-                if after.execution is None or before.execution != after.execution:
-                    raise InvariantViolation("a proposal result update requires the existing execution identity")
-                current_proposal = self._proposal_by_id(connection, owner_user_id, after.execution.proposal_id)
-                updated_proposal = self._preserve_proposal_receipts(current_proposal, updated_proposal)
-                if (
-                    updated_proposal.proposal_id != current_proposal.proposal_id
-                    or updated_proposal.revision != current_proposal.revision
-                    or updated_proposal.execution != after.execution
-                    or current_proposal.execution != after.execution
-                    or current_proposal.status != ProposalStatus.CONFIRMED
-                    or updated_proposal.status not in (ProposalStatus.REJECTED, ProposalStatus.CLOSED)
-                ):
-                    raise InvariantViolation("a proposal result update may only settle a confirmed execution")
-                changed = connection.execute(
-                    "UPDATE proposals SET status = ?, record_json = ?, updated_at = ? "
-                    "WHERE proposal_id = ? AND owner_user_id = ? AND revision = ? AND status = 'confirmed'",
-                    (updated_proposal.status.value, _dump_json(updated_proposal), _timestamp(instant),
-                     str(updated_proposal.proposal_id), str(owner_user_id), updated_proposal.revision),
-                ).rowcount
-                if changed != 1:
-                    raise ProposalConflict("proposal changed before its execution result was recorded")
+                if pending_proposal_close:
+                    # A preview that must not execute is closed before any
+                    # execution identity exists. It cannot carry an execution
+                    # and may only move pending -> closed on the same revision.
+                    if before.execution is not None or after.execution is not None:
+                        raise InvariantViolation("a pending proposal close cannot carry an execution identity")
+                    if (
+                        updated_proposal.status != ProposalStatus.CLOSED
+                        or updated_proposal.execution is not None
+                    ):
+                        raise InvariantViolation("a pending proposal close must produce a closed, unexecuted proposal")
+                    current_proposal = self._proposal_by_id(
+                        connection, owner_user_id, updated_proposal.proposal_id,
+                    )
+                    updated_proposal = self._preserve_proposal_receipts(current_proposal, updated_proposal)
+                    if (
+                        current_proposal.proposal_id != updated_proposal.proposal_id
+                        or current_proposal.revision != updated_proposal.revision
+                        or current_proposal.status != ProposalStatus.PENDING
+                    ):
+                        raise InvariantViolation("a pending proposal close must target the pending revision")
+                    changed = connection.execute(
+                        "UPDATE proposals SET status = ?, record_json = ?, updated_at = ? "
+                        "WHERE proposal_id = ? AND owner_user_id = ? AND revision = ? AND status = 'pending'",
+                        (updated_proposal.status.value, _dump_json(updated_proposal), _timestamp(instant),
+                         str(updated_proposal.proposal_id), str(owner_user_id), updated_proposal.revision),
+                    ).rowcount
+                    if changed != 1:
+                        raise ProposalConflict("proposal changed before it could be closed")
+                else:
+                    if not proposal_result_update:
+                        raise InvariantViolation("proposal status updates require an explicit execution dispatch")
+                    # Settling a dispatched execution may move an already-confirmed
+                    # proposal to a terminal status. It may not reassign the execution
+                    # identity, resurrect a pending proposal, or touch another turn.
+                    if after.execution is None or before.execution != after.execution:
+                        raise InvariantViolation("a proposal result update requires the existing execution identity")
+                    current_proposal = self._proposal_by_id(connection, owner_user_id, after.execution.proposal_id)
+                    updated_proposal = self._preserve_proposal_receipts(current_proposal, updated_proposal)
+                    if (
+                        updated_proposal.proposal_id != current_proposal.proposal_id
+                        or updated_proposal.revision != current_proposal.revision
+                        or updated_proposal.execution != after.execution
+                        or current_proposal.execution != after.execution
+                        or current_proposal.status != ProposalStatus.CONFIRMED
+                        or updated_proposal.status not in (ProposalStatus.REJECTED, ProposalStatus.CLOSED)
+                    ):
+                        raise InvariantViolation("a proposal result update may only settle a confirmed execution")
+                    changed = connection.execute(
+                        "UPDATE proposals SET status = ?, record_json = ?, updated_at = ? "
+                        "WHERE proposal_id = ? AND owner_user_id = ? AND revision = ? AND status = 'confirmed'",
+                        (updated_proposal.status.value, _dump_json(updated_proposal), _timestamp(instant),
+                         str(updated_proposal.proposal_id), str(owner_user_id), updated_proposal.revision),
+                    ).rowcount
+                    if changed != 1:
+                        raise ProposalConflict("proposal changed before its execution result was recorded")
             self._validate_after_owner_session(after, owner_user_id, aggregate.record)
             next_checkpoint = checkpoint if checkpoint is not None else aggregate.checkpoint
             next_checkpoint_revision = aggregate.checkpoint_revision + (1 if checkpoint is not None or event_sources else 0)
@@ -1783,6 +1814,70 @@ class SQLiteAgentStore(P2V3StoreMixin):
                 "SELECT COUNT(*) FROM mock_execution_ledger WHERE proposal_id = ?", (str(proposal_id),),
             ).fetchone()[0])
 
+    def close_pending_proposal(
+        self,
+        owner_user_id: UserId,
+        proposal_id: uuid.UUID,
+        *,
+        reason: str,
+        expected_state_revision: int,
+        expected_proposal_revision: int,
+        now: Optional[datetime] = None,
+    ) -> TurnAggregate:
+        """Close a pending preview that must not execute (P5.0 preflight refusal).
+
+        No execution identity is assigned, so the Turn becomes CANCELLED and the
+        Proposal CLOSED. This is deliberately separate from a rejected execution:
+        nothing was dispatched and no business write was attempted.
+        """
+        self._require_started()
+        instant = _aware_now(now)
+        proposal = self.get_proposal(owner_user_id, proposal_id)
+        aggregate = self.get_turn(owner_user_id, proposal.turn_id)
+        before = aggregate.record.turn
+        if proposal.status != ProposalStatus.PENDING or proposal.execution is not None:
+            raise ProposalConflict("proposal is not currently closable")
+        if proposal.revision != expected_proposal_revision:
+            raise ProposalConflict("proposal revision precondition failed")
+        if before.state != TurnState.WAIT_CONFIRM or before.execution is not None:
+            raise StateConflict("turn is not awaiting an undispatched proposal")
+        if before.state_revision != expected_state_revision:
+            raise StateConflict("turn state revision precondition failed")
+        after = TurnStateSnapshot.model_validate(
+            before.model_dump(mode="python")
+            | {
+                "state": TurnState.CANCELLED, "step": TurnStep.TERMINAL,
+                "state_revision": before.state_revision + 1,
+                "wait_reason": None, "resume_state": None,
+                "execution": None, "execution_resolution": None,
+            }
+        )
+        closed = ProposalRecord.model_validate(
+            proposal.model_dump(mode="python", by_alias=True, exclude_none=False)
+            | {
+                "status": ProposalStatus.CLOSED.value,
+                "confirmation_nonce": None,
+            }
+        )
+        return self.transition_turn(
+            owner_user_id, after,
+            expected_state_revision=before.state_revision,
+            expected_checkpoint_revision=aggregate.checkpoint_revision,
+            events=[
+                self._status_draft(after, instant),
+                EventDraft(
+                    type=EventType.ERROR, occurred_at=instant, simulation=False,
+                    payload=ErrorEventPayload(
+                        code=ApiErrorCode.PROPOSAL_REVISION_CONFLICT, message=reason,
+                        retryable=False,
+                    ),
+                ),
+            ],
+            updated_proposal=closed,
+            pending_proposal_close=True,
+            now=instant,
+        )
+
     def confirm_and_dispatch(
         self,
         owner_user_id: UserId,
@@ -1792,12 +1887,13 @@ class SQLiteAgentStore(P2V3StoreMixin):
         expected_state_revision: int,
         expected_proposal_revision: int,
         activity_guard: Optional[Callable[[uuid.UUID], None]] = None,
+        execution_kind: Literal["mock", "live"] = "mock",
         now: Optional[datetime] = None,
     ) -> TurnAggregate:
         """Assign the deterministic execution identity and enter EXECUTING."""
         from .contracts import (
-            ConfirmProposalRequest, ExecutionIdentity, ExecutionReference, ProposalRecord,
-            ProposalStatus, derive_execution_id,
+            ConfirmProposalRequest, ExecutionIdentity, ExecutionReference, FixedExpenseCreateCommand,
+            ProposalRecord, ProposalStatus, derive_execution_id,
         )
         from .p3_execution import MockExecutionStateError, mock_effect_for_command, require_matching_financial_version
 
@@ -1820,6 +1916,9 @@ class SQLiteAgentStore(P2V3StoreMixin):
             raise StateConflict("turn state revision precondition failed")
         if proposal.mode != "backend" or proposal.canonical_command is None:
             raise MockExecutionStateError("the mock write path requires a backend proposal with a fixed command")
+        if execution_kind == "live":
+            if not isinstance(proposal.canonical_command, FixedExpenseCreateCommand):
+                raise MockExecutionStateError("the live write path supports expense.create only")
         if (
             proposal.command_digest is None
             or not hmac.compare_digest(proposal.command_digest, request.command_digest)
@@ -1828,16 +1927,23 @@ class SQLiteAgentStore(P2V3StoreMixin):
         ):
             raise ProposalConflict("proposal confirmation precondition failed")
         # Deriving the effect here validates the fixed command before any state moves.
-        effect = mock_effect_for_command(proposal.canonical_command)
+        # The live path performs its authoritative version/membership re-read in
+        # the Gateway before this call; it must not consult the mock ledger.
+        if execution_kind == "mock":
+            effect = mock_effect_for_command(proposal.canonical_command)
+            activity_id = effect.activity_id
+        else:
+            activity_id = proposal.canonical_command.activity_id
         # Permission and Activity lifecycle are re-checked at dispatch, not only
         # when the preview was rendered: a proposal can outlive either.
         if activity_guard is not None:
-            activity_guard(effect.activity_id)
-        with self._connection() as connection:
-            require_matching_financial_version(
-                proposal.preconditions,
-                self._mock_ledger_version(connection, str(effect.activity_id)),
-            )
+            activity_guard(activity_id)
+        if execution_kind == "mock":
+            with self._connection() as connection:
+                require_matching_financial_version(
+                    proposal.preconditions,
+                    self._mock_ledger_version(connection, str(activity_id)),
+                )
         execution_id = derive_execution_id(owner_user_id, proposal.proposal_id, proposal.revision)
         identity = ExecutionIdentity(
             execution_id=execution_id, actor_id=owner_user_id,
