@@ -68,6 +68,20 @@ from .store import (
 _ACTIVE_TURN: ContextVar[uuid.UUID | None] = ContextVar("p2_active_turn", default=None)
 P5_DEV_POLICY_VERSION = "p5-dev-intent-v1"
 P5_DEV_SUMMARY_PREFIX = "【P5 开发验证】"
+P5_DEV_UPDATE_POLICY_VERSION = "p5-dev-expense-update-v1"
+P5_DEV_UPDATE_SUMMARY_PREFIX = "【P5 开发验证·改账】"
+
+
+def _dev_update_refusal_text(code: str) -> str:
+    return {
+        "expense_financial_locked": "这笔消费已锁定（有退款或真实转账来源），不能改账。",
+        "expense_deleted": "这笔消费已删除，不能改账。",
+        "refund_update_not_in_p5": "关联退款不支持改账。",
+        "foreign_currency_not_in_p5": "P5.1 只支持基础币种。",
+        "no_change": "新金额与当前值相同，没有可提交的修改。",
+        "expense_changed": "消费在预览期间发生变化，请重新发起。",
+        "expense_not_found": "找不到要修改的消费。",
+    }.get(code, f"无法生成改账预览（{code}）。")
 _ACTIVE_CANDIDATE_PROFILE: ContextVar[str | None] = ContextVar(
     "p2_active_candidate_profile", default=None,
 )
@@ -599,6 +613,13 @@ class P2Runtime(MockRuntime):
                 and aggregate.checkpoint.last_decision is None
                 and not context.read_results
             ):
+                from .p5_dev_intent import is_dev_update_command
+
+                if is_dev_update_command(context.input_text):
+                    await self._p5_dev_update_proposal(
+                        aggregate, context, references, claimed, gate.disable_revision, state,
+                    )
+                    return
                 if await self._p5_dev_live_proposal(
                     aggregate, context, references, claimed, gate.disable_revision, state,
                 ):
@@ -3193,9 +3214,189 @@ class P2Runtime(MockRuntime):
         checkpoint = aggregate.checkpoint.model_copy(update={"resume_step": None})
         await self._transition(
             aggregate, after, events, claimed.claim_token,
-            checkpoint=checkpoint, new_proposal=proposal,
+            checkpoint=checkpoint, bound_references=list(references),
+            new_proposal=proposal,
         )
         return True
+
+    async def _p5_dev_update_proposal(
+        self,
+        aggregate: TurnAggregate,
+        context: c.ModelContext,
+        references: Sequence[c.BoundReference],
+        claimed: ClaimedTurn,
+        gate_revision: int,
+        state: _TurnP2State,
+    ) -> None:
+        """Resolve the target by title, then build a live update preview.
+
+        Every refusal is a completed Turn message, not a silent fallback to the
+        model: the dev bridge must be predictable during device acceptance.
+        """
+        from .p5_dev_intent import (
+            DevIntentRefused, build_dev_update_intent, has_foreign_currency_marker,
+            parse_dev_expense_update,
+        )
+        from .p5_write import LiveWriteError
+
+        cmd = parse_dev_expense_update(context.input_text)
+        if cmd is None:
+            text = (
+                "P5.1 只支持基础币种，外币改账会被拒绝。"
+                if has_foreign_currency_marker(context.input_text)
+                else "用法：改账 <标题> <新金额> [付款人=...] [分摊=...]"
+            )
+            await self._p5_dev_refusal(
+                aggregate, context, text,
+                claimed, gate_revision, state, references,
+            )
+            return
+        if state.scope_activity_id is None:
+            await self._p5_dev_refusal(
+                aggregate, context, "请从要修改的活动页面发起改账。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        owner_id = aggregate.record.turn.owner_user_id
+        turn_id = aggregate.record.turn.turn_id
+        grant = self._active_grant(owner_id, turn_id)
+        try:
+            matches = await self._live_gateway.find_expenses_by_title(
+                grant.token, state.scope_activity_id, cmd.title,
+            )
+        except Exception as exc:
+            _LOGGER.warning(
+                "p5 dev update target read failed: turn=%s type=%s", turn_id, type(exc).__name__,
+            )
+            await self._p5_dev_refusal(
+                aggregate, context, "暂时无法读取消费列表，请重试。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        if not matches:
+            await self._p5_dev_refusal(
+                aggregate, context, f"找不到标题为「{cmd.title}」的未删除消费。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        if len(matches) > 1:
+            await self._p5_dev_refusal(
+                aggregate, context,
+                f"标题「{cmd.title}」匹配到多笔消费，请先在 App 里让标题唯一。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        try:
+            current = await self._live_gateway.read_expense_state(grant.token, matches[0][0])
+        except LiveWriteError as exc:
+            await self._p5_dev_refusal(
+                aggregate, context, _dev_update_refusal_text(exc.code),
+                claimed, gate_revision, state, references,
+            )
+            return
+        try:
+            intent, binding = build_dev_update_intent(
+                cmd, references, state.labels, state.base_currency,
+                expense_id=matches[0][0], source_turn_id=turn_id,
+                activity_id=state.scope_activity_id,
+                current_payments=current.payments,
+                current_split_method=current.split_method,
+            )
+        except DevIntentRefused as exc:
+            await self._p5_dev_refusal(
+                aggregate, context, str(exc), claimed, gate_revision, state, references,
+            )
+            return
+        try:
+            proposal = await self._live_gateway.build_update_preview(
+                owner_user_id=owner_id,
+                session_id=aggregate.record.turn.session_id,
+                turn_id=turn_id,
+                intent=intent,
+                bound_references=[*references, binding],
+                access_token=grant.token,
+                expires_at=grant.expires_at,
+                agent_disable_revision=gate_revision,
+                policy_version=P5_DEV_UPDATE_POLICY_VERSION,
+                summary_prefix=P5_DEV_UPDATE_SUMMARY_PREFIX,
+                now=datetime.now(timezone.utc),
+            )
+        except LiveWriteError as exc:
+            await self._p5_dev_refusal(
+                aggregate, context, _dev_update_refusal_text(exc.code),
+                claimed, gate_revision, state, references,
+            )
+            return
+        except (BackendReadError, ScopeDenied, ValueError) as exc:
+            _LOGGER.warning(
+                "p5 dev update preview declined: turn=%s type=%s", turn_id, type(exc).__name__,
+            )
+            await self._p5_dev_refusal(
+                aggregate, context, "暂时无法生成改账预览，请重试。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        before = aggregate.record.turn
+        after = self._next_state(
+            before, c.TurnState.WAIT_CONFIRM, c.TurnStep.AWAITING_USER,
+            wait_reason=c.WaitReason.CONFIRM_REQUIRED, resume_state=None,
+        )
+        events = [
+            EventDraft(
+                type=c.EventType.PROPOSAL, occurred_at=datetime.now(timezone.utc),
+                simulation=False,
+                payload=c.ProposalEventPayload(
+                    proposal_id=proposal.proposal_id, revision=proposal.revision,
+                    operation=proposal.operation,
+                ),
+            ),
+            self._status_event(after),
+        ]
+        checkpoint = aggregate.checkpoint.model_copy(update={"resume_step": None})
+        await self._transition(
+            aggregate, after, events, claimed.claim_token,
+            checkpoint=checkpoint, bound_references=[*references, binding],
+            new_proposal=proposal,
+        )
+
+    async def _p5_dev_refusal(
+        self,
+        aggregate: TurnAggregate,
+        context: c.ModelContext,
+        text: str,
+        claimed: ClaimedTurn,
+        gate_revision: int,
+        state: _TurnP2State,
+        references: Sequence[c.BoundReference],
+    ) -> None:
+        """Complete the Turn with a dev-bridge refusal message.
+
+        The model never ran, so there is no model context to persist. The gate
+        and identity are still re-checked before the terminal transition.
+        """
+        owner_id = aggregate.record.turn.owner_user_id
+        await self._fresh_identity(
+            owner_id, {state.scope_activity_id} - {None},
+            gate_revision=gate_revision,
+        )
+        before = aggregate.record.turn
+        after = self._next_state(
+            before, c.TurnState.COMPLETED, c.TurnStep.TERMINAL,
+            wait_reason=None, resume_state=None,
+        )
+        events = [
+            EventDraft(
+                type=c.EventType.MESSAGE, occurred_at=datetime.now(timezone.utc),
+                simulation=False,
+                payload=c.MessageEventPayload(text=text, citations=[]),
+            ),
+            self._status_event(after),
+        ]
+        checkpoint = aggregate.checkpoint.model_copy(update={"resume_step": None})
+        await self._transition(
+            aggregate, after, events, claimed.claim_token,
+            checkpoint=checkpoint, bound_references=list(references),
+        )
 
     async def _wait_for_confirmation(
         self, aggregate: TurnAggregate, decision: c.ProposeDecision, context: c.ModelContext,

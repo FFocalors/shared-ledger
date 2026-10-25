@@ -1893,7 +1893,7 @@ class SQLiteAgentStore(P2V3StoreMixin):
         """Assign the deterministic execution identity and enter EXECUTING."""
         from .contracts import (
             ConfirmProposalRequest, ExecutionIdentity, ExecutionReference, FixedExpenseCreateCommand,
-            ProposalRecord, ProposalStatus, derive_execution_id,
+            FixedExpenseUpdateCommand, ProposalRecord, ProposalStatus, derive_execution_id,
         )
         from .p3_execution import MockExecutionStateError, mock_effect_for_command, require_matching_financial_version
 
@@ -1917,8 +1917,8 @@ class SQLiteAgentStore(P2V3StoreMixin):
         if proposal.mode != "backend" or proposal.canonical_command is None:
             raise MockExecutionStateError("the mock write path requires a backend proposal with a fixed command")
         if execution_kind == "live":
-            if not isinstance(proposal.canonical_command, FixedExpenseCreateCommand):
-                raise MockExecutionStateError("the live write path supports expense.create only")
+            if not isinstance(proposal.canonical_command, (FixedExpenseCreateCommand, FixedExpenseUpdateCommand)):
+                raise MockExecutionStateError("the live write path supports expense.create and expense.update only")
         if (
             proposal.command_digest is None
             or not hmac.compare_digest(proposal.command_digest, request.command_digest)

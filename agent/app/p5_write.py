@@ -29,8 +29,9 @@ import ssl
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Mapping, Protocol, Sequence
-from urllib.parse import urlsplit
+from urllib.parse import urlencode, urlsplit
 
 from . import contracts as c
 from .p2_backend import (
@@ -43,7 +44,30 @@ from .store import (
 
 
 P5_POLICY_VERSION = "p5-live-expense-create-v1"
+P5_UPDATE_POLICY_VERSION = "p5-live-expense-update-v1"
 RPC_CREATE_EXPENSE = "/rest/v1/rpc/create_expense_auto_rate"
+RPC_UPDATE_EXPENSE = "/rest/v1/rpc/update_expense_auto_rate"
+
+_EXPENSE_SELECT = (
+    "id,ledger_unit_id,title,original_amount,original_currency,base_amount,"
+    "split_method,occurred_at,note,original_expense_id,version,is_deleted,"
+    "financial_locked,icon_key"
+)
+_PAYMENT_SELECT = "id,expense_id,participant_id,amount"
+_SPLIT_SELECT = "id,expense_id,participant_id,amount"
+_UNIT_SELECT = "id,activity_id,name,is_deleted"
+
+_PREFLIGHT_CLOSE_SUMMARY = {
+    "foreign_currency_not_in_p5": "P5 executes base-currency expenses only",
+    "preview_stale": "the preview is no longer current",
+    "expense_changed": "the Expense changed after the preview",
+    "expense_deleted": "the Expense was deleted",
+    "expense_financial_locked": "the Expense is financially locked",
+    "refund_update_not_in_p5": "linked refund updates are outside P5.1",
+    "expense_not_found": "the Expense was not found",
+    "invalid_command": "the fixed update command is incomplete",
+    "amount_allocation_mismatch": "payments or manual splits do not match the new amount",
+}
 
 
 class LiveWriteError(RuntimeError):
@@ -88,9 +112,18 @@ class LiveWriteTransport(Protocol):
         max_response_bytes: int,
     ) -> tuple[int, bytes]: ...
 
+    def get_json(
+        self,
+        url: str,
+        headers: Mapping[str, str],
+        *,
+        timeout: float,
+        max_response_bytes: int,
+    ) -> tuple[int, bytes]: ...
+
 
 class StdlibWriteTransport:
-    """One bounded POST; no redirects, no retries, no connection reuse."""
+    """Bounded GET/POST; no redirects, no retries, no connection reuse."""
 
     def post_json(
         self,
@@ -101,12 +134,41 @@ class StdlibWriteTransport:
         timeout: float,
         max_response_bytes: int,
     ) -> tuple[int, bytes]:
+        body = json.dumps(payload, ensure_ascii=False, allow_nan=False, separators=(",", ":")).encode("utf-8")
+        return self._request(
+            "POST", url, headers, body=body, timeout=timeout,
+            max_response_bytes=max_response_bytes, mutating=True,
+        )
+
+    def get_json(
+        self,
+        url: str,
+        headers: Mapping[str, str],
+        *,
+        timeout: float,
+        max_response_bytes: int,
+    ) -> tuple[int, bytes]:
+        return self._request(
+            "GET", url, headers, body=None, timeout=timeout,
+            max_response_bytes=max_response_bytes, mutating=False,
+        )
+
+    def _request(
+        self,
+        method: str,
+        url: str,
+        headers: Mapping[str, str],
+        *,
+        body: bytes | None,
+        timeout: float,
+        max_response_bytes: int,
+        mutating: bool,
+    ) -> tuple[int, bytes]:
         parsed = urlsplit(url)
         if parsed.scheme not in ("http", "https") or not parsed.hostname:
             raise LiveWriteError("invalid_endpoint")
         if parsed.scheme == "http" and parsed.hostname not in ("127.0.0.1", "localhost", "::1"):
             raise LiveWriteError("invalid_endpoint")
-        body = json.dumps(payload, ensure_ascii=False, allow_nan=False, separators=(",", ":")).encode("utf-8")
         connection: http.client.HTTPConnection | None = None
         request_sent = False
         try:
@@ -123,11 +185,11 @@ class StdlibWriteTransport:
             if parsed.query:
                 path = f"{path}?{parsed.query}"
             request_sent = True
-            connection.request("POST", path, body=body, headers=dict(headers))
+            connection.request(method, path, body=body, headers=dict(headers))
             response = connection.getresponse()
             content = response.read(max_response_bytes + 1)
             if len(content) > max_response_bytes:
-                raise LiveWriteError("upstream_response_too_large", ambiguous=True)
+                raise LiveWriteError("upstream_response_too_large", ambiguous=mutating)
             return int(response.status), content
         except LiveWriteError:
             raise
@@ -136,9 +198,10 @@ class StdlibWriteTransport:
             raise LiveWriteError("upstream_unreachable", retryable=True) from exc
         except (TimeoutError, socket.timeout, ConnectionResetError, ssl.SSLError,
                 http.client.RemoteDisconnected, http.client.IncompleteRead, OSError) as exc:
-            # Once request() started, a timeout or reset cannot tell us whether
-            # Postgres committed. Never retry automatically.
-            ambiguous = request_sent
+            # Once request() started, a timeout or reset on a mutating request
+            # cannot tell us whether Postgres committed. Never retry it. A GET
+            # is always safe to retry.
+            ambiguous = mutating and request_sent
             raise LiveWriteError(
                 "upstream_ambiguous" if ambiguous else "upstream_unreachable",
                 ambiguous=ambiguous, retryable=not ambiguous,
@@ -158,6 +221,46 @@ class LiveWriteOutcome:
     summary: str
 
 
+@dataclass(frozen=True, slots=True)
+class LiveExpenseState:
+    expense_id: uuid.UUID
+    ledger_unit_id: uuid.UUID
+    title: str
+    original_amount: str
+    original_currency: str
+    base_amount: str
+    split_method: str
+    occurred_at: datetime | None
+    note: str | None
+    original_expense_id: uuid.UUID | None
+    version: int
+    is_deleted: bool
+    financial_locked: bool
+    icon_key: str | None
+    payments: tuple[tuple[uuid.UUID, str], ...]
+    splits: tuple[tuple[uuid.UUID, str], ...]
+
+    def canonical_split(self) -> c.CanonicalSplit:
+        if self.split_method == "equal":
+            return c.CanonicalEqualSplit(
+                mode="equal",
+                participant_ids=[participant_id for participant_id, _ in self.splits],
+            )
+        return c.CanonicalManualSplit(
+            mode="manual",
+            allocations=[
+                c.CanonicalPayment(participant_id=participant_id, amount=amount)
+                for participant_id, amount in self.splits
+            ],
+        )
+
+    def canonical_payments(self) -> list[c.CanonicalPayment]:
+        return [
+            c.CanonicalPayment(participant_id=participant_id, amount=amount)
+            for participant_id, amount in self.payments
+        ]
+
+
 class LiveExpenseGateway:
     """Real `expense.create` preview and execution behind the Agent Gateway port."""
 
@@ -175,6 +278,111 @@ class LiveExpenseGateway:
 
     def health(self) -> ComponentHealth:
         return ComponentHealth(status="ready", available=True)
+
+    async def read_expense_state(
+        self, access_token: str, expense_id: uuid.UUID,
+    ) -> LiveExpenseState:
+        rows = await self._get_rows(
+            "expenses",
+            [("id", f"eq.{expense_id}"), ("select", _EXPENSE_SELECT), ("limit", "2")],
+            access_token,
+        )
+        if len(rows) != 1:
+            raise LiveWriteError("expense_not_found")
+        row = rows[0]
+        payments = await self._get_rows(
+            "payments",
+            [("expense_id", f"eq.{expense_id}"), ("select", _PAYMENT_SELECT), ("order", "id.asc")],
+            access_token,
+        )
+        splits = await self._get_rows(
+            "splits",
+            [("expense_id", f"eq.{expense_id}"), ("select", _SPLIT_SELECT), ("order", "id.asc")],
+            access_token,
+        )
+        return LiveExpenseState(
+            expense_id=_uuid(row.get("id")),
+            ledger_unit_id=_uuid(row.get("ledger_unit_id")),
+            title=str(row.get("title")),
+            original_amount=_num_text(row.get("original_amount")),
+            original_currency=str(row.get("original_currency")),
+            base_amount=_num_text(row.get("base_amount")),
+            split_method=str(row.get("split_method")),
+            occurred_at=_parse_timestamp(row.get("occurred_at")),
+            note=row.get("note") if isinstance(row.get("note"), str) else None,
+            original_expense_id=_uuid_or_none(row.get("original_expense_id")),
+            version=_int(row.get("version")),
+            is_deleted=_bool(row.get("is_deleted")),
+            financial_locked=_bool(row.get("financial_locked")),
+            icon_key=row.get("icon_key") if isinstance(row.get("icon_key"), str) else None,
+            payments=tuple(
+                (_uuid(item.get("participant_id")), _num_text(item.get("amount")))
+                for item in payments
+            ),
+            splits=tuple(
+                (_uuid(item.get("participant_id")), _num_text(item.get("amount")))
+                for item in splits
+            ),
+        )
+
+    async def find_expenses_by_title(
+        self, access_token: str, activity_id: uuid.UUID, title: str,
+    ) -> list[tuple[uuid.UUID, str, uuid.UUID, int]]:
+        units = await self._get_rows(
+            "ledger_units",
+            [
+                ("activity_id", f"eq.{activity_id}"), ("is_deleted", "eq.false"),
+                ("select", "id,is_deleted"), ("order", "id.asc"),
+            ],
+            access_token,
+        )
+        unit_ids = [
+            _uuid(item.get("id")) for item in units if not _bool(item.get("is_deleted"))
+        ]
+        if not unit_ids:
+            return []
+        rows = await self._get_rows(
+            "expenses",
+            [
+                ("ledger_unit_id", "in.(" + ",".join(str(item) for item in unit_ids) + ")"),
+                ("is_deleted", "eq.false"),
+                ("select", "id,ledger_unit_id,title,version"),
+                ("order", "id.asc"),
+            ],
+            access_token,
+        )
+        return [
+            (
+                _uuid(item.get("id")), str(item.get("title")),
+                _uuid(item.get("ledger_unit_id")), _int(item.get("version")),
+            )
+            for item in rows
+            if str(item.get("title")) == title
+        ]
+
+    async def _get_rows(
+        self, route: str, params: Sequence[tuple[str, str]], access_token: str,
+    ) -> list[dict[str, Any]]:
+        url = f"{self._config.project_url.rstrip('/')}/rest/v1/{route}"
+        query = urlencode(list(params))
+        if query:
+            url = f"{url}?{query}"
+        status, body = await _call_async(
+            self._transport.get_json,
+            url,
+            {
+                "apikey": self._config.publishable_key,
+                "Authorization": f"Bearer {access_token}",
+                "Accept": "application/json",
+            },
+            timeout=self._config.timeout_seconds,
+            max_response_bytes=self._config.max_response_bytes,
+        )
+        if status in (401, 403):
+            raise LiveWriteError("auth_rejected", retryable=False, http_status=status)
+        if status != 200:
+            raise LiveWriteError("upstream_read_failed", retryable=status >= 500)
+        return _decode_read_rows(body)
 
     # ------------------------------------------------------------------ preview
 
@@ -300,6 +508,186 @@ class LiveExpenseGateway:
             request_receipts=[],
         )
 
+    # --------------------------------------------------------------- update preview
+
+    async def build_update_preview(
+        self,
+        *,
+        owner_user_id: uuid.UUID,
+        session_id: uuid.UUID,
+        turn_id: uuid.UUID,
+        intent: c.ExpenseUpdateIntent,
+        bound_references: Sequence[c.BoundReference],
+        access_token: str,
+        expires_at: datetime,
+        agent_disable_revision: int,
+        policy_version: str | None = None,
+        summary_prefix: str = "",
+        now: datetime | None = None,
+    ) -> c.ProposalRecord:
+        """Build a live update proposal from the current server state.
+
+        The model/dev intent carries only a bound Expense reference and the
+        fields the user asked to change. The canonical command stores the full
+        merged state so a replay cannot reinterpret an omitted field.
+        """
+        if not isinstance(intent, c.ExpenseUpdateIntent):
+            raise LiveWriteError("unsupported_operation")
+        instant = _aware(now)
+        binding = _resolve_expense_binding(intent, bound_references, turn_id)
+        expense_id = binding.entity_id
+        activity_id = binding.scope_activity_id
+        resolved_payments, resolved_split = _resolve_update_bindings(
+            intent, bound_references, turn_id, activity_id,
+        )
+        grant = _activity_grant(
+            owner_user_id=owner_user_id, turn_id=turn_id,
+            access_token=access_token, expires_at=expires_at,
+            activity_id=activity_id,
+        )
+        scope = await self._read_backend.resolve_scope(
+            grant, ScopeRequest(mode="activity", ui_activity_id_hint=activity_id),
+        )
+        _require_writable_activity(scope, original_currency=scope.activity.base_currency)
+        state = await self.read_expense_state(access_token, expense_id)
+        if state.is_deleted:
+            raise LiveWriteError("expense_deleted")
+        if state.financial_locked:
+            raise LiveWriteError("expense_financial_locked")
+        if state.original_expense_id is not None:
+            raise LiveWriteError("refund_update_not_in_p5")
+        if state.original_currency != scope.activity.base_currency:
+            raise LiveWriteError("foreign_currency_not_in_p5")
+
+        unit_ids = {item.ledger_unit_id for item in scope.ledger_units if not item.is_deleted}
+        if state.ledger_unit_id not in unit_ids:
+            raise ScopeDenied("expense ledger unit is outside the Activity scope")
+        # The frozen ExpenseUpdateIntent has no ledger-unit change field; P5.1
+        # preserves the Expense's current unit.
+        merged_unit = state.ledger_unit_id
+        if merged_unit not in unit_ids:
+            raise ScopeDenied("target ledger unit is outside the Activity scope")
+        merged_currency = intent.original_currency or state.original_currency
+        if merged_currency != scope.activity.base_currency:
+            raise LiveWriteError("foreign_currency_not_in_p5")
+        merged_amount = intent.original_amount or state.original_amount
+        merged_title = intent.title or state.title
+        merged_payments = resolved_payments or state.canonical_payments()
+        merged_split = resolved_split or state.canonical_split()
+        merged_occurred = intent.occurred_at or state.occurred_at
+        merged_note = intent.note if intent.note is not None else state.note
+
+        merged_decimal = Decimal(merged_amount)
+        if sum((Decimal(item.amount) for item in merged_payments), Decimal("0")) != merged_decimal:
+            raise LiveWriteError("amount_allocation_mismatch")
+        if isinstance(merged_split, c.CanonicalManualSplit) and (
+            sum((Decimal(item.amount) for item in merged_split.allocations), Decimal("0"))
+            != merged_decimal
+        ):
+            raise LiveWriteError("amount_allocation_mismatch")
+
+        participant_ids = {item.participant_id for item in scope.participants if not item.is_deleted}
+        for item in merged_payments:
+            if item.participant_id not in participant_ids:
+                raise ScopeDenied("payer is outside the Activity scope")
+        if isinstance(merged_split, c.CanonicalEqualSplit):
+            if any(item not in participant_ids for item in merged_split.participant_ids):
+                raise ScopeDenied("split participant is outside the Activity scope")
+        elif any(item.participant_id not in participant_ids for item in merged_split.allocations):
+            raise ScopeDenied("split participant is outside the Activity scope")
+
+        before = c.ExpenseSnapshot(
+            ledger_unit_id=state.ledger_unit_id,
+            title=state.title,
+            original_amount=state.original_amount,
+            original_currency=state.original_currency,
+            base_amount=state.base_amount,
+            payment_allocations=state.canonical_payments(),
+            split=state.canonical_split(),
+            occurred_at=state.occurred_at,
+            note=state.note,
+            icon_key=state.icon_key,
+            expense_version=str(state.version),
+            financial_locked=state.financial_locked,
+        )
+        after = c.ExpenseSnapshot(
+            ledger_unit_id=merged_unit,
+            title=merged_title,
+            original_amount=merged_amount,
+            original_currency=merged_currency,
+            base_amount=_base_amount_text(merged_amount),
+            payment_allocations=merged_payments,
+            split=merged_split,
+            occurred_at=merged_occurred,
+            note=merged_note,
+            icon_key=state.icon_key,
+            expense_version=str(state.version + 1),
+            financial_locked=state.financial_locked,
+        )
+        changes = _update_changes(before, after)
+        if not changes:
+            raise LiveWriteError("no_change")
+
+        full_patch = c.CanonicalExpenseUpdatePatch(
+            title=merged_title,
+            original_amount=merged_amount,
+            original_currency=merged_currency,
+            ledger_unit_id=merged_unit,
+            payment_allocations=merged_payments,
+            split=merged_split,
+            note=merged_note,
+            occurred_at=merged_occurred,
+        )
+        command = c.FixedExpenseUpdateCommand(
+            operation="expense.update",
+            activity_id=activity_id,
+            expense_id=expense_id,
+            expected_expense_version=str(state.version),
+            expected_financial_version=str(scope.activity.financial_version),
+            patch=full_patch,
+        )
+        preview = c.ExpensePreview(
+            kind="expense",
+            summary=f"{summary_prefix}修改消费 {merged_title} {merged_amount} {merged_currency}",
+            before=before,
+            after=after,
+            changes=changes,
+            activity_financial_version=command.expected_financial_version,
+            generated_at=instant,
+            simulation=False,
+        )
+        policy = policy_version or self._config.policy_version
+        preconditions = c.PreconditionSnapshot(
+            activity_id=activity_id,
+            permission_checked=True,
+            agent_disable_revision=agent_disable_revision,
+            activity_financial_version=command.expected_financial_version,
+            expense_version=str(state.version),
+            policy_version=policy,
+            verified_at=instant,
+        )
+        digest = c.canonical_command_digest(command, preconditions, policy_version=policy)
+        return c.ProposalRecord(
+            proposal_id=uuid.uuid4(),
+            owner_user_id=owner_user_id,
+            session_id=session_id,
+            turn_id=turn_id,
+            revision=1,
+            operation="expense.update",
+            mode="backend",
+            status=c.ProposalStatus.PENDING,
+            intent=intent,
+            canonical_command=command,
+            preview=preview,
+            preconditions=preconditions,
+            command_digest=digest,
+            confirmation_nonce=_new_nonce(),
+            policy_version=policy,
+            expires_at=instant.replace(microsecond=0) + timedelta(minutes=10),
+            execution=None,
+            request_receipts=[],
+        )
+
     # ---------------------------------------------------------------- execution
 
     async def execute(
@@ -313,30 +701,34 @@ class LiveExpenseGateway:
     ) -> LiveWriteOutcome:
         """Preflight, dispatch once, call the real RPC, settle one outcome."""
         command = proposal.canonical_command
-        if not isinstance(command, c.FixedExpenseCreateCommand):
+        if not isinstance(command, (c.FixedExpenseCreateCommand, c.FixedExpenseUpdateCommand)):
             return await self._close(
                 principal, proposal,
                 code="unsupported_operation",
-                summary="P5.0 only executes expense.create",
+                summary="P5 only executes expense.create and expense.update",
                 expected_state_revision=expected_state_revision,
             )
         if proposal.execution is not None:
             return await self._existing_outcome(principal, proposal)
-        if proposal.preconditions is None or command.expected_financial_version is None:
+        if proposal.preconditions is None:
             return await self._close(
                 principal, proposal,
                 code="preview_incomplete",
-                summary="preview has no financial-version precondition",
+                summary="preview has no precondition snapshot",
                 expected_state_revision=expected_state_revision,
             )
+        is_create = isinstance(command, c.FixedExpenseCreateCommand)
         grant = _activity_grant(
             owner_user_id=principal.user_id, turn_id=proposal.turn_id,
             access_token=access_token, expires_at=_grant_expiry(principal),
             activity_id=command.activity_id,
         )
         try:
-            # Re-read the authoritative version immediately before dispatch. A
-            # mismatch means some other financial change landed after preview.
+            if not is_create:
+                _require_full_update_patch(command)
+            # Re-read the authoritative Activity version immediately before
+            # dispatch. A mismatch means another financial change landed after
+            # the preview was rendered.
             await self._read_backend.verify_financial_versions(
                 grant, {command.activity_id: int(command.expected_financial_version)},
             )
@@ -345,13 +737,29 @@ class LiveExpenseGateway:
             )
             if scope.activity.financial_version != int(command.expected_financial_version):
                 raise LiveWriteError("preview_stale")
-            _require_writable_activity(scope, original_currency=command.original_currency)
+            _require_writable_activity(
+                scope,
+                original_currency=(
+                    command.original_currency if is_create
+                    else (command.patch.original_currency or "")
+                ),
+            )
+            if not is_create:
+                # The RPC cannot compare the Expense version itself, so P5.1
+                # re-reads every mutable precondition it relies on.
+                await self._validate_update_preflight(command, scope, access_token)
         except LiveWriteError as exc:
-            if exc.code in ("foreign_currency_not_in_p5", "preview_stale"):
+            if exc.code in (
+                "foreign_currency_not_in_p5", "preview_stale", "expense_changed",
+                "expense_deleted", "expense_financial_locked", "refund_update_not_in_p5",
+                "expense_not_found",
+                "invalid_command",
+                "amount_allocation_mismatch",
+            ):
                 return await self._close(
                     principal, proposal,
                     code=exc.code,
-                    summary="preview is no longer valid for this Activity",
+                    summary=_PREFLIGHT_CLOSE_SUMMARY.get(exc.code, "preview is no longer valid"),
                     expected_state_revision=expected_state_revision,
                 )
             raise
@@ -393,11 +801,16 @@ class LiveExpenseGateway:
                 expected_state_revision=expected_state_revision,
             )
 
-        payload = _rpc_payload(command)
+        if is_create:
+            rpc_path = RPC_CREATE_EXPENSE
+            payload = _rpc_payload(command)
+        else:
+            rpc_path = RPC_UPDATE_EXPENSE
+            payload = _rpc_payload_update(command)
         try:
             status, body = await _call_async(
                 self._transport.post_json,
-                f"{self._config.project_url.rstrip('/')}{RPC_CREATE_EXPENSE}",
+                f"{self._config.project_url.rstrip('/')}{rpc_path}",
                 {
                     "apikey": self._config.publishable_key,
                     "Authorization": f"Bearer {access_token}",
@@ -412,6 +825,37 @@ class LiveExpenseGateway:
             return await self._settle_transport_failure(principal, proposal, exc)
 
         return await self._settle_rpc_response(principal, proposal, status, body)
+
+    async def _validate_update_preflight(
+        self,
+        command: c.FixedExpenseUpdateCommand,
+        scope: Any,
+        access_token: str,
+    ) -> None:
+        state = await self.read_expense_state(access_token, command.expense_id)
+        if state.version != int(command.expected_expense_version):
+            raise LiveWriteError("expense_changed")
+        if state.is_deleted:
+            raise LiveWriteError("expense_deleted")
+        if state.financial_locked:
+            raise LiveWriteError("expense_financial_locked")
+        if state.original_expense_id is not None:
+            raise LiveWriteError("refund_update_not_in_p5")
+        if state.original_currency != scope.activity.base_currency:
+            raise LiveWriteError("foreign_currency_not_in_p5")
+        unit_ids = {item.ledger_unit_id for item in scope.ledger_units if not item.is_deleted}
+        if command.patch.ledger_unit_id is not None and command.patch.ledger_unit_id not in unit_ids:
+            raise ScopeDenied("ledger unit is outside the Activity scope")
+        participant_ids = {item.participant_id for item in scope.participants if not item.is_deleted}
+        for item in command.patch.payment_allocations or ():
+            if item.participant_id not in participant_ids:
+                raise ScopeDenied("payer is outside the Activity scope")
+        if isinstance(command.patch.split, c.CanonicalEqualSplit):
+            if any(item not in participant_ids for item in command.patch.split.participant_ids):
+                raise ScopeDenied("split participant is outside the Activity scope")
+        elif isinstance(command.patch.split, c.CanonicalManualSplit):
+            if any(item.participant_id not in participant_ids for item in command.patch.split.allocations):
+                raise ScopeDenied("split participant is outside the Activity scope")
 
     # ------------------------------------------------------------------ helpers
 
@@ -476,20 +920,28 @@ class LiveExpenseGateway:
         parsed = _decode_rows(body)
         if 200 <= status < 300:
             row = parsed[0] if parsed else None
-            expense_id = row.get("expense_id") if isinstance(row, dict) else None
+            expense_id = (
+                (row.get("expense_id") or row.get("updated_expense_id"))
+                if isinstance(row, dict) else None
+            )
             version = row.get("version") if isinstance(row, dict) else None
             if not isinstance(expense_id, str) or not isinstance(version, int):
                 # A 2xx without the expected row is NOT proof of success.
                 await _call_store(self._store.mark_execution_unknown, principal.user_id, proposal.proposal_id)
                 return LiveWriteOutcome(c.ExecutionResolution.UNKNOWN, "upstream_invalid_success", "write outcome is unresolved")
+            updated = proposal.operation == "expense.update"
+            code = "expense_updated" if updated else "expense_created"
             await _call_store(
                 self._store.settle_mock_execution,
                 principal.user_id, proposal.proposal_id,
                 c.ExecutionResolution.SUCCEEDED,
-                result_code="expense_created",
+                result_code=code,
                 result_summary=f"expense_id={expense_id};version={version}",
             )
-            return LiveWriteOutcome(c.ExecutionResolution.SUCCEEDED, "expense_created", "expense created")
+            return LiveWriteOutcome(
+                c.ExecutionResolution.SUCCEEDED, code,
+                "expense updated" if updated else "expense created",
+            )
 
         code = _business_error_code(status, parsed)
         if status >= 500 and code is None:
@@ -503,6 +955,222 @@ class LiveExpenseGateway:
             result_summary="server rejected the write",
         )
         return LiveWriteOutcome(c.ExecutionResolution.REJECTED, code or "rpc_rejected", "server rejected the write")
+
+
+def _resolve_expense_binding(
+    intent: c.ExpenseUpdateIntent,
+    references: Sequence[c.BoundReference],
+    turn_id: uuid.UUID,
+) -> c.BoundExpenseReference:
+    for reference in references:
+        if (
+            isinstance(reference, c.BoundExpenseReference)
+            and reference.source_turn_id == turn_id
+            and reference.ref == intent.expense_ref
+        ):
+            return reference
+    raise ScopeDenied("expense reference is not bound to this turn")
+
+
+def _base_amount_text(amount: str) -> str:
+    """Match `round(original_amount, 1)` for a base-currency Expense."""
+    return format(
+        Decimal(amount).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP), "f",
+    )
+
+
+def _update_changes(
+    before: c.ExpenseSnapshot, after: c.ExpenseSnapshot,
+) -> list[c.ExpenseFieldChange]:
+    changes: list[c.ExpenseFieldChange] = []
+    if before.title != after.title:
+        changes.append(c.ExpenseTitleChange(field="title", before=before.title, after=after.title))
+    if before.original_amount != after.original_amount:
+        changes.append(c.ExpenseAmountChange(
+            field="original_amount", before=before.original_amount, after=after.original_amount,
+        ))
+    if before.base_amount != after.base_amount:
+        changes.append(c.ExpenseAmountChange(
+            field="base_amount", before=before.base_amount, after=after.base_amount,
+        ))
+    if before.original_currency != after.original_currency:
+        changes.append(c.ExpenseCurrencyChange(
+            field="original_currency", before=before.original_currency, after=after.original_currency,
+        ))
+    if before.ledger_unit_id != after.ledger_unit_id:
+        changes.append(c.ExpenseLedgerUnitChange(
+            field="ledger_unit_id", before=before.ledger_unit_id, after=after.ledger_unit_id,
+        ))
+    if before.payment_allocations != after.payment_allocations:
+        changes.append(c.ExpensePaymentsChange(
+            field="payment_allocations", before=before.payment_allocations, after=after.payment_allocations,
+        ))
+    if before.split != after.split:
+        changes.append(c.ExpenseSplitChange(field="split", before=before.split, after=after.split))
+    if before.occurred_at != after.occurred_at:
+        changes.append(c.ExpenseOccurredAtChange(
+            field="occurred_at", before=before.occurred_at, after=after.occurred_at,
+        ))
+    if before.note != after.note:
+        changes.append(c.ExpenseNoteChange(field="note", before=before.note, after=after.note))
+    if before.icon_key != after.icon_key:
+        changes.append(c.ExpenseIconChange(
+            field="icon_key", before=before.icon_key, after=after.icon_key,
+        ))
+    return changes
+
+
+def _require_full_update_patch(command: c.FixedExpenseUpdateCommand) -> None:
+    patch = command.patch
+    if any(
+        value is None for value in (
+            patch.title, patch.original_amount, patch.original_currency,
+            patch.ledger_unit_id, patch.payment_allocations, patch.split, patch.occurred_at,
+        )
+    ):
+        raise LiveWriteError("invalid_command")
+
+
+def _rpc_payload_update(command: c.FixedExpenseUpdateCommand) -> dict[str, Any]:
+    _require_full_update_patch(command)
+    patch = command.patch
+    payments = [
+        {"participant_id": str(item.participant_id), "amount": item.amount}
+        for item in patch.payment_allocations or ()
+    ]
+    if isinstance(patch.split, c.CanonicalEqualSplit):
+        split_method = "equal"
+        manual_splits: list[dict[str, Any]] = []
+        aa_participant_ids = [str(item) for item in patch.split.participant_ids]
+    elif isinstance(patch.split, c.CanonicalManualSplit):
+        split_method = "manual"
+        manual_splits = [
+            {"participant_id": str(item.participant_id), "amount": item.amount}
+            for item in patch.split.allocations
+        ]
+        aa_participant_ids = []
+    else:  # pragma: no cover - the discriminated union makes this unreachable
+        raise LiveWriteError("unsupported_split")
+    return {
+        "expense_id": str(command.expense_id),
+        "ledger_unit_id": str(patch.ledger_unit_id),
+        "title": patch.title,
+        "original_amount": patch.original_amount,
+        "original_currency": patch.original_currency,
+        "split_method": split_method,
+        "payments": payments,
+        "manual_splits": manual_splits,
+        "aa_participant_ids": aa_participant_ids,
+        "occurred_at": patch.occurred_at.isoformat() if patch.occurred_at is not None else None,
+        "note": patch.note,
+        # P5.1 rejects linked refunds before dispatch, so the source link is null.
+        "original_expense_id": None,
+    }
+
+
+def _decode_read_rows(body: bytes) -> list[dict[str, Any]]:
+    if not body:
+        return []
+    try:
+        parsed = json.loads(body.decode("utf-8"), parse_float=Decimal)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise LiveWriteError("upstream_invalid_response") from exc
+    if not isinstance(parsed, list) or any(not isinstance(item, dict) for item in parsed):
+        raise LiveWriteError("upstream_invalid_response")
+    return parsed
+
+
+def _uuid(value: Any) -> uuid.UUID:
+    try:
+        return uuid.UUID(str(value))
+    except (ValueError, TypeError, AttributeError) as exc:
+        raise LiveWriteError("upstream_invalid_response") from exc
+
+
+def _uuid_or_none(value: Any) -> uuid.UUID | None:
+    return None if value is None else _uuid(value)
+
+
+def _num_text(value: Any) -> str:
+    if isinstance(value, Decimal):
+        return format(value, "f")
+    if isinstance(value, int) and not isinstance(value, bool):
+        return str(value)
+    if isinstance(value, str):
+        return value
+    raise LiveWriteError("upstream_invalid_response")
+
+
+def _int(value: Any) -> int:
+    if isinstance(value, int) and not isinstance(value, bool):
+        return value
+    if isinstance(value, str) and value.isdigit():
+        return int(value)
+    raise LiveWriteError("upstream_invalid_response")
+
+
+def _bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    raise LiveWriteError("upstream_invalid_response")
+
+
+def _parse_timestamp(value: Any) -> datetime | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise LiveWriteError("upstream_invalid_response")
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise LiveWriteError("upstream_invalid_response") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed
+
+
+def _resolve_update_bindings(
+    intent: c.ExpenseUpdateIntent,
+    references: Sequence[c.BoundReference],
+    turn_id: uuid.UUID,
+    activity_id: uuid.UUID,
+) -> tuple[list[c.CanonicalPayment] | None, c.CanonicalSplit | None]:
+    participants: dict[str, c.BoundParticipantReference] = {}
+    for reference in references:
+        if (
+            isinstance(reference, c.BoundParticipantReference)
+            and reference.source_turn_id == turn_id
+            and reference.scope_activity_id == activity_id
+        ):
+            participants[reference.ref.value] = reference
+
+    def resolve(ref: Any) -> uuid.UUID:
+        bound = participants.get(getattr(ref, "value", str(ref)))
+        if bound is None:
+            raise ScopeDenied("participant reference is not bound to this Activity")
+        return bound.entity_id
+
+    payments = None
+    if intent.payment_allocations is not None:
+        payments = [
+            c.CanonicalPayment(participant_id=resolve(item.participant_ref), amount=item.amount)
+            for item in intent.payment_allocations
+        ]
+    split = None
+    if isinstance(intent.split, c.EqualSplitIntent):
+        split = c.CanonicalEqualSplit(
+            mode="equal",
+            participant_ids=[resolve(item) for item in intent.split.participant_refs],
+        )
+    elif isinstance(intent.split, c.ManualSplitIntent):
+        split = c.CanonicalManualSplit(
+            mode="manual",
+            allocations=[
+                c.CanonicalPayment(participant_id=resolve(item.participant_ref), amount=item.amount)
+                for item in intent.split.allocations
+            ],
+        )
+    return payments, split
 
 
 def _resolve_create_bindings(

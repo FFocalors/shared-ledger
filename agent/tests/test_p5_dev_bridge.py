@@ -9,6 +9,7 @@ tests pin the parser and the full Turn path without calling a model.
 import json
 import uuid
 from datetime import datetime, timezone
+from urllib.parse import parse_qsl, urlsplit
 
 from fastapi.testclient import TestClient
 
@@ -17,13 +18,13 @@ from app.components import AppComponents
 from app.p2_harness import P2ReferenceLabel
 from app.p2_journal import P2ErrorProofJournal
 from app.p2_runtime import P2Runtime
-from app.p5_dev_intent import parse_dev_expense_create
+from app.p5_dev_intent import parse_dev_expense_update, parse_dev_expense_create
 from app.p5_write import LiveExpenseGateway, LiveWriteConfig
 from app.settings import Settings
 from app.store import SQLiteAgentStore
 from test_p2_runtime import (
     ACTIVITY, OWNER, PARTICIPANT_2, PAYER, TOKEN, UNIT,
-    _Auth, _Backend, _Control, _Provider, _auth, _create_session, _submit, _wait,
+    _Auth, _Backend, _Control, _Provider, _auth, _create_session, _events, _submit, _wait,
 )
 
 
@@ -82,13 +83,70 @@ def test_dev_parser_declines_unknown_names_foreign_currency_and_plain_text() -> 
     assert parse_dev_expense_create("记账 午餐 12.50", _references(), _labels(), None) is None
 
 
+def test_dev_update_parser_reads_target_amount_and_directives() -> None:
+    cmd = parse_dev_expense_update("改账 Lunch 15.00 付款人=Rin 分摊=Alex")
+    assert cmd is not None
+    assert cmd.title == "Lunch"
+    assert cmd.amount == "15.00"
+    assert cmd.payer_name == "Rin"
+    assert cmd.split_token == "Alex"
+    assert parse_dev_expense_update("改账 Lunch 15.00 USD") is None
+    assert parse_dev_expense_update("今天花了多少") is None
+
+
 class _Transport:
     def __init__(self) -> None:
         self.calls: list[dict] = []
+        self.get_calls: list[str] = []
         self.expense_id = uuid.uuid4()
+        self.expense = {
+            "id": str(self.expense_id),
+            "ledger_unit_id": str(UNIT),
+            "title": "Lunch",
+            "original_amount": "5.00",
+            "original_currency": "USD",
+            "base_amount": "5.0",
+            "split_method": "equal",
+            "occurred_at": "2026-10-25T12:00:00+00:00",
+            "note": None,
+            "original_expense_id": None,
+            "version": 3,
+            "is_deleted": False,
+            "financial_locked": False,
+            "icon_key": "money",
+        }
+
+    def get_json(self, url, headers, *, timeout, max_response_bytes):  # noqa: ANN001
+        self.get_calls.append(url)
+        parsed = urlsplit(url)
+        table = parsed.path.rsplit("/", 1)[-1]
+        params = dict(parse_qsl(parsed.query))
+        if table == "expenses":
+            return 200, json.dumps([self.expense]).encode()
+        if table == "payments":
+            return 200, json.dumps([{
+                "participant_id": str(PAYER), "amount": "5.00",
+            }]).encode()
+        if table == "splits":
+            return 200, json.dumps([
+                {"participant_id": str(PAYER), "amount": "2.50"},
+                {"participant_id": str(PARTICIPANT_2), "amount": "2.50"},
+            ]).encode()
+        if table == "ledger_units":
+            return 200, json.dumps([{
+                "id": str(UNIT), "activity_id": str(ACTIVITY),
+                "name": "Main", "is_deleted": False,
+            }]).encode()
+        return 200, b"[]"
 
     def post_json(self, url, headers, payload, *, timeout, max_response_bytes):  # noqa: ANN001
         self.calls.append({"url": url, "headers": dict(headers), "payload": dict(payload)})
+        if url.endswith("/update_expense_auto_rate"):
+            return 200, json.dumps([{
+                "updated_expense_id": str(self.expense_id),
+                "base_amount": "15.0",
+                "version": 4,
+            }]).encode()
         return 200, json.dumps([{
             "expense_id": str(self.expense_id), "base_amount": "5.0", "version": 1,
         }]).encode()
@@ -180,3 +238,72 @@ def test_dev_bridge_confirmation_reaches_the_real_rpc_shape(tmp_path) -> None:
         assert payload["payments"] == [{"participant_id": str(PARTICIPANT_2), "amount": "5.00"}]
         assert payload["aa_participant_ids"] == [str(PAYER), str(PARTICIPANT_2)]
         assert components.store.get_turn(OWNER, turn_id).record.turn.state is c.TurnState.COMPLETED
+
+
+def test_dev_update_bridge_creates_preview_and_reaches_the_update_rpc(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(tmp_path / "p5dev-update.sqlite3", transport)
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "改账 Lunch 15.00", scoped=True)
+        _wait(components, turn_id, {c.TurnState.WAIT_CONFIRM})
+
+        assert provider.prompts == []
+        details = components.store.get_session_detail(OWNER, session)
+        proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert proposal.operation == "expense.update"
+        assert proposal.policy_version == "p5-dev-expense-update-v1"
+        assert proposal.preview is not None
+        assert proposal.preview.summary.startswith("【P5 开发验证·改账】")
+        assert isinstance(proposal.canonical_command, c.FixedExpenseUpdateCommand)
+        assert proposal.canonical_command.expense_id == transport.expense_id
+        assert proposal.canonical_command.expected_expense_version == "3"
+        assert proposal.canonical_command.patch.original_amount == "15.00"
+        assert proposal.canonical_command.patch.payment_allocations == [
+            c.CanonicalPayment(participant_id=PAYER, amount="15.00"),
+        ]
+        assert transport.calls == []
+
+        response = client.post(
+            f"/v1/proposals/{proposal.proposal_id}/confirm",
+            headers=_auth(),
+            json={
+                "client_request_id": str(uuid.uuid4()),
+                "expected_proposal_revision": proposal.revision,
+                "command_digest": proposal.command_digest,
+                "confirmation_nonce": proposal.confirmation_nonce,
+            },
+        )
+
+        assert response.status_code == 202, response.text
+        assert response.json()["turn"]["execution_resolution"] == "succeeded"
+        assert len(transport.calls) == 1
+        assert transport.calls[0]["url"].endswith("/rest/v1/rpc/update_expense_auto_rate")
+        payload = transport.calls[0]["payload"]
+        assert payload["expense_id"] == str(transport.expense_id)
+        assert payload["original_amount"] == "15.00"
+        assert payload["original_currency"] == "USD"
+        assert payload["payments"] == [{"participant_id": str(PAYER), "amount": "15.00"}]
+        assert payload["aa_participant_ids"] == [str(PAYER), str(PARTICIPANT_2)]
+        assert components.store.get_turn(OWNER, turn_id).record.turn.state is c.TurnState.COMPLETED
+
+
+def test_dev_update_bridge_refuses_a_locked_expense_without_a_model_call(tmp_path) -> None:
+    transport = _Transport()
+    transport.expense["financial_locked"] = True
+    client, components, provider, _ = _build_client(tmp_path / "p5dev-locked.sqlite3", transport)
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "改账 Lunch 15.00", scoped=True)
+        _wait(components, turn_id, {c.TurnState.COMPLETED})
+
+        assert provider.prompts == []
+        assert transport.calls == []
+        details = components.store.get_session_detail(OWNER, session)
+        assert not any(item.status is c.ProposalStatus.PENDING for item in details.proposals)
+        events = _events(client, turn_id)["events"]
+        messages = [
+            item["payload"]["text"] for item in events
+            if item.get("type") == "message"
+        ]
+        assert any("锁定" in text for text in messages)
