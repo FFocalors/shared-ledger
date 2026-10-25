@@ -24,10 +24,29 @@ object DemoScripts {
             hasNumber && (hasBook || text.contains("平分") || text.contains("AA", ignoreCase = true)) ->
                 DemoScript.DRAFT
             hasBook -> DemoScript.CLARIFY
-            text.contains("欠") || text.contains("多少") || text.contains("总共") || text.contains("花了") ->
+            text.contains("欠") || text.contains("多少") || text.contains("总共") || text.contains("花了") ||
+                text.contains("活动") ->
                 DemoScript.ANSWER
             else -> DemoScript.DEFAULT
         }
+    }
+
+    /**
+     * The answer text for the ANSWER script, in the exact line shapes the real Agent renders, so demo mode
+     * exercises the same ledger parsing as a live service.
+     */
+    fun answerText(text: String): String = when {
+        text.contains("没有") -> "当前查询范围内没有符合条件的记录。"
+        text.contains("部分") ->
+            "以下是本次已验证的部分活动记录；查询或投影未完成，列表可能不完整：\n" +
+                "- 周末露营（large；进行中；基准币种 CNY）"
+        text.contains("活动") ->
+            "已验证的活动：\n- 周末露营（large；进行中；基准币种 CNY）\n- 10.8火锅（normal；已归档；基准币种 CNY）"
+        text.contains("花了") || text.contains("总共") ->
+            "根据当前可信记录：\n消费记录：烧烤 — 750.00 CNY\n付款 我：750.00 CNY\n" +
+                "分摊 小林：250.00 CNY\n分摊 阿杰：250.00 CNY\n分摊 我：250.00 CNY"
+        else ->
+            "根据当前可信记录：\n债务记录：小林 → 我，150.00 CNY\n债务记录：阿杰 → 我，224.5000 CNY"
     }
 
     /** 「不可用」 exercises the frozen 501; 「核对」 exercises the RECOVERING/unknown path. */

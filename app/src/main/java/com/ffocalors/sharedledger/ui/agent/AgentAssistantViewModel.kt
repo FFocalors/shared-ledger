@@ -73,13 +73,21 @@ data class ClarificationItem(
     override val key: String,
     val prompt: String,
     val animateEntrance: Boolean = false,
+    /** What the Agent still needs; shown as 「还缺」 tags under the question. */
+    val missingSlots: List<MissingSlot> = emptyList(),
 ) : TranscriptItem
 data class ProposalItem(
     override val key: String,
     val proposalId: String,
     val animateEntrance: Boolean = false,
 ) : TranscriptItem
-data class ExecutionResultItem(override val key: String, val line: String) : TranscriptItem
+/** [resolution] decides the strip's glyph and colour; [line] is the words. Live results stamp in once. */
+data class ExecutionResultItem(
+    override val key: String,
+    val line: String,
+    val resolution: ExecutionResolution? = null,
+    val animateEntrance: Boolean = false,
+) : TranscriptItem
 
 /**
  * Durable receipt for a confirmed draft: which execution was dispatched and how its turn is going.
@@ -560,7 +568,7 @@ class AgentAssistantViewModel(
                 is MessageEvent -> out += AssistantMessageItem(key, event.payload.text, event.simulation, live)
                 is ClarificationEvent -> {
                     clarificationSlots[turnId] = event.payload.missingSlots
-                    out += ClarificationItem(key, event.payload.prompt, live)
+                    out += ClarificationItem(key, event.payload.prompt, live, event.payload.missingSlots)
                 }
                 is ProposalEvent -> if (out.none { it is ProposalItem && it.proposalId == event.payload.proposalId }) {
                     out += ProposalItem(key, event.payload.proposalId, live)
@@ -568,6 +576,8 @@ class AgentAssistantViewModel(
                 is ExecutionResultEvent -> out += ExecutionResultItem(
                     key,
                     AgentStatusCopy.executionLine(event.payload.resolution, event.payload.resultSummary),
+                    event.payload.resolution,
+                    live,
                 )
                 is ErrorEvent -> out += ErrorItem(
                     key,

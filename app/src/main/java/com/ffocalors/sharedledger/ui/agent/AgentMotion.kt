@@ -81,15 +81,17 @@ internal fun streamDurationMs(length: Int): Int =
 /**
  * [text] where only the first [revealed] characters are visible and the last [StreamFadeTail] visible ones
  * fade in 0..1. Hidden characters stay laid out (transparent), so the text never reflows while streaming.
+ *
+ * [revealed] is deliberately not clamped to the text length: the animation runs on to
+ * `text.length + StreamFadeTail`, so the final characters finish fading in and the result is fully opaque.
  */
 internal fun streamedText(text: String, revealed: Float, color: Color): AnnotatedString {
-    val shown = revealed.coerceIn(0f, text.length.toFloat())
-    if (shown >= text.length + StreamFadeTail) return AnnotatedString(text)
-    val fadeStart = (shown.toInt() - StreamFadeTail).coerceAtLeast(0)
+    if (revealed >= text.length + StreamFadeTail) return AnnotatedString(text)
+    val fadeStart = (revealed.toInt() - StreamFadeTail).coerceIn(0, text.length)
     return buildAnnotatedString {
         append(text.substring(0, fadeStart))
         for (i in fadeStart until text.length) {
-            val alpha = ((shown - i) / StreamFadeTail).coerceIn(0f, 1f)
+            val alpha = ((revealed - i) / StreamFadeTail).coerceIn(0f, 1f)
             withStyle(SpanStyle(color = color.copy(alpha = color.alpha * alpha))) { append(text[i]) }
         }
     }

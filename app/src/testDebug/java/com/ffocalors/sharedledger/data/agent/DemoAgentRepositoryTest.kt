@@ -1,5 +1,8 @@
 package com.ffocalors.sharedledger.data.agent
 
+import com.ffocalors.sharedledger.ui.agent.AnswerBlocks
+import com.ffocalors.sharedledger.ui.agent.AnswerSegment
+import com.ffocalors.sharedledger.ui.agent.LedgerEntry
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -44,6 +47,20 @@ class DemoAgentRepositoryTest {
         assertEquals(DemoScript.ERROR, DemoScripts.choose("出错"))
         assertEquals(DemoScript.OFFLINE, DemoScripts.choose("断网"))
         assertEquals(DemoScript.DEFAULT, DemoScripts.choose("你好"))
+    }
+
+    @Test fun demoAnswersParseIntoTheSameBlocksAsTheRealAgentOutput() {
+        fun segments(text: String) = AnswerBlocks.parse(DemoScripts.answerText(text))
+        val debts = segments("谁还欠我钱？").single() as AnswerSegment.Ledger
+        assertEquals(2, debts.entries.count { it is LedgerEntry.Debt })
+        val expense = (segments("总共花了多少").single() as AnswerSegment.Ledger).entries.single() as LedgerEntry.Expense
+        // One 付款 line plus three 分摊 lines.
+        assertEquals(4, expense.lines.size)
+        val activities = segments("有哪些活动").single() as AnswerSegment.Ledger
+        assertEquals(2, activities.entries.count { it is LedgerEntry.Activity })
+        assertTrue((segments("部分活动").single() as AnswerSegment.Ledger).partial)
+        assertTrue(segments("没有记录吗？").single() is AnswerSegment.Notice)
+        assertEquals(DemoScript.ANSWER, DemoScripts.choose("有哪些活动"))
     }
 
     @Test fun amountAndCountParsing() {

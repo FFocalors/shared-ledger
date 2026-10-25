@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import com.ffocalors.sharedledger.data.agent.CanonicalEqualSplit
 import com.ffocalors.sharedledger.data.agent.CanonicalPayment
 import com.ffocalors.sharedledger.data.agent.ConfirmableProposalCard
+import com.ffocalors.sharedledger.data.agent.ExecutionResolution
 import com.ffocalors.sharedledger.data.agent.ExpenseAmountChange
 import com.ffocalors.sharedledger.data.agent.AmountField
 import com.ffocalors.sharedledger.data.agent.ExpensePaymentsChange
@@ -112,6 +113,45 @@ private fun conversation(card: ProposalCard, turn: TurnPublicStatus? = null) = A
 
 internal fun agentPreviewState(name: String): AgentUiState? = when (name) {
     "empty" -> AgentUiState(pageLabel = "首页")
+    "records" -> AgentUiState(
+        pageLabel = "周末露营的账目",
+        items = listOf(
+            UserTextItem("u1", "这个活动现在谁还欠我钱？"),
+            AssistantMessageItem("a1", PreviewTexts.Debts, simulation = false),
+            UserTextItem("u2", "烧烤那笔是怎么分的？"),
+            AssistantMessageItem("a2", PreviewTexts.Expense, simulation = false),
+            UserTextItem("u3", "我参加了哪些活动？"),
+            AssistantMessageItem("a3", PreviewTexts.Activities, simulation = false),
+        ),
+    )
+    // Same messages as "records", but flagged live so the streamed prose and ledger reveal play on open.
+    "live" -> agentPreviewState("records")!!.let { s ->
+        s.copy(items = s.items.map { if (it is AssistantMessageItem) it.copy(animateEntrance = true) else it })
+    }
+    "notices" -> AgentUiState(
+        pageLabel = "首页",
+        items = listOf(
+            UserTextItem("u1", "看看我的活动"),
+            AssistantMessageItem("a1", PreviewTexts.PartialActivities, simulation = false),
+            UserTextItem("u2", "上个月有退款吗？"),
+            AssistantMessageItem("a2", PreviewTexts.Empty, simulation = false),
+            UserTextItem("u3", "现在能确认没有欠款吗？"),
+            AssistantMessageItem("a3", PreviewTexts.Incomplete, simulation = false),
+            UserTextItem("u4", "你能帮我做什么？"),
+            AssistantMessageItem("a4", "我可以查你的活动、账目和谁欠谁，也可以按你的描述拟一张记账草稿，等你确认后再记入账本。", simulation = false),
+        ),
+    )
+    "results" -> AgentUiState(
+        pageLabel = "周末露营的账目",
+        items = listOf(
+            ExecutionReceiptItem("r1", "t-1", "exec-3f2a9c1e-0000", 1, TurnState.EXECUTING),
+            ExecutionReceiptItem("r2", "t-2", "exec-7b10d4aa-0000", 1, TurnState.RECOVERING),
+            ExecutionResultItem("x1", "已记账", ExecutionResolution.SUCCEEDED),
+            ExecutionResultItem("x2", "没有记账：这个活动已归档", ExecutionResolution.REJECTED),
+            ExecutionResultItem("x3", "已关闭", ExecutionResolution.CLOSED),
+            ExecutionResultItem("x4", "正在核对结果", ExecutionResolution.UNKNOWN),
+        ),
+    )
     "running" -> AgentUiState(
         pageLabel = "周末露营的账目",
         items = listOf(UserTextItem("u1", "这个活动现在谁还欠我钱？")),
@@ -127,7 +167,10 @@ internal fun agentPreviewState(name: String): AgentUiState? = when (name) {
         pageLabel = "周末露营的账目",
         items = listOf(
             UserTextItem("u1", "昨天烧烤，我付的"),
-            ClarificationItem("c1", "这笔烧烤一共花了多少钱？"),
+            ClarificationItem(
+                "c1", "这笔烧烤一共花了多少钱？",
+                missingSlots = listOf(MissingSlot.ORIGINAL_AMOUNT, MissingSlot.SPLIT_PARTICIPANT_REFS),
+            ),
         ),
         turn = runningTurn.copy(state = TurnState.WAIT_INPUT, step = TurnStep.AWAITING_USER),
         composer = ComposerMode.Clarification(listOf(MissingSlot.ORIGINAL_AMOUNT)),
@@ -140,12 +183,34 @@ internal fun agentPreviewState(name: String): AgentUiState? = when (name) {
     else -> null
 }
 
+/** The exact text shapes the Agent's grounded renderers produce, so previews show real output. */
+internal object PreviewTexts {
+    const val Debts = "根据当前可信记录：\n债务记录：小李 → 小王，150.00 CNY\n债务记录：小张 → 小王，224.5000 CNY"
+    const val Expense = "根据当前可信记录：\n消费记录：烧烤 — 750.00 CNY\n付款 小王：750.00 CNY\n分摊 小李：375.00 CNY\n分摊 小王：375.00 CNY"
+    const val Activities = "已验证的活动：\n- 周末露营（large；进行中；基准币种 CNY）\n- 10.8火锅（normal；已归档；基准币种 CNY）"
+    const val PartialActivities = "以下是本次已验证的部分活动记录；查询或投影未完成，列表可能不完整：\n- 周末露营（large；进行中；基准币种 CNY）"
+    const val Empty = "当前查询范围内没有符合条件的记录。"
+    const val Incomplete = "本次查询结果不完整，当前没有可确认的记录；不能据此判断没有记录。"
+}
+
 @Composable
 private fun PreviewSheet(state: AgentUiState) {
     SharedLedgerTheme {
         AgentAssistantContent(state = state, names = PreviewNames, actions = AgentSheetActions())
     }
 }
+
+@Preview(name = "账页", showBackground = true, heightDp = 860)
+@Composable
+private fun AgentSheetRecordsPreview() = PreviewSheet(agentPreviewState("records")!!)
+
+@Preview(name = "提示与正文", showBackground = true, heightDp = 860)
+@Composable
+private fun AgentSheetNoticesPreview() = PreviewSheet(agentPreviewState("notices")!!)
+
+@Preview(name = "回执与结果", showBackground = true, heightDp = 640)
+@Composable
+private fun AgentSheetResultsPreview() = PreviewSheet(agentPreviewState("results")!!)
 
 @Preview(name = "空状态", showBackground = true, heightDp = 640)
 @Composable

@@ -25,6 +25,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
@@ -34,6 +36,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -60,6 +63,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.ffocalors.sharedledger.data.agent.ExecutionResolution
 import com.ffocalors.sharedledger.data.agent.SessionSummary
 import com.ffocalors.sharedledger.ui.theme.AppBackground
 import com.ffocalors.sharedledger.ui.theme.AppOutlineVariant
@@ -288,17 +292,34 @@ private fun TranscriptRow(
     }
     when (item) {
         is UserTextItem -> UserBubble(item, animate, modifier)
-        is AssistantMessageItem -> StreamedReply(item.text, animate, playKey, actions, modifier)
-        is ClarificationItem -> StreamedReply(item.prompt, animate, playKey, actions, modifier)
-        is ExecutionResultItem ->
-            Text(item.line, style = SharedLedgerTextStyles.BodySecondary, color = SoftCharcoal, modifier = modifier)
-        is ExecutionReceiptItem ->
-            Text(
-                text = ProposalPresentation.receiptLine(item),
-                style = SharedLedgerTextStyles.BodySecondary,
-                color = SoftCharcoal,
+        is AssistantMessageItem -> AssistantAnswer(item.text, animate, playKey, actions.onEntrancePlayed, modifier)
+        is ClarificationItem -> ClarificationBlock(
+            prompt = item.prompt,
+            missing = item.missingSlots,
+            animate = animate,
+            playKey = playKey,
+            onPlayed = actions.onEntrancePlayed,
+            modifier = modifier,
+        )
+        is ExecutionResultItem -> {
+            LaunchedEffect(playKey) { if (animate) actions.onEntrancePlayed(playKey) }
+            StatusStrip(
+                tone = item.resolution.toTone(),
+                text = item.line,
+                animate = animate,
+                emphasis = true,
                 modifier = modifier,
             )
+        }
+        is ExecutionReceiptItem ->
+            if (item.reconciling) {
+                StatusStrip(StripTone.Reconciling, ProposalPresentation.receiptLine(item), animate = false, modifier = modifier)
+            } else {
+                StatusStrip(
+                    StripTone.Neutral, ProposalPresentation.receiptLine(item), animate = false,
+                    modifier = modifier, glyph = ReceiptGlyph,
+                )
+            }
         is ErrorItem -> ErrorRow(item.message, item.retryable, actions.onRetryMessage, modifier)
         is ProposalItem -> state.cards[item.proposalId]?.let { card ->
             ProposalDraftCard(
@@ -323,7 +344,16 @@ private fun TranscriptItem.animatesEntrance(): Boolean = when (this) {
     is AssistantMessageItem -> animateEntrance
     is ClarificationItem -> animateEntrance
     is ProposalItem -> animateEntrance
+    is ExecutionResultItem -> animateEntrance
     else -> false
+}
+
+private fun ExecutionResolution?.toTone(): StripTone = when (this) {
+    ExecutionResolution.SUCCEEDED -> StripTone.Success
+    ExecutionResolution.REJECTED -> StripTone.Rejected
+    ExecutionResolution.CLOSED -> StripTone.Closed
+    ExecutionResolution.UNKNOWN -> StripTone.Reconciling
+    null -> StripTone.Neutral
 }
 
 @Composable
@@ -348,24 +378,6 @@ private fun UserBubble(item: UserTextItem, animate: Boolean, modifier: Modifier)
 }
 
 @Composable
-private fun StreamedReply(
-    text: String,
-    animate: Boolean,
-    playKey: String,
-    actions: AgentSheetActions,
-    modifier: Modifier,
-) {
-    LaunchedEffect(playKey) { if (animate) actions.onEntrancePlayed(playKey) }
-    StreamingText(
-        text = text,
-        animate = animate,
-        style = SharedLedgerTextStyles.Body,
-        color = DeepCharcoal,
-        modifier = modifier.fillMaxWidth(),
-    )
-}
-
-@Composable
 private fun ErrorRow(message: String, canRetry: Boolean, onRetry: () -> Unit, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
@@ -375,6 +387,13 @@ private fun ErrorRow(message: String, canRetry: Boolean, onRetry: () -> Unit, mo
             .padding(start = SharedLedgerSpacing.MediumSmall, top = SharedLedgerSpacing.Small, bottom = SharedLedgerSpacing.Small),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        Icon(
+            imageVector = Icons.Outlined.ErrorOutline,
+            contentDescription = null,
+            tint = ErrorRed,
+            modifier = Modifier.size(18.dp),
+        )
+        Spacer(Modifier.width(SharedLedgerSpacing.Small))
         Text(
             text = message,
             style = SharedLedgerTextStyles.BodySecondary,

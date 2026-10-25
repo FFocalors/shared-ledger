@@ -376,11 +376,7 @@ class DemoAgentRepository(
             DemoScript.ANSWER, DemoScript.OFFLINE -> {
                 running(turn, TurnStep.TOOL_READ, gap)
                 running(turn, TurnStep.MODEL_DECISION, gap + 100)
-                message(
-                    turn, gap + 100,
-                    "按演示数据算，这个活动里你一共垫付了 1,280.00 元，应摊 905.50 元，还有 374.50 元没收回来：" +
-                        "小林欠你 150.00 元，阿杰欠你 224.50 元。这些都是演示数据，并不是你的真实账目。",
-                )
+                message(turn, gap + 100, DemoScripts.answerText(text))
                 complete(turn)
             }
             DemoScript.SLOW -> {
