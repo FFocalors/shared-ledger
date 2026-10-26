@@ -1542,6 +1542,35 @@ class SubActivityRestoreIntent(ContractModel):
     sub_activity_id: EntityId
 
 
+class ActivityMemberRemoveIntent(ContractModel):
+    """P5.8c: remove another user's membership. Creator-only."""
+
+    kind: Literal["activity.member.remove"]
+    activity_id: EntityId
+    user_id: EntityId
+
+
+class ActivityCreatorTransferIntent(ContractModel):
+    kind: Literal["activity.creator.transfer"]
+    activity_id: EntityId
+    new_creator_user_id: EntityId
+
+
+class ActivityArchiveIntent(ContractModel):
+    kind: Literal["activity.archive"]
+    activity_id: EntityId
+
+
+class ActivityUnarchiveIntent(ContractModel):
+    kind: Literal["activity.unarchive"]
+    activity_id: EntityId
+
+
+class ActivityDeleteIntent(ContractModel):
+    kind: Literal["activity.delete"]
+    activity_id: EntityId
+
+
 class ExpenseRefundIntent(ContractModel):
     """Linked refund intent (P5.4). Amounts are positive magnitudes.
 
@@ -1721,6 +1750,11 @@ ProposalOperation = Literal[
     "subactivity.create",
     "subactivity.delete",
     "subactivity.restore",
+    "activity.member.remove",
+    "activity.creator.transfer",
+    "activity.archive",
+    "activity.unarchive",
+    "activity.delete",
 ]
 ProposalIntent = Annotated[
     Union[
@@ -1744,6 +1778,11 @@ ProposalIntent = Annotated[
         SubActivityCreateIntent,
         SubActivityDeleteIntent,
         SubActivityRestoreIntent,
+        ActivityMemberRemoveIntent,
+        ActivityCreatorTransferIntent,
+        ActivityArchiveIntent,
+        ActivityUnarchiveIntent,
+        ActivityDeleteIntent,
     ],
     Field(discriminator="kind"),
 ]
@@ -2858,6 +2897,58 @@ class FixedSubActivityRestoreCommand(ContractModel):
     expected_activity_archived: bool = False
 
 
+class FixedActivityMemberRemoveCommand(ContractModel):
+    operation: Literal["activity.member.remove"]
+    activity_id: EntityId
+    user_id: EntityId
+    expected_creator_user_id: EntityId
+    expected_archived: bool = False
+    expected_members_digest: Sha256Hex
+
+    @model_validator(mode="after")
+    def cannot_remove_the_creator(self) -> "FixedActivityMemberRemoveCommand":
+        if self.user_id == self.expected_creator_user_id:
+            raise ValueError("the creator cannot remove their own membership")
+        return self
+
+
+class FixedActivityCreatorTransferCommand(ContractModel):
+    operation: Literal["activity.creator.transfer"]
+    activity_id: EntityId
+    new_creator_user_id: EntityId
+    expected_creator_user_id: EntityId
+    expected_archived: bool = False
+    expected_members_digest: Sha256Hex
+
+    @model_validator(mode="after")
+    def cannot_transfer_to_self(self) -> "FixedActivityCreatorTransferCommand":
+        if self.new_creator_user_id == self.expected_creator_user_id:
+            raise ValueError("the new creator must be another member")
+        return self
+
+
+class FixedActivityArchiveCommand(ContractModel):
+    operation: Literal["activity.archive"]
+    activity_id: EntityId
+    expected_creator_user_id: EntityId
+    expected_archived: bool
+
+
+class FixedActivityUnarchiveCommand(ContractModel):
+    operation: Literal["activity.unarchive"]
+    activity_id: EntityId
+    expected_creator_user_id: EntityId
+    expected_archived: bool
+
+
+class FixedActivityDeleteCommand(ContractModel):
+    operation: Literal["activity.delete"]
+    activity_id: EntityId
+    expected_creator_user_id: EntityId
+    expected_archived: bool = False
+    expected_is_deleted: bool = False
+
+
 FixedCommand = Annotated[
     Union[
         FixedExpenseCreateCommand,
@@ -2880,6 +2971,11 @@ FixedCommand = Annotated[
         FixedSubActivityCreateCommand,
         FixedSubActivityDeleteCommand,
         FixedSubActivityRestoreCommand,
+        FixedActivityMemberRemoveCommand,
+        FixedActivityCreatorTransferCommand,
+        FixedActivityArchiveCommand,
+        FixedActivityUnarchiveCommand,
+        FixedActivityDeleteCommand,
     ],
     Field(discriminator="operation"),
 ]
@@ -3450,6 +3546,8 @@ class ManagementPreview(ContractModel):
         "activity.create", "activity.join", "participant.create", "participant.delete",
         "participant.claim", "participant.unclaim",
         "subactivity.create", "subactivity.delete", "subactivity.restore",
+        "activity.member.remove", "activity.creator.transfer",
+        "activity.archive", "activity.unarchive", "activity.delete",
     ]
     activity_id: Optional[EntityId] = None
     activity_name: Optional[TitleText] = None
@@ -3463,6 +3561,9 @@ class ManagementPreview(ContractModel):
     participant_names: list[TitleText] = Field(default_factory=list, max_length=64)
     sub_activity_id: Optional[EntityId] = None
     sub_activity_name: Optional[TitleText] = None
+    target_user_ref: Optional[Annotated[str, StringConstraints(strict=True, min_length=8, max_length=40)]] = None
+    unsettled: Optional[bool] = None
+    financial_summary: Optional[ShortText] = None
     generated_at: datetime
     simulation: bool
 
@@ -3549,7 +3650,13 @@ class ManagementPreview(ContractModel):
                 raise ValueError("sub-activity create preview carries no single Participant fields")
             if self.join_code is not None or self.sub_activity_id is not None:
                 raise ValueError("sub-activity create preview has no join code or id yet")
-        else:
+            if (
+                self.target_user_ref is not None
+                or self.unsettled is not None
+                or self.financial_summary is not None
+            ):
+                raise ValueError("sub-activity create preview carries no administrator fields")
+        elif self.operation in ("subactivity.delete", "subactivity.restore"):
             if (
                 self.activity_id is None
                 or self.activity_name is None
@@ -3565,6 +3672,55 @@ class ManagementPreview(ContractModel):
                 raise ValueError(
                     "sub-activity lifecycle preview carries no join code or participant list"
                 )
+            if (
+                self.target_user_ref is not None
+                or self.unsettled is not None
+                or self.financial_summary is not None
+            ):
+                raise ValueError("sub-activity lifecycle preview carries no administrator fields")
+        elif self.operation in ("activity.member.remove", "activity.creator.transfer"):
+            if (
+                self.activity_id is None
+                or self.activity_name is None
+                or self.target_user_ref is None
+            ):
+                raise ValueError(
+                    "member administration preview needs the Activity and user"
+                )
+            if (self.participant_id is None) != (self.participant_name is None):
+                raise ValueError(
+                    "a claimed target shows both the Participant id and name"
+                )
+            if self.participant_order is not None or self.join_code is not None:
+                raise ValueError("member administration preview carries no order or join code")
+            if any(value is not None for value in sub_activity_fields) or self.participant_names:
+                raise ValueError("member administration preview carries no sub-activity fields")
+            if self.unsettled is not None or self.financial_summary is not None:
+                raise ValueError("member administration preview carries no financial summary")
+        elif self.operation in ("activity.archive", "activity.unarchive"):
+            if self.activity_id is None or self.activity_name is None:
+                raise ValueError("archive preview needs the Activity")
+            if self.unsettled is None or self.financial_summary is None:
+                raise ValueError("archive preview must show the unsettled summary")
+            if any(value is not None for value in participant_fields) or self.participant_names:
+                raise ValueError("archive preview carries no Participant fields")
+            if any(value is not None for value in sub_activity_fields) or self.join_code is not None:
+                raise ValueError("archive preview carries no sub-activity fields")
+            if self.target_user_ref is not None:
+                raise ValueError("archive preview carries no target user")
+        else:
+            if self.activity_id is None or self.activity_name is None:
+                raise ValueError("activity delete preview needs the Activity")
+            if (
+                any(value is not None for value in participant_fields)
+                or any(value is not None for value in sub_activity_fields)
+                or self.join_code is not None
+                or self.participant_names
+                or self.target_user_ref is not None
+                or self.unsettled is not None
+                or self.financial_summary is not None
+            ):
+                raise ValueError("activity delete preview carries only the Activity")
         return self
 
 
@@ -4340,6 +4496,58 @@ class ProposalRecord(ContractModel):
                     or self.preview.sub_activity_id != command.sub_activity_id
                 ):
                     raise ValueError("sub-activity restore preview must match the command")
+            elif isinstance(self.canonical_command, FixedActivityMemberRemoveCommand):
+                if not isinstance(self.preview, ManagementPreview) or self.preview.operation != "activity.member.remove":
+                    raise ValueError("member removal command requires its management preview")
+                command = self.canonical_command
+                if (
+                    self.preconditions.activity_financial_version is not None
+                    or self.preconditions.expense_version is not None
+                ):
+                    raise ValueError("member removal Proposal has no financial preconditions")
+                if self.preview.activity_id != command.activity_id:
+                    raise ValueError("member removal preview must bind the command Activity")
+            elif isinstance(self.canonical_command, FixedActivityCreatorTransferCommand):
+                if not isinstance(self.preview, ManagementPreview) or self.preview.operation != "activity.creator.transfer":
+                    raise ValueError("creator transfer command requires its management preview")
+                command = self.canonical_command
+                if (
+                    self.preconditions.activity_financial_version is not None
+                    or self.preconditions.expense_version is not None
+                ):
+                    raise ValueError("creator transfer Proposal has no financial preconditions")
+                if self.preview.activity_id != command.activity_id:
+                    raise ValueError("creator transfer preview must bind the command Activity")
+            elif isinstance(self.canonical_command, FixedActivityArchiveCommand):
+                if not isinstance(self.preview, ManagementPreview) or self.preview.operation != "activity.archive":
+                    raise ValueError("archive command requires its management preview")
+                if (
+                    self.preconditions.activity_financial_version is not None
+                    or self.preconditions.expense_version is not None
+                ):
+                    raise ValueError("archive Proposal has no financial preconditions")
+                if self.preview.activity_id != self.canonical_command.activity_id:
+                    raise ValueError("archive preview must bind the command Activity")
+            elif isinstance(self.canonical_command, FixedActivityUnarchiveCommand):
+                if not isinstance(self.preview, ManagementPreview) or self.preview.operation != "activity.unarchive":
+                    raise ValueError("unarchive command requires its management preview")
+                if (
+                    self.preconditions.activity_financial_version is not None
+                    or self.preconditions.expense_version is not None
+                ):
+                    raise ValueError("unarchive Proposal has no financial preconditions")
+                if self.preview.activity_id != self.canonical_command.activity_id:
+                    raise ValueError("unarchive preview must bind the command Activity")
+            elif isinstance(self.canonical_command, FixedActivityDeleteCommand):
+                if not isinstance(self.preview, ManagementPreview) or self.preview.operation != "activity.delete":
+                    raise ValueError("activity delete command requires its management preview")
+                if (
+                    self.preconditions.activity_financial_version is not None
+                    or self.preconditions.expense_version is not None
+                ):
+                    raise ValueError("activity delete Proposal has no financial preconditions")
+                if self.preview.activity_id != self.canonical_command.activity_id:
+                    raise ValueError("activity delete preview must bind the command Activity")
             elif isinstance(self.canonical_command, FixedExpenseCreateCommand):
                 if not isinstance(self.preview, ExpensePreview):
                     raise ValueError("expense command requires an Expense preview")

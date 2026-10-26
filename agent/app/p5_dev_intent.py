@@ -730,6 +730,74 @@ def build_dev_sub_activity_lifecycle_intent(
     )
 
 
+_MEMBER_TARGET = re.compile(r"^\s*(?P<verb>移除成员|转移创建者)\s+(?P<name>.+?)\s*$")
+_ACTIVITY_LIFECYCLE = ("归档活动", "取消归档", "删除活动")
+
+
+def is_dev_member_admin_command(text: str) -> bool:
+    if not isinstance(text, str):
+        return False
+    stripped = text.lstrip()
+    return stripped.startswith("移除成员") or stripped.startswith("转移创建者")
+
+
+def is_dev_activity_lifecycle_command(text: str) -> bool:
+    if not isinstance(text, str):
+        return False
+    stripped = text.lstrip()
+    return any(stripped.startswith(verb) for verb in _ACTIVITY_LIFECYCLE)
+
+
+def parse_dev_member_admin_command(
+    text: str,
+) -> tuple[str, DevParticipantCommand] | None:
+    """Parse `移除成员 <参与人名字>` / `转移创建者 <参与人名字>`."""
+    if not isinstance(text, str):
+        return None
+    match = _MEMBER_TARGET.match(text)
+    if match is None:
+        return None
+    name = match.group("name").strip()
+    if not name:
+        return None
+    return match.group("verb"), DevParticipantCommand(name=name)
+
+
+def parse_dev_activity_lifecycle_command(text: str) -> str | None:
+    if not isinstance(text, str):
+        return None
+    stripped = text.strip()
+    return stripped if stripped in _ACTIVITY_LIFECYCLE else None
+
+
+def build_dev_member_remove_intent(
+    activity_id: Any, user_id: Any,
+) -> c.ActivityMemberRemoveIntent:
+    return c.ActivityMemberRemoveIntent(
+        kind="activity.member.remove", activity_id=activity_id, user_id=user_id,
+    )
+
+
+def build_dev_creator_transfer_intent(
+    activity_id: Any, user_id: Any,
+) -> c.ActivityCreatorTransferIntent:
+    return c.ActivityCreatorTransferIntent(
+        kind="activity.creator.transfer",
+        activity_id=activity_id,
+        new_creator_user_id=user_id,
+    )
+
+
+def build_dev_activity_lifecycle_intent(verb: str, activity_id: Any) -> Any:
+    if verb == "归档活动":
+        return c.ActivityArchiveIntent(kind="activity.archive", activity_id=activity_id)
+    if verb == "取消归档":
+        return c.ActivityUnarchiveIntent(
+            kind="activity.unarchive", activity_id=activity_id,
+        )
+    return c.ActivityDeleteIntent(kind="activity.delete", activity_id=activity_id)
+
+
 def is_dev_repayment_command(text: str) -> bool:
     return isinstance(text, str) and text.lstrip().startswith("还款")
 

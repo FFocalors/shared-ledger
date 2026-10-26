@@ -32,6 +32,7 @@ from test_p2_runtime import (
 
 
 TURN = uuid.UUID("99999999-9999-4999-8999-999999999999")
+OTHER_USER = uuid.UUID("77777777-7777-4777-8777-777777777777")
 
 
 def _references() -> list[c.BoundReference]:
@@ -123,6 +124,7 @@ class _Transport:
         self.voided_result = True
         self.refunds: list[dict] = []
         self.join_code = "12345678"
+        self.archived_at = None
         self.participant_claims: list[dict] = []
         self.participant_usage_rows: dict[str, list[dict]] = {}
         self.ledger_units = [
@@ -137,6 +139,18 @@ class _Transport:
         self.sub_unit_id = uuid.uuid4()
         self.sub_delete_changed = True
         self.sub_restore_changed = True
+        self.members = [OWNER, OTHER_USER]
+        self.financial_status = {
+            "activity_id": str(ACTIVITY),
+            "total_debt": 12.5,
+            "total_prepayment": 0.0,
+            "has_unsettled_debt": True,
+            "completed": False,
+        }
+        self.remove_changed = True
+        self.archive_changed = True
+        self.unarchive_changed = True
+        self.delete_changed = True
         self.participants_rows = [
             {
                 "id": str(PAYER), "activity_id": str(ACTIVITY), "name": "Alex",
@@ -239,7 +253,7 @@ class _Transport:
                 "base_currency": "USD",
                 "multi_currency_enabled": False,
                 "created_by": self.activity_creator,
-                "archived_at": None,
+                "archived_at": self.archived_at,
                 "is_deleted": False,
                 "participants_locked_at": None,
                 "join_code": self.join_code,
@@ -261,6 +275,12 @@ class _Transport:
             return 200, json.dumps(rows).encode()
         if table == "participant_claims":
             return 200, json.dumps(self.participant_claims).encode()
+        if table == "activity_members":
+            return 200, json.dumps(
+                [{"user_id": str(item)} for item in self.members],
+            ).encode()
+        if table == "activity_financial_status":
+            return 200, json.dumps([self.financial_status]).encode()
         if table == "transfers":
             if any(
                 key in params for key in (
@@ -285,6 +305,36 @@ class _Transport:
 
     def post_json(self, url, headers, payload, *, timeout, max_response_bytes):  # noqa: ANN001
         self.calls.append({"url": url, "headers": dict(headers), "payload": dict(payload)})
+        if url.endswith("/remove_activity_member"):
+            return 200, json.dumps(self.remove_changed).encode()
+        if url.endswith("/transfer_activity_creator"):
+            return 200, json.dumps(payload["new_creator_user_id"]).encode()
+        if url.endswith("/archive_activity"):
+            return 200, json.dumps([{
+                "activity_id": str(ACTIVITY),
+                "archived": True,
+                "changed": self.archive_changed,
+                "archived_at": "2026-10-26T00:00:00+00:00",
+                "total_debt": 12.5,
+                "total_prepayment": 0,
+                "completed": False,
+                "has_unsettled": True,
+                "warning": "activity has unsettled debt or prepayment balance",
+            }]).encode()
+        if url.endswith("/unarchive_activity"):
+            return 200, json.dumps([{
+                "activity_id": str(ACTIVITY),
+                "archived": False,
+                "changed": self.unarchive_changed,
+                "archived_at": None,
+                "total_debt": 12.5,
+                "total_prepayment": 0,
+                "completed": False,
+                "has_unsettled": True,
+                "warning": "activity has unsettled debt or prepayment balance",
+            }]).encode()
+        if url.endswith("/delete_activity"):
+            return 200, json.dumps(self.delete_changed).encode()
         if url.endswith("/claim_participant"):
             return 200, json.dumps([{
                 "claim_id": str(self.claim_id),
@@ -1729,4 +1779,191 @@ def test_dev_sub_activity_bridge_refuses_ordinary_activities(tmp_path) -> None:
         assert provider.prompts == []
         assert not any(
             item["url"].endswith("/create_sub_activity") for item in transport.calls
+        )
+
+
+def test_dev_member_remove_bridge_previews_and_executes(tmp_path) -> None:
+    transport = _Transport()
+    transport.participant_claims = [{
+        "id": str(uuid.uuid4()),
+        "activity_id": str(ACTIVITY),
+        "participant_id": str(PAYER),
+        "user_id": str(OTHER_USER),
+    }]
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-member-remove.sqlite3", transport,
+    )
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "移除成员 Alex", scoped=True)
+        _wait(components, turn_id, {c.TurnState.WAIT_CONFIRM})
+
+        assert provider.prompts == []
+        details = components.store.get_session_detail(OWNER, session)
+        proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert proposal.operation == "activity.member.remove"
+        assert proposal.policy_version == "p5-dev-activity-admin-v1"
+        assert proposal.preview.summary.startswith("【P5 开发验证·管理】")
+        assert proposal.preview.participant_name == "Alex"
+        assert proposal.preview.target_user_ref is not None
+
+        response = _confirm(client, proposal)
+        assert response.status_code == 202, response.text
+        assert response.json()["turn"]["execution_resolution"] == "succeeded"
+        calls = [
+            item for item in transport.calls
+            if item["url"].endswith("/remove_activity_member")
+        ]
+        assert len(calls) == 1
+        assert calls[0]["payload"] == {
+            "activity_id": str(ACTIVITY), "user_id": str(OTHER_USER),
+        }
+
+
+def test_dev_creator_transfer_bridge_previews_and_executes(tmp_path) -> None:
+    transport = _Transport()
+    transport.participant_claims = [{
+        "id": str(uuid.uuid4()),
+        "activity_id": str(ACTIVITY),
+        "participant_id": str(PAYER),
+        "user_id": str(OTHER_USER),
+    }]
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-creator-transfer.sqlite3", transport,
+    )
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "转移创建者 Alex", scoped=True)
+        _wait(components, turn_id, {c.TurnState.WAIT_CONFIRM})
+
+        details = components.store.get_session_detail(OWNER, session)
+        proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert proposal.operation == "activity.creator.transfer"
+        assert "当前创建者" in proposal.preview.summary
+
+        response = _confirm(client, proposal)
+        assert response.status_code == 202, response.text
+        assert response.json()["turn"]["execution_resolution"] == "succeeded"
+        calls = [
+            item for item in transport.calls
+            if item["url"].endswith("/transfer_activity_creator")
+        ]
+        assert len(calls) == 1
+        assert calls[0]["payload"] == {
+            "activity_id": str(ACTIVITY), "new_creator_user_id": str(OTHER_USER),
+        }
+        assert provider.prompts == []
+
+
+def test_dev_activity_lifecycle_bridge_archive_unarchive_delete(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-activity-lifecycle.sqlite3", transport,
+    )
+    with client:
+        session = _create_session(client)
+
+        archive_turn = _submit(client, session, "归档活动", scoped=True)
+        _wait(components, archive_turn, {c.TurnState.WAIT_CONFIRM})
+        details = components.store.get_session_detail(OWNER, session)
+        archive_proposal = next(
+            item for item in details.proposals if item.status is c.ProposalStatus.PENDING
+        )
+        assert archive_proposal.operation == "activity.archive"
+        assert archive_proposal.preview.unsettled is True
+        assert "债务 12.5" in archive_proposal.preview.summary
+        assert "未结清" in archive_proposal.preview.summary
+        archive_confirm = _confirm(client, archive_proposal)
+        assert archive_confirm.status_code == 202, archive_confirm.text
+        archive_calls = [
+            item for item in transport.calls if item["url"].endswith("/archive_activity")
+        ]
+        assert archive_calls[0]["payload"] == {"p_activity_id": str(ACTIVITY)}
+
+        transport.archived_at = "2026-10-26T00:00:00+00:00"
+        unarchive_turn = _submit(client, session, "取消归档", scoped=True)
+        _wait(components, unarchive_turn, {c.TurnState.WAIT_CONFIRM})
+        details = components.store.get_session_detail(OWNER, session)
+        unarchive_proposal = next(
+            item for item in details.proposals if item.status is c.ProposalStatus.PENDING
+        )
+        assert unarchive_proposal.operation == "activity.unarchive"
+        unarchive_confirm = _confirm(client, unarchive_proposal)
+        assert unarchive_confirm.status_code == 202, unarchive_confirm.text
+        unarchive_calls = [
+            item for item in transport.calls if item["url"].endswith("/unarchive_activity")
+        ]
+        assert unarchive_calls[0]["payload"] == {"p_activity_id": str(ACTIVITY)}
+
+        transport.archived_at = None
+        delete_turn = _submit(client, session, "删除活动", scoped=True)
+        _wait(components, delete_turn, {c.TurnState.WAIT_CONFIRM})
+        details = components.store.get_session_detail(OWNER, session)
+        delete_proposal = next(
+            item for item in details.proposals if item.status is c.ProposalStatus.PENDING
+        )
+        assert delete_proposal.operation == "activity.delete"
+        delete_confirm = _confirm(client, delete_proposal)
+        assert delete_confirm.status_code == 202, delete_confirm.text
+        delete_calls = [
+            item for item in transport.calls if item["url"].endswith("/delete_activity")
+        ]
+        assert delete_calls[0]["payload"] == {"activity_id": str(ACTIVITY)}
+        assert provider.prompts == []
+
+
+def test_dev_member_and_admin_refusals(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-admin-refusals.sqlite3", transport,
+    )
+    with client:
+        session = _create_session(client)
+
+        def refusal(text: str, marker: str) -> None:
+            turn_id = _submit(client, session, text, scoped=True)
+            _wait(components, turn_id, {c.TurnState.COMPLETED})
+            messages = [
+                item["payload"]["text"] for item in _events(client, turn_id)["events"]
+                if item.get("type") == "message"
+            ]
+            assert any(marker in value for value in messages), (text, messages)
+
+        refusal("移除成员 Nobody", "匹配到多个或找不到")
+        refusal("移除成员 Alex", "尚未被认领")
+        refusal("移除成员", "用法")
+        refusal("归档活动 现在", "用法")
+
+        transport.participant_claims = [{
+            "id": str(uuid.uuid4()),
+            "activity_id": str(ACTIVITY),
+            "participant_id": str(PAYER),
+            "user_id": str(OWNER),
+        }]
+        refusal("移除成员 Alex", "不能移除自己")
+        refusal("转移创建者 Alex", "不能把创建者转给自己")
+
+        transport.participant_claims = [{
+            "id": str(uuid.uuid4()),
+            "activity_id": str(ACTIVITY),
+            "participant_id": str(PAYER),
+            "user_id": str(OTHER_USER),
+        }]
+        transport.activity_creator = str(OTHER_USER)
+        refusal("移除成员 Alex", "只有活动创建者")
+        refusal("归档活动", "只有活动创建者")
+
+        transport.activity_creator = str(OWNER)
+        transport.archived_at = "2026-10-26T00:00:00+00:00"
+        refusal("删除活动", "请先取消归档")
+
+        details = components.store.get_session_detail(OWNER, session)
+        assert not any(item.status is c.ProposalStatus.PENDING for item in details.proposals)
+        assert provider.prompts == []
+        assert not any(
+            item["url"].endswith((
+                "/remove_activity_member", "/transfer_activity_creator",
+                "/archive_activity", "/unarchive_activity", "/delete_activity",
+            ))
+            for item in transport.calls
         )

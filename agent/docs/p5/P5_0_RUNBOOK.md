@@ -726,6 +726,77 @@ Activity ID: <专用测试 Activity>
   legacy-unscoped 是否被回填: 否
 ```
 
+## 5.8c P5.8c 成员、创建者、归档与删除（Creator-only）
+
+命令：
+
+```text
+移除成员 <参与人名字>
+转移创建者 <参与人名字>
+归档活动
+取消归档
+删除活动
+```
+
+示例：
+
+```text
+移除成员 Alex
+转移创建者 Alex
+归档活动
+取消归档
+删除活动
+```
+
+规则：
+
+- 五个操作全部 Creator-only；非 Creator、非成员一律拒绝，不调用模型、不发 RPC。
+- 成员是 User：`移除成员` / `转移创建者` 的 Participant 名字只在**已认领**时映射到用户；
+  未认领、重名、找不到一律拒绝并说明原因。预览同时显示 Participant 名字与脱敏用户标识。
+- `移除成员` 不能移除自己；只撤销账号访问，Participant 与历史账务保持不变。
+- `转移创建者` 目标是另一名现有成员，不能转给自己。
+- `归档活动` 允许未结清；预览必须列出债务 / 预存摘要与未结清警告，执行结果同样返回这些数值。
+- `取消归档` 仍是 Creator-only。
+- `删除活动` 只允许未归档活动；在已归档活动上直接拒绝并提示先取消归档。
+- 不提供恢复已删除活动、物理删除、强制完成，也没有子活动归档入口。
+- 预览摘要带 `【P5 开发验证·管理】`。
+
+**四条通用检查点**
+
+1. **未确认不写**：生成预览但不确认 → 成员、创建者、归档状态、删除状态都不变。
+2. **重复确认只写一次**：连续确认 3 次 → 1 次对应 RPC，同一 `execution_id`。
+3. **状态冲突作废旧预览**：预览后成员列表、Creator、`archived_at` 或 `is_deleted` 变化 →
+   0 次 RPC、Proposal `closed`、Turn `CANCELLED`。
+4. **未知不冒充成功**：确认后断网/注入超时 → `RECOVERING/UNKNOWN`，不重发；按自然键只读
+   核对（成员列表 / `created_by` / `archived_at` / `is_deleted`），无法证明归属 → `closed`。
+
+**Creator 管理专项**
+
+| # | 操作 | 预期 |
+|---|---|---|
+| 56 | Creator 执行 `移除成员 <名字>` | 生成提案；确认后该用户不再是成员；Participant 与历史账务仍在 |
+| 57 | 执行 `移除成员 <自己>`；目标非成员；非 Creator 执行 | Turn 完成拒绝消息；无 RPC |
+| 58 | Creator 执行 `转移创建者 <名字>` | 成功；活动 `created_by` 变为目标用户；转给自己/非成员被拒绝 |
+| 59 | 执行 `归档活动` | 预览列出债务/预存与未结清警告；确认后 `archived_at` 写入，执行结果含 `total_debt`/`has_unsettled` |
+| 60 | 执行 `取消归档` | 成功；`archived_at` 清空；非 Creator 拒绝 |
+| 61 | 执行 `删除活动`；对已归档活动再执行一次 | 未归档时成功（`is_deleted=true`）；已归档时直接拒绝并提示先取消归档 |
+
+证据模板：
+
+```text
+命令: 移除成员/转移创建者/归档活动/取消归档/删除活动
+  activity_id:
+  操作: activity.member.remove / activity.creator.transfer /
+        activity.archive / activity.unarchive / activity.delete
+  目标用户（脱敏）:
+  creator_user_id（预览快照）:
+  archived_at / is_deleted（预览 → 执行）:
+  未结清摘要: total_debt / total_prepayment / has_unsettled
+  execution_id:
+  回执: changed / new_creator / archived / deleted
+  resolution: succeeded / rejected / closed / unknown
+```
+
 ## 7. 回滚
 
 1. 将 `AGENT_P5_DEV_INTENT_ENABLED=false`，`AGENT_LIVE_WRITE_ENABLED=false`，重启 Agent。确认接口回到冻结的 501，`记账` 输入回到普通路径。
