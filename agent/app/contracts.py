@@ -1408,6 +1408,44 @@ class VoidTransferIntent(ContractModel):
         return value
 
 
+class PrepaymentIntent(ContractModel):
+    """Server-trusted prepayment intent (P5.6). Any Member may fund an account."""
+
+    kind: Literal["prepayment.create"]
+    activity_id: EntityId
+    owner_participant_id: EntityId
+    custodian_participant_id: EntityId
+    amount: MoneyString
+    currency: CurrencyCode
+
+    @model_validator(mode="after")
+    def parties_and_amount_are_valid(self) -> "PrepaymentIntent":
+        if self.owner_participant_id == self.custodian_participant_id:
+            raise ValueError("prepayment participants must be distinct")
+        if Decimal(self.amount) <= 0:
+            raise ValueError("prepayment amount must be positive")
+        return self
+
+
+class PrepaymentReturnIntent(ContractModel):
+    """Server-trusted prepayment return intent (P5.6)."""
+
+    kind: Literal["prepayment.return"]
+    activity_id: EntityId
+    owner_participant_id: EntityId
+    custodian_participant_id: EntityId
+    amount: MoneyString
+    currency: CurrencyCode
+
+    @model_validator(mode="after")
+    def parties_and_amount_are_valid(self) -> "PrepaymentReturnIntent":
+        if self.owner_participant_id == self.custodian_participant_id:
+            raise ValueError("prepayment return participants must be distinct")
+        if Decimal(self.amount) <= 0:
+            raise ValueError("prepayment return amount must be positive")
+        return self
+
+
 class AnswerDecision(ContractModel):
     kind: Literal["answer"]
     basis: Literal["grounded", "conversation"]
@@ -1502,6 +1540,8 @@ ProposalOperation = Literal[
     "expense.delete",
     "settlement.repayment",
     "transfer.void",
+    "prepayment.create",
+    "prepayment.return",
 ]
 ProposalIntent = Annotated[
     Union[
@@ -1511,6 +1551,8 @@ ProposalIntent = Annotated[
         ExpenseDeleteIntent,
         RepaymentIntent,
         VoidTransferIntent,
+        PrepaymentIntent,
+        PrepaymentReturnIntent,
     ],
     Field(discriminator="kind"),
 ]
@@ -2360,6 +2402,58 @@ class FixedVoidTransferCommand(ContractModel):
         return value
 
 
+class FixedPrepaymentCommand(ContractModel):
+    """P5.6 prepayment: the server splits the amount into settlement + balance."""
+
+    operation: Literal["prepayment.create"]
+    activity_id: EntityId
+    owner_participant_id: EntityId
+    custodian_participant_id: EntityId
+    amount: MoneyString
+    currency: CurrencyCode
+    occurred_at: datetime
+    expected_financial_version: FinancialVersion
+    expected_settlement_amount: MoneyString
+    expected_prepayment_amount: MoneyString
+    expected_new_balance: MoneyString
+    on_behalf_of_participant_id: Literal[None] = None
+
+    @model_validator(mode="after")
+    def parties_and_time_are_valid(self) -> "FixedPrepaymentCommand":
+        if self.owner_participant_id == self.custodian_participant_id:
+            raise ValueError("prepayment participants must be distinct")
+        if self.occurred_at.tzinfo is None or self.occurred_at.utcoffset() is None:
+            raise ValueError("occurred_at must include a timezone")
+        if Decimal(self.amount) <= 0:
+            raise ValueError("prepayment amount must be positive")
+        return self
+
+
+class FixedPrepaymentReturnCommand(ContractModel):
+    """P5.6 prepayment return. The remaining balance is the server's answer."""
+
+    operation: Literal["prepayment.return"]
+    activity_id: EntityId
+    owner_participant_id: EntityId
+    custodian_participant_id: EntityId
+    amount: MoneyString
+    currency: CurrencyCode
+    occurred_at: datetime
+    expected_financial_version: FinancialVersion
+    expected_current_balance: MoneyString
+    on_behalf_of_participant_id: Literal[None] = None
+
+    @model_validator(mode="after")
+    def parties_and_time_are_valid(self) -> "FixedPrepaymentReturnCommand":
+        if self.owner_participant_id == self.custodian_participant_id:
+            raise ValueError("prepayment return participants must be distinct")
+        if self.occurred_at.tzinfo is None or self.occurred_at.utcoffset() is None:
+            raise ValueError("occurred_at must include a timezone")
+        if Decimal(self.amount) <= 0:
+            raise ValueError("prepayment return amount must be positive")
+        return self
+
+
 FixedCommand = Annotated[
     Union[
         FixedExpenseCreateCommand,
@@ -2368,6 +2462,8 @@ FixedCommand = Annotated[
         FixedExpenseDeleteCommand,
         FixedRepaymentCommand,
         FixedVoidTransferCommand,
+        FixedPrepaymentCommand,
+        FixedPrepaymentReturnCommand,
     ],
     Field(discriminator="operation"),
 ]
@@ -2694,8 +2790,78 @@ class TransferVoidPreview(ContractModel):
         return self
 
 
+class PrepaymentPreview(ContractModel):
+    """Server-previewed prepayment: debt settlement and balance top-up, split."""
+
+    kind: Literal["prepayment"]
+    summary: ShortText
+    activity_id: EntityId
+    owner_participant_id: EntityId
+    custodian_participant_id: EntityId
+    amount: MoneyString
+    currency: CurrencyCode
+    settlement_amount: MoneyString
+    prepayment_amount: MoneyString
+    new_balance: MoneyString
+    expected_financial_version: FinancialVersion
+    generated_at: datetime
+    simulation: bool
+
+    @field_validator("generated_at")
+    @classmethod
+    def generated_at_is_aware(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("generated_at must include a timezone")
+        return value
+
+    @model_validator(mode="after")
+    def parts_match_the_amount(self) -> "PrepaymentPreview":
+        if self.owner_participant_id == self.custodian_participant_id:
+            raise ValueError("prepayment participants must be distinct")
+        if Decimal(self.settlement_amount) + Decimal(self.prepayment_amount) != Decimal(self.amount):
+            raise ValueError("prepayment parts must sum to the requested amount")
+        return self
+
+
+class PrepaymentReturnPreview(ContractModel):
+    """Account balance is read; the post-return balance is the server's answer.
+
+    There is deliberately no post-return balance field: it cannot be computed
+    from the preview, so the card must not show one.
+    """
+
+    kind: Literal["prepayment_return"]
+    summary: ShortText
+    activity_id: EntityId
+    owner_participant_id: EntityId
+    custodian_participant_id: EntityId
+    amount: MoneyString
+    currency: CurrencyCode
+    current_balance: MoneyString
+    post_balance_note: Literal["返还后余额以服务端执行结果为准"] = "返还后余额以服务端执行结果为准"
+    expected_financial_version: FinancialVersion
+    generated_at: datetime
+    simulation: bool
+
+    @field_validator("generated_at")
+    @classmethod
+    def generated_at_is_aware(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("generated_at must include a timezone")
+        return value
+
+    @model_validator(mode="after")
+    def parties_are_distinct(self) -> "PrepaymentReturnPreview":
+        if self.owner_participant_id == self.custodian_participant_id:
+            raise ValueError("prepayment return participants must be distinct")
+        return self
+
+
 ProposalPreview = Annotated[
-    Union[ExpensePreview, RepaymentPreview, TransferVoidPreview],
+    Union[
+        ExpensePreview, RepaymentPreview, TransferVoidPreview,
+        PrepaymentPreview, PrepaymentReturnPreview,
+    ],
     Field(discriminator="kind"),
 ]
 
@@ -3215,6 +3381,50 @@ class ProposalRecord(ContractModel):
                     raise ValueError("repayment preview must bind the same Activity financial version")
                 if self.preconditions.expense_version is not None:
                     raise ValueError("repayment Proposal does not have an existing Expense version")
+            elif isinstance(self.canonical_command, FixedPrepaymentCommand):
+                if not isinstance(self.preview, PrepaymentPreview):
+                    raise ValueError("prepayment command requires a prepayment preview")
+                command = self.canonical_command
+                if command.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("prepayment command Activity version must match the precondition")
+                if self.preview.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("prepayment preview must bind the same Activity financial version")
+                if self.preconditions.expense_version is not None:
+                    raise ValueError("prepayment Proposal does not have an existing Expense version")
+                if (
+                    self.preview.activity_id != command.activity_id
+                    or self.preview.owner_participant_id != command.owner_participant_id
+                    or self.preview.custodian_participant_id != command.custodian_participant_id
+                ):
+                    raise ValueError("prepayment preview must bind the command parties")
+                if self.preview.amount != command.amount or self.preview.currency != command.currency:
+                    raise ValueError("prepayment preview amount and currency must match the command")
+                if (
+                    self.preview.settlement_amount != command.expected_settlement_amount
+                    or self.preview.prepayment_amount != command.expected_prepayment_amount
+                    or self.preview.new_balance != command.expected_new_balance
+                ):
+                    raise ValueError("prepayment preview parts must match the command expectations")
+            elif isinstance(self.canonical_command, FixedPrepaymentReturnCommand):
+                if not isinstance(self.preview, PrepaymentReturnPreview):
+                    raise ValueError("prepayment return command requires a prepayment return preview")
+                command = self.canonical_command
+                if command.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("prepayment return command Activity version must match the precondition")
+                if self.preview.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("prepayment return preview must bind the same Activity financial version")
+                if self.preconditions.expense_version is not None:
+                    raise ValueError("prepayment return Proposal does not have an existing Expense version")
+                if (
+                    self.preview.activity_id != command.activity_id
+                    or self.preview.owner_participant_id != command.owner_participant_id
+                    or self.preview.custodian_participant_id != command.custodian_participant_id
+                ):
+                    raise ValueError("prepayment return preview must bind the command parties")
+                if self.preview.amount != command.amount or self.preview.currency != command.currency:
+                    raise ValueError("prepayment return preview amount and currency must match the command")
+                if self.preview.current_balance != command.expected_current_balance:
+                    raise ValueError("prepayment return preview balance must match the command expectation")
             elif isinstance(self.canonical_command, FixedExpenseCreateCommand):
                 if not isinstance(self.preview, ExpensePreview):
                     raise ValueError("expense command requires an Expense preview")

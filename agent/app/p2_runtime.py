@@ -78,6 +78,10 @@ P5_DEV_REPAYMENT_POLICY_VERSION = "p5-dev-repayment-v1"
 P5_DEV_REPAYMENT_SUMMARY_PREFIX = "【P5 开发验证·还款】"
 P5_DEV_VOID_POLICY_VERSION = "p5-dev-transfer-void-v1"
 P5_DEV_VOID_SUMMARY_PREFIX = "【P5 开发验证·作废】"
+P5_DEV_PREPAYMENT_POLICY_VERSION = "p5-dev-prepayment-v1"
+P5_DEV_PREPAYMENT_SUMMARY_PREFIX = "【P5 开发验证·预存】"
+P5_DEV_PREPAYMENT_RETURN_POLICY_VERSION = "p5-dev-prepayment-return-v1"
+P5_DEV_PREPAYMENT_RETURN_SUMMARY_PREFIX = "【P5 开发验证·返还】"
 
 
 def _dev_update_refusal_text(code: str) -> str:
@@ -134,6 +138,24 @@ def _dev_void_refusal_text(code: str) -> str:
         "transfer_type_changed": "转账来源已变化，请重新发起。",
         "preview_stale": "活动财务版本已变化，请重新发起。",
     }.get(code, f"无法生成作废预览（{code}）。")
+
+
+def _dev_prepayment_refusal_text(code: str) -> str:
+    return {
+        "prepayment_requires_large_activity": "普通活动不支持预存。",
+        "prepayment_participant_invalid": "所有者或保管人不是有效参与人。",
+        "prepayment_currency_unsupported": "当前活动不支持这个币种。",
+        "prepayment_amount_precision": "基础币种金额只能有一位小数。",
+        "prepayment_invalid": "金额或币种不合法。",
+        "prepayment_preview_rejected": "预存预览被服务端拒绝。",
+        "prepayment_version_conflict": "活动财务版本已变化，请重新发起。",
+        "prepayment_return_exceeds_balance": "返还金额超过当前预存余额。",
+        "prepayment_account_unavailable": "暂时无法读取预存账户余额。",
+        "actor_not_permitted": "当前用户无权登记这笔返还。",
+        "activity_read_only": "活动已归档，不能再写入。",
+        "request_id_conflict": "预存请求冲突。",
+        "preview_stale": "活动财务版本已变化，请重新发起。",
+    }.get(code, f"无法生成预存预览（{code}）。")
 _ACTIVE_CANDIDATE_PROFILE: ContextVar[str | None] = ContextVar(
     "p2_active_candidate_profile", default=None,
 )
@@ -666,13 +688,24 @@ class P2Runtime(MockRuntime):
                 and not context.read_results
             ):
                 from .p5_dev_intent import (
-                    is_dev_delete_command, is_dev_presentation_command,
+                    is_dev_delete_command, is_dev_prepayment_command,
+                    is_dev_prepayment_return_command, is_dev_presentation_command,
                     is_dev_repayment_command, is_dev_update_command,
                     is_dev_void_command,
                 )
 
                 if is_dev_void_command(context.input_text):
                     await self._p5_dev_void_proposal(
+                        aggregate, context, references, claimed, gate.disable_revision, state,
+                    )
+                    return
+                if is_dev_prepayment_return_command(context.input_text):
+                    await self._p5_dev_prepayment_return_proposal(
+                        aggregate, context, references, claimed, gate.disable_revision, state,
+                    )
+                    return
+                if is_dev_prepayment_command(context.input_text):
+                    await self._p5_dev_prepayment_proposal(
                         aggregate, context, references, claimed, gate.disable_revision, state,
                     )
                     return
@@ -3799,6 +3832,185 @@ class P2Runtime(MockRuntime):
             )
             await self._p5_dev_refusal(
                 aggregate, context, "暂时无法生成还款预览，请重试。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        before = aggregate.record.turn
+        after = self._next_state(
+            before, c.TurnState.WAIT_CONFIRM, c.TurnStep.AWAITING_USER,
+            wait_reason=c.WaitReason.CONFIRM_REQUIRED, resume_state=None,
+        )
+        events = [
+            EventDraft(
+                type=c.EventType.PROPOSAL, occurred_at=datetime.now(timezone.utc),
+                simulation=False,
+                payload=c.ProposalEventPayload(
+                    proposal_id=proposal.proposal_id, revision=proposal.revision,
+                    operation=proposal.operation,
+                ),
+            ),
+            self._status_event(after),
+        ]
+        checkpoint = aggregate.checkpoint.model_copy(update={"resume_step": None})
+        await self._transition(
+            aggregate, after, events, claimed.claim_token,
+            checkpoint=checkpoint, bound_references=list(references),
+            new_proposal=proposal,
+        )
+
+    async def _p5_dev_prepayment_proposal(
+        self,
+        aggregate: TurnAggregate,
+        context: c.ModelContext,
+        references: Sequence[c.BoundReference],
+        claimed: ClaimedTurn,
+        gate_revision: int,
+        state: _TurnP2State,
+    ) -> None:
+        await self._p5_dev_prepayment_flow(
+            aggregate, context, references, claimed, gate_revision, state,
+            is_return=False,
+        )
+
+    async def _p5_dev_prepayment_return_proposal(
+        self,
+        aggregate: TurnAggregate,
+        context: c.ModelContext,
+        references: Sequence[c.BoundReference],
+        claimed: ClaimedTurn,
+        gate_revision: int,
+        state: _TurnP2State,
+    ) -> None:
+        await self._p5_dev_prepayment_flow(
+            aggregate, context, references, claimed, gate_revision, state,
+            is_return=True,
+        )
+
+    async def _p5_dev_prepayment_flow(
+        self,
+        aggregate: TurnAggregate,
+        context: c.ModelContext,
+        references: Sequence[c.BoundReference],
+        claimed: ClaimedTurn,
+        gate_revision: int,
+        state: _TurnP2State,
+        *,
+        is_return: bool,
+    ) -> None:
+        """Resolve owner/custodian by name and preview a prepayment or return."""
+        from .p5_dev_intent import (
+            parse_dev_prepayment_command, parse_dev_prepayment_return_command,
+        )
+        from .p5_write import LiveWriteError
+
+        cmd = (
+            parse_dev_prepayment_return_command(context.input_text) if is_return
+            else parse_dev_prepayment_command(context.input_text)
+        )
+        verb = "返还" if is_return else "预存"
+        if cmd is None:
+            await self._p5_dev_refusal(
+                aggregate, context,
+                f"用法：{verb} <所有者> <保管人> <金额> <币种>",
+                claimed, gate_revision, state, references,
+            )
+            return
+        if state.scope_activity_id is None:
+            await self._p5_dev_refusal(
+                aggregate, context, f"请从要{verb}的活动页面发起。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        names: dict[str, list[uuid.UUID]] = {}
+        for reference in references:
+            if (
+                isinstance(reference, c.BoundParticipantReference)
+                and reference.scope_activity_id == state.scope_activity_id
+            ):
+                label = state.labels.get(reference.ref)
+                if label is not None:
+                    names.setdefault(label.display_name, []).append(reference.entity_id)
+        owner_ids = names.get(cmd.owner_name, [])
+        custodian_ids = names.get(cmd.custodian_name, [])
+        if len(owner_ids) != 1 or len(custodian_ids) != 1:
+            await self._p5_dev_refusal(
+                aggregate, context, "找不到唯一匹配的所有者或保管人。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        if owner_ids[0] == custodian_ids[0]:
+            await self._p5_dev_refusal(
+                aggregate, context, "所有者和保管人不能相同。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        try:
+            if is_return:
+                intent: Any = c.PrepaymentReturnIntent(
+                    kind="prepayment.return",
+                    activity_id=state.scope_activity_id,
+                    owner_participant_id=owner_ids[0],
+                    custodian_participant_id=custodian_ids[0],
+                    amount=cmd.amount,
+                    currency=cmd.currency,
+                )
+            else:
+                intent = c.PrepaymentIntent(
+                    kind="prepayment.create",
+                    activity_id=state.scope_activity_id,
+                    owner_participant_id=owner_ids[0],
+                    custodian_participant_id=custodian_ids[0],
+                    amount=cmd.amount,
+                    currency=cmd.currency,
+                )
+        except ValueError:
+            await self._p5_dev_refusal(
+                aggregate, context, f"{verb}金额或币种不合法。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        owner_id = aggregate.record.turn.owner_user_id
+        turn_id = aggregate.record.turn.turn_id
+        grant = self._active_grant(owner_id, turn_id)
+        build = (
+            self._live_gateway.build_prepayment_return_preview if is_return
+            else self._live_gateway.build_prepayment_preview
+        )
+        policy_version = (
+            P5_DEV_PREPAYMENT_RETURN_POLICY_VERSION if is_return
+            else P5_DEV_PREPAYMENT_POLICY_VERSION
+        )
+        summary_prefix = (
+            P5_DEV_PREPAYMENT_RETURN_SUMMARY_PREFIX if is_return
+            else P5_DEV_PREPAYMENT_SUMMARY_PREFIX
+        )
+        try:
+            proposal = await build(
+                owner_user_id=owner_id,
+                session_id=aggregate.record.turn.session_id,
+                turn_id=turn_id,
+                intent=intent,
+                access_token=grant.token,
+                expires_at=grant.expires_at,
+                agent_disable_revision=gate_revision,
+                policy_version=policy_version,
+                summary_prefix=summary_prefix,
+                now=datetime.now(timezone.utc),
+            )
+        except LiveWriteError as exc:
+            await self._p5_dev_refusal(
+                aggregate, context, _dev_prepayment_refusal_text(exc.code),
+                claimed, gate_revision, state, references,
+            )
+            return
+        except (BackendReadError, ScopeDenied, ValueError) as exc:
+            _LOGGER.warning(
+                "p5 dev %s preview declined: turn=%s type=%s",
+                "prepayment return" if is_return else "prepayment",
+                turn_id, type(exc).__name__,
+            )
+            await self._p5_dev_refusal(
+                aggregate, context, f"暂时无法生成{verb}预览，请重试。",
                 claimed, gate_revision, state, references,
             )
             return

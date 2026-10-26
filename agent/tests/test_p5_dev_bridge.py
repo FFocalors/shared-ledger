@@ -121,6 +121,8 @@ class _Transport:
             "void_reason": None,
         }]
         self.voided_result = True
+        self.prepayment_balance = "0.0000"
+        self.prepayment_remaining = "0.0000"
         self.expense = {
             "id": str(self.expense_id),
             "ledger_unit_id": str(UNIT),
@@ -181,10 +183,43 @@ class _Transport:
                     item for item in self.transfers if item["id"] == wanted_id
                 ]).encode()
             return 200, json.dumps(self.transfers).encode()
+        if table == "prepayment_accounts":
+            return 200, json.dumps([{
+                "id": str(uuid.uuid4()), "balance": self.prepayment_balance,
+            }]).encode()
         return 200, b"[]"
 
     def post_json(self, url, headers, payload, *, timeout, max_response_bytes):  # noqa: ANN001
         self.calls.append({"url": url, "headers": dict(headers), "payload": dict(payload)})
+        if url.endswith("/preview_prepayment"):
+            return 200, json.dumps([{
+                "activity_id": str(ACTIVITY),
+                "owner_participant_id": payload["owner_participant_id"],
+                "custodian_participant_id": payload["custodian_participant_id"],
+                "amount": payload["amount"],
+                "settlement_amount": "4.0000",
+                "prepayment_amount": "6.0000",
+                "new_balance": "6.0000",
+                "currency": payload["currency"],
+                "financial_version": 1,
+            }]).encode()
+        if url.endswith("/create_prepayment_v2"):
+            return 200, json.dumps([{
+                "transfer_id": str(uuid.uuid4()),
+                "settlement_amount": "4.0000",
+                "prepayment_amount": "6.0000",
+                "new_balance": "6.0000",
+                "currency": payload["currency"],
+                "financial_version": 2,
+            }]).encode()
+        if url.endswith("/create_prepayment_return_v2"):
+            return 200, json.dumps([{
+                "transfer_id": str(uuid.uuid4()),
+                "amount": payload["amount"],
+                "currency": payload["currency"],
+                "remaining_balance": self.prepayment_remaining,
+                "financial_version": 2,
+            }]).encode()
         if url.endswith("/void_settlement_transfer") or url.endswith("/void_prepayment_transfer"):
             return 200, json.dumps([{
                 "transfer_id": payload["transfer_id"],
@@ -252,10 +287,11 @@ class _Transport:
         }]).encode()
 
 
-def _build_client(database, transport: _Transport):
+def _build_client(database, transport: _Transport, *, activity_type: str = "normal"):
     store = SQLiteAgentStore(database, admission_enabled=True)
     provider = _Provider()
     backend = _Backend()
+    backend.activity_type = activity_type
     auth = _Auth()
     gateway = LiveExpenseGateway(
         LiveWriteConfig(project_url="https://example.supabase.co", publishable_key="test-key"),
@@ -813,3 +849,135 @@ def test_dev_void_bridge_refusals_do_not_reach_the_model_or_rpc(tmp_path) -> Non
             "void_settlement_transfer" in item["url"] or "void_prepayment_transfer" in item["url"]
             for item in transport.calls
         )
+
+
+def test_dev_prepayment_bridge_preview_and_create(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-prepayment.sqlite3", transport, activity_type="large",
+    )
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "预存 Alex Rin 10.0 USD", scoped=True)
+        _wait(components, turn_id, {c.TurnState.WAIT_CONFIRM})
+
+        assert provider.prompts == []
+        details = components.store.get_session_detail(OWNER, session)
+        proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert proposal.operation == "prepayment.create"
+        assert proposal.policy_version == "p5-dev-prepayment-v1"
+        assert isinstance(proposal.preview, c.PrepaymentPreview)
+        assert proposal.preview.summary.startswith("【P5 开发验证·预存】")
+        assert proposal.preview.settlement_amount == "4.0000"
+        assert proposal.preview.prepayment_amount == "6.0000"
+        assert not any(item["url"].endswith("/create_prepayment_v2") for item in transport.calls)
+
+        response = _confirm(client, proposal)
+        assert response.status_code == 202, response.text
+        assert response.json()["turn"]["execution_resolution"] == "succeeded"
+        create_calls = [
+            item for item in transport.calls if item["url"].endswith("/create_prepayment_v2")
+        ]
+        assert len(create_calls) == 1
+        payload = create_calls[0]["payload"]
+        assert payload["owner_participant_id"] == str(PAYER)
+        assert payload["custodian_participant_id"] == str(PARTICIPANT_2)
+        assert payload["amount"] == "10.0"
+        assert payload["currency"] == "USD"
+        assert payload["on_behalf_of_participant_id"] is None
+        assert payload["expected_financial_version"] == 1
+        assert payload["request_id"] == str(
+            c.derive_execution_id(OWNER, proposal.proposal_id, proposal.revision)
+        )
+
+
+def test_dev_prepayment_return_bridge_reports_the_server_remaining_balance(tmp_path) -> None:
+    transport = _Transport()
+    transport.prepayment_balance = "8.0000"
+    transport.prepayment_remaining = "5.0000"
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-prepayment-return.sqlite3", transport, activity_type="large",
+    )
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "返还 Alex Rin 3.0 USD", scoped=True)
+        _wait(components, turn_id, {c.TurnState.WAIT_CONFIRM})
+
+        assert provider.prompts == []
+        details = components.store.get_session_detail(OWNER, session)
+        proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert proposal.operation == "prepayment.return"
+        assert proposal.policy_version == "p5-dev-prepayment-return-v1"
+        assert isinstance(proposal.preview, c.PrepaymentReturnPreview)
+        assert proposal.preview.summary.startswith("【P5 开发验证·返还】")
+        assert proposal.preview.current_balance == "8.0000"
+        assert "remaining_balance" not in proposal.preview.model_dump()
+
+        response = _confirm(client, proposal)
+        assert response.status_code == 202, response.text
+        assert response.json()["turn"]["execution_resolution"] == "succeeded"
+        return_calls = [
+            item for item in transport.calls
+            if item["url"].endswith("/create_prepayment_return_v2")
+        ]
+        assert len(return_calls) == 1
+        assert return_calls[0]["payload"]["amount"] == "3.0"
+        assert return_calls[0]["payload"]["on_behalf_of_participant_id"] is None
+        events = _events(client, turn_id)["events"]
+        results = [item for item in events if item.get("type") == "execution_result"]
+        assert any(
+            "remaining_balance=5.0000" in (item["payload"].get("result_summary") or "")
+            for item in results
+        )
+
+
+def test_dev_prepayment_bridge_refuses_bad_input_without_model_or_rpc(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-prepayment-refusals.sqlite3", transport, activity_type="large",
+    )
+    with client:
+        session = _create_session(client)
+
+        def refusal(text: str, marker: str) -> None:
+            turn_id = _submit(client, session, text, scoped=True)
+            _wait(components, turn_id, {c.TurnState.COMPLETED})
+            messages = [
+                item["payload"]["text"] for item in _events(client, turn_id)["events"]
+                if item.get("type") == "message"
+            ]
+            assert any(marker in value for value in messages), (text, messages)
+
+        refusal("预存 Alex Rin 10.0 EUR", "不支持这个币种")
+        refusal("预存 Alex Rin 10.55 USD", "一位小数")
+        refusal("预存 Nobody Rin 10.0 USD", "所有者")
+        refusal("预存 Alex Alex 10.0 USD", "用法")
+        refusal("预存 Alex Rin 0 USD", "用法")
+        refusal("返还 Alex Rin 3.0", "用法")
+
+        details = components.store.get_session_detail(OWNER, session)
+        assert not any(item.status is c.ProposalStatus.PENDING for item in details.proposals)
+        assert provider.prompts == []
+        assert transport.calls == []
+
+
+def test_dev_prepayment_bridge_refuses_ordinary_activities(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-prepayment-normal.sqlite3", transport, activity_type="normal",
+    )
+    with client:
+        session = _create_session(client)
+        for text in ("预存 Alex Rin 10.0 USD", "返还 Alex Rin 3.0 USD"):
+            turn_id = _submit(client, session, text, scoped=True)
+            _wait(components, turn_id, {c.TurnState.COMPLETED})
+            messages = [
+                item["payload"]["text"] for item in _events(client, turn_id)["events"]
+                if item.get("type") == "message"
+            ]
+            assert any("普通活动" in value for value in messages), (text, messages)
+
+        details = components.store.get_session_detail(OWNER, session)
+        assert not any(item.status is c.ProposalStatus.PENDING for item in details.proposals)
+        assert provider.prompts == []
+        assert transport.calls == []

@@ -382,6 +382,74 @@ Activity ID: <专用测试 Activity>
   resolution: succeeded / rejected / closed / unknown
 ```
 
+## 5.6 P5.6 大型活动预存新增与返还
+
+命令：
+
+```text
+预存 <所有者> <保管人> <金额> <币种>
+返还 <所有者> <保管人> <金额> <币种>
+```
+
+示例：
+
+```text
+预存 Alex Rin 10.0 USD
+返还 Alex Rin 3.0 USD
+```
+
+规则：
+
+- 只在**大型活动**（`activities.type = 'large'`）中可用；普通活动直接拒绝，不发 RPC。
+- 所有者 / 保管人按当前 Activity 的显示名匹配；必须存在且互不相同。
+- 币种必须是活动可用币种；基础币种金额只能有一位小数（`10.0` 可以，`10.55` 拒绝）。
+- 新增：任何 Member 都可提交，不要求 claim；`on_behalf_of_participant_id` 固定 `null`。
+- 新增先偿还 `所有者 -> 保管人` 方向的旧债，剩余部分计入预存账户；预览显示服务端返回的
+  **偿债金额**与**入账余额**两部分，不做净额换算。
+- 返还：谁能返还是由服务端 `authorize_phase5_actor` 决定，Agent 不自行判断。
+- 返还预览只显示账户**当前余额**，并写明「返还后余额以服务端执行结果为准」；不要手工
+  计算或填写返还后余额。
+- 返还金额超过余额时由服务端事务拒绝，App 显示 `rejected`。
+- 预览摘要带 `【P5 开发验证·预存】` / `【P5 开发验证·返还】`。
+
+**四条通用检查点**
+
+1. **未确认不写**：生成预览但不确认 → 无 Transfer、无创建 RPC。
+2. **重复确认只写一次**：连续确认 3 次 → 1 次 `create_prepayment_v2` 或
+   `create_prepayment_return_v2`，同一 `request_id`、同一 `execution_id`。
+3. **版本冲突作废旧预览**：预览后 Activity 财务版本变化、或活动被改成普通类型 →
+   0 次 RPC、Proposal `closed`、Turn `CANCELLED`；派发后服务端返回 40001 也关闭为
+   `closed`，不显示成功。
+4. **未知不冒充成功**：确认后断网/注入超时 → `RECOVERING/UNKNOWN`，不重发；按原
+   `request_id` 只读核对 transfers，找到且 payload 一致才落成功，找不到保持 UNKNOWN。
+
+**预存专项**
+
+| # | 操作 | 预期 |
+|---|---|---|
+| 26 | 在大型活动执行 `预存 <所有者> <保管人> 10.0 <基础币种>` | 预览显示偿债金额 / 入账余额；确认后生成 1 条 `prepayment` Transfer；请求含 `request_id`、`expected_financial_version`、`on_behalf_of=null` |
+| 27 | 在普通活动执行 `预存 ...` 或 `返还 ...` | Turn 完成拒绝消息「普通活动不支持预存」；无 RPC；无提案卡 |
+| 28 | 执行 `预存 <所有者> <保管人> 99.0 <币种>` 后 `返还 <所有者> <保管人> 3.0 <币种>` | 返还预览显示账户当前余额；确认后生成 1 条 `prepayment_return` Transfer；执行结果显示服务端 `remaining_balance` |
+| 29 | 返还金额超过账户余额 | 服务端拒绝；Turn `rejected`；不产生 Transfer |
+| 30 | 重复确认 3 次（新增或返还） | 只有 1 次创建 RPC；同一 `request_id`、同一 `execution_id` |
+| 31 | 预览后修改活动财务版本，或把活动降级为普通类型，再确认 | 0 次 RPC；Proposal `closed`；Turn `CANCELLED`；`execution` 为空 |
+
+证据模板：
+
+```text
+预存/返还命令: 预存|返还 <所有者> <保管人> <金额> <币种>
+  activity_id:
+  activity_type: large
+  owner_participant_id / custodian_participant_id:
+  request_id:
+  expected_financial_version:
+  execution_id:
+  transfer_id:
+  settlement_amount / prepayment_amount / new_balance（预存）:
+  remaining_balance（返还，服务端返回）:
+  resolution: succeeded / rejected / closed / unknown
+```
+
 ## 7. 回滚
 
 1. 将 `AGENT_P5_DEV_INTENT_ENABLED=false`，`AGENT_LIVE_WRITE_ENABLED=false`，重启 Agent。确认接口回到冻结的 501，`记账` 输入回到普通路径。
@@ -390,7 +458,9 @@ Activity ID: <专用测试 Activity>
 
 ## 8. Pin 提醒
 
-本次提交修改了 `agent/app/store.py`、`api.py`、`components.py`、`settings.py`、`p2_runtime.py`，它们都在 P2 v3 execution manifest 的 49 个 component 内。因此：
+本次及后续 P5 切片修改了 `agent/app/store.py`、`api.py`、`components.py`、`settings.py`、
+`p2_runtime.py`、`p5_write.py`、`contracts.py`，它们都在 P2 v3 execution manifest 的 49 个
+component 内。因此：
 
 - **文档里的“当前 pin”已失效**，live P2 v3 运行会被 fail-closed。
 - 需要 live 运行时，用 `python -m agent.app.p2_v3_manifest_cli` 重新生成 manifest，并在状态文档中显式记录新 pin。

@@ -154,6 +154,59 @@ def parse_dev_void_command(text: str) -> DevVoidCommand | None:
     )
 
 
+@dataclass(frozen=True, slots=True)
+class DevPrepaymentCommand:
+    owner_name: str
+    custodian_name: str
+    amount: str
+    currency: str
+
+
+def is_dev_prepayment_command(text: str) -> bool:
+    return isinstance(text, str) and text.lstrip().startswith("预存")
+
+
+def is_dev_prepayment_return_command(text: str) -> bool:
+    return isinstance(text, str) and text.lstrip().startswith("返还")
+
+
+def parse_dev_prepayment_command(text: str) -> DevPrepaymentCommand | None:
+    """Parse `预存 <owner> <custodian> <amount> <currency>`."""
+    return _parse_prepayment_parts(text, "预存")
+
+
+def parse_dev_prepayment_return_command(text: str) -> DevPrepaymentCommand | None:
+    """Parse `返还 <owner> <custodian> <amount> <currency>`."""
+    return _parse_prepayment_parts(text, "返还")
+
+
+def _parse_prepayment_parts(text: str, prefix: str) -> DevPrepaymentCommand | None:
+    if not isinstance(text, str):
+        return None
+    stripped = text.lstrip()
+    if not stripped.startswith(prefix):
+        return None
+    parts = stripped[len(prefix):].split()
+    if len(parts) != 4:
+        return None
+    owner, custodian, amount, currency = parts
+    currency = currency.upper()
+    if not owner or not custodian or owner == custodian:
+        return None
+    if not re.fullmatch(r"[A-Z]{3}", currency):
+        return None
+    try:
+        value = Decimal(amount)
+    except (InvalidOperation, TypeError):
+        return None
+    if not value.is_finite() or value <= 0:
+        return None
+    return DevPrepaymentCommand(
+        owner_name=owner, custodian_name=custodian,
+        amount=amount, currency=currency,
+    )
+
+
 def is_dev_repayment_command(text: str) -> bool:
     return isinstance(text, str) and text.lstrip().startswith("还款")
 

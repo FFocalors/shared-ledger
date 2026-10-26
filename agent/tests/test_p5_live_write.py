@@ -32,9 +32,14 @@ P2 = uuid.UUID("dddddddd-dddd-4ddd-8ddd-dddddddddddd")
 class FakeReadBackend:
     """Authoritative-read stand-in: only the calls the Gateway actually makes."""
 
-    def __init__(self, *, version: int = 0, base_currency: str = "CNY", archived: bool = False) -> None:
+    def __init__(
+        self, *, version: int = 0, base_currency: str = "CNY", archived: bool = False,
+        activity_type: str = "normal", multi_currency_enabled: bool = False,
+    ) -> None:
         self.version = version
         self.base_currency = base_currency
+        self.activity_type = activity_type
+        self.multi_currency_enabled = multi_currency_enabled
         self.archived_at = datetime.now(timezone.utc) if archived else None
         self.calls: list[tuple] = []
         self.participants = (
@@ -50,7 +55,8 @@ class FakeReadBackend:
         return P2ResolvedScope(
             mode="activity",
             activity=P2ActivityDTO(
-                ACTIVITY, "Trip", "normal", self.base_currency, False, False,
+                ACTIVITY, "Trip", self.activity_type, self.base_currency,
+                self.multi_currency_enabled, False,
                 self.archived_at, self.version,
             ),
             participants=self.participants,

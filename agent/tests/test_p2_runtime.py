@@ -117,6 +117,7 @@ class _Backend:
         self.scope_tokens: list[str] = []
         self.version_checks: list[dict[uuid.UUID, int]] = []
         self.gateway_calls = 0
+        self.activity_type = "normal"
 
     def start(self) -> None:
         pass
@@ -144,7 +145,7 @@ class _Backend:
         if request.ui_activity_id_hint != ACTIVITY:
             raise BackendReadError("scope_unavailable")
         return P2ResolvedScope(
-            "activity", _activity(),
+            "activity", _activity(self.activity_type),
             (
                 P2ParticipantDTO(PAYER, ACTIVITY, "Alex", 1, False),
                 P2ParticipantDTO(PARTICIPANT_2, ACTIVITY, "Rin", 2, False),
@@ -172,7 +173,7 @@ class _Backend:
         if decision.operation == c.ReadOperation.ACTIVITIES:
             return P2BackendReadResult(
                 operation=decision.operation, observed_at=now, source="supabase_postgrest",
-                activities=(_activity(),), financial_versions={}, complete=True,
+                activities=(_activity(self.activity_type),), financial_versions={}, complete=True,
             )
         if decision.operation == c.ReadOperation.EXPENSES:
             expense = P2ExpenseDTO(
@@ -217,9 +218,9 @@ class _Backend:
         self.version_checks.append(dict(expected))
 
 
-def _activity() -> P2ActivityDTO:
+def _activity(activity_type: str = "normal") -> P2ActivityDTO:
     return P2ActivityDTO(
-        activity_id=ACTIVITY, name="Trip", activity_type="normal", base_currency="USD",
+        activity_id=ACTIVITY, name="Trip", activity_type=activity_type, base_currency="USD",
         multi_currency_enabled=False, is_deleted=False, archived_at=None, financial_version=1,
     )
 
