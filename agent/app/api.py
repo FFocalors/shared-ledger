@@ -1137,6 +1137,25 @@ def install_api_routes(app: FastAPI) -> None:
         if not scope_ids:
             raise _ApiFailure(503, ApiErrorCode.DEPENDENCY_UNAVAILABLE, "Activity scope for the proposal is unavailable.", retryable=True)
         await _scope_authorize(components, principal, scope_ids, "proposal_confirm", request=request)
+        if (
+            components.live_gateway is not None
+            and proposal.execution is not None
+            and turn.record.turn.state is TurnState.RECOVERING
+        ):
+            # A delete whose response was lost is reconciled read-only under the
+            # original execution key before any replay receipt is returned.
+            token = getattr(request.state, "p2_access_token", None)
+            if isinstance(token, str) and token:
+                try:
+                    await components.live_gateway.reconcile(principal, proposal, token)
+                except LiveWriteError:
+                    pass
+                proposal = await _store_call(
+                    components.store.get_proposal, principal.user_id, identity,
+                )
+                turn = await _store_call(
+                    components.store.get_turn, principal.user_id, proposal.turn_id,
+                )
         replay = await _store_call(components.store.find_action_receipt, principal.user_id, identity, body)
         if replay is not None:
             return _receipt(replay)

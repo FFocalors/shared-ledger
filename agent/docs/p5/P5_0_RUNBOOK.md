@@ -195,7 +195,62 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
   财务字段是否变化: 否
 ```
 
-## 6. 证据记录模板
+## 5.3 P5.3 逻辑删除
+
+命令：
+
+```text
+删除 <标题>
+```
+
+示例：
+
+```text
+删除 Lunch
+删除 团队午餐
+```
+
+规则：
+
+- `<标题>` 必须精确等于当前 Activity 内一笔消费的标题；标题可以包含空格。
+- 只有**未锁定**的消费可删；`financial_locked`（真实 Transfer 来源或关联退款历史）拒绝。
+- 只有 **Expense 创建者或 Activity Creator** 可删；其他成员拒绝。
+- 已删除的消费再删：服务端返回 `changed=false`，视为幂等成功，不重复投影、不报错。
+- Activity 已归档/已删除：不在 Agent 预检拒绝，由 RPC 实际返回；App 会看到 `rejected`。
+- 匹配不到、重名、已锁定、已删除、非创建者/非 Creator：Turn 完成拒绝消息，不调用模型。
+- 不提供恢复；没有 `restore_expense` 可调。
+
+**四条通用检查点**
+
+1. **未确认不写**：生成删除预览但不点确认 → 消费仍存在、无 RPC。
+2. **重复确认只写一次**：连续确认 3 次 → 只有 1 次 `delete_expense`，三次同一 `execution_id`。
+3. **版本冲突作废旧预览**：预览后修改 Expense 或 Activity 的财务状态 → 0 次 RPC、Proposal `closed`、Turn `CANCELLED`。
+4. **未知不冒充成功**：确认后断网/注入超时 → Turn `RECOVERING` + `UNKNOWN`，不重发；核对发现已被删除时落 `closed`，不显示成功。
+
+**删除专项**
+
+| # | 操作 | 预期 |
+|---|---|---|
+| 13 | 对未锁定、自己创建的消费执行 `删除 <标题>` | 预览显示 `is_deleted: false → true`；确认后成功；消费变为已删除；`changed=true` |
+| 14 | 对锁定消费执行 `删除 <标题>` | Turn 完成拒绝消息；无 RPC；无提案卡 |
+| 15 | 用非创建者/非 Activity Creator 的账号执行 `删除 <标题>` | Turn 完成拒绝消息；无 RPC |
+| 16 | 对已删除的消费再次执行删除（或服务端在竞态中返回 `changed=false`） | 视为幂等成功；不重复重建投影；不报错 |
+
+证据模板：
+
+```text
+删除命令: 删除 <标题>
+  expense_id:
+  expected_expense_version:
+  expected_activity_financial_version:
+  execution_id:
+  changed: true / false
+  resolution: succeeded / rejected / closed / unknown
+  权限身份: 创建者 / Activity Creator / 其他
+  financial_locked: false
+```
+
+
 
 ```text
 提交: <git rev-parse HEAD>

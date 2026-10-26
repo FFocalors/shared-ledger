@@ -1363,6 +1363,11 @@ class ExpensePresentationUpdateIntent(ContractModel):
         return self
 
 
+class ExpenseDeleteIntent(ContractModel):
+    kind: Literal["expense.delete"]
+    expense_ref: ExpenseRef
+
+
 class AnswerDecision(ContractModel):
     kind: Literal["answer"]
     basis: Literal["grounded", "conversation"]
@@ -1438,12 +1443,14 @@ WriteOperation = Literal[
     "expense.create",
     "expense.update",
     "expense.presentation.update",
+    "expense.delete",
 ]
 WriteIntent = Annotated[
     Union[
         ExpenseCreateIntent,
         ExpenseUpdateIntent,
         ExpensePresentationUpdateIntent,
+        ExpenseDeleteIntent,
     ],
     Field(discriminator="kind"),
 ]
@@ -1660,6 +1667,8 @@ def validate_decision_against_context(decision: SemanticDecision, context: Model
             if not isinstance(bound, ModelActivityReference):
                 raise ValueError("read scope must resolve through an activity reference bound in this Turn")
     elif isinstance(decision, ProposeDecision):
+        if decision.operation == "expense.delete":
+            raise ValueError("expense delete proposals are not model-enabled")
         owning_capability = "CAP07" if decision.operation == "expense.create" else "CAP08"
         registry_entry = next(entry for entry in CAPABILITY_REGISTRY if entry.capability_id == owning_capability)
         if decision.operation not in registry_entry.operations or registry_entry.availability != CapabilityAvailability.MOCK_PROPOSAL_ONLY:
@@ -2239,11 +2248,21 @@ class FixedExpensePresentationCommand(ContractModel):
     patch: CanonicalExpensePresentationPatch
 
 
+class FixedExpenseDeleteCommand(ContractModel):
+    operation: Literal["expense.delete"]
+    activity_id: EntityId
+    expense_id: EntityId
+    expected_expense_version: ExpenseVersion
+    expected_financial_version: FinancialVersion
+    expected_is_deleted: bool = False
+
+
 FixedCommand = Annotated[
     Union[
         FixedExpenseCreateCommand,
         FixedExpenseUpdateCommand,
         FixedExpensePresentationCommand,
+        FixedExpenseDeleteCommand,
     ],
     Field(discriminator="operation"),
 ]
@@ -2307,6 +2326,7 @@ class ExpenseSnapshot(ContractModel):
     fx_snapshot: Optional[FxSnapshot] = None
     expense_version: ExpenseVersion
     financial_locked: bool
+    is_deleted: bool = False
 
     @model_validator(mode="after")
     def original_amounts_are_conserved(self) -> "ExpenseSnapshot":
@@ -2393,6 +2413,12 @@ class ExpenseFxChange(ContractModel):
     after: Optional[FxSnapshot] = None
 
 
+class ExpenseDeletedChange(ContractModel):
+    field: Literal["is_deleted"]
+    before: bool
+    after: bool
+
+
 ExpenseFieldChange = Annotated[
     Union[
         ExpenseTitleChange,
@@ -2405,6 +2431,7 @@ ExpenseFieldChange = Annotated[
         ExpenseOccurredAtChange,
         ExpenseIconChange,
         ExpenseFxChange,
+        ExpenseDeletedChange,
     ],
     Field(discriminator="field"),
 ]
@@ -2441,6 +2468,7 @@ class ExpensePreview(ContractModel):
             "note",
             "icon_key",
             "fx_snapshot",
+            "is_deleted",
         )
         values_by_field = {change.field: (change.before, change.after) for change in self.changes}
         if len(values_by_field) != len(self.changes):
@@ -2448,6 +2476,9 @@ class ExpensePreview(ContractModel):
         expected: dict[str, tuple[Any, Any]] = {}
         if self.before is None:
             for field_name in tracked:
+                if field_name == "is_deleted":
+                    # A create is never a delete; the snapshot default is False.
+                    continue
                 after_value = getattr(self.after, field_name)
                 if after_value is not None:
                     expected[field_name] = (None, after_value)
@@ -2970,11 +3001,23 @@ class ProposalRecord(ContractModel):
                     raise ValueError("update command Activity version must match the precondition")
                 if self.preview.before is None or self.preview.before.expense_version != self.canonical_command.expected_expense_version:
                     raise ValueError("update preview before snapshot must match the expected Expense version")
-            else:
+            elif isinstance(self.canonical_command, FixedExpensePresentationCommand):
                 if self.preconditions.expense_version != self.canonical_command.expected_expense_version:
                     raise ValueError("presentation command Expense version must match the precondition")
                 if self.preview.before is None or self.preview.before.expense_version != self.canonical_command.expected_expense_version:
                     raise ValueError("presentation preview before snapshot must match the expected Expense version")
+            else:
+                command = self.canonical_command
+                if self.preconditions.expense_version != command.expected_expense_version:
+                    raise ValueError("delete command Expense version must match the precondition")
+                if command.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("delete command Activity version must match the precondition")
+                if self.preview.before is None or self.preview.before.expense_version != command.expected_expense_version:
+                    raise ValueError("delete preview before snapshot must match the expected Expense version")
+                if self.preview.before.is_deleted != command.expected_is_deleted:
+                    raise ValueError("delete preview before snapshot must match the expected is_deleted")
+                if self.preview.after.is_deleted is not True:
+                    raise ValueError("delete preview after snapshot must be deleted")
             if self.command_digest != canonical_command_digest(
                 self.canonical_command,
                 self.preconditions,

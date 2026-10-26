@@ -1893,8 +1893,9 @@ class SQLiteAgentStore(P2V3StoreMixin):
         """Assign the deterministic execution identity and enter EXECUTING."""
         from .contracts import (
             ConfirmProposalRequest, ExecutionIdentity, ExecutionReference,
-            FixedExpenseCreateCommand, FixedExpensePresentationCommand,
-            FixedExpenseUpdateCommand, ProposalRecord, ProposalStatus, derive_execution_id,
+            FixedExpenseCreateCommand, FixedExpenseDeleteCommand,
+            FixedExpensePresentationCommand, FixedExpenseUpdateCommand,
+            ProposalRecord, ProposalStatus, derive_execution_id,
         )
         from .p3_execution import MockExecutionStateError, mock_effect_for_command, require_matching_financial_version
 
@@ -1922,9 +1923,10 @@ class SQLiteAgentStore(P2V3StoreMixin):
                 FixedExpenseCreateCommand,
                 FixedExpenseUpdateCommand,
                 FixedExpensePresentationCommand,
+                FixedExpenseDeleteCommand,
             )):
                 raise MockExecutionStateError(
-                    "the live write path supports create, update and presentation update only"
+                    "the live write path supports create, update, presentation update and delete only"
                 )
         if (
             proposal.command_digest is None

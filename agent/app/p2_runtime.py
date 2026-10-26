@@ -72,6 +72,8 @@ P5_DEV_UPDATE_POLICY_VERSION = "p5-dev-expense-update-v1"
 P5_DEV_UPDATE_SUMMARY_PREFIX = "【P5 开发验证·改账】"
 P5_DEV_PRESENTATION_POLICY_VERSION = "p5-dev-expense-presentation-v1"
 P5_DEV_PRESENTATION_SUMMARY_PREFIX = "【P5 开发验证·展示】"
+P5_DEV_DELETE_POLICY_VERSION = "p5-dev-expense-delete-v1"
+P5_DEV_DELETE_SUMMARY_PREFIX = "【P5 开发验证·删除】"
 
 
 def _dev_update_refusal_text(code: str) -> str:
@@ -93,6 +95,16 @@ def _dev_presentation_refusal_text(code: str) -> str:
         "invalid_icon_key": "图标不在支持列表。",
         "expense_version_conflict": "消费在预览期间发生变化，请重新发起。",
     }.get(code, f"无法生成展示更新预览（{code}）。")
+
+
+def _dev_delete_refusal_text(code: str) -> str:
+    return {
+        "expense_financial_locked": "这笔消费已锁定（有退款或真实转账来源），不能删除。",
+        "delete_not_permitted": "只有消费创建者或活动创建者可以删除。",
+        "expense_deleted": "这笔消费已删除，不能再次删除。",
+        "activity_not_found": "找不到活动。",
+        "expense_not_found": "找不到要删除的消费。",
+    }.get(code, f"无法生成删除预览（{code}）。")
 _ACTIVE_CANDIDATE_PROFILE: ContextVar[str | None] = ContextVar(
     "p2_active_candidate_profile", default=None,
 )
@@ -624,8 +636,15 @@ class P2Runtime(MockRuntime):
                 and aggregate.checkpoint.last_decision is None
                 and not context.read_results
             ):
-                from .p5_dev_intent import is_dev_presentation_command, is_dev_update_command
+                from .p5_dev_intent import (
+                    is_dev_delete_command, is_dev_presentation_command, is_dev_update_command,
+                )
 
+                if is_dev_delete_command(context.input_text):
+                    await self._p5_dev_delete_proposal(
+                        aggregate, context, references, claimed, gate.disable_revision, state,
+                    )
+                    return
                 if is_dev_presentation_command(context.input_text):
                     await self._p5_dev_presentation_proposal(
                         aggregate, context, references, claimed, gate.disable_revision, state,
@@ -3470,6 +3489,114 @@ class P2Runtime(MockRuntime):
             )
             await self._p5_dev_refusal(
                 aggregate, context, "暂时无法生成展示更新预览，请重试。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        before = aggregate.record.turn
+        after = self._next_state(
+            before, c.TurnState.WAIT_CONFIRM, c.TurnStep.AWAITING_USER,
+            wait_reason=c.WaitReason.CONFIRM_REQUIRED, resume_state=None,
+        )
+        events = [
+            EventDraft(
+                type=c.EventType.PROPOSAL, occurred_at=datetime.now(timezone.utc),
+                simulation=False,
+                payload=c.ProposalEventPayload(
+                    proposal_id=proposal.proposal_id, revision=proposal.revision,
+                    operation=proposal.operation,
+                ),
+            ),
+            self._status_event(after),
+        ]
+        checkpoint = aggregate.checkpoint.model_copy(update={"resume_step": None})
+        await self._transition(
+            aggregate, after, events, claimed.claim_token,
+            checkpoint=checkpoint, bound_references=[*references, binding],
+            new_proposal=proposal,
+        )
+
+    async def _p5_dev_delete_proposal(
+        self,
+        aggregate: TurnAggregate,
+        context: c.ModelContext,
+        references: Sequence[c.BoundReference],
+        claimed: ClaimedTurn,
+        gate_revision: int,
+        state: _TurnP2State,
+    ) -> None:
+        """Resolve a delete command by exact unique title and build a preview."""
+        from .p5_dev_intent import build_dev_delete_intent, parse_dev_delete_command
+        from .p5_write import LiveWriteError
+
+        if state.scope_activity_id is None:
+            await self._p5_dev_refusal(
+                aggregate, context, "请从要删除消费的活动页面发起。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        owner_id = aggregate.record.turn.owner_user_id
+        turn_id = aggregate.record.turn.turn_id
+        grant = self._active_grant(owner_id, turn_id)
+        try:
+            expenses = await self._live_gateway.list_expenses(
+                grant.token, state.scope_activity_id, include_deleted=True,
+            )
+        except Exception as exc:
+            _LOGGER.warning(
+                "p5 dev delete target read failed: turn=%s type=%s",
+                turn_id, type(exc).__name__,
+            )
+            await self._p5_dev_refusal(
+                aggregate, context, "暂时无法读取消费列表，请重试。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        title = parse_dev_delete_command(context.input_text, [item[1] for item in expenses])
+        if title is None:
+            await self._p5_dev_refusal(
+                aggregate, context,
+                "用法：删除 <标题>；标题必须唯一，且不能用它选择多笔消费。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        matches = [item for item in expenses if item[1] == title]
+        if len(matches) != 1:
+            await self._p5_dev_refusal(
+                aggregate, context, f"标题「{title}」匹配到多笔或找不到消费。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        intent, binding = build_dev_delete_intent(
+            expense_id=matches[0][0], source_turn_id=turn_id,
+            activity_id=state.scope_activity_id,
+        )
+        try:
+            proposal = await self._live_gateway.build_delete_preview(
+                owner_user_id=owner_id,
+                session_id=aggregate.record.turn.session_id,
+                turn_id=turn_id,
+                intent=intent,
+                bound_references=[*references, binding],
+                access_token=grant.token,
+                expires_at=grant.expires_at,
+                agent_disable_revision=gate_revision,
+                policy_version=P5_DEV_DELETE_POLICY_VERSION,
+                summary_prefix=P5_DEV_DELETE_SUMMARY_PREFIX,
+                now=datetime.now(timezone.utc),
+            )
+        except LiveWriteError as exc:
+            await self._p5_dev_refusal(
+                aggregate, context, _dev_delete_refusal_text(exc.code),
+                claimed, gate_revision, state, references,
+            )
+            return
+        except (BackendReadError, ScopeDenied, ValueError) as exc:
+            _LOGGER.warning(
+                "p5 dev delete preview declined: turn=%s type=%s",
+                turn_id, type(exc).__name__,
+            )
+            await self._p5_dev_refusal(
+                aggregate, context, "暂时无法生成删除预览，请重试。",
                 claimed, gate_revision, state, references,
             )
             return

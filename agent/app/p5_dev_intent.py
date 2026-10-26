@@ -44,6 +44,41 @@ _PRESENTATION_COMMANDS = {
 }
 
 
+def is_dev_delete_command(text: str) -> bool:
+    return isinstance(text, str) and text.lstrip().startswith("删除")
+
+
+def parse_dev_delete_command(text: str, titles: Sequence[str]) -> str | None:
+    """The delete command has no value: the remainder must equal one title."""
+    if not isinstance(text, str):
+        return None
+    stripped = text.lstrip()
+    if not stripped.startswith("删除"):
+        return None
+    remainder = stripped[len("删除"):].strip()
+    if not remainder:
+        return None
+    if remainder not in titles or titles.count(remainder) != 1:
+        return None
+    return remainder
+
+
+def build_dev_delete_intent(
+    *,
+    expense_id: Any,
+    source_turn_id: Any,
+    activity_id: Any,
+) -> tuple[c.ExpenseDeleteIntent, c.BoundExpenseReference]:
+    intent = c.ExpenseDeleteIntent(
+        kind="expense.delete", expense_ref=c.ExpenseRef.SELECTED,
+    )
+    binding = c.BoundExpenseReference(
+        kind="expense", ref=c.ExpenseRef.SELECTED, entity_id=expense_id,
+        source_turn_id=source_turn_id, scope_activity_id=activity_id,
+    )
+    return intent, binding
+
+
 @dataclass(frozen=True, slots=True)
 class DevUpdateCommand:
     title: str

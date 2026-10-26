@@ -103,6 +103,7 @@ class _Transport:
         self.get_calls: list[str] = []
         self.expense_id = uuid.uuid4()
         self.duplicate_title = False
+        self.activity_creator = str(OWNER)
         self.expense = {
             "id": str(self.expense_id),
             "ledger_unit_id": str(UNIT),
@@ -118,6 +119,7 @@ class _Transport:
             "is_deleted": False,
             "financial_locked": False,
             "icon_key": "money",
+            "created_by": str(OWNER),
         }
 
     def get_json(self, url, headers, *, timeout, max_response_bytes):  # noqa: ANN001
@@ -146,6 +148,10 @@ class _Transport:
                 "id": str(UNIT), "activity_id": str(ACTIVITY),
                 "name": "Main", "is_deleted": False,
             }]).encode()
+        if table == "activities":
+            return 200, json.dumps([{
+                "id": str(ACTIVITY), "created_by": self.activity_creator,
+            }]).encode()
         return 200, b"[]"
 
     def post_json(self, url, headers, payload, *, timeout, max_response_bytes):  # noqa: ANN001
@@ -156,6 +162,12 @@ class _Transport:
                 "version": 4,
                 "financial_version": 1,
                 "financial_locked": self.expense["financial_locked"],
+            }]).encode()
+        if url.endswith("/delete_expense"):
+            return 200, json.dumps([{
+                "deleted_expense_id": str(self.expense_id),
+                "deleted": True,
+                "version": 4,
             }]).encode()
         if url.endswith("/update_expense_auto_rate"):
             return 200, json.dumps([{
@@ -449,3 +461,93 @@ def test_dev_presentation_bridge_refuses_duplicate_titles(tmp_path) -> None:
         assert any("用法" in text_value for text_value in messages)
         assert provider.prompts == []
         assert transport.calls == []
+
+
+def test_dev_delete_bridge_creates_preview_and_reaches_the_rpc(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(tmp_path / "p5dev-delete.sqlite3", transport)
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "删除 Lunch", scoped=True)
+        _wait(components, turn_id, {c.TurnState.WAIT_CONFIRM})
+
+        assert provider.prompts == []
+        details = components.store.get_session_detail(OWNER, session)
+        proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert proposal.operation == "expense.delete"
+        assert proposal.policy_version == "p5-dev-expense-delete-v1"
+        assert proposal.preview is not None
+        assert proposal.preview.summary.startswith("【P5 开发验证·删除】")
+        assert proposal.preview.after.is_deleted is True
+        assert transport.calls == []
+
+        response = _confirm(client, proposal)
+        assert response.status_code == 202, response.text
+        assert response.json()["turn"]["execution_resolution"] == "succeeded"
+        assert len(transport.calls) == 1
+        assert transport.calls[0]["url"].endswith("/rest/v1/rpc/delete_expense")
+        assert transport.calls[0]["payload"] == {"expense_id": str(transport.expense_id)}
+
+
+def test_dev_delete_bridge_refuses_locked_and_non_creator(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(tmp_path / "p5dev-delete-refusals.sqlite3", transport)
+    with client:
+        session = _create_session(client)
+
+        transport.expense["financial_locked"] = True
+        locked_turn = _submit(client, session, "删除 Lunch", scoped=True)
+        _wait(components, locked_turn, {c.TurnState.COMPLETED})
+        locked_messages = [
+            item["payload"]["text"] for item in _events(client, locked_turn)["events"]
+            if item.get("type") == "message"
+        ]
+        assert any("锁定" in text_value for text_value in locked_messages)
+
+        transport.expense["financial_locked"] = False
+        transport.expense["created_by"] = str(uuid.uuid4())
+        transport.activity_creator = str(uuid.uuid4())
+        permission_turn = _submit(client, session, "删除 Lunch", scoped=True)
+        _wait(components, permission_turn, {c.TurnState.COMPLETED})
+        permission_messages = [
+            item["payload"]["text"] for item in _events(client, permission_turn)["events"]
+            if item.get("type") == "message"
+        ]
+        assert any("创建者" in text_value for text_value in permission_messages)
+
+        details = components.store.get_session_detail(OWNER, session)
+        assert not any(item.status is c.ProposalStatus.PENDING for item in details.proposals)
+        assert provider.prompts == []
+        assert transport.calls == []
+
+
+def test_dev_delete_bridge_refuses_already_deleted_and_duplicate_titles(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(tmp_path / "p5dev-delete-deleted.sqlite3", transport)
+    with client:
+        session = _create_session(client)
+        transport.expense["is_deleted"] = True
+        deleted_turn = _submit(client, session, "删除 Lunch", scoped=True)
+        _wait(components, deleted_turn, {c.TurnState.COMPLETED})
+        deleted_messages = [
+            item["payload"]["text"] for item in _events(client, deleted_turn)["events"]
+            if item.get("type") == "message"
+        ]
+        assert any("已删除" in text_value for text_value in deleted_messages)
+        assert provider.prompts == []
+        assert transport.calls == []
+
+    duplicated = _Transport()
+    duplicated.duplicate_title = True
+    client, components, provider, _ = _build_client(tmp_path / "p5dev-delete-duplicate.sqlite3", duplicated)
+    with client:
+        session = _create_session(client)
+        duplicate_turn = _submit(client, session, "删除 Lunch", scoped=True)
+        _wait(components, duplicate_turn, {c.TurnState.COMPLETED})
+        duplicate_messages = [
+            item["payload"]["text"] for item in _events(client, duplicate_turn)["events"]
+            if item.get("type") == "message"
+        ]
+        assert any("用法" in text_value for text_value in duplicate_messages)
+        assert provider.prompts == []
+        assert duplicated.calls == []

@@ -46,9 +46,11 @@ from .store import (
 P5_POLICY_VERSION = "p5-live-expense-create-v1"
 P5_UPDATE_POLICY_VERSION = "p5-live-expense-update-v1"
 P5_PRESENTATION_POLICY_VERSION = "p5-live-expense-presentation-v1"
+P5_DELETE_POLICY_VERSION = "p5-live-expense-delete-v1"
 RPC_CREATE_EXPENSE = "/rest/v1/rpc/create_expense_auto_rate"
 RPC_UPDATE_EXPENSE = "/rest/v1/rpc/update_expense_auto_rate"
 RPC_UPDATE_PRESENTATION = "/rest/v1/rpc/update_expense_presentation"
+RPC_DELETE_EXPENSE = "/rest/v1/rpc/delete_expense"
 
 # Public schema constraint `expenses_icon_key_supported`. The server normalizes
 # an unknown key to "money"; P5.2 rejects it instead of silently changing it.
@@ -60,7 +62,7 @@ SUPPORTED_ICON_KEYS = frozenset({
 _EXPENSE_SELECT = (
     "id,ledger_unit_id,title,original_amount,original_currency,base_amount,"
     "split_method,occurred_at,note,original_expense_id,version,is_deleted,"
-    "financial_locked,icon_key"
+    "financial_locked,icon_key,created_by"
 )
 _PAYMENT_SELECT = "id,expense_id,participant_id,amount"
 _SPLIT_SELECT = "id,expense_id,participant_id,amount"
@@ -79,6 +81,8 @@ _PREFLIGHT_CLOSE_SUMMARY = {
     "expense_version_conflict": "the Expense version changed after the preview",
     "invalid_icon_key": "the icon key is not supported",
     "no_change": "the presentation fields did not change",
+    "delete_not_permitted": "only the Expense creator or Activity creator may delete it",
+    "activity_not_found": "the Activity was not found",
 }
 
 
@@ -249,6 +253,7 @@ class LiveExpenseState:
     is_deleted: bool
     financial_locked: bool
     icon_key: str | None
+    created_by: uuid.UUID | None
     payments: tuple[tuple[uuid.UUID, str], ...]
     splits: tuple[tuple[uuid.UUID, str], ...]
 
@@ -327,6 +332,7 @@ class LiveExpenseGateway:
             is_deleted=_bool(row.get("is_deleted")),
             financial_locked=_bool(row.get("financial_locked")),
             icon_key=row.get("icon_key") if isinstance(row.get("icon_key"), str) else None,
+            created_by=_uuid_or_none(row.get("created_by")),
             payments=tuple(
                 (_uuid(item.get("participant_id")), _num_text(item.get("amount")))
                 for item in payments
@@ -373,7 +379,7 @@ class LiveExpenseGateway:
         ]
 
     async def list_expenses(
-        self, access_token: str, activity_id: uuid.UUID,
+        self, access_token: str, activity_id: uuid.UUID, *, include_deleted: bool = False,
     ) -> list[tuple[uuid.UUID, str, int]]:
         units = await self._get_rows(
             "ledger_units",
@@ -388,17 +394,27 @@ class LiveExpenseGateway:
         ]
         if not unit_ids:
             return []
+        params: list[tuple[str, str]] = [
+            ("ledger_unit_id", "in.(" + ",".join(str(item) for item in unit_ids) + ")"),
+            ("select", "id,title,version"),
+            ("order", "id.asc"),
+        ]
+        if not include_deleted:
+            params.append(("is_deleted", "eq.false"))
+        rows = await self._get_rows("expenses", params, access_token)
+        return [(_uuid(item.get("id")), str(item.get("title")), _int(item.get("version"))) for item in rows]
+
+    async def read_activity_creator(
+        self, access_token: str, activity_id: uuid.UUID,
+    ) -> uuid.UUID | None:
         rows = await self._get_rows(
-            "expenses",
-            [
-                ("ledger_unit_id", "in.(" + ",".join(str(item) for item in unit_ids) + ")"),
-                ("is_deleted", "eq.false"),
-                ("select", "id,title,version"),
-                ("order", "id.asc"),
-            ],
+            "activities",
+            [("id", f"eq.{activity_id}"), ("select", "id,created_by"), ("limit", "2")],
             access_token,
         )
-        return [(_uuid(item.get("id")), str(item.get("title")), _int(item.get("version"))) for item in rows]
+        if len(rows) != 1:
+            raise LiveWriteError("activity_not_found")
+        return _uuid_or_none(rows[0].get("created_by"))
 
     async def _get_rows(
         self, route: str, params: Sequence[tuple[str, str]], access_token: str,
@@ -864,6 +880,124 @@ class LiveExpenseGateway:
             request_receipts=[],
         )
 
+    # --------------------------------------------------------------- delete preview
+
+    async def build_delete_preview(
+        self,
+        *,
+        owner_user_id: uuid.UUID,
+        session_id: uuid.UUID,
+        turn_id: uuid.UUID,
+        intent: c.ExpenseDeleteIntent,
+        bound_references: Sequence[c.BoundReference],
+        access_token: str,
+        expires_at: datetime,
+        agent_disable_revision: int,
+        policy_version: str | None = None,
+        summary_prefix: str = "",
+        now: datetime | None = None,
+    ) -> c.ProposalRecord:
+        """Build a logical-delete proposal.
+
+        Locked and already-deleted Expenses are rejected here; archived or
+        deleted Activities are left to the RPC's actual response. Permission is
+        checked against the Expense creator and the Activity creator.
+        """
+        if not isinstance(intent, c.ExpenseDeleteIntent):
+            raise LiveWriteError("unsupported_operation")
+        instant = _aware(now)
+        binding = _resolve_expense_binding(intent, bound_references, turn_id)
+        expense_id = binding.entity_id
+        activity_id = binding.scope_activity_id
+        grant = _activity_grant(
+            owner_user_id=owner_user_id, turn_id=turn_id,
+            access_token=access_token, expires_at=expires_at,
+            activity_id=activity_id,
+        )
+        scope = await self._read_backend.resolve_scope(
+            grant, ScopeRequest(mode="activity", ui_activity_id_hint=activity_id),
+        )
+        state = await self.read_expense_state(access_token, expense_id)
+        if state.is_deleted:
+            raise LiveWriteError("expense_deleted")
+        if state.financial_locked:
+            raise LiveWriteError("expense_financial_locked")
+        activity_creator = await self.read_activity_creator(access_token, activity_id)
+        if state.created_by != owner_user_id and activity_creator != owner_user_id:
+            raise LiveWriteError("delete_not_permitted")
+
+        before = c.ExpenseSnapshot(
+            ledger_unit_id=state.ledger_unit_id,
+            title=state.title,
+            original_amount=state.original_amount,
+            original_currency=state.original_currency,
+            base_amount=state.base_amount,
+            payment_allocations=state.canonical_payments(),
+            split=state.canonical_split(),
+            occurred_at=state.occurred_at,
+            note=state.note,
+            icon_key=state.icon_key or "money",
+            expense_version=str(state.version),
+            financial_locked=state.financial_locked,
+            is_deleted=False,
+        )
+        after = before.model_copy(update={
+            "expense_version": str(state.version + 1),
+            "is_deleted": True,
+        })
+        changes: list[c.ExpenseFieldChange] = [
+            c.ExpenseDeletedChange(field="is_deleted", before=False, after=True),
+        ]
+        command = c.FixedExpenseDeleteCommand(
+            operation="expense.delete",
+            activity_id=activity_id,
+            expense_id=expense_id,
+            expected_expense_version=str(state.version),
+            expected_financial_version=str(scope.activity.financial_version),
+            expected_is_deleted=False,
+        )
+        preview = c.ExpensePreview(
+            kind="expense",
+            summary=f"{summary_prefix}删除消费 {state.title}",
+            before=before,
+            after=after,
+            changes=changes,
+            activity_financial_version=str(scope.activity.financial_version),
+            generated_at=instant,
+            simulation=False,
+        )
+        policy = policy_version or self._config.policy_version
+        preconditions = c.PreconditionSnapshot(
+            activity_id=activity_id,
+            permission_checked=True,
+            agent_disable_revision=agent_disable_revision,
+            activity_financial_version=str(scope.activity.financial_version),
+            expense_version=str(state.version),
+            policy_version=policy,
+            verified_at=instant,
+        )
+        digest = c.canonical_command_digest(command, preconditions, policy_version=policy)
+        return c.ProposalRecord(
+            proposal_id=uuid.uuid4(),
+            owner_user_id=owner_user_id,
+            session_id=session_id,
+            turn_id=turn_id,
+            revision=1,
+            operation="expense.delete",
+            mode="backend",
+            status=c.ProposalStatus.PENDING,
+            intent=intent,
+            canonical_command=command,
+            preview=preview,
+            preconditions=preconditions,
+            command_digest=digest,
+            confirmation_nonce=_new_nonce(),
+            policy_version=policy,
+            expires_at=instant.replace(microsecond=0) + timedelta(minutes=10),
+            execution=None,
+            request_receipts=[],
+        )
+
     # ---------------------------------------------------------------- execution
 
     async def execute(
@@ -881,11 +1015,12 @@ class LiveExpenseGateway:
             c.FixedExpenseCreateCommand,
             c.FixedExpenseUpdateCommand,
             c.FixedExpensePresentationCommand,
+            c.FixedExpenseDeleteCommand,
         )):
             return await self._close(
                 principal, proposal,
                 code="unsupported_operation",
-                summary="P5 only executes create, update and presentation update",
+                summary="P5 only executes create, update, presentation update and delete",
                 expected_state_revision=expected_state_revision,
             )
         if proposal.execution is not None:
@@ -899,6 +1034,7 @@ class LiveExpenseGateway:
             )
         is_create = isinstance(command, c.FixedExpenseCreateCommand)
         is_presentation = isinstance(command, c.FixedExpensePresentationCommand)
+        is_delete = isinstance(command, c.FixedExpenseDeleteCommand)
         grant = _activity_grant(
             owner_user_id=principal.user_id, turn_id=proposal.turn_id,
             access_token=access_token, expires_at=_grant_expiry(principal),
@@ -914,6 +1050,31 @@ class LiveExpenseGateway:
                 state = await self.read_expense_state(access_token, command.expense_id)
                 if state.version != int(command.expected_expense_version):
                     raise LiveWriteError("expense_version_conflict")
+            elif is_delete:
+                # Delete rebuilds the debt projection and advances the Activity
+                # financial version, so BOTH versions are preconditions. Archived
+                # or deleted Activities are still left to the RPC's response.
+                await self._read_backend.verify_financial_versions(
+                    grant, {command.activity_id: int(command.expected_financial_version)},
+                )
+                scope = await self._read_backend.resolve_scope(
+                    grant, ScopeRequest(mode="activity", ui_activity_id_hint=command.activity_id),
+                )
+                if scope.activity.financial_version != int(command.expected_financial_version):
+                    raise LiveWriteError("preview_stale")
+                state = await self.read_expense_state(access_token, command.expense_id)
+                if state.version != int(command.expected_expense_version):
+                    raise LiveWriteError("expense_changed")
+                if state.is_deleted != command.expected_is_deleted:
+                    raise LiveWriteError("expense_deleted")
+                if state.financial_locked:
+                    raise LiveWriteError("expense_financial_locked")
+                activity_creator = await self.read_activity_creator(access_token, command.activity_id)
+                if (
+                    state.created_by != principal.user_id
+                    and activity_creator != principal.user_id
+                ):
+                    raise LiveWriteError("delete_not_permitted")
             else:
                 if not is_create:
                     _require_full_update_patch(command)
@@ -951,6 +1112,8 @@ class LiveExpenseGateway:
                 "expense_version_conflict",
                 "invalid_icon_key",
                 "no_change",
+                "delete_not_permitted",
+                "activity_not_found",
             ):
                 return await self._close(
                     principal, proposal,
@@ -1003,6 +1166,9 @@ class LiveExpenseGateway:
         elif is_presentation:
             rpc_path = RPC_UPDATE_PRESENTATION
             payload = _rpc_payload_presentation(command)
+        elif is_delete:
+            rpc_path = RPC_DELETE_EXPENSE
+            payload = _rpc_payload_delete(command)
         else:
             rpc_path = RPC_UPDATE_EXPENSE
             payload = _rpc_payload_update(command)
@@ -1057,6 +1223,49 @@ class LiveExpenseGateway:
                 raise ScopeDenied("split participant is outside the Activity scope")
 
     # ------------------------------------------------------------------ helpers
+
+    async def reconcile(
+        self,
+        principal: Principal,
+        proposal: c.ProposalRecord,
+        access_token: str,
+    ) -> LiveWriteOutcome:
+        """Read-only reconciliation for a delete whose response was lost.
+
+        Without a server-side request id, a deleted row cannot be attributed to
+        this execution. Every clear observation therefore closes the proposal;
+        none of them is reported as success.
+        """
+        command = proposal.canonical_command
+        if not isinstance(command, c.FixedExpenseDeleteCommand):
+            return await self._existing_outcome(principal, proposal)
+        turn = (
+            await _call_store(self._store.get_turn, principal.user_id, proposal.turn_id)
+        ).record.turn
+        if turn.state not in (c.TurnState.RECOVERING, c.TurnState.EXECUTING):
+            return await self._existing_outcome(principal, proposal)
+        try:
+            state = await self.read_expense_state(access_token, command.expense_id)
+        except (LiveWriteError, BackendReadError):
+            # No clear evidence yet; leave the Turn RECOVERING/UNKNOWN.
+            return await self._existing_outcome(principal, proposal)
+        if state.is_deleted:
+            code = "deleted_elsewhere"
+            summary = "the Expense is deleted but this execution cannot be proven to be the author"
+        elif state.version == int(command.expected_expense_version):
+            code = "delete_not_applied"
+            summary = "the Expense is not deleted and its version is unchanged"
+        else:
+            code = "expense_changed"
+            summary = "the Expense changed while the delete outcome was unresolved"
+        await _call_store(
+            self._store.settle_mock_execution,
+            principal.user_id, proposal.proposal_id,
+            c.ExecutionResolution.CLOSED,
+            result_code=code,
+            result_summary=summary,
+        )
+        return LiveWriteOutcome(c.ExecutionResolution.CLOSED, code, summary)
 
     async def _existing_outcome(self, principal: Principal, proposal: c.ProposalRecord) -> LiveWriteOutcome:
         turn = (
@@ -1119,6 +1328,38 @@ class LiveExpenseGateway:
         parsed = _decode_rows(body)
         if 200 <= status < 300:
             row = parsed[0] if parsed else None
+            if proposal.operation == "expense.delete":
+                deleted_expense_id = row.get("deleted_expense_id") if isinstance(row, dict) else None
+                deleted = row.get("deleted") if isinstance(row, dict) else None
+                version = row.get("version") if isinstance(row, dict) else None
+                if (
+                    not isinstance(deleted_expense_id, str)
+                    or not isinstance(deleted, bool)
+                    or not isinstance(version, int)
+                ):
+                    await _call_store(
+                        self._store.mark_execution_unknown,
+                        principal.user_id, proposal.proposal_id,
+                    )
+                    return LiveWriteOutcome(
+                        c.ExecutionResolution.UNKNOWN, "upstream_invalid_success",
+                        "write outcome is unresolved",
+                    )
+                code = "expense_deleted" if deleted else "expense_already_deleted"
+                await _call_store(
+                    self._store.settle_mock_execution,
+                    principal.user_id, proposal.proposal_id,
+                    c.ExecutionResolution.SUCCEEDED,
+                    result_code=code,
+                    result_summary=(
+                        f"expense_id={deleted_expense_id};version={version};"
+                        f"changed={str(deleted).lower()}"
+                    ),
+                )
+                return LiveWriteOutcome(
+                    c.ExecutionResolution.SUCCEEDED, code,
+                    "expense deleted" if deleted else "expense was already deleted",
+                )
             expense_id = (
                 (row.get("expense_id") or row.get("updated_expense_id"))
                 if isinstance(row, dict) else None
@@ -1211,6 +1452,10 @@ def _rpc_payload_presentation(command: c.FixedExpensePresentationCommand) -> dic
     }
 
 
+def _rpc_payload_delete(command: c.FixedExpenseDeleteCommand) -> dict[str, Any]:
+    return {"expense_id": str(command.expense_id)}
+
+
 def _raw_error_code(rows: list[Any]) -> str | None:
     if not rows or not isinstance(rows[0], dict):
         return None
@@ -1219,7 +1464,7 @@ def _raw_error_code(rows: list[Any]) -> str | None:
 
 
 def _resolve_expense_binding(
-    intent: c.ExpenseUpdateIntent,
+    intent: Any,
     references: Sequence[c.BoundReference],
     turn_id: uuid.UUID,
 ) -> c.BoundExpenseReference:
