@@ -51,6 +51,7 @@ P5_REPAYMENT_POLICY_VERSION = "p5-live-repayment-v1"
 P5_VOID_POLICY_VERSION = "p5-live-transfer-void-v1"
 P5_PREPAYMENT_POLICY_VERSION = "p5-live-prepayment-v1"
 P5_PREPAYMENT_RETURN_POLICY_VERSION = "p5-live-prepayment-return-v1"
+P5_FINAL_SETTLEMENT_POLICY_VERSION = "p5-live-final-settlement-v1"
 RPC_CREATE_EXPENSE = "/rest/v1/rpc/create_expense_auto_rate"
 RPC_UPDATE_EXPENSE = "/rest/v1/rpc/update_expense_auto_rate"
 RPC_UPDATE_PRESENTATION = "/rest/v1/rpc/update_expense_presentation"
@@ -63,6 +64,8 @@ RPC_VOID_PREPAYMENT = "/rest/v1/rpc/void_prepayment_transfer"
 RPC_PREVIEW_PREPAYMENT = "/rest/v1/rpc/preview_prepayment"
 RPC_CREATE_PREPAYMENT = "/rest/v1/rpc/create_prepayment_v2"
 RPC_CREATE_PREPAYMENT_RETURN = "/rest/v1/rpc/create_prepayment_return_v2"
+RPC_PREVIEW_FINAL_SETTLEMENT = "/rest/v1/rpc/preview_final_settlement_v2"
+RPC_EXECUTE_FINAL_SETTLEMENT = "/rest/v1/rpc/execute_final_settlement_v2"
 _PREPAYMENT_ACCOUNT_SELECT = "id,balance"
 _TRANSFER_SELECT = (
     "id,activity_id,type,from_participant_id,to_participant_id,amount,currency,"
@@ -126,6 +129,15 @@ _PREFLIGHT_CLOSE_SUMMARY = {
     "prepayment_version_conflict": "the Activity financial version changed",
     "prepayment_return_exceeds_balance": "the return exceeds the balance the server holds",
     "prepayment_account_unavailable": "the prepayment account could not be read",
+    "final_settlement_plan_empty": "the server has no final settlement items now",
+    "final_settlement_item_not_in_plan": "the requested item is not in the current final settlement plan",
+    "final_settlement_preview_rejected": "the server refused the final settlement preview",
+    "final_settlement_invalid": "the final settlement request is invalid",
+    "final_settlement_participant_invalid": "the final settlement participants are not active in this Activity",
+    "final_settlement_version_conflict": "the Activity financial version changed",
+    "final_settlement_stale_plan": "the server's final settlement plan changed",
+    "final_settlement_rejected": "the server refused the final settlement",
+    "activity_type_changed": "the Activity type changed after the preview",
 }
 
 
@@ -1625,6 +1637,177 @@ class LiveExpenseGateway:
             request_receipts=[],
         )
 
+    # --------------------------------------------------- final settlement preview
+
+    async def build_final_settlement_preview(
+        self,
+        *,
+        owner_user_id: uuid.UUID,
+        session_id: uuid.UUID,
+        turn_id: uuid.UUID,
+        intent: c.FinalSettlementIntent,
+        access_token: str,
+        expires_at: datetime,
+        agent_disable_revision: int,
+        policy_version: str | None = None,
+        summary_prefix: str = "",
+        now: datetime | None = None,
+    ) -> c.ProposalRecord:
+        """Select one item from the server's complete current settlement plan.
+
+        The plan is the server's suggestion as a whole. The Agent keeps every
+        item, matches the requested direction/amount/currency field by field,
+        and copies the matched item into the command unchanged. It never
+        computes, reorders or nets anything.
+        """
+        if not isinstance(intent, c.FinalSettlementIntent):
+            raise LiveWriteError("unsupported_operation")
+        instant = _aware(now)
+        grant = _activity_grant(
+            owner_user_id=owner_user_id, turn_id=turn_id,
+            access_token=access_token, expires_at=expires_at,
+            activity_id=intent.activity_id,
+        )
+        scope = await self._read_backend.resolve_scope(
+            grant, ScopeRequest(mode="activity", ui_activity_id_hint=intent.activity_id),
+        )
+        participants = {
+            item.participant_id: item
+            for item in scope.participants if not item.is_deleted
+        }
+        if (
+            intent.from_participant_id not in participants
+            or intent.to_participant_id not in participants
+            or intent.from_participant_id == intent.to_participant_id
+        ):
+            raise LiveWriteError("final_settlement_participant_invalid")
+        activity = scope.activity
+        if activity is None:
+            raise LiveWriteError("activity_not_found")
+
+        status, body = await self._post_rpc(
+            RPC_PREVIEW_FINAL_SETTLEMENT,
+            access_token,
+            {"activity_id": str(intent.activity_id), "mode": intent.mode},
+        )
+        if status != 200:
+            rows = _decode_rows(body)
+            error_code = _final_settlement_error_code(
+                status, _raw_error_code(rows), _raw_error_message(rows),
+            )
+            if error_code is None:
+                error_code = (
+                    "upstream_read_failed" if status >= 500
+                    else "final_settlement_preview_rejected"
+                )
+            raise LiveWriteError(error_code, retryable=status >= 500)
+        rows = _decode_read_rows(body)
+        if not rows:
+            raise LiveWriteError("final_settlement_plan_empty")
+        plan_items: list[c.FinalSettlementPlanItem] = []
+        expected_version: int | None = None
+        for row in rows:
+            if (
+                str(row.get("activity_id")) != str(intent.activity_id)
+                or str(row.get("mode")) != intent.mode
+            ):
+                raise LiveWriteError("final_settlement_preview_rejected")
+            row_version = _int(row.get("source_financial_version"))
+            if expected_version is None:
+                expected_version = row_version
+            elif row_version != expected_version:
+                raise LiveWriteError("final_settlement_preview_rejected")
+            try:
+                plan_items.append(c.FinalSettlementPlanItem(
+                    from_participant_id=_uuid(row.get("from_participant_id")),
+                    to_participant_id=_uuid(row.get("to_participant_id")),
+                    amount=_num_text(row.get("amount")),
+                    ordinary_amount=_num_text(row.get("ordinary_amount")),
+                    prepayment_return_amount=_num_text(row.get("prepayment_return_amount")),
+                    currency=str(row.get("currency")),
+                    is_prepayment_return=_bool(row.get("is_prepayment_return")),
+                ))
+            except ValueError:
+                raise LiveWriteError("final_settlement_preview_rejected") from None
+        matches = [
+            item for item in plan_items
+            if item.from_participant_id == intent.from_participant_id
+            and item.to_participant_id == intent.to_participant_id
+            and item.currency == intent.currency
+            and Decimal(item.amount) == Decimal(intent.amount)
+        ]
+        if len(matches) != 1:
+            raise LiveWriteError("final_settlement_item_not_in_plan")
+        selected = matches[0]
+        try:
+            preview = c.FinalSettlementPreview(
+                kind="final_settlement",
+                summary=_final_settlement_summary(
+                    summary_prefix, participants, plan_items, selected, intent.mode,
+                ),
+                activity_id=intent.activity_id,
+                mode=intent.mode,
+                from_participant_id=selected.from_participant_id,
+                to_participant_id=selected.to_participant_id,
+                amount=selected.amount,
+                currency=selected.currency,
+                ordinary_amount=selected.ordinary_amount,
+                prepayment_return_amount=selected.prepayment_return_amount,
+                is_prepayment_return=selected.is_prepayment_return,
+                plan=plan_items,
+                expected_financial_version=str(expected_version),
+                generated_at=instant,
+                simulation=False,
+            )
+            command = c.FixedFinalSettlementCommand(
+                operation="settlement.final",
+                activity_id=intent.activity_id,
+                from_participant_id=preview.from_participant_id,
+                to_participant_id=preview.to_participant_id,
+                amount=preview.amount,
+                currency=preview.currency,
+                mode=preview.mode,
+                expected_financial_version=preview.expected_financial_version,
+                expected_activity_type=activity.activity_type,
+                expected_ordinary_amount=preview.ordinary_amount,
+                expected_prepayment_return_amount=preview.prepayment_return_amount,
+                occurred_at=instant,
+            )
+        except ValueError:
+            raise LiveWriteError("final_settlement_preview_rejected") from None
+
+        policy = policy_version or self._config.policy_version
+        preconditions = c.PreconditionSnapshot(
+            activity_id=intent.activity_id,
+            permission_checked=True,
+            agent_disable_revision=agent_disable_revision,
+            activity_financial_version=preview.expected_financial_version,
+            expense_version=None,
+            policy_version=policy,
+            verified_at=instant,
+        )
+        digest = c.canonical_command_digest(command, preconditions, policy_version=policy)
+        return c.ProposalRecord(
+            proposal_id=uuid.uuid4(),
+            owner_user_id=owner_user_id,
+            session_id=session_id,
+            turn_id=turn_id,
+            revision=1,
+            operation="settlement.final",
+            mode="backend",
+            status=c.ProposalStatus.PENDING,
+            intent=intent,
+            canonical_command=command,
+            preview=preview,
+            preconditions=preconditions,
+            command_digest=digest,
+            confirmation_nonce=_new_nonce(),
+            policy_version=policy,
+            expires_at=instant.replace(microsecond=0) + timedelta(minutes=10),
+            execution=None,
+            request_receipts=[],
+        )
+
     # ----------------------------------------------------------------- void preview
 
     async def build_void_preview(
@@ -1746,11 +1929,12 @@ class LiveExpenseGateway:
             c.FixedVoidTransferCommand,
             c.FixedPrepaymentCommand,
             c.FixedPrepaymentReturnCommand,
+            c.FixedFinalSettlementCommand,
         )):
             return await self._close(
                 principal, proposal,
                 code="unsupported_operation",
-                summary="P5 executes expense writes, repayments, prepayments and voids only",
+                summary="P5 executes expense writes, repayments, prepayments, settlements and voids only",
                 expected_state_revision=expected_state_revision,
             )
         if proposal.execution is not None:
@@ -1770,6 +1954,7 @@ class LiveExpenseGateway:
         is_prepayment = isinstance(command, (
             c.FixedPrepaymentCommand, c.FixedPrepaymentReturnCommand,
         ))
+        is_final_settlement = isinstance(command, c.FixedFinalSettlementCommand)
         grant = _activity_grant(
             owner_user_id=principal.user_id, turn_id=proposal.turn_id,
             access_token=access_token, expires_at=_grant_expiry(principal),
@@ -1833,6 +2018,31 @@ class LiveExpenseGateway:
                     or command.custodian_participant_id not in active
                 ):
                     raise LiveWriteError("prepayment_participant_invalid")
+            elif is_final_settlement:
+                # The plan itself is re-validated by the RPC. The Agent re-checks
+                # the Activity version, the Activity type the plan was built for,
+                # and that both parties are still active.
+                await self._read_backend.verify_financial_versions(
+                    grant, {command.activity_id: int(command.expected_financial_version)},
+                )
+                scope = await self._read_backend.resolve_scope(
+                    grant, ScopeRequest(mode="activity", ui_activity_id_hint=command.activity_id),
+                )
+                if (
+                    scope.activity is None
+                    or scope.activity.financial_version != int(command.expected_financial_version)
+                ):
+                    raise LiveWriteError("preview_stale")
+                if scope.activity.activity_type != command.expected_activity_type:
+                    raise LiveWriteError("activity_type_changed")
+                active = {
+                    item.participant_id for item in scope.participants if not item.is_deleted
+                }
+                if (
+                    command.from_participant_id not in active
+                    or command.to_participant_id not in active
+                ):
+                    raise LiveWriteError("final_settlement_participant_invalid")
             elif is_presentation:
                 # Presentation update: only the Expense's own version guards it.
                 # Do NOT use activities.financial_version, and do NOT pre-reject
@@ -1931,6 +2141,15 @@ class LiveExpenseGateway:
                 "prepayment_version_conflict",
                 "prepayment_return_exceeds_balance",
                 "prepayment_account_unavailable",
+                "final_settlement_plan_empty",
+                "final_settlement_item_not_in_plan",
+                "final_settlement_preview_rejected",
+                "final_settlement_invalid",
+                "final_settlement_participant_invalid",
+                "final_settlement_version_conflict",
+                "final_settlement_stale_plan",
+                "final_settlement_rejected",
+                "activity_type_changed",
             ):
                 return await self._close(
                     principal, proposal,
@@ -2008,6 +2227,14 @@ class LiveExpenseGateway:
         elif isinstance(command, c.FixedPrepaymentReturnCommand):
             rpc_path = RPC_CREATE_PREPAYMENT_RETURN
             payload = _rpc_payload_prepayment(
+                command,
+                c.derive_execution_id(
+                    principal.user_id, proposal.proposal_id, proposal.revision,
+                ),
+            )
+        elif isinstance(command, c.FixedFinalSettlementCommand):
+            rpc_path = RPC_EXECUTE_FINAL_SETTLEMENT
+            payload = _rpc_payload_final_settlement(
                 command,
                 c.derive_execution_id(
                     principal.user_id, proposal.proposal_id, proposal.revision,
@@ -2093,6 +2320,10 @@ class LiveExpenseGateway:
             )
         if isinstance(command, (c.FixedPrepaymentCommand, c.FixedPrepaymentReturnCommand)):
             return await self._reconcile_prepayment(
+                principal, proposal, command, access_token,
+            )
+        if isinstance(command, c.FixedFinalSettlementCommand):
+            return await self._reconcile_final_settlement(
                 principal, proposal, command, access_token,
             )
         if not isinstance(command, c.FixedExpenseDeleteCommand):
@@ -2258,8 +2489,72 @@ class LiveExpenseGateway:
             else "prepayment return reconciled by request id",
         )
 
-    async def _reconcile_void(
+    async def _reconcile_final_settlement(
         self,
+        principal: Principal,
+        proposal: c.ProposalRecord,
+        command: c.FixedFinalSettlementCommand,
+        access_token: str,
+    ) -> LiveWriteOutcome:
+        turn = (
+            await _call_store(self._store.get_turn, principal.user_id, proposal.turn_id)
+        ).record.turn
+        if turn.state not in (c.TurnState.RECOVERING, c.TurnState.EXECUTING):
+            return await self._existing_outcome(principal, proposal)
+        request_id = c.derive_execution_id(
+            principal.user_id, proposal.proposal_id, proposal.revision,
+        )
+        try:
+            row = await self.read_transfer_by_request_id(
+                access_token, command.activity_id, request_id,
+            )
+        except (LiveWriteError, BackendReadError):
+            return await self._existing_outcome(principal, proposal)
+        if row is None:
+            # Absence is not proof the write did not land; stay UNKNOWN.
+            return await self._existing_outcome(principal, proposal)
+        if (
+            str(row.get("type")) != "final_settlement"
+            or not _final_settlement_payload_matches(row.get("request_payload"), command)
+        ):
+            await _call_store(
+                self._store.settle_mock_execution,
+                principal.user_id, proposal.proposal_id,
+                c.ExecutionResolution.CLOSED,
+                result_code="request_id_conflict",
+                result_summary="the request id exists with a different payload",
+            )
+            return LiveWriteOutcome(
+                c.ExecutionResolution.CLOSED, "request_id_conflict",
+                "request id conflict",
+            )
+        result = row.get("request_result")
+        required = ("transfer_id", "amount", "currency", "mode", "financial_version")
+        if (
+            not isinstance(result, dict)
+            or not isinstance(result.get("transfer_id"), str)
+            or not isinstance(result.get("financial_version"), int)
+            or any(key not in result for key in required)
+        ):
+            return await self._existing_outcome(principal, proposal)
+        await _call_store(
+            self._store.settle_mock_execution,
+            principal.user_id, proposal.proposal_id,
+            c.ExecutionResolution.SUCCEEDED,
+            result_code="final_settlement_created",
+            result_summary=(
+                f"transfer_id={result.get('transfer_id')};"
+                f"amount={result.get('amount')};currency={result.get('currency')};"
+                f"mode={result.get('mode')};"
+                f"financial_version={result.get('financial_version')}"
+            ),
+        )
+        return LiveWriteOutcome(
+            c.ExecutionResolution.SUCCEEDED, "final_settlement_created",
+            "final settlement reconciled by request id",
+        )
+
+    async def _reconcile_void(        self,
         principal: Principal,
         proposal: c.ProposalRecord,
         command: c.FixedVoidTransferCommand,
@@ -2451,6 +2746,54 @@ class LiveExpenseGateway:
                     c.ExecutionResolution.SUCCEEDED, code,
                     "prepayment return created" if is_return else "prepayment created",
                 )
+            if proposal.operation == "settlement.final":
+                command = proposal.canonical_command
+                transfer_id = row.get("transfer_id") if isinstance(row, dict) else None
+                amount = row.get("amount") if isinstance(row, dict) else None
+                currency = row.get("currency") if isinstance(row, dict) else None
+                mode = row.get("mode") if isinstance(row, dict) else None
+                financial_version = row.get("financial_version") if isinstance(row, dict) else None
+                echoed = (
+                    isinstance(command, c.FixedFinalSettlementCommand)
+                    and amount is not None and currency is not None and mode is not None
+                )
+                if echoed:
+                    try:
+                        echoed = (
+                            str(currency) == command.currency
+                            and str(mode) == command.mode
+                            and Decimal(str(amount)) == Decimal(command.amount)
+                        )
+                    except (TypeError, ValueError):
+                        echoed = False
+                if (
+                    not isinstance(transfer_id, str)
+                    or not isinstance(financial_version, int)
+                    or not echoed
+                ):
+                    await _call_store(
+                        self._store.mark_execution_unknown,
+                        principal.user_id, proposal.proposal_id,
+                    )
+                    return LiveWriteOutcome(
+                        c.ExecutionResolution.UNKNOWN, "upstream_invalid_success",
+                        "write outcome is unresolved",
+                    )
+                await _call_store(
+                    self._store.settle_mock_execution,
+                    principal.user_id, proposal.proposal_id,
+                    c.ExecutionResolution.SUCCEEDED,
+                    result_code="final_settlement_created",
+                    result_summary=(
+                        f"transfer_id={transfer_id};amount={_num_text(amount)};"
+                        f"currency={currency};mode={mode};"
+                        f"financial_version={financial_version}"
+                    ),
+                )
+                return LiveWriteOutcome(
+                    c.ExecutionResolution.SUCCEEDED, "final_settlement_created",
+                    "final settlement created",
+                )
             if proposal.operation == "expense.delete":
                 deleted_expense_id = row.get("deleted_expense_id") if isinstance(row, dict) else None
                 deleted = row.get("deleted") if isinstance(row, dict) else None
@@ -2566,6 +2909,46 @@ class LiveExpenseGateway:
                 c.ExecutionResolution.CLOSED, "prepayment_version_conflict",
                 "prepayment version conflict",
             )
+        if (
+            proposal.operation == "settlement.final"
+            and raw_code == "40001"
+        ):
+            # The RPC's version guard fired after dispatch: this is not a win.
+            await _call_store(
+                self._store.settle_mock_execution,
+                principal.user_id, proposal.proposal_id,
+                c.ExecutionResolution.CLOSED,
+                result_code="final_settlement_version_conflict",
+                result_summary="the Activity financial version changed before the RPC",
+            )
+            return LiveWriteOutcome(
+                c.ExecutionResolution.CLOSED, "final_settlement_version_conflict",
+                "final settlement version conflict",
+            )
+        if proposal.operation == "settlement.final":
+            message = _raw_error_message(parsed) or ""
+            if raw_code == "55000" and "idempotent result" in message:
+                await _call_store(
+                    self._store.mark_execution_unknown,
+                    principal.user_id, proposal.proposal_id,
+                )
+                return LiveWriteOutcome(
+                    c.ExecutionResolution.UNKNOWN, "upstream_ambiguous",
+                    "write outcome is unresolved",
+                )
+            settlement_code = _final_settlement_error_code(status, raw_code, message)
+            if settlement_code is not None:
+                await _call_store(
+                    self._store.settle_mock_execution,
+                    principal.user_id, proposal.proposal_id,
+                    c.ExecutionResolution.REJECTED,
+                    result_code=settlement_code,
+                    result_summary="server rejected the final settlement",
+                )
+                return LiveWriteOutcome(
+                    c.ExecutionResolution.REJECTED, settlement_code,
+                    "server rejected the final settlement",
+                )
         if proposal.operation in ("prepayment.create", "prepayment.return"):
             message = _raw_error_message(parsed) or ""
             if raw_code == "55000" and "idempotent result" in message:
@@ -2698,6 +3081,23 @@ def _rpc_payload_prepayment(
     }
 
 
+def _rpc_payload_final_settlement(
+    command: c.FixedFinalSettlementCommand, request_id: uuid.UUID,
+) -> dict[str, Any]:
+    return {
+        "activity_id": str(command.activity_id),
+        "from_participant_id": str(command.from_participant_id),
+        "to_participant_id": str(command.to_participant_id),
+        "amount": command.amount,
+        "currency": command.currency,
+        "mode": command.mode,
+        "expected_financial_version": int(command.expected_financial_version),
+        "request_id": str(request_id),
+        "occurred_at": command.occurred_at.isoformat(),
+        "on_behalf_of_participant_id": None,
+    }
+
+
 def _repayment_payload_matches(
     stored: Any, command: c.FixedRepaymentCommand,
 ) -> bool:
@@ -2812,6 +3212,81 @@ def _prepayment_payload_matches(
         )
     except (TypeError, ValueError):
         return False
+
+
+def _final_settlement_error_code(
+    status: int, raw_code: str | None, message: str | None,
+) -> str | None:
+    """Map a final settlement RPC failure, or None when unrecognised."""
+    if raw_code is None:
+        return None
+    if raw_code == "23514":
+        return (
+            "final_settlement_stale_plan"
+            if "does not match current plan" in (message or "")
+            else "final_settlement_rejected"
+        )
+    return {
+        "22023": "final_settlement_invalid",
+        "23505": "request_id_conflict",
+        "42501": "actor_not_permitted",
+        "P0002": "final_settlement_participant_invalid",
+        "40001": "final_settlement_version_conflict",
+        "55000": "activity_read_only",
+        "28000": "invalid_auth_context",
+    }.get(raw_code)
+
+
+def _final_settlement_payload_matches(
+    stored: Any, command: c.FixedFinalSettlementCommand,
+) -> bool:
+    if not isinstance(stored, dict):
+        return False
+    if str(stored.get("operation")) != "execute_final_settlement":
+        return False
+    try:
+        return (
+            str(stored.get("activity_id")) == str(command.activity_id)
+            and str(stored.get("from_participant_id")) == str(command.from_participant_id)
+            and str(stored.get("to_participant_id")) == str(command.to_participant_id)
+            and Decimal(str(stored.get("amount"))) == Decimal(command.amount)
+            and str(stored.get("currency")) == command.currency
+            and str(stored.get("mode")) == command.mode
+            and stored.get("on_behalf_of_participant_id") in (None, "null")
+            and int(stored.get("expected_financial_version"))
+            == int(command.expected_financial_version)
+        )
+    except (TypeError, ValueError):
+        return False
+
+
+def _final_settlement_summary(
+    summary_prefix: str,
+    participants: Mapping[uuid.UUID, Any],
+    plan: Sequence[c.FinalSettlementPlanItem],
+    selected: c.FinalSettlementPlanItem,
+    mode: str,
+) -> str:
+    """Render the selected item and the complete plan, item by item."""
+
+    def name(participant_id: uuid.UUID) -> str:
+        participant = participants.get(participant_id)
+        return participant.name if participant is not None else str(participant_id)
+
+    lines = [
+        (
+            f"{index}) {name(item.from_participant_id)} -> {name(item.to_participant_id)} "
+            f"{item.amount} {item.currency}"
+            f"（普通 {item.ordinary_amount} / 预存返还 {item.prepayment_return_amount}）"
+        )
+        for index, item in enumerate(plan, start=1)
+    ]
+    head = (
+        f"{summary_prefix}结算 {name(selected.from_participant_id)} -> "
+        f"{name(selected.to_participant_id)} {selected.amount} {selected.currency}"
+        f"（{mode}）；当前完整建议共 {len(plan)} 项："
+    )
+    return head + "；".join(lines) + "。确认后按已实际发生的付款登记。"
 
 
 def _prepayment_result_summary(result: Mapping[str, Any]) -> str:

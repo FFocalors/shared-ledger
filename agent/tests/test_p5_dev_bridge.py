@@ -123,6 +123,34 @@ class _Transport:
         self.voided_result = True
         self.prepayment_balance = "0.0000"
         self.prepayment_remaining = "0.0000"
+        self.settlement_plan = [
+            {
+                "activity_id": str(ACTIVITY),
+                "from_participant_id": str(PAYER),
+                "to_participant_id": str(PARTICIPANT_2),
+                "amount": "10.0000",
+                "ordinary_amount": "10.0000",
+                "prepayment_return_amount": "0.0000",
+                "currency": "USD",
+                "mode": "base_unified",
+                "path_currency": "USD",
+                "source_financial_version": 1,
+                "is_prepayment_return": False,
+            },
+            {
+                "activity_id": str(ACTIVITY),
+                "from_participant_id": str(PARTICIPANT_2),
+                "to_participant_id": str(PAYER),
+                "amount": "4.0000",
+                "ordinary_amount": "4.0000",
+                "prepayment_return_amount": "0.0000",
+                "currency": "USD",
+                "mode": "base_unified",
+                "path_currency": "USD",
+                "source_financial_version": 1,
+                "is_prepayment_return": False,
+            },
+        ]
         self.expense = {
             "id": str(self.expense_id),
             "ledger_unit_id": str(UNIT),
@@ -191,6 +219,16 @@ class _Transport:
 
     def post_json(self, url, headers, payload, *, timeout, max_response_bytes):  # noqa: ANN001
         self.calls.append({"url": url, "headers": dict(headers), "payload": dict(payload)})
+        if url.endswith("/preview_final_settlement_v2"):
+            return 200, json.dumps(self.settlement_plan).encode()
+        if url.endswith("/execute_final_settlement_v2"):
+            return 200, json.dumps([{
+                "transfer_id": str(uuid.uuid4()),
+                "amount": payload["amount"],
+                "currency": payload["currency"],
+                "mode": payload["mode"],
+                "financial_version": 2,
+            }]).encode()
         if url.endswith("/preview_prepayment"):
             return 200, json.dumps([{
                 "activity_id": str(ACTIVITY),
@@ -981,3 +1019,109 @@ def test_dev_prepayment_bridge_refuses_ordinary_activities(tmp_path) -> None:
         assert not any(item.status is c.ProposalStatus.PENDING for item in details.proposals)
         assert provider.prompts == []
         assert transport.calls == []
+
+
+def test_dev_final_settlement_bridge_lists_the_plan_and_executes(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-settlement.sqlite3", transport,
+    )
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "结算 Alex Rin 10.0 USD", scoped=True)
+        _wait(components, turn_id, {c.TurnState.WAIT_CONFIRM})
+
+        assert provider.prompts == []
+        details = components.store.get_session_detail(OWNER, session)
+        proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert proposal.operation == "settlement.final"
+        assert proposal.policy_version == "p5-dev-final-settlement-v1"
+        assert isinstance(proposal.preview, c.FinalSettlementPreview)
+        assert proposal.preview.summary.startswith("【P5 开发验证·结算】")
+        assert len(proposal.preview.plan) == 2
+        # The whole plan is listed, not only the selected item.
+        assert "Alex -> Rin 10.0000 USD" in proposal.preview.summary
+        assert "Rin -> Alex 4.0000 USD" in proposal.preview.summary
+        assert not any(
+            item["url"].endswith("/execute_final_settlement_v2") for item in transport.calls
+        )
+
+        response = _confirm(client, proposal)
+        assert response.status_code == 202, response.text
+        assert response.json()["turn"]["execution_resolution"] == "succeeded"
+        execute_calls = [
+            item for item in transport.calls
+            if item["url"].endswith("/execute_final_settlement_v2")
+        ]
+        assert len(execute_calls) == 1
+        payload = execute_calls[0]["payload"]
+        assert payload["from_participant_id"] == str(PAYER)
+        assert payload["to_participant_id"] == str(PARTICIPANT_2)
+        assert payload["amount"] == "10.0000"
+        assert payload["currency"] == "USD"
+        assert payload["mode"] == "base_unified"
+        assert payload["on_behalf_of_participant_id"] is None
+        assert payload["expected_financial_version"] == 1
+        assert payload["request_id"] == str(
+            c.derive_execution_id(OWNER, proposal.proposal_id, proposal.revision)
+        )
+
+
+def test_dev_final_settlement_bridge_supports_original_currency_mode(tmp_path) -> None:
+    transport = _Transport()
+    for row in transport.settlement_plan:
+        row["mode"] = "original_currency"
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-settlement-oc.sqlite3", transport,
+    )
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(
+            client, session, "结算 Alex Rin 10.0 USD 模式=original_currency", scoped=True,
+        )
+        _wait(components, turn_id, {c.TurnState.WAIT_CONFIRM})
+        details = components.store.get_session_detail(OWNER, session)
+        proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert proposal.preview.mode == "original_currency"
+
+        response = _confirm(client, proposal)
+        assert response.status_code == 202, response.text
+        execute_calls = [
+            item for item in transport.calls
+            if item["url"].endswith("/execute_final_settlement_v2")
+        ]
+        assert len(execute_calls) == 1
+        assert execute_calls[0]["payload"]["mode"] == "original_currency"
+        assert provider.prompts == []
+
+
+def test_dev_final_settlement_bridge_refuses_mismatches_without_model_or_rpc(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-settlement-refusals.sqlite3", transport,
+    )
+    with client:
+        session = _create_session(client)
+
+        def refusal(text: str, marker: str) -> None:
+            turn_id = _submit(client, session, text, scoped=True)
+            _wait(components, turn_id, {c.TurnState.COMPLETED})
+            messages = [
+                item["payload"]["text"] for item in _events(client, turn_id)["events"]
+                if item.get("type") == "message"
+            ]
+            assert any(marker in value for value in messages), (text, messages)
+
+        refusal("结算 Alex Rin 99.0 USD", "没有方向、金额、币种完全一致")
+        refusal("结算 Rin Alex 10.0 USD", "没有方向、金额、币种完全一致")
+        refusal("结算 Alex Rin 10.0 EUR", "没有方向、金额、币种完全一致")
+        refusal("结算 Alex Rin 10.0 USD 模式=bogus", "用法")
+        refusal("结算 Alex Rin 0 USD", "用法")
+        refusal("结算 Alex Alex 10.0 USD", "用法")
+
+        details = components.store.get_session_detail(OWNER, session)
+        assert not any(item.status is c.ProposalStatus.PENDING for item in details.proposals)
+        assert provider.prompts == []
+        assert not any(
+            item["url"].endswith("/execute_final_settlement_v2") for item in transport.calls
+        )

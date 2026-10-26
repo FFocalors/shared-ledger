@@ -82,6 +82,8 @@ P5_DEV_PREPAYMENT_POLICY_VERSION = "p5-dev-prepayment-v1"
 P5_DEV_PREPAYMENT_SUMMARY_PREFIX = "【P5 开发验证·预存】"
 P5_DEV_PREPAYMENT_RETURN_POLICY_VERSION = "p5-dev-prepayment-return-v1"
 P5_DEV_PREPAYMENT_RETURN_SUMMARY_PREFIX = "【P5 开发验证·返还】"
+P5_DEV_FINAL_SETTLEMENT_POLICY_VERSION = "p5-dev-final-settlement-v1"
+P5_DEV_FINAL_SETTLEMENT_SUMMARY_PREFIX = "【P5 开发验证·结算】"
 
 
 def _dev_update_refusal_text(code: str) -> str:
@@ -156,6 +158,24 @@ def _dev_prepayment_refusal_text(code: str) -> str:
         "request_id_conflict": "预存请求冲突。",
         "preview_stale": "活动财务版本已变化，请重新发起。",
     }.get(code, f"无法生成预存预览（{code}）。")
+
+
+def _dev_final_settlement_refusal_text(code: str) -> str:
+    return {
+        "final_settlement_plan_empty": "当前没有结算建议。",
+        "final_settlement_item_not_in_plan": "当前建议里没有方向、金额、币种完全一致的项。",
+        "final_settlement_preview_rejected": "结算预览被服务端拒绝。",
+        "final_settlement_invalid": "金额、币种或模式不合法。",
+        "final_settlement_participant_invalid": "付款人或收款人不是有效参与人。",
+        "final_settlement_version_conflict": "活动财务版本已变化，请重新发起。",
+        "final_settlement_stale_plan": "结算建议已变化，请重新发起。",
+        "final_settlement_rejected": "结算被服务端拒绝。",
+        "activity_read_only": "活动已归档，不能再写入。",
+        "activity_not_found": "找不到活动。",
+        "actor_not_permitted": "当前用户无权登记这笔结算。",
+        "request_id_conflict": "结算请求冲突。",
+        "preview_stale": "活动财务版本已变化，请重新发起。",
+    }.get(code, f"无法生成结算预览（{code}）。")
 _ACTIVE_CANDIDATE_PROFILE: ContextVar[str | None] = ContextVar(
     "p2_active_candidate_profile", default=None,
 )
@@ -688,14 +708,19 @@ class P2Runtime(MockRuntime):
                 and not context.read_results
             ):
                 from .p5_dev_intent import (
-                    is_dev_delete_command, is_dev_prepayment_command,
-                    is_dev_prepayment_return_command, is_dev_presentation_command,
-                    is_dev_repayment_command, is_dev_update_command,
-                    is_dev_void_command,
+                    is_dev_delete_command, is_dev_final_settlement_command,
+                    is_dev_prepayment_command, is_dev_prepayment_return_command,
+                    is_dev_presentation_command, is_dev_repayment_command,
+                    is_dev_update_command, is_dev_void_command,
                 )
 
                 if is_dev_void_command(context.input_text):
                     await self._p5_dev_void_proposal(
+                        aggregate, context, references, claimed, gate.disable_revision, state,
+                    )
+                    return
+                if is_dev_final_settlement_command(context.input_text):
+                    await self._p5_dev_final_settlement_proposal(
                         aggregate, context, references, claimed, gate.disable_revision, state,
                     )
                     return
@@ -4011,6 +4036,128 @@ class P2Runtime(MockRuntime):
             )
             await self._p5_dev_refusal(
                 aggregate, context, f"暂时无法生成{verb}预览，请重试。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        before = aggregate.record.turn
+        after = self._next_state(
+            before, c.TurnState.WAIT_CONFIRM, c.TurnStep.AWAITING_USER,
+            wait_reason=c.WaitReason.CONFIRM_REQUIRED, resume_state=None,
+        )
+        events = [
+            EventDraft(
+                type=c.EventType.PROPOSAL, occurred_at=datetime.now(timezone.utc),
+                simulation=False,
+                payload=c.ProposalEventPayload(
+                    proposal_id=proposal.proposal_id, revision=proposal.revision,
+                    operation=proposal.operation,
+                ),
+            ),
+            self._status_event(after),
+        ]
+        checkpoint = aggregate.checkpoint.model_copy(update={"resume_step": None})
+        await self._transition(
+            aggregate, after, events, claimed.claim_token,
+            checkpoint=checkpoint, bound_references=list(references),
+            new_proposal=proposal,
+        )
+
+    async def _p5_dev_final_settlement_proposal(
+        self,
+        aggregate: TurnAggregate,
+        context: c.ModelContext,
+        references: Sequence[c.BoundReference],
+        claimed: ClaimedTurn,
+        gate_revision: int,
+        state: _TurnP2State,
+    ) -> None:
+        """Select one item of the server's complete current settlement plan."""
+        from .p5_dev_intent import parse_dev_final_settlement_command
+        from .p5_write import LiveWriteError
+
+        cmd = parse_dev_final_settlement_command(context.input_text)
+        if cmd is None:
+            await self._p5_dev_refusal(
+                aggregate, context,
+                "用法：结算 <付款人> <收款人> <金额> <币种> "
+                "[模式=base_unified|original_currency]",
+                claimed, gate_revision, state, references,
+            )
+            return
+        if state.scope_activity_id is None:
+            await self._p5_dev_refusal(
+                aggregate, context, "请从要结算的活动页面发起。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        names: dict[str, list[uuid.UUID]] = {}
+        for reference in references:
+            if (
+                isinstance(reference, c.BoundParticipantReference)
+                and reference.scope_activity_id == state.scope_activity_id
+            ):
+                label = state.labels.get(reference.ref)
+                if label is not None:
+                    names.setdefault(label.display_name, []).append(reference.entity_id)
+        from_ids = names.get(cmd.from_name, [])
+        to_ids = names.get(cmd.to_name, [])
+        if len(from_ids) != 1 or len(to_ids) != 1:
+            await self._p5_dev_refusal(
+                aggregate, context, "找不到唯一匹配的付款人或收款人。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        if from_ids[0] == to_ids[0]:
+            await self._p5_dev_refusal(
+                aggregate, context, "付款人和收款人不能相同。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        try:
+            intent = c.FinalSettlementIntent(
+                kind="settlement.final",
+                activity_id=state.scope_activity_id,
+                from_participant_id=from_ids[0],
+                to_participant_id=to_ids[0],
+                amount=cmd.amount,
+                currency=cmd.currency,
+                mode=cmd.mode,
+            )
+        except ValueError:
+            await self._p5_dev_refusal(
+                aggregate, context, "结算金额、币种或模式不合法。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        owner_id = aggregate.record.turn.owner_user_id
+        turn_id = aggregate.record.turn.turn_id
+        grant = self._active_grant(owner_id, turn_id)
+        try:
+            proposal = await self._live_gateway.build_final_settlement_preview(
+                owner_user_id=owner_id,
+                session_id=aggregate.record.turn.session_id,
+                turn_id=turn_id,
+                intent=intent,
+                access_token=grant.token,
+                expires_at=grant.expires_at,
+                agent_disable_revision=gate_revision,
+                policy_version=P5_DEV_FINAL_SETTLEMENT_POLICY_VERSION,
+                summary_prefix=P5_DEV_FINAL_SETTLEMENT_SUMMARY_PREFIX,
+                now=datetime.now(timezone.utc),
+            )
+        except LiveWriteError as exc:
+            await self._p5_dev_refusal(
+                aggregate, context, _dev_final_settlement_refusal_text(exc.code),
+                claimed, gate_revision, state, references,
+            )
+            return
+        except (BackendReadError, ScopeDenied, ValueError) as exc:
+            _LOGGER.warning(
+                "p5 dev final settlement preview declined: turn=%s type=%s",
+                turn_id, type(exc).__name__,
+            )
+            await self._p5_dev_refusal(
+                aggregate, context, "暂时无法生成结算预览，请重试。",
                 claimed, gate_revision, state, references,
             )
             return

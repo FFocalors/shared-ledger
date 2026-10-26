@@ -31,6 +31,17 @@ INPUT_DIGEST = "b" * 64
 NOW = datetime.now(timezone.utc).replace(microsecond=0)
 
 
+def current_time() -> datetime:
+    """Wall clock at call time.
+
+    A module-level timestamp used for grant and receipt *expiry* made every
+    contract expire one minute after import, so a slow full-suite run failed
+    these tests for no product reason. Static facts still use NOW; anything
+    that must still be valid when the contract is parsed uses this.
+    """
+    return datetime.now(timezone.utc).replace(microsecond=0)
+
+
 def versions() -> dict[str, str]:
     return {"api": "2.1.0", "semantic": "2.0.0", "operations": "2.1.0", "trajectory": "2.0.0"}
 
@@ -110,8 +121,8 @@ def fresh_receipt(
         operation=operation,
         scope_ref=scope_ref,
         criteria_digest=criteria_digest,
-        observed_at=NOW - timedelta(seconds=1),
-        expires_at=NOW + timedelta(minutes=1),
+        observed_at=current_time() - timedelta(seconds=1),
+        expires_at=current_time() + timedelta(minutes=5),
         next_page_ref=next_page_ref,
     )
 
@@ -131,7 +142,7 @@ def source_grant(
         operation=operation,
         scope=scope,
         criteria_digest=criteria_digest,
-        expires_at=NOW + timedelta(minutes=1),
+        expires_at=current_time() + timedelta(minutes=5),
         grant_ref=REF_GRANT,
     )
 
@@ -946,8 +957,8 @@ def test_per_query_bindings_allow_same_scope_multiread_answer_and_reject_mismatc
         operation=c.P2ReadOperation.DEBTS,
         scope_ref=REF_ACTIVITY,
         criteria_digest=debt_digest,
-        observed_at=NOW - timedelta(seconds=1),
-        expires_at=NOW + timedelta(minutes=1),
+        observed_at=current_time() - timedelta(seconds=1),
+        expires_at=current_time() + timedelta(minutes=5),
     )
     bindings = (
         c.P2QueryAuthorizationBinding(

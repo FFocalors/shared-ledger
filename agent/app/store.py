@@ -1895,6 +1895,7 @@ class SQLiteAgentStore(P2V3StoreMixin):
             ConfirmProposalRequest, ExecutionIdentity, ExecutionReference,
             FixedExpenseCreateCommand, FixedExpenseDeleteCommand,
             FixedExpensePresentationCommand, FixedExpenseUpdateCommand,
+            FixedFinalSettlementCommand,
             FixedPrepaymentCommand, FixedPrepaymentReturnCommand,
             FixedRepaymentCommand, FixedVoidTransferCommand,
             ProposalRecord, ProposalStatus, derive_execution_id,
@@ -1930,6 +1931,7 @@ class SQLiteAgentStore(P2V3StoreMixin):
                 FixedVoidTransferCommand,
                 FixedPrepaymentCommand,
                 FixedPrepaymentReturnCommand,
+                FixedFinalSettlementCommand,
             )):
                 raise MockExecutionStateError(
                     "the live write path does not support this command"

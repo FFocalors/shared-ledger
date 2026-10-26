@@ -450,6 +450,72 @@ Activity ID: <专用测试 Activity>
   resolution: succeeded / rejected / closed / unknown
 ```
 
+## 5.7 P5.7 最终结算执行
+
+命令：
+
+```text
+结算 <付款人> <收款人> <金额> <币种> [模式=base_unified|original_currency]
+```
+
+示例：
+
+```text
+结算 Alex Rin 10.0 USD
+结算 Alex Rin 10.0 USD 模式=original_currency
+```
+
+规则：
+
+- 预览来自服务端 `preview_final_settlement_v2`，它是**整个 Activity 的建议项列表**，
+  不是某人欠谁的即时计算；预览摘要会列出完整建议，不只匹配的那一项。
+- 执行只能引用当前建议中的某一项：方向、金额、币种必须与建议逐字段一致，Agent 不合并、
+  不拆单、不重排、不做净额化。
+- 命令匹配不到完全一致的一项（金额、方向或币种不同）时直接拒绝，不发执行 RPC，也不
+  调用模型。
+- 模式缺省 `base_unified`；大型活动建议可含预存返还路径，普通活动该路径为空。
+- 确认语义是「登记一笔已经真实发生的付款」，不是下发转账指令。
+- 预览摘要带 `【P5 开发验证·结算】`。
+
+**四条通用检查点**
+
+1. **未确认不写**：生成预览但不确认 → 无 Transfer、无执行 RPC。
+2. **重复确认只写一次**：连续确认 3 次 → 1 次 `execute_final_settlement_v2`，同一
+   `request_id`、同一 `execution_id`。
+3. **版本冲突作废旧预览**：预览后 Activity 财务版本变化，或活动类型改变（大型降级为
+   普通）→ 0 次 RPC、Proposal `closed`、Turn `CANCELLED`；派发后服务端返回 40001 也
+   关闭为 `closed`，不显示成功。
+4. **未知不冒充成功**：确认后断网/注入超时 → `RECOVERING/UNKNOWN`，不重发；按原
+   `request_id` 只读核对 transfers，找到且 payload 一致才落成功，找不到保持 UNKNOWN。
+
+**结算专项**
+
+| # | 操作 | 预期 |
+|---|---|---|
+| 32 | 预览一次结算命令 | 卡片摘要列出**完整**建议（含未选中的方向），选中项与建议字段一致；确认前无执行 RPC |
+| 33 | 确认建议中的一项 | `execute_final_settlement_v2` 一次；生成 1 条 `final_settlement` Transfer；请求含 `request_id`、`expected_financial_version`、`mode`、`on_behalf_of=null` |
+| 34 | 金额、方向或币种与建议不一致 | Turn 完成拒绝消息；无执行 RPC；无提案卡 |
+| 35 | 普通活动结算 | 建议中没有预存返还路径；正常执行普通债务项 |
+| 36 | 大型活动且存在预存余额 | 建议可含预存返还项；选中该项后执行，普通/预存返还拆分与建议一致 |
+| 37 | `模式=original_currency` | 预览与执行都用该模式；请求 `mode` 为客户指定值，币种来自建议 |
+
+证据模板：
+
+```text
+结算命令: 结算 <付款人> <收款人> <金额> <币种> [模式=...]
+  activity_id:
+  activity_type: normal / large
+  mode: base_unified / original_currency
+  from_participant_id / to_participant_id:
+  plan_items: <完整建议条数>
+  selected: amount / ordinary_amount / prepayment_return_amount
+  request_id:
+  expected_financial_version:
+  execution_id:
+  transfer_id:
+  resolution: succeeded / rejected / closed / unknown
+```
+
 ## 7. 回滚
 
 1. 将 `AGENT_P5_DEV_INTENT_ENABLED=false`，`AGENT_LIVE_WRITE_ENABLED=false`，重启 Agent。确认接口回到冻结的 501，`记账` 输入回到普通路径。

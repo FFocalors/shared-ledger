@@ -1446,6 +1446,30 @@ class PrepaymentReturnIntent(ContractModel):
         return self
 
 
+class FinalSettlementIntent(ContractModel):
+    """Server-plan-bound final settlement intent (P5.7).
+
+    This records a payment the user says already happened, but only when the
+    server's current plan contains exactly this item.
+    """
+
+    kind: Literal["settlement.final"]
+    activity_id: EntityId
+    from_participant_id: EntityId
+    to_participant_id: EntityId
+    amount: MoneyString
+    currency: CurrencyCode
+    mode: Literal["base_unified", "original_currency"]
+
+    @model_validator(mode="after")
+    def parties_and_amount_are_valid(self) -> "FinalSettlementIntent":
+        if self.from_participant_id == self.to_participant_id:
+            raise ValueError("final settlement participants must be distinct")
+        if Decimal(self.amount) <= 0:
+            raise ValueError("final settlement amount must be positive")
+        return self
+
+
 class AnswerDecision(ContractModel):
     kind: Literal["answer"]
     basis: Literal["grounded", "conversation"]
@@ -1542,6 +1566,7 @@ ProposalOperation = Literal[
     "transfer.void",
     "prepayment.create",
     "prepayment.return",
+    "settlement.final",
 ]
 ProposalIntent = Annotated[
     Union[
@@ -1553,6 +1578,7 @@ ProposalIntent = Annotated[
         VoidTransferIntent,
         PrepaymentIntent,
         PrepaymentReturnIntent,
+        FinalSettlementIntent,
     ],
     Field(discriminator="kind"),
 ]
@@ -2454,6 +2480,40 @@ class FixedPrepaymentReturnCommand(ContractModel):
         return self
 
 
+class FixedFinalSettlementCommand(ContractModel):
+    """P5.7 final settlement of one item from the server's current plan."""
+
+    operation: Literal["settlement.final"]
+    activity_id: EntityId
+    from_participant_id: EntityId
+    to_participant_id: EntityId
+    amount: MoneyString
+    currency: CurrencyCode
+    mode: Literal["base_unified", "original_currency"]
+    expected_financial_version: FinancialVersion
+    expected_activity_type: Literal["normal", "large"]
+    expected_ordinary_amount: MoneyString
+    expected_prepayment_return_amount: MoneyString
+    occurred_at: datetime
+    on_behalf_of_participant_id: Literal[None] = None
+
+    @model_validator(mode="after")
+    def parties_and_time_are_valid(self) -> "FixedFinalSettlementCommand":
+        if self.from_participant_id == self.to_participant_id:
+            raise ValueError("final settlement participants must be distinct")
+        if self.occurred_at.tzinfo is None or self.occurred_at.utcoffset() is None:
+            raise ValueError("occurred_at must include a timezone")
+        if Decimal(self.amount) <= 0:
+            raise ValueError("final settlement amount must be positive")
+        if (
+            Decimal(self.expected_ordinary_amount)
+            + Decimal(self.expected_prepayment_return_amount)
+            != Decimal(self.amount)
+        ):
+            raise ValueError("final settlement parts must sum to the settled amount")
+        return self
+
+
 FixedCommand = Annotated[
     Union[
         FixedExpenseCreateCommand,
@@ -2464,6 +2524,7 @@ FixedCommand = Annotated[
         FixedVoidTransferCommand,
         FixedPrepaymentCommand,
         FixedPrepaymentReturnCommand,
+        FixedFinalSettlementCommand,
     ],
     Field(discriminator="operation"),
 ]
@@ -2857,10 +2918,94 @@ class PrepaymentReturnPreview(ContractModel):
         return self
 
 
+FinalSettlementSummaryText = Annotated[
+    str, StringConstraints(strict=True, min_length=1, max_length=2000),
+]
+
+
+class FinalSettlementPlanItem(ContractModel):
+    """One item of the server's complete current final-settlement plan."""
+
+    from_participant_id: EntityId
+    to_participant_id: EntityId
+    amount: MoneyString
+    ordinary_amount: MoneyString
+    prepayment_return_amount: MoneyString
+    currency: CurrencyCode
+    is_prepayment_return: bool
+
+    @model_validator(mode="after")
+    def parts_and_kind_are_consistent(self) -> "FinalSettlementPlanItem":
+        if self.from_participant_id == self.to_participant_id:
+            raise ValueError("final settlement plan item participants must be distinct")
+        if (
+            Decimal(self.ordinary_amount) + Decimal(self.prepayment_return_amount)
+            != Decimal(self.amount)
+        ):
+            raise ValueError("final settlement plan item parts must sum to its amount")
+        if self.is_prepayment_return != (Decimal(self.ordinary_amount) == 0):
+            raise ValueError("plan item kind must follow whether it carries ordinary debt")
+        return self
+
+
+class FinalSettlementPreview(ContractModel):
+    """One selected plan item plus the complete plan it must come from."""
+
+    kind: Literal["final_settlement"]
+    summary: FinalSettlementSummaryText
+    activity_id: EntityId
+    mode: Literal["base_unified", "original_currency"]
+    from_participant_id: EntityId
+    to_participant_id: EntityId
+    amount: MoneyString
+    currency: CurrencyCode
+    ordinary_amount: MoneyString
+    prepayment_return_amount: MoneyString
+    is_prepayment_return: bool
+    plan: list[FinalSettlementPlanItem] = Field(min_length=1, max_length=64)
+    expected_financial_version: FinancialVersion
+    generated_at: datetime
+    simulation: bool
+
+    @field_validator("generated_at")
+    @classmethod
+    def generated_at_is_aware(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("generated_at must include a timezone")
+        return value
+
+    @model_validator(mode="after")
+    def selected_item_is_in_the_plan(self) -> "FinalSettlementPreview":
+        if self.from_participant_id == self.to_participant_id:
+            raise ValueError("final settlement participants must be distinct")
+        if (
+            Decimal(self.ordinary_amount) + Decimal(self.prepayment_return_amount)
+            != Decimal(self.amount)
+        ):
+            raise ValueError("final settlement parts must sum to the settled amount")
+        matches = [
+            item for item in self.plan
+            if item.from_participant_id == self.from_participant_id
+            and item.to_participant_id == self.to_participant_id
+            and item.currency == self.currency
+            and Decimal(item.amount) == Decimal(self.amount)
+        ]
+        if len(matches) != 1:
+            raise ValueError("final settlement must select exactly one current plan item")
+        item = matches[0]
+        if (
+            Decimal(item.ordinary_amount) != Decimal(self.ordinary_amount)
+            or Decimal(item.prepayment_return_amount) != Decimal(self.prepayment_return_amount)
+            or item.is_prepayment_return != self.is_prepayment_return
+        ):
+            raise ValueError("final settlement selection must copy the plan item unchanged")
+        return self
+
+
 ProposalPreview = Annotated[
     Union[
         ExpensePreview, RepaymentPreview, TransferVoidPreview,
-        PrepaymentPreview, PrepaymentReturnPreview,
+        PrepaymentPreview, PrepaymentReturnPreview, FinalSettlementPreview,
     ],
     Field(discriminator="kind"),
 ]
@@ -3425,6 +3570,34 @@ class ProposalRecord(ContractModel):
                     raise ValueError("prepayment return preview amount and currency must match the command")
                 if self.preview.current_balance != command.expected_current_balance:
                     raise ValueError("prepayment return preview balance must match the command expectation")
+            elif isinstance(self.canonical_command, FixedFinalSettlementCommand):
+                if not isinstance(self.preview, FinalSettlementPreview):
+                    raise ValueError("final settlement command requires a final settlement preview")
+                command = self.canonical_command
+                if command.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("final settlement command Activity version must match the precondition")
+                if self.preview.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("final settlement preview must bind the same Activity financial version")
+                if self.preconditions.expense_version is not None:
+                    raise ValueError("final settlement Proposal does not have an existing Expense version")
+                if (
+                    self.preview.activity_id != command.activity_id
+                    or self.preview.from_participant_id != command.from_participant_id
+                    or self.preview.to_participant_id != command.to_participant_id
+                ):
+                    raise ValueError("final settlement preview must bind the command parties")
+                if (
+                    self.preview.amount != command.amount
+                    or self.preview.currency != command.currency
+                    or self.preview.mode != command.mode
+                ):
+                    raise ValueError("final settlement preview amount, currency and mode must match the command")
+                if (
+                    self.preview.ordinary_amount != command.expected_ordinary_amount
+                    or self.preview.prepayment_return_amount
+                    != command.expected_prepayment_return_amount
+                ):
+                    raise ValueError("final settlement preview parts must match the command expectations")
             elif isinstance(self.canonical_command, FixedExpenseCreateCommand):
                 if not isinstance(self.preview, ExpensePreview):
                     raise ValueError("expense command requires an Expense preview")
