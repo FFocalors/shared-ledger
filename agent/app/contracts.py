@@ -1393,6 +1393,21 @@ class RepaymentIntent(ContractModel):
         return self
 
 
+class VoidTransferIntent(ContractModel):
+    """Server-trusted void intent (P5.5b). The transfer type is read server-side."""
+
+    kind: Literal["transfer.void"]
+    transfer_id: EntityId
+    void_reason: ShortText
+
+    @field_validator("void_reason")
+    @classmethod
+    def reason_is_required(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("void reason is required")
+        return value
+
+
 class AnswerDecision(ContractModel):
     kind: Literal["answer"]
     basis: Literal["grounded", "conversation"]
@@ -1486,6 +1501,7 @@ ProposalOperation = Literal[
     "expense.presentation.update",
     "expense.delete",
     "settlement.repayment",
+    "transfer.void",
 ]
 ProposalIntent = Annotated[
     Union[
@@ -1494,6 +1510,7 @@ ProposalIntent = Annotated[
         ExpensePresentationUpdateIntent,
         ExpenseDeleteIntent,
         RepaymentIntent,
+        VoidTransferIntent,
     ],
     Field(discriminator="kind"),
 ]
@@ -2323,6 +2340,26 @@ class FixedRepaymentCommand(ContractModel):
         return self
 
 
+class FixedVoidTransferCommand(ContractModel):
+    operation: Literal["transfer.void"]
+    activity_id: EntityId
+    transfer_id: EntityId
+    transfer_type: Literal["settlement", "prepayment", "prepayment_return", "final_settlement"]
+    expected_financial_version: FinancialVersion
+    expected_is_voided: bool = False
+    expected_recorded_by: EntityId
+    expected_activity_archived: bool = False
+    expected_activity_deleted: bool = False
+    void_reason: ShortText
+
+    @field_validator("void_reason")
+    @classmethod
+    def reason_is_required(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("void reason is required")
+        return value
+
+
 FixedCommand = Annotated[
     Union[
         FixedExpenseCreateCommand,
@@ -2330,6 +2367,7 @@ FixedCommand = Annotated[
         FixedExpensePresentationCommand,
         FixedExpenseDeleteCommand,
         FixedRepaymentCommand,
+        FixedVoidTransferCommand,
     ],
     Field(discriminator="operation"),
 ]
@@ -2624,8 +2662,40 @@ class RepaymentPreview(ContractModel):
         return self
 
 
+class TransferVoidPreview(ContractModel):
+    kind: Literal["transfer_void"]
+    summary: ShortText
+    activity_id: EntityId
+    transfer_id: EntityId
+    transfer_type: Literal["settlement", "prepayment", "prepayment_return", "final_settlement"]
+    from_participant_id: EntityId
+    to_participant_id: EntityId
+    amount: MoneyString
+    currency: CurrencyCode
+    void_reason: ShortText
+    is_voided: bool
+    expected_financial_version: FinancialVersion
+    generated_at: datetime
+    simulation: bool
+
+    @field_validator("generated_at")
+    @classmethod
+    def generated_at_is_aware(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("generated_at must include a timezone")
+        return value
+
+    @model_validator(mode="after")
+    def parties_and_reason_are_valid(self) -> "TransferVoidPreview":
+        if self.from_participant_id == self.to_participant_id:
+            raise ValueError("void participants must be distinct")
+        if not self.void_reason.strip():
+            raise ValueError("void reason is required")
+        return self
+
+
 ProposalPreview = Annotated[
-    Union[ExpensePreview, RepaymentPreview],
+    Union[ExpensePreview, RepaymentPreview, TransferVoidPreview],
     Field(discriminator="kind"),
 ]
 
@@ -3120,7 +3190,23 @@ class ProposalRecord(ContractModel):
                 raise ValueError("backend Proposal policy version must match its precondition snapshot")
             if self.preview is None:
                 raise ValueError("backend Proposal requires a preview")
-            if isinstance(self.canonical_command, FixedRepaymentCommand):
+            if isinstance(self.canonical_command, FixedVoidTransferCommand):
+                if not isinstance(self.preview, TransferVoidPreview):
+                    raise ValueError("void command requires a transfer void preview")
+                command = self.canonical_command
+                if command.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("void command Activity version must match the precondition")
+                if self.preview.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("void preview must bind the same Activity financial version")
+                if self.preconditions.expense_version is not None:
+                    raise ValueError("void Proposal does not have an existing Expense version")
+                if self.preview.transfer_id != command.transfer_id:
+                    raise ValueError("void preview transfer must match the command")
+                if self.preview.transfer_type != command.transfer_type:
+                    raise ValueError("void preview type must match the command")
+                if self.preview.is_voided != command.expected_is_voided:
+                    raise ValueError("void preview is_voided must match the command")
+            elif isinstance(self.canonical_command, FixedRepaymentCommand):
                 if not isinstance(self.preview, RepaymentPreview):
                     raise ValueError("repayment command requires a repayment preview")
                 if self.canonical_command.expected_financial_version != self.preconditions.activity_financial_version:

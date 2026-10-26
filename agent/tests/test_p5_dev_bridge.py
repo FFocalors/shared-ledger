@@ -105,6 +105,22 @@ class _Transport:
         self.duplicate_title = False
         self.activity_creator = str(OWNER)
         self.repayment_no_candidates = False
+        self.transfer_id = uuid.uuid4()
+        self.transfers = [{
+            "id": str(self.transfer_id),
+            "activity_id": str(ACTIVITY),
+            "type": "settlement",
+            "from_participant_id": str(PAYER),
+            "to_participant_id": str(PARTICIPANT_2),
+            "amount": "10.0",
+            "currency": "USD",
+            "recorded_by": str(OWNER),
+            "is_voided": False,
+            "voided_at": None,
+            "voided_by": None,
+            "void_reason": None,
+        }]
+        self.voided_result = True
         self.expense = {
             "id": str(self.expense_id),
             "ledger_unit_id": str(UNIT),
@@ -151,12 +167,30 @@ class _Transport:
             }]).encode()
         if table == "activities":
             return 200, json.dumps([{
-                "id": str(ACTIVITY), "created_by": self.activity_creator,
+                "id": str(ACTIVITY),
+                "created_by": self.activity_creator,
+                "archived_at": None,
+                "is_deleted": False,
+                "financial_version": 1,
             }]).encode()
+        if table == "transfers":
+            wanted = params.get("id")
+            if wanted is not None:
+                wanted_id = wanted.removeprefix("eq.")
+                return 200, json.dumps([
+                    item for item in self.transfers if item["id"] == wanted_id
+                ]).encode()
+            return 200, json.dumps(self.transfers).encode()
         return 200, b"[]"
 
     def post_json(self, url, headers, payload, *, timeout, max_response_bytes):  # noqa: ANN001
         self.calls.append({"url": url, "headers": dict(headers), "payload": dict(payload)})
+        if url.endswith("/void_settlement_transfer") or url.endswith("/void_prepayment_transfer"):
+            return 200, json.dumps([{
+                "transfer_id": payload["transfer_id"],
+                "voided": self.voided_result,
+                "financial_version": 2,
+            }]).encode()
         if url.endswith("/preview_expense_repayment"):
             if str(payload.get("currency")) != "USD":
                 return 400, json.dumps({
@@ -685,3 +719,97 @@ def test_dev_repayment_bridge_refusals_do_not_reach_the_model_or_rpc(tmp_path) -
         assert not any(item.status is c.ProposalStatus.PENDING for item in details.proposals)
         assert provider.prompts == []
         assert not any(item["url"].endswith("/create_expense_repayment_v2") for item in transport.calls)
+
+
+def test_dev_void_bridge_settlement_preview_and_rpc(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(tmp_path / "p5dev-void.sqlite3", transport)
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "作废 Alex Rin 10.0 USD 原因=测试", scoped=True)
+        _wait(components, turn_id, {c.TurnState.WAIT_CONFIRM})
+
+        assert provider.prompts == []
+        details = components.store.get_session_detail(OWNER, session)
+        proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert proposal.operation == "transfer.void"
+        assert proposal.policy_version == "p5-dev-transfer-void-v1"
+        assert isinstance(proposal.preview, c.TransferVoidPreview)
+        assert proposal.preview.summary.startswith("【P5 开发验证·作废】")
+        assert not any(
+            "void_settlement_transfer" in item["url"] or "void_prepayment_transfer" in item["url"]
+            for item in transport.calls
+        )
+
+        response = _confirm(client, proposal)
+        assert response.status_code == 202, response.text
+        assert response.json()["turn"]["execution_resolution"] == "succeeded"
+        void_calls = [
+            item for item in transport.calls if item["url"].endswith("/void_settlement_transfer")
+        ]
+        assert len(void_calls) == 1
+        assert void_calls[0]["payload"] == {
+            "transfer_id": str(transport.transfer_id),
+            "void_reason": "测试",
+        }
+
+
+def test_dev_void_bridge_prepayment_uses_the_prepayment_rpc(tmp_path) -> None:
+    transport = _Transport()
+    transport.transfers[0]["type"] = "prepayment"
+    client, components, provider, _ = _build_client(tmp_path / "p5dev-void-prepayment.sqlite3", transport)
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "作废 Alex Rin 10.0 USD 原因=测试", scoped=True)
+        _wait(components, turn_id, {c.TurnState.WAIT_CONFIRM})
+        details = components.store.get_session_detail(OWNER, session)
+        proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        response = _confirm(client, proposal)
+        assert response.status_code == 202, response.text
+        void_calls = [
+            item for item in transport.calls if item["url"].endswith("/void_prepayment_transfer")
+        ]
+        assert len(void_calls) == 1
+        assert provider.prompts == []
+
+
+def test_dev_void_bridge_refusals_do_not_reach_the_model_or_rpc(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(tmp_path / "p5dev-void-refusals.sqlite3", transport)
+    with client:
+        session = _create_session(client)
+
+        def refusal(text: str, marker: str) -> None:
+            turn_id = _submit(client, session, text, scoped=True)
+            _wait(components, turn_id, {c.TurnState.COMPLETED})
+            messages = [
+                item["payload"]["text"] for item in _events(client, turn_id)["events"]
+                if item.get("type") == "message"
+            ]
+            assert any(marker in value for value in messages), (text, messages)
+
+        refusal("作废 Alex Rin 99.0 USD", "找不到")
+        refusal("作废 Nobody Rin 10.0 USD", "付款人")
+
+        transport.transfers.append({
+            **transport.transfers[0],
+            "id": str(uuid.uuid4()),
+        })
+        refusal("作废 Alex Rin 10.0 USD", "多笔")
+        transport.transfers.pop()
+
+        transport.transfers[0]["is_voided"] = True
+        refusal("作废 Alex Rin 10.0 USD", "已作废")
+        transport.transfers[0]["is_voided"] = False
+
+        transport.transfers[0]["recorded_by"] = str(uuid.uuid4())
+        transport.activity_creator = str(uuid.uuid4())
+        refusal("作废 Alex Rin 10.0 USD", "录入者")
+
+        details = components.store.get_session_detail(OWNER, session)
+        assert not any(item.status is c.ProposalStatus.PENDING for item in details.proposals)
+        assert provider.prompts == []
+        assert not any(
+            "void_settlement_transfer" in item["url"] or "void_prepayment_transfer" in item["url"]
+            for item in transport.calls
+        )

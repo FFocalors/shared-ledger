@@ -48,6 +48,7 @@ P5_UPDATE_POLICY_VERSION = "p5-live-expense-update-v1"
 P5_PRESENTATION_POLICY_VERSION = "p5-live-expense-presentation-v1"
 P5_DELETE_POLICY_VERSION = "p5-live-expense-delete-v1"
 P5_REPAYMENT_POLICY_VERSION = "p5-live-repayment-v1"
+P5_VOID_POLICY_VERSION = "p5-live-transfer-void-v1"
 RPC_CREATE_EXPENSE = "/rest/v1/rpc/create_expense_auto_rate"
 RPC_UPDATE_EXPENSE = "/rest/v1/rpc/update_expense_auto_rate"
 RPC_UPDATE_PRESENTATION = "/rest/v1/rpc/update_expense_presentation"
@@ -55,6 +56,13 @@ RPC_DELETE_EXPENSE = "/rest/v1/rpc/delete_expense"
 RPC_PREVIEW_REPAYMENT = "/rest/v1/rpc/preview_expense_repayment"
 RPC_CREATE_REPAYMENT = "/rest/v1/rpc/create_expense_repayment_v2"
 RPC_LIST_REPAYMENT_CANDIDATES = "/rest/v1/rpc/list_transfer_expense_candidates"
+RPC_VOID_SETTLEMENT = "/rest/v1/rpc/void_settlement_transfer"
+RPC_VOID_PREPAYMENT = "/rest/v1/rpc/void_prepayment_transfer"
+_TRANSFER_SELECT = (
+    "id,activity_id,type,from_participant_id,to_participant_id,amount,currency,"
+    "recorded_by,is_voided,voided_at,voided_by,void_reason"
+)
+_ACTIVITY_STATE_SELECT = "id,created_by,archived_at,is_deleted,financial_version"
 
 # Public schema constraint `expenses_icon_key_supported`. The server normalizes
 # an unknown key to "money"; P5.2 rejects it instead of silently changing it.
@@ -94,6 +102,15 @@ _PREFLIGHT_CLOSE_SUMMARY = {
     "actor_not_permitted": "the current user may not record this repayment",
     "repayment_preview_rejected": "the server refused the repayment preview",
     "request_id_conflict": "the request id was already used with a different payload",
+    "transfer_not_found": "the Transfer was not found",
+    "transfer_already_voided": "the Transfer is already voided",
+    "void_not_permitted": "only the recorder or the Activity creator may void this Transfer",
+    "unsupported_transfer_type": "the Transfer type cannot be voided by this API",
+    "void_state_changed": "the Transfer state changed after the preview",
+    "transfer_type_changed": "the Transfer type changed after the preview",
+    "activity_changed": "the Activity changed while the void outcome was unresolved",
+    "void_not_applied": "the Transfer is not voided and its Activity version is unchanged",
+    "voided_elsewhere": "the Transfer is voided but this execution cannot be proven to be the author",
 }
 
 
@@ -239,6 +256,31 @@ class StdlibWriteTransport:
                     connection.close()
                 except Exception:
                     pass
+
+
+@dataclass(frozen=True, slots=True)
+class LiveTransferState:
+    transfer_id: uuid.UUID
+    activity_id: uuid.UUID
+    transfer_type: str
+    from_participant_id: uuid.UUID
+    to_participant_id: uuid.UUID
+    amount: str
+    currency: str
+    recorded_by: uuid.UUID
+    is_voided: bool
+    voided_at: datetime | None
+    voided_by: uuid.UUID | None
+    void_reason: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class LiveActivityState:
+    activity_id: uuid.UUID
+    created_by: uuid.UUID | None
+    archived_at: datetime | None
+    is_deleted: bool
+    financial_version: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -414,6 +456,51 @@ class LiveExpenseGateway:
             params.append(("is_deleted", "eq.false"))
         rows = await self._get_rows("expenses", params, access_token)
         return [(_uuid(item.get("id")), str(item.get("title")), _int(item.get("version"))) for item in rows]
+
+    async def read_activity_state(
+        self, access_token: str, activity_id: uuid.UUID,
+    ) -> LiveActivityState:
+        rows = await self._get_rows(
+            "activities",
+            [("id", f"eq.{activity_id}"), ("select", _ACTIVITY_STATE_SELECT), ("limit", "2")],
+            access_token,
+        )
+        if len(rows) != 1:
+            raise LiveWriteError("activity_not_found")
+        row = rows[0]
+        return LiveActivityState(
+            activity_id=_uuid(row.get("id")),
+            created_by=_uuid_or_none(row.get("created_by")),
+            archived_at=_parse_timestamp(row.get("archived_at")),
+            is_deleted=_bool(row.get("is_deleted")),
+            financial_version=_int(row.get("financial_version")),
+        )
+
+    async def read_transfer_state(
+        self, access_token: str, transfer_id: uuid.UUID,
+    ) -> LiveTransferState:
+        rows = await self._get_rows(
+            "transfers",
+            [("id", f"eq.{transfer_id}"), ("select", _TRANSFER_SELECT), ("limit", "2")],
+            access_token,
+        )
+        if len(rows) != 1:
+            raise LiveWriteError("transfer_not_found")
+        return _transfer_state(rows[0])
+
+    async def list_transfers(
+        self, access_token: str, activity_id: uuid.UUID,
+    ) -> list[LiveTransferState]:
+        rows = await self._get_rows(
+            "transfers",
+            [
+                ("activity_id", f"eq.{activity_id}"),
+                ("select", _TRANSFER_SELECT),
+                ("order", "created_at.asc"),
+            ],
+            access_token,
+        )
+        return [_transfer_state(row) for row in rows]
 
     async def read_activity_creator(
         self, access_token: str, activity_id: uuid.UUID,
@@ -1228,6 +1315,105 @@ class LiveExpenseGateway:
             request_receipts=[],
         )
 
+    # ----------------------------------------------------------------- void preview
+
+    async def build_void_preview(
+        self,
+        *,
+        owner_user_id: uuid.UUID,
+        session_id: uuid.UUID,
+        turn_id: uuid.UUID,
+        intent: c.VoidTransferIntent,
+        access_token: str,
+        expires_at: datetime,
+        agent_disable_revision: int,
+        policy_version: str | None = None,
+        summary_prefix: str = "",
+        now: datetime | None = None,
+    ) -> c.ProposalRecord:
+        """Build a void proposal for an existing Transfer.
+
+        The RPC is chosen from the server-read Transfer type; an unknown type
+        fails closed. Archived/deleted Activities are captured as preconditions
+        and left to the RPC when unchanged.
+        """
+        if not isinstance(intent, c.VoidTransferIntent):
+            raise LiveWriteError("unsupported_operation")
+        instant = _aware(now)
+        transfer = await self.read_transfer_state(access_token, intent.transfer_id)
+        activity = await self.read_activity_state(access_token, transfer.activity_id)
+        if transfer.is_voided:
+            raise LiveWriteError("transfer_already_voided")
+        if transfer.recorded_by != owner_user_id and activity.created_by != owner_user_id:
+            raise LiveWriteError("void_not_permitted")
+        if transfer.transfer_type not in (
+            "settlement", "prepayment", "prepayment_return", "final_settlement",
+        ):
+            raise LiveWriteError("unsupported_transfer_type")
+
+        preview = c.TransferVoidPreview(
+            kind="transfer_void",
+            summary=(
+                f"{summary_prefix}作废{transfer.transfer_type} "
+                f"{transfer.amount} {transfer.currency}"
+            ),
+            activity_id=transfer.activity_id,
+            transfer_id=transfer.transfer_id,
+            transfer_type=transfer.transfer_type,
+            from_participant_id=transfer.from_participant_id,
+            to_participant_id=transfer.to_participant_id,
+            amount=transfer.amount,
+            currency=transfer.currency,
+            void_reason=intent.void_reason,
+            is_voided=False,
+            expected_financial_version=str(activity.financial_version),
+            generated_at=instant,
+            simulation=False,
+        )
+        command = c.FixedVoidTransferCommand(
+            operation="transfer.void",
+            activity_id=transfer.activity_id,
+            transfer_id=transfer.transfer_id,
+            transfer_type=transfer.transfer_type,
+            expected_financial_version=str(activity.financial_version),
+            expected_is_voided=False,
+            expected_recorded_by=transfer.recorded_by,
+            expected_activity_archived=activity.archived_at is not None,
+            expected_activity_deleted=activity.is_deleted,
+            void_reason=intent.void_reason,
+        )
+        policy = policy_version or self._config.policy_version
+        preconditions = c.PreconditionSnapshot(
+            activity_id=transfer.activity_id,
+            permission_checked=True,
+            agent_disable_revision=agent_disable_revision,
+            activity_financial_version=str(activity.financial_version),
+            expense_version=None,
+            policy_version=policy,
+            verified_at=instant,
+        )
+        digest = c.canonical_command_digest(command, preconditions, policy_version=policy)
+        return c.ProposalRecord(
+            proposal_id=uuid.uuid4(),
+            owner_user_id=owner_user_id,
+            session_id=session_id,
+            turn_id=turn_id,
+            revision=1,
+            operation="transfer.void",
+            mode="backend",
+            status=c.ProposalStatus.PENDING,
+            intent=intent,
+            canonical_command=command,
+            preview=preview,
+            preconditions=preconditions,
+            command_digest=digest,
+            confirmation_nonce=_new_nonce(),
+            policy_version=policy,
+            expires_at=instant.replace(microsecond=0) + timedelta(minutes=10),
+            execution=None,
+            request_receipts=[],
+        )
+
     # ---------------------------------------------------------------- execution
 
     async def execute(
@@ -1247,11 +1433,12 @@ class LiveExpenseGateway:
             c.FixedExpensePresentationCommand,
             c.FixedExpenseDeleteCommand,
             c.FixedRepaymentCommand,
+            c.FixedVoidTransferCommand,
         )):
             return await self._close(
                 principal, proposal,
                 code="unsupported_operation",
-                summary="P5 executes expense writes and repayments only",
+                summary="P5 executes expense writes, repayments and voids only",
                 expected_state_revision=expected_state_revision,
             )
         if proposal.execution is not None:
@@ -1267,13 +1454,36 @@ class LiveExpenseGateway:
         is_presentation = isinstance(command, c.FixedExpensePresentationCommand)
         is_delete = isinstance(command, c.FixedExpenseDeleteCommand)
         is_repayment = isinstance(command, c.FixedRepaymentCommand)
+        is_void = isinstance(command, c.FixedVoidTransferCommand)
         grant = _activity_grant(
             owner_user_id=principal.user_id, turn_id=proposal.turn_id,
             access_token=access_token, expires_at=_grant_expiry(principal),
             activity_id=command.activity_id,
         )
         try:
-            if is_repayment:
+            if is_void:
+                transfer = await self.read_transfer_state(access_token, command.transfer_id)
+                activity = await self.read_activity_state(access_token, transfer.activity_id)
+                if transfer.activity_id != command.activity_id:
+                    raise LiveWriteError("void_state_changed")
+                if transfer.transfer_type != command.transfer_type:
+                    raise LiveWriteError("transfer_type_changed")
+                if transfer.is_voided != command.expected_is_voided:
+                    raise LiveWriteError("void_state_changed")
+                if transfer.recorded_by != command.expected_recorded_by:
+                    raise LiveWriteError("void_state_changed")
+                if activity.financial_version != int(command.expected_financial_version):
+                    raise LiveWriteError("preview_stale")
+                if (activity.archived_at is not None) != command.expected_activity_archived:
+                    raise LiveWriteError("void_state_changed")
+                if activity.is_deleted != command.expected_activity_deleted:
+                    raise LiveWriteError("void_state_changed")
+                if (
+                    transfer.recorded_by != principal.user_id
+                    and activity.created_by != principal.user_id
+                ):
+                    raise LiveWriteError("void_not_permitted")
+            elif is_repayment:
                 # The server preview owns allocation and capacity. The Agent
                 # only re-checks the Activity financial version before dispatch.
                 await self._read_backend.verify_financial_versions(
@@ -1364,6 +1574,15 @@ class LiveExpenseGateway:
                 "actor_not_permitted",
                 "repayment_preview_rejected",
                 "request_id_conflict",
+                "transfer_not_found",
+                "transfer_already_voided",
+                "void_not_permitted",
+                "unsupported_transfer_type",
+                "void_state_changed",
+                "transfer_type_changed",
+                "activity_changed",
+                "void_not_applied",
+                "voided_elsewhere",
             ):
                 return await self._close(
                     principal, proposal,
@@ -1427,6 +1646,9 @@ class LiveExpenseGateway:
                     principal.user_id, proposal.proposal_id, proposal.revision,
                 ),
             )
+        elif is_void:
+            rpc_path = _void_rpc_path(command.transfer_type)
+            payload = _rpc_payload_void(command)
         else:
             rpc_path = RPC_UPDATE_EXPENSE
             payload = _rpc_payload_update(command)
@@ -1447,7 +1669,9 @@ class LiveExpenseGateway:
         except LiveWriteError as exc:
             return await self._settle_transport_failure(principal, proposal, exc)
 
-        return await self._settle_rpc_response(principal, proposal, status, body)
+        return await self._settle_rpc_response(
+            principal, proposal, status, body, access_token=access_token,
+        )
 
     async def _validate_update_preflight(
         self,
@@ -1495,6 +1719,10 @@ class LiveExpenseGateway:
         none of them is reported as success.
         """
         command = proposal.canonical_command
+        if isinstance(command, c.FixedVoidTransferCommand):
+            return await self._reconcile_void(
+                principal, proposal, command, access_token,
+            )
         if isinstance(command, c.FixedRepaymentCommand):
             return await self._reconcile_repayment(
                 principal, proposal, command, access_token,
@@ -1587,6 +1815,41 @@ class LiveExpenseGateway:
             "repayment reconciled by request id",
         )
 
+    async def _reconcile_void(
+        self,
+        principal: Principal,
+        proposal: c.ProposalRecord,
+        command: c.FixedVoidTransferCommand,
+        access_token: str,
+    ) -> LiveWriteOutcome:
+        turn = (
+            await _call_store(self._store.get_turn, principal.user_id, proposal.turn_id)
+        ).record.turn
+        if turn.state not in (c.TurnState.RECOVERING, c.TurnState.EXECUTING):
+            return await self._existing_outcome(principal, proposal)
+        try:
+            transfer = await self.read_transfer_state(access_token, command.transfer_id)
+            activity = await self.read_activity_state(access_token, transfer.activity_id)
+        except (LiveWriteError, BackendReadError):
+            return await self._existing_outcome(principal, proposal)
+        if transfer.is_voided:
+            code = "voided_elsewhere"
+            summary = "the Transfer is voided but this execution cannot be proven to be the author"
+        elif activity.financial_version == int(command.expected_financial_version):
+            code = "void_not_applied"
+            summary = "the Transfer is not voided and the Activity version is unchanged"
+        else:
+            code = "activity_changed"
+            summary = "the Activity changed while the void outcome was unresolved"
+        await _call_store(
+            self._store.settle_mock_execution,
+            principal.user_id, proposal.proposal_id,
+            c.ExecutionResolution.CLOSED,
+            result_code=code,
+            result_summary=summary,
+        )
+        return LiveWriteOutcome(c.ExecutionResolution.CLOSED, code, summary)
+
     async def _existing_outcome(self, principal: Principal, proposal: c.ProposalRecord) -> LiveWriteOutcome:
         turn = (
             await _call_store(self._store.get_turn, principal.user_id, proposal.turn_id)
@@ -1644,10 +1907,43 @@ class LiveExpenseGateway:
 
     async def _settle_rpc_response(
         self, principal: Principal, proposal: c.ProposalRecord, status: int, body: bytes,
+        *, access_token: str,
     ) -> LiveWriteOutcome:
         parsed = _decode_rows(body)
         if 200 <= status < 300:
             row = parsed[0] if parsed else None
+            if proposal.operation == "transfer.void":
+                transfer_id = row.get("transfer_id") if isinstance(row, dict) else None
+                voided = row.get("voided") if isinstance(row, dict) else None
+                financial_version = row.get("financial_version") if isinstance(row, dict) else None
+                if (
+                    not isinstance(transfer_id, str)
+                    or not isinstance(voided, bool)
+                    or not isinstance(financial_version, int)
+                ):
+                    await _call_store(
+                        self._store.mark_execution_unknown,
+                        principal.user_id, proposal.proposal_id,
+                    )
+                    return LiveWriteOutcome(
+                        c.ExecutionResolution.UNKNOWN, "upstream_invalid_success",
+                        "write outcome is unresolved",
+                    )
+                code = "transfer_voided" if voided else "transfer_already_voided"
+                await _call_store(
+                    self._store.settle_mock_execution,
+                    principal.user_id, proposal.proposal_id,
+                    c.ExecutionResolution.SUCCEEDED,
+                    result_code=code,
+                    result_summary=(
+                        f"transfer_id={transfer_id};financial_version={financial_version};"
+                        f"changed={str(voided).lower()}"
+                    ),
+                )
+                return LiveWriteOutcome(
+                    c.ExecutionResolution.SUCCEEDED, code,
+                    "transfer voided" if voided else "transfer was already voided",
+                )
             if proposal.operation == "settlement.repayment":
                 transfer_id = row.get("transfer_id") if isinstance(row, dict) else None
                 financial_version = row.get("financial_version") if isinstance(row, dict) else None
@@ -1733,6 +2029,31 @@ class LiveExpenseGateway:
             return LiveWriteOutcome(c.ExecutionResolution.SUCCEEDED, code, summary_text)
 
         raw_code = _raw_error_code(parsed)
+        if (
+            proposal.operation == "transfer.void"
+            and raw_code == "55000"
+            and isinstance(proposal.canonical_command, c.FixedVoidTransferCommand)
+        ):
+            # The server raises 55000 both for "already voided" and for an
+            # archived activity. A read decides which one it was.
+            try:
+                state = await self.read_transfer_state(
+                    access_token, proposal.canonical_command.transfer_id,
+                )
+            except (LiveWriteError, BackendReadError):
+                state = None
+            if state is not None and state.is_voided:
+                await _call_store(
+                    self._store.settle_mock_execution,
+                    principal.user_id, proposal.proposal_id,
+                    c.ExecutionResolution.SUCCEEDED,
+                    result_code="transfer_already_voided",
+                    result_summary="the Transfer was already voided",
+                )
+                return LiveWriteOutcome(
+                    c.ExecutionResolution.SUCCEEDED, "transfer_already_voided",
+                    "transfer was already voided",
+                )
         if (
             proposal.operation == "settlement.repayment"
             and raw_code == "40001"
@@ -1878,6 +2199,35 @@ def _raw_error_code(rows: list[Any]) -> str | None:
         return None
     code = rows[0].get("code")
     return code if isinstance(code, str) else None
+
+
+def _transfer_state(row: dict[str, Any]) -> LiveTransferState:
+    return LiveTransferState(
+        transfer_id=_uuid(row.get("id")),
+        activity_id=_uuid(row.get("activity_id")),
+        transfer_type=str(row.get("type")),
+        from_participant_id=_uuid(row.get("from_participant_id")),
+        to_participant_id=_uuid(row.get("to_participant_id")),
+        amount=_num_text(row.get("amount")),
+        currency=str(row.get("currency")),
+        recorded_by=_uuid(row.get("recorded_by")),
+        is_voided=_bool(row.get("is_voided")),
+        voided_at=_parse_timestamp(row.get("voided_at")),
+        voided_by=_uuid_or_none(row.get("voided_by")),
+        void_reason=row.get("void_reason") if isinstance(row.get("void_reason"), str) else None,
+    )
+
+
+def _void_rpc_path(transfer_type: str) -> str:
+    if transfer_type == "settlement":
+        return RPC_VOID_SETTLEMENT
+    if transfer_type in ("prepayment", "prepayment_return", "final_settlement"):
+        return RPC_VOID_PREPAYMENT
+    raise LiveWriteError("unsupported_transfer_type")
+
+
+def _rpc_payload_void(command: c.FixedVoidTransferCommand) -> dict[str, Any]:
+    return {"transfer_id": str(command.transfer_id), "void_reason": command.void_reason}
 
 
 def _resolve_expense_binding(

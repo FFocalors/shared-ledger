@@ -105,6 +105,55 @@ class DevRepaymentCommand:
     mode: str
 
 
+@dataclass(frozen=True, slots=True)
+class DevVoidCommand:
+    from_name: str
+    to_name: str
+    amount: str
+    currency: str
+    reason: str
+
+
+def is_dev_void_command(text: str) -> bool:
+    return isinstance(text, str) and text.lstrip().startswith("作废")
+
+
+def parse_dev_void_command(text: str) -> DevVoidCommand | None:
+    """Parse `作废 <payer> <payee> <amount> <currency> [原因=<text>]`."""
+    if not isinstance(text, str):
+        return None
+    stripped = text.lstrip()
+    if not stripped.startswith("作废"):
+        return None
+    parts = stripped[len("作废"):].split(maxsplit=4)
+    if len(parts) not in (4, 5):
+        return None
+    payer, payee, amount, currency = parts[:4]
+    reason = "dev bridge void"
+    if len(parts) == 5:
+        tail = parts[4].strip()
+        if not tail.startswith("原因="):
+            return None
+        reason = tail[len("原因="):].strip() or reason
+    currency = currency.upper()
+    if not payer or not payee or payer == payee:
+        return None
+    if not re.fullmatch(r"[A-Z]{3}", currency):
+        return None
+    try:
+        value = Decimal(amount)
+    except (InvalidOperation, TypeError):
+        return None
+    if not value.is_finite() or value <= 0:
+        return None
+    if not reason:
+        return None
+    return DevVoidCommand(
+        from_name=payer, to_name=payee, amount=amount,
+        currency=currency, reason=reason,
+    )
+
+
 def is_dev_repayment_command(text: str) -> bool:
     return isinstance(text, str) and text.lstrip().startswith("还款")
 

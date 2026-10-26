@@ -326,6 +326,62 @@ Activity ID: <专用测试 Activity>
   resolution: succeeded / rejected / closed / unknown
 ```
 
+## 5.5b P5.5b 真实转账作废
+
+命令：
+
+```text
+作废 <付款人> <收款人> <金额> <币种> [原因=<文本>]
+```
+
+示例：
+
+```text
+作废 Alex Rin 10.0 USD
+作废 Alex Rin 10.0 USD 原因=录错了
+```
+
+规则：
+
+- 付款人/收款人按当前 Activity 的显示名精确匹配，且必须不同。
+- 按 付款人 + 收款人 + 金额 + 币种 在当前 Activity 的 Transfer 列表中匹配；必须唯一。
+- Member 只能作废自己录入的；Activity Creator 可作废任意记录；其他成员拒绝。
+- 结算转账走 `void_settlement_transfer`；预存/预存返还/最终结算走 `void_prepayment_transfer`。
+- 预存来源仍有有效返还依赖时，服务端拒绝；Agent 如实显示 `rejected`，不自动先作废返还。
+- 不提供恢复；不调用 `restore_transfer`。
+- 预览摘要带 `【P5 开发验证·作废】`。
+
+**四条通用检查点**
+
+1. **未确认不写**：生成预览但不确认 → Transfer 仍未作废、无 void RPC。
+2. **重复确认只写一次**：连续确认 3 次 → 1 次 void RPC，同一 `execution_id`。
+3. **版本冲突作废旧预览**：预览后 Transfer 状态/录入者/类型或 Activity 状态/财务版本变化 → 0 次 RPC、Proposal `closed`、Turn `CANCELLED`。
+4. **未知不冒充成功**：确认后断网/注入超时 → `RECOVERING/UNKNOWN`，不重发；核对到已作废（无法证明是自己）→ `closed`（`voided_elsewhere`）；未作废且版本未变 → `closed`（`void_not_applied`）；版本变化 → `closed`（`activity_changed`）。
+
+**作废专项**
+
+| # | 操作 | 预期 |
+|---|---|---|
+| 21 | 本人录入的 settlement Transfer 执行 `作废 ...` | 预览成功；确认后 `void_settlement_transfer` 一次；Transfer 变为已作废；`voided=true` |
+| 22 | Activity Creator 作废他人录入的 Transfer | 预览/确认成功；RPC 一次 |
+| 23 | 普通 Member 作废他人录入的 Transfer | 拒绝；不产生作废 |
+| 24 | 对已作废 Transfer 再次作废 | 服务端 `voided=false` 或 55000 后重读 → 幂等成功，不重复重建投影 |
+| 25 | 归档/已删除 Activity，或预存来源仍有有效返还依赖 | `rejected`；Transfer 不变 |
+
+证据模板：
+
+```text
+作废命令: 作废 <付款人> <收款人> <金额> <币种> 原因=<文本>
+  activity_id:
+  transfer_id:
+  transfer_type: settlement / prepayment / prepayment_return / final_settlement
+  recorded_by:
+  expected_financial_version:
+  execution_id:
+  voided: true / false
+  resolution: succeeded / rejected / closed / unknown
+```
+
 ## 7. 回滚
 
 1. 将 `AGENT_P5_DEV_INTENT_ENABLED=false`，`AGENT_LIVE_WRITE_ENABLED=false`，重启 Agent。确认接口回到冻结的 501，`记账` 输入回到普通路径。
