@@ -47,10 +47,14 @@ P5_POLICY_VERSION = "p5-live-expense-create-v1"
 P5_UPDATE_POLICY_VERSION = "p5-live-expense-update-v1"
 P5_PRESENTATION_POLICY_VERSION = "p5-live-expense-presentation-v1"
 P5_DELETE_POLICY_VERSION = "p5-live-expense-delete-v1"
+P5_REPAYMENT_POLICY_VERSION = "p5-live-repayment-v1"
 RPC_CREATE_EXPENSE = "/rest/v1/rpc/create_expense_auto_rate"
 RPC_UPDATE_EXPENSE = "/rest/v1/rpc/update_expense_auto_rate"
 RPC_UPDATE_PRESENTATION = "/rest/v1/rpc/update_expense_presentation"
 RPC_DELETE_EXPENSE = "/rest/v1/rpc/delete_expense"
+RPC_PREVIEW_REPAYMENT = "/rest/v1/rpc/preview_expense_repayment"
+RPC_CREATE_REPAYMENT = "/rest/v1/rpc/create_expense_repayment_v2"
+RPC_LIST_REPAYMENT_CANDIDATES = "/rest/v1/rpc/list_transfer_expense_candidates"
 
 # Public schema constraint `expenses_icon_key_supported`. The server normalizes
 # an unknown key to "money"; P5.2 rejects it instead of silently changing it.
@@ -83,6 +87,13 @@ _PREFLIGHT_CLOSE_SUMMARY = {
     "no_change": "the presentation fields did not change",
     "delete_not_permitted": "only the Expense creator or Activity creator may delete it",
     "activity_not_found": "the Activity was not found",
+    "repayment_invalid": "the repayment request is invalid",
+    "repayment_participant_invalid": "the repayment participants are not active in this Activity",
+    "repayment_exceeds_debt_or_target": "the repayment exceeds the selected debt or target",
+    "repayment_version_conflict": "the Activity financial version changed",
+    "actor_not_permitted": "the current user may not record this repayment",
+    "repayment_preview_rejected": "the server refused the repayment preview",
+    "request_id_conflict": "the request id was already used with a different payload",
 }
 
 
@@ -415,6 +426,67 @@ class LiveExpenseGateway:
         if len(rows) != 1:
             raise LiveWriteError("activity_not_found")
         return _uuid_or_none(rows[0].get("created_by"))
+
+    async def _post_rpc(
+        self, path: str, access_token: str, payload: Mapping[str, Any],
+    ) -> tuple[int, bytes]:
+        return await _call_async(
+            self._transport.post_json,
+            f"{self._config.project_url.rstrip('/')}{path}",
+            {
+                "apikey": self._config.publishable_key,
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            payload,
+            timeout=self._config.timeout_seconds,
+            max_response_bytes=self._config.max_response_bytes,
+        )
+
+    async def list_repayment_candidates(
+        self,
+        access_token: str,
+        activity_id: uuid.UUID,
+        from_participant_id: uuid.UUID,
+        to_participant_id: uuid.UUID,
+        currency: str,
+    ) -> list[dict[str, Any]]:
+        status, body = await self._post_rpc(
+            RPC_LIST_REPAYMENT_CANDIDATES,
+            access_token,
+            {
+                "activity_id": str(activity_id),
+                "from_participant_id": str(from_participant_id),
+                "to_participant_id": str(to_participant_id),
+                "currency": currency,
+            },
+        )
+        if status != 200:
+            raise LiveWriteError(
+                _repayment_error_code(status, _raw_error_code(_decode_rows(body))),
+                retryable=status >= 500,
+            )
+        return _decode_read_rows(body)
+
+    async def read_transfer_by_request_id(
+        self, access_token: str, activity_id: uuid.UUID, request_id: uuid.UUID,
+    ) -> dict[str, Any] | None:
+        rows = await self._get_rows(
+            "transfers",
+            [
+                ("activity_id", f"eq.{activity_id}"),
+                ("request_id", f"eq.{request_id}"),
+                ("select", "id,type,amount,currency,request_payload,request_result"),
+                ("limit", "2"),
+            ],
+            access_token,
+        )
+        if not rows:
+            return None
+        if len(rows) != 1:
+            raise LiveWriteError("upstream_invalid_response")
+        return rows[0]
 
     async def _get_rows(
         self, route: str, params: Sequence[tuple[str, str]], access_token: str,
@@ -998,6 +1070,164 @@ class LiveExpenseGateway:
             request_receipts=[],
         )
 
+    # ------------------------------------------------------------- repayment preview
+
+    async def build_repayment_preview(
+        self,
+        *,
+        owner_user_id: uuid.UUID,
+        session_id: uuid.UUID,
+        turn_id: uuid.UUID,
+        intent: c.RepaymentIntent,
+        access_token: str,
+        expires_at: datetime,
+        agent_disable_revision: int,
+        policy_version: str | None = None,
+        summary_prefix: str = "",
+        now: datetime | None = None,
+    ) -> c.ProposalRecord:
+        """Build a repayment proposal from the server's own preview RPC.
+
+        The server owns allocation, debt capacity, FX and actor authorization.
+        The Agent only supplies the validated request and stores the returned
+        ``expected_financial_version`` unchanged for the create call.
+        """
+        if not isinstance(intent, c.RepaymentIntent):
+            raise LiveWriteError("unsupported_operation")
+        instant = _aware(now)
+        grant = _activity_grant(
+            owner_user_id=owner_user_id, turn_id=turn_id,
+            access_token=access_token, expires_at=expires_at,
+            activity_id=intent.activity_id,
+        )
+        scope = await self._read_backend.resolve_scope(
+            grant, ScopeRequest(mode="activity", ui_activity_id_hint=intent.activity_id),
+        )
+        participants = {
+            item.participant_id: item
+            for item in scope.participants if not item.is_deleted
+        }
+        if (
+            intent.from_participant_id not in participants
+            or intent.to_participant_id not in participants
+            or intent.from_participant_id == intent.to_participant_id
+        ):
+            raise LiveWriteError("repayment_participant_invalid")
+        expected_version = scope.activity.financial_version
+
+        status, body = await self._post_rpc(
+            RPC_PREVIEW_REPAYMENT,
+            access_token,
+            {
+                "activity_id": str(intent.activity_id),
+                "from_participant_id": str(intent.from_participant_id),
+                "to_participant_id": str(intent.to_participant_id),
+                "amount": intent.amount,
+                "currency": intent.currency,
+                "mode": intent.mode,
+                "target_expense_ids": [str(item) for item in intent.target_expense_ids],
+                "expected_financial_version": expected_version,
+            },
+        )
+        if status != 200:
+            raise LiveWriteError(
+                _repayment_error_code(status, _raw_error_code(_decode_rows(body))),
+                retryable=status >= 500,
+            )
+        rows = _decode_read_rows(body)
+        if not rows:
+            raise LiveWriteError("repayment_preview_rejected")
+        if any(_int(row.get("source_financial_version")) != expected_version for row in rows):
+            raise LiveWriteError("repayment_version_conflict")
+        try:
+            allocations = [
+                c.RepaymentAllocation(
+                    expense_id=_uuid(row.get("expense_id")),
+                    ledger_unit_id=_uuid(row.get("ledger_unit_id")),
+                    allocation_mode=str(row.get("allocation_mode")),
+                    payment_currency=str(row.get("payment_currency")),
+                    payment_amount=_num_text(row.get("payment_amount")),
+                    original_currency=str(row.get("original_currency")),
+                    original_amount=_num_text(row.get("original_amount")),
+                    base_amount=_num_text(row.get("base_amount")),
+                    fx_rate=_num_text(row.get("fx_rate")),
+                    remaining_original_amount=_num_text(row.get("remaining_original_amount")),
+                    remaining_base_amount=_num_text(row.get("remaining_base_amount")),
+                    source_financial_version=str(_int(row.get("source_financial_version"))),
+                )
+                for row in rows
+            ]
+            from_name = participants[intent.from_participant_id].name
+            to_name = participants[intent.to_participant_id].name
+            preview = c.RepaymentPreview(
+                kind="repayment",
+                summary=(
+                    f"{summary_prefix}还款 {from_name} -> {to_name} "
+                    f"{intent.amount} {intent.currency} {intent.mode}"
+                ),
+                activity_id=intent.activity_id,
+                from_participant_id=intent.from_participant_id,
+                to_participant_id=intent.to_participant_id,
+                amount=intent.amount,
+                currency=intent.currency,
+                mode=intent.mode,
+                target_expense_ids=(
+                    list(intent.target_expense_ids) if intent.mode == "TARGETED" else []
+                ),
+                allocations=allocations,
+                expected_financial_version=str(expected_version),
+                generated_at=instant,
+                simulation=False,
+            )
+        except ValueError:
+            raise LiveWriteError("repayment_preview_rejected") from None
+
+        command = c.FixedRepaymentCommand(
+            operation="settlement.repayment",
+            activity_id=intent.activity_id,
+            from_participant_id=intent.from_participant_id,
+            to_participant_id=intent.to_participant_id,
+            amount=intent.amount,
+            currency=intent.currency,
+            mode=intent.mode,
+            target_expense_ids=(
+                list(intent.target_expense_ids) if intent.mode == "TARGETED" else []
+            ),
+            occurred_at=instant,
+            expected_financial_version=str(expected_version),
+        )
+        policy = policy_version or self._config.policy_version
+        preconditions = c.PreconditionSnapshot(
+            activity_id=intent.activity_id,
+            permission_checked=True,
+            agent_disable_revision=agent_disable_revision,
+            activity_financial_version=str(expected_version),
+            expense_version=None,
+            policy_version=policy,
+            verified_at=instant,
+        )
+        digest = c.canonical_command_digest(command, preconditions, policy_version=policy)
+        return c.ProposalRecord(
+            proposal_id=uuid.uuid4(),
+            owner_user_id=owner_user_id,
+            session_id=session_id,
+            turn_id=turn_id,
+            revision=1,
+            operation="settlement.repayment",
+            mode="backend",
+            status=c.ProposalStatus.PENDING,
+            intent=intent,
+            canonical_command=command,
+            preview=preview,
+            preconditions=preconditions,
+            command_digest=digest,
+            confirmation_nonce=_new_nonce(),
+            policy_version=policy,
+            expires_at=instant.replace(microsecond=0) + timedelta(minutes=10),
+            execution=None,
+            request_receipts=[],
+        )
+
     # ---------------------------------------------------------------- execution
 
     async def execute(
@@ -1016,11 +1246,12 @@ class LiveExpenseGateway:
             c.FixedExpenseUpdateCommand,
             c.FixedExpensePresentationCommand,
             c.FixedExpenseDeleteCommand,
+            c.FixedRepaymentCommand,
         )):
             return await self._close(
                 principal, proposal,
                 code="unsupported_operation",
-                summary="P5 only executes create, update, presentation update and delete",
+                summary="P5 executes expense writes and repayments only",
                 expected_state_revision=expected_state_revision,
             )
         if proposal.execution is not None:
@@ -1035,13 +1266,25 @@ class LiveExpenseGateway:
         is_create = isinstance(command, c.FixedExpenseCreateCommand)
         is_presentation = isinstance(command, c.FixedExpensePresentationCommand)
         is_delete = isinstance(command, c.FixedExpenseDeleteCommand)
+        is_repayment = isinstance(command, c.FixedRepaymentCommand)
         grant = _activity_grant(
             owner_user_id=principal.user_id, turn_id=proposal.turn_id,
             access_token=access_token, expires_at=_grant_expiry(principal),
             activity_id=command.activity_id,
         )
         try:
-            if is_presentation:
+            if is_repayment:
+                # The server preview owns allocation and capacity. The Agent
+                # only re-checks the Activity financial version before dispatch.
+                await self._read_backend.verify_financial_versions(
+                    grant, {command.activity_id: int(command.expected_financial_version)},
+                )
+                scope = await self._read_backend.resolve_scope(
+                    grant, ScopeRequest(mode="activity", ui_activity_id_hint=command.activity_id),
+                )
+                if scope.activity.financial_version != int(command.expected_financial_version):
+                    raise LiveWriteError("preview_stale")
+            elif is_presentation:
                 # Presentation update: only the Expense's own version guards it.
                 # Do NOT use activities.financial_version, and do NOT pre-reject
                 # locked, deleted, archived or linked-refund rows: those are the
@@ -1114,6 +1357,13 @@ class LiveExpenseGateway:
                 "no_change",
                 "delete_not_permitted",
                 "activity_not_found",
+                "repayment_invalid",
+                "repayment_participant_invalid",
+                "repayment_exceeds_debt_or_target",
+                "repayment_version_conflict",
+                "actor_not_permitted",
+                "repayment_preview_rejected",
+                "request_id_conflict",
             ):
                 return await self._close(
                     principal, proposal,
@@ -1169,6 +1419,14 @@ class LiveExpenseGateway:
         elif is_delete:
             rpc_path = RPC_DELETE_EXPENSE
             payload = _rpc_payload_delete(command)
+        elif is_repayment:
+            rpc_path = RPC_CREATE_REPAYMENT
+            payload = _rpc_payload_repayment(
+                command,
+                c.derive_execution_id(
+                    principal.user_id, proposal.proposal_id, proposal.revision,
+                ),
+            )
         else:
             rpc_path = RPC_UPDATE_EXPENSE
             payload = _rpc_payload_update(command)
@@ -1237,6 +1495,10 @@ class LiveExpenseGateway:
         none of them is reported as success.
         """
         command = proposal.canonical_command
+        if isinstance(command, c.FixedRepaymentCommand):
+            return await self._reconcile_repayment(
+                principal, proposal, command, access_token,
+            )
         if not isinstance(command, c.FixedExpenseDeleteCommand):
             return await self._existing_outcome(principal, proposal)
         turn = (
@@ -1266,6 +1528,64 @@ class LiveExpenseGateway:
             result_summary=summary,
         )
         return LiveWriteOutcome(c.ExecutionResolution.CLOSED, code, summary)
+
+    async def _reconcile_repayment(
+        self,
+        principal: Principal,
+        proposal: c.ProposalRecord,
+        command: c.FixedRepaymentCommand,
+        access_token: str,
+    ) -> LiveWriteOutcome:
+        turn = (
+            await _call_store(self._store.get_turn, principal.user_id, proposal.turn_id)
+        ).record.turn
+        if turn.state not in (c.TurnState.RECOVERING, c.TurnState.EXECUTING):
+            return await self._existing_outcome(principal, proposal)
+        request_id = c.derive_execution_id(
+            principal.user_id, proposal.proposal_id, proposal.revision,
+        )
+        try:
+            row = await self.read_transfer_by_request_id(
+                access_token, command.activity_id, request_id,
+            )
+        except (LiveWriteError, BackendReadError):
+            return await self._existing_outcome(principal, proposal)
+        if row is None:
+            # Absence is not proof that the write did not land (read lag,
+            # RLS, or an unreachable read). Stay UNKNOWN.
+            return await self._existing_outcome(principal, proposal)
+        if not _repayment_payload_matches(row.get("request_payload"), command):
+            await _call_store(
+                self._store.settle_mock_execution,
+                principal.user_id, proposal.proposal_id,
+                c.ExecutionResolution.CLOSED,
+                result_code="request_id_conflict",
+                result_summary="the request id exists with a different payload",
+            )
+            return LiveWriteOutcome(
+                c.ExecutionResolution.CLOSED, "request_id_conflict",
+                "request id conflict",
+            )
+        result = row.get("request_result")
+        if not isinstance(result, dict):
+            return await self._existing_outcome(principal, proposal)
+        transfer_id = result.get("transfer_id")
+        financial_version = result.get("financial_version")
+        if not isinstance(transfer_id, str) or not isinstance(financial_version, int):
+            return await self._existing_outcome(principal, proposal)
+        await _call_store(
+            self._store.settle_mock_execution,
+            principal.user_id, proposal.proposal_id,
+            c.ExecutionResolution.SUCCEEDED,
+            result_code="repayment_created",
+            result_summary=(
+                f"transfer_id={transfer_id};financial_version={financial_version}"
+            ),
+        )
+        return LiveWriteOutcome(
+            c.ExecutionResolution.SUCCEEDED, "repayment_created",
+            "repayment reconciled by request id",
+        )
 
     async def _existing_outcome(self, principal: Principal, proposal: c.ProposalRecord) -> LiveWriteOutcome:
         turn = (
@@ -1328,6 +1648,31 @@ class LiveExpenseGateway:
         parsed = _decode_rows(body)
         if 200 <= status < 300:
             row = parsed[0] if parsed else None
+            if proposal.operation == "settlement.repayment":
+                transfer_id = row.get("transfer_id") if isinstance(row, dict) else None
+                financial_version = row.get("financial_version") if isinstance(row, dict) else None
+                if not isinstance(transfer_id, str) or not isinstance(financial_version, int):
+                    await _call_store(
+                        self._store.mark_execution_unknown,
+                        principal.user_id, proposal.proposal_id,
+                    )
+                    return LiveWriteOutcome(
+                        c.ExecutionResolution.UNKNOWN, "upstream_invalid_success",
+                        "write outcome is unresolved",
+                    )
+                await _call_store(
+                    self._store.settle_mock_execution,
+                    principal.user_id, proposal.proposal_id,
+                    c.ExecutionResolution.SUCCEEDED,
+                    result_code="repayment_created",
+                    result_summary=(
+                        f"transfer_id={transfer_id};financial_version={financial_version}"
+                    ),
+                )
+                return LiveWriteOutcome(
+                    c.ExecutionResolution.SUCCEEDED, "repayment_created",
+                    "repayment created",
+                )
             if proposal.operation == "expense.delete":
                 deleted_expense_id = row.get("deleted_expense_id") if isinstance(row, dict) else None
                 deleted = row.get("deleted") if isinstance(row, dict) else None
@@ -1388,6 +1733,21 @@ class LiveExpenseGateway:
             return LiveWriteOutcome(c.ExecutionResolution.SUCCEEDED, code, summary_text)
 
         raw_code = _raw_error_code(parsed)
+        if (
+            proposal.operation == "settlement.repayment"
+            and raw_code == "40001"
+        ):
+            await _call_store(
+                self._store.settle_mock_execution,
+                principal.user_id, proposal.proposal_id,
+                c.ExecutionResolution.CLOSED,
+                result_code="repayment_version_conflict",
+                result_summary="the Activity financial version changed before the RPC",
+            )
+            return LiveWriteOutcome(
+                c.ExecutionResolution.CLOSED, "repayment_version_conflict",
+                "repayment version conflict",
+            )
         if (
             proposal.operation == "expense.presentation.update"
             and raw_code == "40001"
@@ -1454,6 +1814,63 @@ def _rpc_payload_presentation(command: c.FixedExpensePresentationCommand) -> dic
 
 def _rpc_payload_delete(command: c.FixedExpenseDeleteCommand) -> dict[str, Any]:
     return {"expense_id": str(command.expense_id)}
+
+
+def _rpc_payload_repayment(
+    command: c.FixedRepaymentCommand, request_id: uuid.UUID,
+) -> dict[str, Any]:
+    return {
+        "activity_id": str(command.activity_id),
+        "from_participant_id": str(command.from_participant_id),
+        "to_participant_id": str(command.to_participant_id),
+        "amount": command.amount,
+        "currency": command.currency,
+        "mode": command.mode,
+        "target_expense_ids": (
+            [str(item) for item in command.target_expense_ids]
+            if command.mode == "TARGETED" else []
+        ),
+        "occurred_at": command.occurred_at.isoformat(),
+        "on_behalf_of_participant_id": None,
+        "expected_financial_version": int(command.expected_financial_version),
+        "request_id": str(request_id),
+    }
+
+
+def _repayment_payload_matches(
+    stored: Any, command: c.FixedRepaymentCommand,
+) -> bool:
+    if not isinstance(stored, dict):
+        return False
+    try:
+        return (
+            str(stored.get("activity_id")) == str(command.activity_id)
+            and str(stored.get("from_participant_id")) == str(command.from_participant_id)
+            and str(stored.get("to_participant_id")) == str(command.to_participant_id)
+            and Decimal(str(stored.get("amount"))) == Decimal(command.amount)
+            and str(stored.get("currency")) == command.currency
+            and str(stored.get("mode")) == command.mode
+            and [str(item) for item in stored.get("target_expense_ids") or []] == [
+                str(item) for item in command.target_expense_ids
+            ]
+            and stored.get("on_behalf_of_participant_id") in (None, "null")
+            and int(stored.get("expected_financial_version"))
+            == int(command.expected_financial_version)
+        )
+    except (TypeError, ValueError):
+        return False
+
+
+def _repayment_error_code(status: int, raw_code: str | None) -> str:
+    return {
+        "22023": "repayment_invalid",
+        "23514": "repayment_exceeds_debt_or_target",
+        "23505": "request_id_conflict",
+        "42501": "actor_not_permitted",
+        "P0002": "repayment_participant_invalid",
+        "40001": "repayment_version_conflict",
+        "55000": "repayment_preview_rejected",
+    }.get(raw_code or "", "upstream_read_failed" if status >= 500 else "repayment_preview_rejected")
 
 
 def _raw_error_code(rows: list[Any]) -> str | None:

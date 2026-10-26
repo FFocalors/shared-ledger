@@ -1895,7 +1895,7 @@ class SQLiteAgentStore(P2V3StoreMixin):
             ConfirmProposalRequest, ExecutionIdentity, ExecutionReference,
             FixedExpenseCreateCommand, FixedExpenseDeleteCommand,
             FixedExpensePresentationCommand, FixedExpenseUpdateCommand,
-            ProposalRecord, ProposalStatus, derive_execution_id,
+            FixedRepaymentCommand, ProposalRecord, ProposalStatus, derive_execution_id,
         )
         from .p3_execution import MockExecutionStateError, mock_effect_for_command, require_matching_financial_version
 
@@ -1924,9 +1924,10 @@ class SQLiteAgentStore(P2V3StoreMixin):
                 FixedExpenseUpdateCommand,
                 FixedExpensePresentationCommand,
                 FixedExpenseDeleteCommand,
+                FixedRepaymentCommand,
             )):
                 raise MockExecutionStateError(
-                    "the live write path supports create, update, presentation update and delete only"
+                    "the live write path does not support this command"
                 )
         if (
             proposal.command_digest is None

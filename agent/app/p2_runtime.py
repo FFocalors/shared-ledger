@@ -74,6 +74,8 @@ P5_DEV_PRESENTATION_POLICY_VERSION = "p5-dev-expense-presentation-v1"
 P5_DEV_PRESENTATION_SUMMARY_PREFIX = "【P5 开发验证·展示】"
 P5_DEV_DELETE_POLICY_VERSION = "p5-dev-expense-delete-v1"
 P5_DEV_DELETE_SUMMARY_PREFIX = "【P5 开发验证·删除】"
+P5_DEV_REPAYMENT_POLICY_VERSION = "p5-dev-repayment-v1"
+P5_DEV_REPAYMENT_SUMMARY_PREFIX = "【P5 开发验证·还款】"
 
 
 def _dev_update_refusal_text(code: str) -> str:
@@ -105,6 +107,18 @@ def _dev_delete_refusal_text(code: str) -> str:
         "activity_not_found": "找不到活动。",
         "expense_not_found": "找不到要删除的消费。",
     }.get(code, f"无法生成删除预览（{code}）。")
+
+
+def _dev_repayment_refusal_text(code: str) -> str:
+    return {
+        "repayment_participant_invalid": "付款人或收款人不是有效参与人。",
+        "repayment_exceeds_debt_or_target": "金额超过可偿还债务，或目标消费无效。",
+        "repayment_invalid": "金额、币种或模式不合法。",
+        "actor_not_permitted": "当前用户无权登记这笔还款。",
+        "repayment_version_conflict": "活动财务版本已变化，请重新发起。",
+        "repayment_preview_rejected": "还款预览被服务端拒绝。",
+        "request_id_conflict": "还款请求冲突。",
+    }.get(code, f"无法生成还款预览（{code}）。")
 _ACTIVE_CANDIDATE_PROFILE: ContextVar[str | None] = ContextVar(
     "p2_active_candidate_profile", default=None,
 )
@@ -637,9 +651,15 @@ class P2Runtime(MockRuntime):
                 and not context.read_results
             ):
                 from .p5_dev_intent import (
-                    is_dev_delete_command, is_dev_presentation_command, is_dev_update_command,
+                    is_dev_delete_command, is_dev_presentation_command,
+                    is_dev_repayment_command, is_dev_update_command,
                 )
 
+                if is_dev_repayment_command(context.input_text):
+                    await self._p5_dev_repayment_proposal(
+                        aggregate, context, references, claimed, gate.disable_revision, state,
+                    )
+                    return
                 if is_dev_delete_command(context.input_text):
                     await self._p5_dev_delete_proposal(
                         aggregate, context, references, claimed, gate.disable_revision, state,
@@ -3620,6 +3640,167 @@ class P2Runtime(MockRuntime):
         await self._transition(
             aggregate, after, events, claimed.claim_token,
             checkpoint=checkpoint, bound_references=[*references, binding],
+            new_proposal=proposal,
+        )
+
+    async def _p5_dev_repayment_proposal(
+        self,
+        aggregate: TurnAggregate,
+        context: c.ModelContext,
+        references: Sequence[c.BoundReference],
+        claimed: ClaimedTurn,
+        gate_revision: int,
+        state: _TurnP2State,
+    ) -> None:
+        """Resolve names/debts and build a server-previewed repayment proposal."""
+        from .p5_dev_intent import parse_dev_repayment_command
+        from .p5_write import LiveWriteError
+
+        cmd = parse_dev_repayment_command(context.input_text)
+        if cmd is None:
+            await self._p5_dev_refusal(
+                aggregate, context,
+                "用法：还款 <付款人> <收款人> <金额> <币种> [FIFO|TARGETED]",
+                claimed, gate_revision, state, references,
+            )
+            return
+        if state.scope_activity_id is None:
+            await self._p5_dev_refusal(
+                aggregate, context, "请从要还款的活动页面发起。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        names: dict[str, list[uuid.UUID]] = {}
+        for reference in references:
+            if (
+                isinstance(reference, c.BoundParticipantReference)
+                and reference.scope_activity_id == state.scope_activity_id
+            ):
+                label = state.labels.get(reference.ref)
+                if label is not None:
+                    names.setdefault(label.display_name, []).append(reference.entity_id)
+        from_ids = names.get(cmd.from_name, [])
+        to_ids = names.get(cmd.to_name, [])
+        if len(from_ids) != 1 or len(to_ids) != 1:
+            await self._p5_dev_refusal(
+                aggregate, context, "找不到唯一匹配的付款人或收款人。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        from_id, to_id = from_ids[0], to_ids[0]
+        if from_id == to_id:
+            await self._p5_dev_refusal(
+                aggregate, context, "付款人和收款人不能相同。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        owner_id = aggregate.record.turn.owner_user_id
+        turn_id = aggregate.record.turn.turn_id
+        grant = self._active_grant(owner_id, turn_id)
+        targets: list[uuid.UUID] = []
+        if cmd.mode == "TARGETED":
+            try:
+                candidates = await self._live_gateway.list_repayment_candidates(
+                    grant.token, state.scope_activity_id, from_id, to_id, cmd.currency,
+                )
+            except LiveWriteError as exc:
+                await self._p5_dev_refusal(
+                    aggregate, context, _dev_repayment_refusal_text(exc.code),
+                    claimed, gate_revision, state, references,
+                )
+                return
+            except Exception as exc:
+                _LOGGER.warning(
+                    "p5 dev repayment candidates failed: turn=%s type=%s",
+                    turn_id, type(exc).__name__,
+                )
+                await self._p5_dev_refusal(
+                    aggregate, context, "暂时无法读取可偿还债务，请重试。",
+                    claimed, gate_revision, state, references,
+                )
+                return
+            try:
+                targets = sorted({
+                    uuid.UUID(str(item.get("expense_id"))) for item in candidates
+                })
+            except (TypeError, ValueError):
+                await self._p5_dev_refusal(
+                    aggregate, context, "可偿还债务列表无效，请重试。",
+                    claimed, gate_revision, state, references,
+                )
+                return
+            if not targets:
+                await self._p5_dev_refusal(
+                    aggregate, context, "没有可偿还的债务。",
+                    claimed, gate_revision, state, references,
+                )
+                return
+        try:
+            intent = c.RepaymentIntent(
+                kind="settlement.repayment",
+                activity_id=state.scope_activity_id,
+                from_participant_id=from_id,
+                to_participant_id=to_id,
+                amount=cmd.amount,
+                currency=cmd.currency,
+                mode=cmd.mode,
+                target_expense_ids=targets,
+            )
+        except ValueError:
+            await self._p5_dev_refusal(
+                aggregate, context, "还款金额、币种或模式不合法。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        try:
+            proposal = await self._live_gateway.build_repayment_preview(
+                owner_user_id=owner_id,
+                session_id=aggregate.record.turn.session_id,
+                turn_id=turn_id,
+                intent=intent,
+                access_token=grant.token,
+                expires_at=grant.expires_at,
+                agent_disable_revision=gate_revision,
+                policy_version=P5_DEV_REPAYMENT_POLICY_VERSION,
+                summary_prefix=P5_DEV_REPAYMENT_SUMMARY_PREFIX,
+                now=datetime.now(timezone.utc),
+            )
+        except LiveWriteError as exc:
+            await self._p5_dev_refusal(
+                aggregate, context, _dev_repayment_refusal_text(exc.code),
+                claimed, gate_revision, state, references,
+            )
+            return
+        except (BackendReadError, ScopeDenied, ValueError) as exc:
+            _LOGGER.warning(
+                "p5 dev repayment preview declined: turn=%s type=%s",
+                turn_id, type(exc).__name__,
+            )
+            await self._p5_dev_refusal(
+                aggregate, context, "暂时无法生成还款预览，请重试。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        before = aggregate.record.turn
+        after = self._next_state(
+            before, c.TurnState.WAIT_CONFIRM, c.TurnStep.AWAITING_USER,
+            wait_reason=c.WaitReason.CONFIRM_REQUIRED, resume_state=None,
+        )
+        events = [
+            EventDraft(
+                type=c.EventType.PROPOSAL, occurred_at=datetime.now(timezone.utc),
+                simulation=False,
+                payload=c.ProposalEventPayload(
+                    proposal_id=proposal.proposal_id, revision=proposal.revision,
+                    operation=proposal.operation,
+                ),
+            ),
+            self._status_event(after),
+        ]
+        checkpoint = aggregate.checkpoint.model_copy(update={"resume_step": None})
+        await self._transition(
+            aggregate, after, events, claimed.claim_token,
+            checkpoint=checkpoint, bound_references=list(references),
             new_proposal=proposal,
         )
 

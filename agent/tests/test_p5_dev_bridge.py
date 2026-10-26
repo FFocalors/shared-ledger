@@ -104,6 +104,7 @@ class _Transport:
         self.expense_id = uuid.uuid4()
         self.duplicate_title = False
         self.activity_creator = str(OWNER)
+        self.repayment_no_candidates = False
         self.expense = {
             "id": str(self.expense_id),
             "ledger_unit_id": str(UNIT),
@@ -156,6 +157,43 @@ class _Transport:
 
     def post_json(self, url, headers, payload, *, timeout, max_response_bytes):  # noqa: ANN001
         self.calls.append({"url": url, "headers": dict(headers), "payload": dict(payload)})
+        if url.endswith("/preview_expense_repayment"):
+            if str(payload.get("currency")) != "USD":
+                return 400, json.dumps({
+                    "code": "22023", "message": "invalid settlement currency",
+                }).encode()
+            return 200, json.dumps([{
+                "expense_id": str(self.expense_id),
+                "ledger_unit_id": str(UNIT),
+                "allocation_mode": payload["mode"],
+                "payment_currency": payload["currency"],
+                "payment_amount": payload["amount"],
+                "original_currency": payload["currency"],
+                "original_amount": payload["amount"],
+                "base_amount": payload["amount"],
+                "fx_rate": "1",
+                "remaining_original_amount": "5.0",
+                "remaining_base_amount": "5.0",
+                "source_financial_version": 1,
+            }]).encode()
+        if url.endswith("/list_transfer_expense_candidates"):
+            if self.repayment_no_candidates:
+                return 200, b"[]"
+            return 200, json.dumps([{
+                "expense_id": str(self.expense_id),
+                "ledger_unit_id": str(UNIT),
+                "title": "Lunch",
+                "remaining_original_amount": "10.0",
+                "remaining_base_amount": "10.0",
+            }]).encode()
+        if url.endswith("/create_expense_repayment_v2"):
+            return 200, json.dumps([{
+                "transfer_id": str(uuid.uuid4()),
+                "amount": payload["amount"],
+                "currency": payload["currency"],
+                "mode": payload["mode"],
+                "financial_version": 2,
+            }]).encode()
         if url.endswith("/update_expense_presentation"):
             return 200, json.dumps([{
                 "updated_expense_id": str(self.expense_id),
@@ -551,3 +589,99 @@ def test_dev_delete_bridge_refuses_already_deleted_and_duplicate_titles(tmp_path
         assert any("用法" in text_value for text_value in duplicate_messages)
         assert provider.prompts == []
         assert duplicated.calls == []
+
+
+def test_dev_repayment_bridge_fifo_preview_and_create(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(tmp_path / "p5dev-repayment.sqlite3", transport)
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "还款 Alex Rin 10.0 USD", scoped=True)
+        _wait(components, turn_id, {c.TurnState.WAIT_CONFIRM})
+
+        assert provider.prompts == []
+        details = components.store.get_session_detail(OWNER, session)
+        proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert proposal.operation == "settlement.repayment"
+        assert proposal.policy_version == "p5-dev-repayment-v1"
+        assert isinstance(proposal.preview, c.RepaymentPreview)
+        assert proposal.preview.summary.startswith("【P5 开发验证·还款】")
+        assert not any(
+            item["url"].endswith("/create_expense_repayment_v2") for item in transport.calls
+        )
+
+        response = _confirm(client, proposal)
+        assert response.status_code == 202, response.text
+        assert response.json()["turn"]["execution_resolution"] == "succeeded"
+        create_calls = [item for item in transport.calls if item["url"].endswith("/create_expense_repayment_v2")]
+        assert len(create_calls) == 1
+        payload = create_calls[0]["payload"]
+        assert payload["from_participant_id"] == str(PAYER)
+        assert payload["to_participant_id"] == str(PARTICIPANT_2)
+        assert payload["amount"] == "10.0"
+        assert payload["currency"] == "USD"
+        assert payload["mode"] == "FIFO"
+        assert payload["target_expense_ids"] == []
+        assert payload["on_behalf_of_participant_id"] is None
+        assert payload["expected_financial_version"] == 1
+        assert payload["request_id"] == str(
+            c.derive_execution_id(OWNER, proposal.proposal_id, proposal.revision)
+        )
+
+
+def test_dev_repayment_bridge_targeted_uses_candidates(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(tmp_path / "p5dev-targeted.sqlite3", transport)
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "还款 Alex Rin 10.0 USD TARGETED", scoped=True)
+        _wait(components, turn_id, {c.TurnState.WAIT_CONFIRM})
+
+        details = components.store.get_session_detail(OWNER, session)
+        proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert isinstance(proposal.preview, c.RepaymentPreview)
+        assert proposal.preview.mode == "TARGETED"
+        assert proposal.preview.target_expense_ids == [transport.expense_id]
+
+        response = _confirm(client, proposal)
+        assert response.status_code == 202, response.text
+        create_calls = [item for item in transport.calls if item["url"].endswith("/create_expense_repayment_v2")]
+        assert len(create_calls) == 1
+        assert create_calls[0]["payload"]["mode"] == "TARGETED"
+        assert create_calls[0]["payload"]["target_expense_ids"] == [str(transport.expense_id)]
+        assert provider.prompts == []
+
+
+def test_dev_repayment_bridge_refusals_do_not_reach_the_model_or_rpc(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(tmp_path / "p5dev-repayment-refusals.sqlite3", transport)
+    with client:
+        session = _create_session(client)
+
+        for text, marker in (
+            ("还款 Nobody Rin 10.0 USD", "付款人"),
+            ("还款 Alex Rin 0 USD", "用法"),
+            ("还款 Alex Rin 10.0 USD BOGUS", "用法"),
+            ("还款 Alex Rin 10.0 EUR", "不合法"),
+        ):
+            turn_id = _submit(client, session, text, scoped=True)
+            _wait(components, turn_id, {c.TurnState.COMPLETED})
+            messages = [
+                item["payload"]["text"] for item in _events(client, turn_id)["events"]
+                if item.get("type") == "message"
+            ]
+            assert any(marker in value for value in messages), (text, messages)
+
+        transport.repayment_no_candidates = True
+        no_debt_turn = _submit(client, session, "还款 Alex Rin 10.0 USD TARGETED", scoped=True)
+        _wait(components, no_debt_turn, {c.TurnState.COMPLETED})
+        no_debt_messages = [
+            item["payload"]["text"] for item in _events(client, no_debt_turn)["events"]
+            if item.get("type") == "message"
+        ]
+        assert any("没有可偿还" in value for value in no_debt_messages)
+
+        details = components.store.get_session_detail(OWNER, session)
+        assert not any(item.status is c.ProposalStatus.PENDING for item in details.proposals)
+        assert provider.prompts == []
+        assert not any(item["url"].endswith("/create_expense_repayment_v2") for item in transport.calls)

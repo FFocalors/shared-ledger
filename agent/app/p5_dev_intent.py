@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from decimal import Decimal, InvalidOperation
 from typing import Any, Mapping, Sequence
 
 from . import contracts as c
@@ -93,6 +94,54 @@ class DevPresentationCommand:
     kind: str  # "title" | "icon" | "note"
     target_title: str
     value: str
+
+
+@dataclass(frozen=True, slots=True)
+class DevRepaymentCommand:
+    from_name: str
+    to_name: str
+    amount: str
+    currency: str
+    mode: str
+
+
+def is_dev_repayment_command(text: str) -> bool:
+    return isinstance(text, str) and text.lstrip().startswith("还款")
+
+
+def parse_dev_repayment_command(text: str) -> DevRepaymentCommand | None:
+    """Parse `还款 <payer> <payee> <amount> <currency> [FIFO|TARGETED]`.
+
+    Participant names are single tokens. A name containing a space is declined
+    rather than guessed; the dev bridge is intentionally strict.
+    """
+    if not isinstance(text, str):
+        return None
+    stripped = text.lstrip()
+    if not stripped.startswith("还款"):
+        return None
+    parts = stripped[len("还款"):].split()
+    if len(parts) not in (4, 5):
+        return None
+    payer, payee, amount, currency = parts[:4]
+    mode = (parts[4] if len(parts) == 5 else "FIFO").upper()
+    currency = currency.upper()
+    if not payer or not payee or payer == payee:
+        return None
+    if mode not in ("FIFO", "TARGETED"):
+        return None
+    if not re.fullmatch(r"[A-Z]{3}", currency):
+        return None
+    try:
+        value = Decimal(amount)
+    except (InvalidOperation, TypeError):
+        return None
+    if not value.is_finite() or value <= 0:
+        return None
+    return DevRepaymentCommand(
+        from_name=payer, to_name=payee, amount=amount,
+        currency=currency, mode=mode,
+    )
 
 
 def is_dev_presentation_command(text: str) -> bool:

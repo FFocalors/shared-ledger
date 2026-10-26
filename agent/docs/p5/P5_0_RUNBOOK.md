@@ -271,6 +271,61 @@ Activity ID: <专用测试 Activity>
 备注:
 ```
 
+## 5.5a P5.5a 真实还款/转账（只做新增）
+
+命令：
+
+```text
+还款 <付款人> <收款人> <金额> <币种> [FIFO|TARGETED]
+```
+
+示例：
+
+```text
+还款 Alex Rin 10.0 USD
+还款 Alex Rin 10.0 USD TARGETED
+```
+
+规则：
+
+- 付款人/收款人按当前 Activity 的显示名精确匹配；必须有效、不同、且不能重名。
+- 金额必须为正数；币种三字母；模式只能是 FIFO/TARGETED。
+- TARGETED 使用当前候选列表的全部 `expense_id`；没有候选时拒绝。
+- 服务端预览负责额度、分配、汇率和 `authorize_phase5_actor`；Agent 不自行判断代理。
+- `on_behalf_of_participant_id` 固定为 `null`；本切片不做代理。
+- 预览摘要带 `【P5 开发验证·还款】`。
+
+**四条通用检查点**
+
+1. **未确认不写**：生成预览但不确认 → 业务库无 Transfer、无创建 RPC。
+2. **重复确认只写一次**：连续确认 3 次 → 1 次 `create_expense_repayment_v2`，同一 `request_id`、同一 `execution_id`。
+3. **版本冲突作废旧预览**：预览后 Activity 财务版本变化 → 0 次创建 RPC、Proposal `closed`、Turn `CANCELLED`；服务端 40001 在派发后返回也关闭为 `closed`。
+4. **未知不冒充成功**：确认后断网/注入超时 → `RECOVERING/UNKNOWN`，不重发；按原 `request_id` 只读核对，找到且 payload 一致才落成功，找不到保持 UNKNOWN。
+
+**还款专项**
+
+| # | 操作 | 预期 |
+|---|---|---|
+| 17 | FIFO：`还款 Alex Rin 10.0 USD` | 预览成功；确认后生成 1 条 settlement Transfer；请求含 `request_id` 与 `expected_financial_version` |
+| 18 | TARGETED：`还款 Alex Rin 10.0 USD TARGETED` | 请求 `target_expense_ids` 非空且为当前候选；确认后成功 |
+| 19 | 金额超过该方向可偿还债务 | 预览或创建被服务端拒绝；Turn `rejected`；不产生 Transfer |
+| 20 | 无效参与人 / Payer 无权 / Activity 归档 | 服务端拒绝；Turn `rejected`；不产生 Transfer |
+
+证据模板：
+
+```text
+还款命令: 还款 <付款人> <收款人> <金额> <币种> <模式>
+  activity_id:
+  from_participant_id / to_participant_id:
+  request_id:
+  expected_financial_version:
+  execution_id:
+  transfer_id:
+  allocation_mode: FIFO / TARGETED
+  target_expense_ids:
+  resolution: succeeded / rejected / closed / unknown
+```
+
 ## 7. 回滚
 
 1. 将 `AGENT_P5_DEV_INTENT_ENABLED=false`，`AGENT_LIVE_WRITE_ENABLED=false`，重启 Agent。确认接口回到冻结的 501，`记账` 输入回到普通路径。

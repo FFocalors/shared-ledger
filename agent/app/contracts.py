@@ -1368,6 +1368,31 @@ class ExpenseDeleteIntent(ContractModel):
     expense_ref: ExpenseRef
 
 
+class RepaymentIntent(ContractModel):
+    """Server-trusted repayment intent (P5.5a). IDs are already scope-bound."""
+
+    kind: Literal["settlement.repayment"]
+    activity_id: EntityId
+    from_participant_id: EntityId
+    to_participant_id: EntityId
+    amount: MoneyString
+    currency: CurrencyCode
+    mode: Literal["FIFO", "TARGETED"]
+    target_expense_ids: list[EntityId] = Field(default_factory=list, max_length=64)
+
+    @model_validator(mode="after")
+    def parties_and_targets_are_consistent(self) -> "RepaymentIntent":
+        if self.from_participant_id == self.to_participant_id:
+            raise ValueError("repayment participants must be distinct")
+        if self.mode == "TARGETED" and not self.target_expense_ids:
+            raise ValueError("targeted repayment requires target Expense IDs")
+        if len(self.target_expense_ids) != len(set(self.target_expense_ids)):
+            raise ValueError("target Expense IDs must be unique")
+        if Decimal(self.amount) <= 0:
+            raise ValueError("repayment amount must be positive")
+        return self
+
+
 class AnswerDecision(ContractModel):
     kind: Literal["answer"]
     basis: Literal["grounded", "conversation"]
@@ -1443,14 +1468,32 @@ WriteOperation = Literal[
     "expense.create",
     "expense.update",
     "expense.presentation.update",
-    "expense.delete",
 ]
 WriteIntent = Annotated[
     Union[
         ExpenseCreateIntent,
         ExpenseUpdateIntent,
         ExpensePresentationUpdateIntent,
+    ],
+    Field(discriminator="kind"),
+]
+
+# API/proposal-only operations. They are deliberately outside WriteOperation so
+# the model output schema never grows to include GATED operations.
+ProposalOperation = Literal[
+    "expense.create",
+    "expense.update",
+    "expense.presentation.update",
+    "expense.delete",
+    "settlement.repayment",
+]
+ProposalIntent = Annotated[
+    Union[
+        ExpenseCreateIntent,
+        ExpenseUpdateIntent,
+        ExpensePresentationUpdateIntent,
         ExpenseDeleteIntent,
+        RepaymentIntent,
     ],
     Field(discriminator="kind"),
 ]
@@ -1667,8 +1710,8 @@ def validate_decision_against_context(decision: SemanticDecision, context: Model
             if not isinstance(bound, ModelActivityReference):
                 raise ValueError("read scope must resolve through an activity reference bound in this Turn")
     elif isinstance(decision, ProposeDecision):
-        if decision.operation == "expense.delete":
-            raise ValueError("expense delete proposals are not model-enabled")
+        if decision.operation in ("expense.delete", "settlement.repayment"):
+            raise ValueError("this write proposal is not model-enabled")
         owning_capability = "CAP07" if decision.operation == "expense.create" else "CAP08"
         registry_entry = next(entry for entry in CAPABILITY_REGISTRY if entry.capability_id == owning_capability)
         if decision.operation not in registry_entry.operations or registry_entry.availability != CapabilityAvailability.MOCK_PROPOSAL_ONLY:
@@ -2257,12 +2300,36 @@ class FixedExpenseDeleteCommand(ContractModel):
     expected_is_deleted: bool = False
 
 
+class FixedRepaymentCommand(ContractModel):
+    operation: Literal["settlement.repayment"]
+    activity_id: EntityId
+    from_participant_id: EntityId
+    to_participant_id: EntityId
+    amount: MoneyString
+    currency: CurrencyCode
+    mode: Literal["FIFO", "TARGETED"]
+    target_expense_ids: list[EntityId] = Field(default_factory=list, max_length=64)
+    occurred_at: datetime
+    expected_financial_version: FinancialVersion
+
+    @model_validator(mode="after")
+    def parties_and_time_are_valid(self) -> "FixedRepaymentCommand":
+        if self.from_participant_id == self.to_participant_id:
+            raise ValueError("repayment participants must be distinct")
+        if self.mode == "TARGETED" and not self.target_expense_ids:
+            raise ValueError("targeted repayment requires target Expense IDs")
+        if self.occurred_at.tzinfo is None or self.occurred_at.utcoffset() is None:
+            raise ValueError("occurred_at must include a timezone")
+        return self
+
+
 FixedCommand = Annotated[
     Union[
         FixedExpenseCreateCommand,
         FixedExpenseUpdateCommand,
         FixedExpensePresentationCommand,
         FixedExpenseDeleteCommand,
+        FixedRepaymentCommand,
     ],
     Field(discriminator="operation"),
 ]
@@ -2497,13 +2564,79 @@ class ExpensePreview(ContractModel):
         return self
 
 
+class RepaymentAllocation(ContractModel):
+    expense_id: EntityId
+    ledger_unit_id: EntityId
+    allocation_mode: Literal["FIFO", "TARGETED"]
+    payment_currency: CurrencyCode
+    payment_amount: MoneyString
+    original_currency: CurrencyCode
+    original_amount: MoneyString
+    base_amount: MoneyString
+    fx_rate: DecimalNumberString
+    remaining_original_amount: MoneyString
+    remaining_base_amount: MoneyString
+    source_financial_version: FinancialVersion
+
+
+class RepaymentPreview(ContractModel):
+    kind: Literal["repayment"]
+    summary: ShortText
+    activity_id: EntityId
+    from_participant_id: EntityId
+    to_participant_id: EntityId
+    amount: MoneyString
+    currency: CurrencyCode
+    mode: Literal["FIFO", "TARGETED"]
+    target_expense_ids: list[EntityId] = Field(default_factory=list, max_length=64)
+    allocations: list[RepaymentAllocation] = Field(min_length=1, max_length=64)
+    expected_financial_version: FinancialVersion
+    generated_at: datetime
+    simulation: bool
+
+    @field_validator("generated_at")
+    @classmethod
+    def generated_at_is_aware(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("generated_at must include a timezone")
+        return value
+
+    @model_validator(mode="after")
+    def allocations_match_the_request(self) -> "RepaymentPreview":
+        if self.from_participant_id == self.to_participant_id:
+            raise ValueError("repayment participants must be distinct")
+        if len(self.target_expense_ids) != len(set(self.target_expense_ids)):
+            raise ValueError("target Expense IDs must be unique")
+        if self.mode == "TARGETED" and not self.target_expense_ids:
+            raise ValueError("targeted repayment requires target Expense IDs")
+        targets = set(self.target_expense_ids)
+        total = Decimal("0")
+        for allocation in self.allocations:
+            if allocation.payment_currency != self.currency:
+                raise ValueError("allocation currency must match the payment currency")
+            if allocation.source_financial_version != self.expected_financial_version:
+                raise ValueError("allocations must bind the same Activity financial version")
+            if self.mode == "TARGETED" and allocation.expense_id not in targets:
+                raise ValueError("targeted allocation must reference a requested target Expense")
+            total += Decimal(allocation.payment_amount)
+        if total != Decimal(self.amount):
+            raise ValueError("repayment allocations must sum to the requested amount")
+        return self
+
+
+ProposalPreview = Annotated[
+    Union[ExpensePreview, RepaymentPreview],
+    Field(discriminator="kind"),
+]
+
+
 class SimulationProposalCard(ContractModel):
     card_kind: Literal["simulation_pending"]
     mode: Literal["simulation"]
     status: Literal["pending"]
     proposal_id: ProposalId
     revision: Annotated[int, Field(strict=True, ge=1)]
-    operation: WriteOperation
+    operation: ProposalOperation
     preview: ExpensePreview
     confirmation_enabled: Literal[False] = False
     simulation: Literal[True] = True
@@ -2521,11 +2654,11 @@ class ConfirmableProposalCard(ContractModel):
     status: Literal["pending"]
     proposal_id: ProposalId
     revision: Annotated[int, Field(strict=True, ge=1)]
-    operation: WriteOperation
+    operation: ProposalOperation
     command_digest: Sha256Hex
     confirmation_nonce: ConfirmationNonceForCard
     expires_at: datetime
-    preview: ExpensePreview
+    preview: ProposalPreview
     simulation: Literal[False] = False
 
     @field_validator("expires_at")
@@ -2548,9 +2681,9 @@ class InactiveProposalCard(ContractModel):
     status: Literal["superseded", "cancelled", "expired", "confirmed", "rejected", "closed"]
     proposal_id: ProposalId
     revision: Annotated[int, Field(strict=True, ge=1)]
-    operation: WriteOperation
+    operation: ProposalOperation
     command_digest: Optional[Sha256Hex] = None
-    preview: Optional[ExpensePreview] = None
+    preview: Optional[ProposalPreview] = None
     simulation: bool
 
     @model_validator(mode="after")
@@ -2915,12 +3048,12 @@ class ProposalRecord(ContractModel):
     session_id: SessionId
     turn_id: TurnId
     revision: Annotated[int, Field(strict=True, ge=1)]
-    operation: WriteOperation
+    operation: ProposalOperation
     mode: Literal["simulation", "backend"]
     status: ProposalStatus
-    intent: WriteIntent
+    intent: ProposalIntent
     canonical_command: Optional[FixedCommand] = None
-    preview: Optional[ExpensePreview] = None
+    preview: Optional[ProposalPreview] = None
     preconditions: Optional[PreconditionSnapshot] = None
     command_digest: Optional[Sha256Hex] = None
     confirmation_nonce: Optional[ConfirmationNonce] = Field(
@@ -2985,9 +3118,22 @@ class ProposalRecord(ContractModel):
                 raise ValueError("backend Proposal precondition must bind the command Activity")
             if self.preconditions.policy_version != self.policy_version:
                 raise ValueError("backend Proposal policy version must match its precondition snapshot")
-            if self.preview is None or self.preview.activity_financial_version != self.preconditions.activity_financial_version:
-                raise ValueError("backend Proposal preview must bind the same Activity financial version")
-            if isinstance(self.canonical_command, FixedExpenseCreateCommand):
+            if self.preview is None:
+                raise ValueError("backend Proposal requires a preview")
+            if isinstance(self.canonical_command, FixedRepaymentCommand):
+                if not isinstance(self.preview, RepaymentPreview):
+                    raise ValueError("repayment command requires a repayment preview")
+                if self.canonical_command.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("repayment command Activity version must match the precondition")
+                if self.preview.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("repayment preview must bind the same Activity financial version")
+                if self.preconditions.expense_version is not None:
+                    raise ValueError("repayment Proposal does not have an existing Expense version")
+            elif isinstance(self.canonical_command, FixedExpenseCreateCommand):
+                if not isinstance(self.preview, ExpensePreview):
+                    raise ValueError("expense command requires an Expense preview")
+                if self.preview.activity_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("backend Proposal preview must bind the same Activity financial version")
                 if self.preconditions.expense_version is not None:
                     raise ValueError("create Proposal does not have an existing Expense version")
                 if self.preview.after.ledger_unit_id != self.canonical_command.ledger_unit_id:
@@ -2995,6 +3141,10 @@ class ProposalRecord(ContractModel):
                 if self.canonical_command.expected_financial_version != self.preconditions.activity_financial_version:
                     raise ValueError("create command expected version must match the precondition")
             elif isinstance(self.canonical_command, FixedExpenseUpdateCommand):
+                if not isinstance(self.preview, ExpensePreview):
+                    raise ValueError("expense command requires an Expense preview")
+                if self.preview.activity_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("backend Proposal preview must bind the same Activity financial version")
                 if self.preconditions.expense_version != self.canonical_command.expected_expense_version:
                     raise ValueError("update command Expense version must match the precondition")
                 if self.canonical_command.expected_financial_version != self.preconditions.activity_financial_version:
@@ -3002,11 +3152,19 @@ class ProposalRecord(ContractModel):
                 if self.preview.before is None or self.preview.before.expense_version != self.canonical_command.expected_expense_version:
                     raise ValueError("update preview before snapshot must match the expected Expense version")
             elif isinstance(self.canonical_command, FixedExpensePresentationCommand):
+                if not isinstance(self.preview, ExpensePreview):
+                    raise ValueError("expense command requires an Expense preview")
+                if self.preview.activity_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("backend Proposal preview must bind the same Activity financial version")
                 if self.preconditions.expense_version != self.canonical_command.expected_expense_version:
                     raise ValueError("presentation command Expense version must match the precondition")
                 if self.preview.before is None or self.preview.before.expense_version != self.canonical_command.expected_expense_version:
                     raise ValueError("presentation preview before snapshot must match the expected Expense version")
             else:
+                if not isinstance(self.preview, ExpensePreview):
+                    raise ValueError("expense command requires an Expense preview")
+                if self.preview.activity_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("backend Proposal preview must bind the same Activity financial version")
                 command = self.canonical_command
                 if self.preconditions.expense_version != command.expected_expense_version:
                     raise ValueError("delete command Expense version must match the precondition")
@@ -3156,7 +3314,7 @@ class ProposalEventPayload(ContractModel):
 
     proposal_id: ProposalId
     revision: Annotated[int, Field(strict=True, ge=1)]
-    operation: WriteOperation
+    operation: ProposalOperation
 
 
 class ExecutionResultPayload(ContractModel):
