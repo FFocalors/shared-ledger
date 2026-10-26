@@ -656,6 +656,76 @@ Activity ID: <专用测试 Activity>
   回执: activity/participant id、join_code、is_new/deleted
 ```
 
+## 5.8b P5.8b 认领/解除认领与子活动
+
+命令：
+
+```text
+认领 <参与人名字>
+解除认领
+建子活动 <名称> 参与人=<名字1>,<名字2>
+删子活动 <名称>
+恢复子活动 <名称>
+```
+
+示例：
+
+```text
+认领 Alex
+建子活动 小组A 参与人=Alex,Rin
+删子活动 小组A
+恢复子活动 小组A
+```
+
+规则：
+
+- 全部在当前面板 Activity 内操作。
+- `认领`：Participant 身份来自活动总名单，不新建实体；重复认领同一对象返回既有结果，
+  不报错；目标已被他人认领、或你已认领了另一个参与人，直接拒绝。
+- `解除认领`：只解除你自己的认领；没有认领时提示，不调用模型。
+- `建子活动`：只有大型活动可用，且必须有 root 账本单元；`参与人=` 必须非空且都在当前
+  活动名单里；服务端整体校验失败会回滚，不留下 child。
+- `删子活动` / `恢复子活动`：任何活动成员都能操作；重复删除返回 `changed=false`；
+  恢复会重建债务投影并推进 `financial_version`。
+- 旧子活动（迁移前创建）保持 legacy-unscoped，本切片不会回填。
+- 预览摘要带 `【P5 开发验证·认领】` / `【P5 开发验证·子活动】`。
+
+**四条通用检查点**
+
+1. **未确认不写**：生成预览但不确认 → 没有 claim/子活动变化、没有 RPC。
+2. **重复确认只写一次**：连续确认 3 次 → 1 次对应 RPC，同一 `execution_id`。
+3. **版本冲突作废旧预览**：预览后 Activity 归档、财务版本变化、参与人已被认领、
+   子活动已被删除/恢复 → 0 次 RPC、Proposal `closed`、Turn `CANCELLED`。
+4. **未知不冒充成功**：确认后断网/注入超时 → `RECOVERING/UNKNOWN`，不重发；按自然键
+   只读核对（本人 claim、子活动名称+父活动、`is_deleted`），无法证明归属 → `closed`。
+
+**认领与子活动专项**
+
+| # | 操作 | 预期 |
+|---|---|---|
+| 50 | 执行 `认领 <名字>` | 生成认领提案；确认后 claim 建立，回执含 `claim_id` 与 `is_new` |
+| 51 | 对同一参与人再执行一次 `认领` | `is_new=false`，幂等成功；不会出现第二条 claim |
+| 52 | 对已被他人认领的参与人执行 `认领`；或无认领时执行 `解除认领` | Turn 完成拒绝消息；无 RPC |
+| 53 | 执行 `建子活动 小组A 参与人=A,B` | 三参 RPC 一次；返回子活动 ID；参与人集合持久化为该子活动 scope |
+| 54 | 执行 `删子活动 小组A`，再执行一次；然后 `恢复子活动 小组A` | 首次 `changed=true`；再次 `changed=false` 幂等；恢复后 `financial_version` 推进 |
+| 55 | 普通活动执行 `建子活动`；或参与人不在名单 / 空名单 | 拒绝；无 RPC；无提案卡 |
+
+证据模板：
+
+```text
+命令: 认领/解除认领/建子活动/删子活动/恢复子活动 ...
+  activity_id:
+  操作: participant.claim / participant.unclaim / subactivity.create|delete|restore
+  participant_id（认领）:
+  ledger_unit_id（子活动）:
+  participant_ids（建子活动）:
+  expected_financial_version:
+  execution_id:
+  changed / is_new / financial_version（回执）:
+  resolution: succeeded / rejected / closed / unknown
+  legacy-unscoped 是否被回填: 否
+```
+
 ## 7. 回滚
 
 1. 将 `AGENT_P5_DEV_INTENT_ENABLED=false`，`AGENT_LIVE_WRITE_ENABLED=false`，重启 Agent。确认接口回到冻结的 501，`记账` 输入回到普通路径。

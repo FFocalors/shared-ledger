@@ -35,11 +35,14 @@ class FakeReadBackend:
     def __init__(
         self, *, version: int = 0, base_currency: str = "CNY", archived: bool = False,
         activity_type: str = "normal", multi_currency_enabled: bool = False,
+        ledger_unit_type: str = "main", ledger_unit_name: str = "Main",
     ) -> None:
         self.version = version
         self.base_currency = base_currency
         self.activity_type = activity_type
         self.multi_currency_enabled = multi_currency_enabled
+        self.ledger_unit_type = ledger_unit_type
+        self.ledger_unit_name = ledger_unit_name
         self.archived_at = datetime.now(timezone.utc) if archived else None
         self.calls: list[tuple] = []
         self.participants = (
@@ -47,7 +50,9 @@ class FakeReadBackend:
             P2ParticipantDTO(P2, ACTIVITY, "Ben", 2, False),
         )
         self.ledger_units = (
-            P2LedgerUnitDTO(UNIT, ACTIVITY, "Main", "main", False, False),
+            P2LedgerUnitDTO(
+                UNIT, ACTIVITY, self.ledger_unit_name, self.ledger_unit_type, False, False,
+            ),
         )
 
     async def resolve_scope(self, grant, request):  # noqa: ANN001

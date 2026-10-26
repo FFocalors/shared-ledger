@@ -1504,6 +1504,44 @@ class ParticipantDeleteIntent(ContractModel):
     participant_id: EntityId
 
 
+class ParticipantClaimIntent(ContractModel):
+    """P5.8b: claim one existing Participant as the caller's identity."""
+
+    kind: Literal["participant.claim"]
+    activity_id: EntityId
+    participant_id: EntityId
+
+
+class ParticipantUnclaimIntent(ContractModel):
+    kind: Literal["participant.unclaim"]
+    activity_id: EntityId
+
+
+class SubActivityCreateIntent(ContractModel):
+    kind: Literal["subactivity.create"]
+    activity_id: EntityId
+    name: TitleText
+    participant_ids: list[EntityId] = Field(min_length=1, max_length=64)
+
+    @model_validator(mode="after")
+    def participants_are_unique(self) -> "SubActivityCreateIntent":
+        if len(self.participant_ids) != len(set(self.participant_ids)):
+            raise ValueError("sub-activity Participant IDs must be unique")
+        return self
+
+
+class SubActivityDeleteIntent(ContractModel):
+    kind: Literal["subactivity.delete"]
+    activity_id: EntityId
+    sub_activity_id: EntityId
+
+
+class SubActivityRestoreIntent(ContractModel):
+    kind: Literal["subactivity.restore"]
+    activity_id: EntityId
+    sub_activity_id: EntityId
+
+
 class ExpenseRefundIntent(ContractModel):
     """Linked refund intent (P5.4). Amounts are positive magnitudes.
 
@@ -1678,6 +1716,11 @@ ProposalOperation = Literal[
     "activity.join",
     "participant.create",
     "participant.delete",
+    "participant.claim",
+    "participant.unclaim",
+    "subactivity.create",
+    "subactivity.delete",
+    "subactivity.restore",
 ]
 ProposalIntent = Annotated[
     Union[
@@ -1696,6 +1739,11 @@ ProposalIntent = Annotated[
         ActivityJoinIntent,
         ParticipantCreateIntent,
         ParticipantDeleteIntent,
+        ParticipantClaimIntent,
+        ParticipantUnclaimIntent,
+        SubActivityCreateIntent,
+        SubActivityDeleteIntent,
+        SubActivityRestoreIntent,
     ],
     Field(discriminator="kind"),
 ]
@@ -2757,6 +2805,59 @@ class FixedParticipantDeleteCommand(ContractModel):
         return self
 
 
+class FixedParticipantClaimCommand(ContractModel):
+    operation: Literal["participant.claim"]
+    activity_id: EntityId
+    participant_id: EntityId
+    expected_financial_version: FinancialVersion
+    expected_activity_archived: bool = False
+    expected_claim_state: Literal["none", "mine"] = "none"
+
+
+class FixedParticipantUnclaimCommand(ContractModel):
+    operation: Literal["participant.unclaim"]
+    activity_id: EntityId
+    expected_financial_version: FinancialVersion
+    expected_activity_archived: bool = False
+    expected_claim_participant_id: EntityId
+
+
+class FixedSubActivityCreateCommand(ContractModel):
+    operation: Literal["subactivity.create"]
+    activity_id: EntityId
+    name: TitleText
+    participant_ids: list[EntityId] = Field(min_length=1, max_length=64)
+    expected_financial_version: FinancialVersion
+    expected_activity_type: ActivityTypeName
+    expected_activity_archived: bool = False
+
+    @model_validator(mode="after")
+    def participants_are_unique(self) -> "FixedSubActivityCreateCommand":
+        if len(self.participant_ids) != len(set(self.participant_ids)):
+            raise ValueError("sub-activity Participant IDs must be unique")
+        return self
+
+
+class FixedSubActivityDeleteCommand(ContractModel):
+    operation: Literal["subactivity.delete"]
+    activity_id: EntityId
+    sub_activity_id: EntityId
+    expected_financial_version: FinancialVersion
+    expected_is_deleted: bool
+    expected_activity_type: ActivityTypeName
+    expected_activity_archived: bool = False
+
+
+class FixedSubActivityRestoreCommand(ContractModel):
+    operation: Literal["subactivity.restore"]
+    activity_id: EntityId
+    sub_activity_id: EntityId
+    expected_financial_version: FinancialVersion
+    expected_is_deleted: bool
+    expected_activity_type: ActivityTypeName
+    expected_activity_archived: bool = False
+
+
 FixedCommand = Annotated[
     Union[
         FixedExpenseCreateCommand,
@@ -2774,6 +2875,11 @@ FixedCommand = Annotated[
         FixedActivityJoinCommand,
         FixedParticipantCreateCommand,
         FixedParticipantDeleteCommand,
+        FixedParticipantClaimCommand,
+        FixedParticipantUnclaimCommand,
+        FixedSubActivityCreateCommand,
+        FixedSubActivityDeleteCommand,
+        FixedSubActivityRestoreCommand,
     ],
     Field(discriminator="operation"),
 ]
@@ -3342,6 +3448,8 @@ class ManagementPreview(ContractModel):
     summary: ManagementSummaryText
     operation: Literal[
         "activity.create", "activity.join", "participant.create", "participant.delete",
+        "participant.claim", "participant.unclaim",
+        "subactivity.create", "subactivity.delete", "subactivity.restore",
     ]
     activity_id: Optional[EntityId] = None
     activity_name: Optional[TitleText] = None
@@ -3352,6 +3460,9 @@ class ManagementPreview(ContractModel):
     participant_id: Optional[EntityId] = None
     participant_name: Optional[TitleText] = None
     participant_order: Optional[Annotated[int, Field(strict=True, ge=0)]] = None
+    participant_names: list[TitleText] = Field(default_factory=list, max_length=64)
+    sub_activity_id: Optional[EntityId] = None
+    sub_activity_name: Optional[TitleText] = None
     generated_at: datetime
     simulation: bool
 
@@ -3367,6 +3478,7 @@ class ManagementPreview(ContractModel):
         participant_fields = (
             self.participant_id, self.participant_name, self.participant_order,
         )
+        sub_activity_fields = (self.sub_activity_id, self.sub_activity_name)
         if self.operation == "activity.create":
             if (
                 self.activity_name is None
@@ -3379,6 +3491,8 @@ class ManagementPreview(ContractModel):
                 raise ValueError("activity create preview has no Activity or join code yet")
             if any(value is not None for value in participant_fields):
                 raise ValueError("activity create preview carries no participant fields")
+            if any(value is not None for value in sub_activity_fields) or self.participant_names:
+                raise ValueError("activity create preview carries no sub-activity fields")
         elif self.operation == "activity.join":
             if self.join_code is None:
                 raise ValueError("activity join preview needs the join code")
@@ -3386,6 +3500,8 @@ class ManagementPreview(ContractModel):
                 raise ValueError("activity join preview cannot disclose the Activity before joining")
             if any(value is not None for value in participant_fields):
                 raise ValueError("activity join preview carries no participant fields")
+            if any(value is not None for value in sub_activity_fields) or self.participant_names:
+                raise ValueError("activity join preview carries no sub-activity fields")
         elif self.operation == "participant.create":
             if self.activity_id is None or self.participant_name is None:
                 raise ValueError("participant create preview needs the Activity and name")
@@ -3393,7 +3509,9 @@ class ManagementPreview(ContractModel):
                 raise ValueError("participant create preview cannot carry ids it does not have")
             if self.activity_name is None:
                 raise ValueError("participant create preview must name the Activity")
-        else:
+            if any(value is not None for value in sub_activity_fields) or self.participant_names:
+                raise ValueError("participant create preview carries no sub-activity fields")
+        elif self.operation == "participant.delete":
             if (
                 self.activity_id is None
                 or self.participant_id is None
@@ -3402,6 +3520,51 @@ class ManagementPreview(ContractModel):
                 raise ValueError("participant delete preview needs the Activity and Participant")
             if self.join_code is not None or self.participant_order is not None:
                 raise ValueError("participant delete preview carries no join code or order")
+            if any(value is not None for value in sub_activity_fields) or self.participant_names:
+                raise ValueError("participant delete preview carries no sub-activity fields")
+        elif self.operation in ("participant.claim", "participant.unclaim"):
+            if (
+                self.activity_id is None
+                or self.participant_id is None
+                or self.participant_name is None
+            ):
+                raise ValueError("claim preview needs the Activity and Participant")
+            if self.participant_order is not None or self.join_code is not None:
+                raise ValueError("claim preview carries no order or join code")
+            if self.activity_name is None:
+                raise ValueError("claim preview must name the Activity")
+            if any(value is not None for value in sub_activity_fields) or self.participant_names:
+                raise ValueError("claim preview carries no sub-activity fields")
+        elif self.operation == "subactivity.create":
+            if (
+                self.activity_id is None
+                or self.activity_name is None
+                or self.sub_activity_name is None
+                or not self.participant_names
+            ):
+                raise ValueError(
+                    "sub-activity create preview needs the Activity, name and participants"
+                )
+            if any(value is not None for value in participant_fields):
+                raise ValueError("sub-activity create preview carries no single Participant fields")
+            if self.join_code is not None or self.sub_activity_id is not None:
+                raise ValueError("sub-activity create preview has no join code or id yet")
+        else:
+            if (
+                self.activity_id is None
+                or self.activity_name is None
+                or self.sub_activity_id is None
+                or self.sub_activity_name is None
+            ):
+                raise ValueError(
+                    "sub-activity lifecycle preview needs the Activity and sub-activity"
+                )
+            if any(value is not None for value in participant_fields):
+                raise ValueError("sub-activity lifecycle preview carries no Participant fields")
+            if self.join_code is not None or self.participant_names:
+                raise ValueError(
+                    "sub-activity lifecycle preview carries no join code or participant list"
+                )
         return self
 
 
@@ -4112,6 +4275,71 @@ class ProposalRecord(ContractModel):
                     or self.preview.participant_name != command.expected_participant_name
                 ):
                     raise ValueError("participant delete preview must match the command")
+            elif isinstance(self.canonical_command, FixedParticipantClaimCommand):
+                if not isinstance(self.preview, ManagementPreview) or self.preview.operation != "participant.claim":
+                    raise ValueError("claim command requires its management preview")
+                command = self.canonical_command
+                if command.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("claim version must match the precondition")
+                if self.preconditions.expense_version is not None:
+                    raise ValueError("claim Proposal has no Expense version")
+                if (
+                    self.preview.activity_id != command.activity_id
+                    or self.preview.participant_id != command.participant_id
+                ):
+                    raise ValueError("claim preview must match the command")
+            elif isinstance(self.canonical_command, FixedParticipantUnclaimCommand):
+                if not isinstance(self.preview, ManagementPreview) or self.preview.operation != "participant.unclaim":
+                    raise ValueError("unclaim command requires its management preview")
+                command = self.canonical_command
+                if command.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("unclaim version must match the precondition")
+                if self.preconditions.expense_version is not None:
+                    raise ValueError("unclaim Proposal has no Expense version")
+                if (
+                    self.preview.activity_id != command.activity_id
+                    or self.preview.participant_id != command.expected_claim_participant_id
+                ):
+                    raise ValueError("unclaim preview must bind the claim being released")
+            elif isinstance(self.canonical_command, FixedSubActivityCreateCommand):
+                if not isinstance(self.preview, ManagementPreview) or self.preview.operation != "subactivity.create":
+                    raise ValueError("sub-activity create command requires its management preview")
+                command = self.canonical_command
+                if command.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("sub-activity create version must match the precondition")
+                if self.preconditions.expense_version is not None:
+                    raise ValueError("sub-activity create Proposal has no Expense version")
+                if (
+                    self.preview.activity_id != command.activity_id
+                    or self.preview.sub_activity_name != command.name
+                ):
+                    raise ValueError("sub-activity create preview must match the command")
+            elif isinstance(self.canonical_command, FixedSubActivityDeleteCommand):
+                if not isinstance(self.preview, ManagementPreview) or self.preview.operation != "subactivity.delete":
+                    raise ValueError("sub-activity delete command requires its management preview")
+                command = self.canonical_command
+                if command.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("sub-activity delete version must match the precondition")
+                if self.preconditions.expense_version is not None:
+                    raise ValueError("sub-activity delete Proposal has no Expense version")
+                if (
+                    self.preview.activity_id != command.activity_id
+                    or self.preview.sub_activity_id != command.sub_activity_id
+                ):
+                    raise ValueError("sub-activity delete preview must match the command")
+            elif isinstance(self.canonical_command, FixedSubActivityRestoreCommand):
+                if not isinstance(self.preview, ManagementPreview) or self.preview.operation != "subactivity.restore":
+                    raise ValueError("sub-activity restore command requires its management preview")
+                command = self.canonical_command
+                if command.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("sub-activity restore version must match the precondition")
+                if self.preconditions.expense_version is not None:
+                    raise ValueError("sub-activity restore Proposal has no Expense version")
+                if (
+                    self.preview.activity_id != command.activity_id
+                    or self.preview.sub_activity_id != command.sub_activity_id
+                ):
+                    raise ValueError("sub-activity restore preview must match the command")
             elif isinstance(self.canonical_command, FixedExpenseCreateCommand):
                 if not isinstance(self.preview, ExpensePreview):
                     raise ValueError("expense command requires an Expense preview")

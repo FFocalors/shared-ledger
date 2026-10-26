@@ -90,6 +90,10 @@ P5_DEV_NEGATIVE_ADJUSTMENT_POLICY_VERSION = "p5-dev-negative-adjustment-v1"
 P5_DEV_NEGATIVE_ADJUSTMENT_SUMMARY_PREFIX = "【P5 开发验证·负调整】"
 P5_DEV_MANAGEMENT_POLICY_VERSION = "p5-dev-management-v1"
 P5_DEV_MANAGEMENT_SUMMARY_PREFIX = "【P5 开发验证·管理】"
+P5_DEV_CLAIM_POLICY_VERSION = "p5-dev-claim-v1"
+P5_DEV_CLAIM_SUMMARY_PREFIX = "【P5 开发验证·认领】"
+P5_DEV_SUB_ACTIVITY_POLICY_VERSION = "p5-dev-sub-activity-v1"
+P5_DEV_SUB_ACTIVITY_SUMMARY_PREFIX = "【P5 开发验证·子活动】"
 
 
 def _dev_update_refusal_text(code: str) -> str:
@@ -216,6 +220,38 @@ def _dev_management_refusal_text(code: str) -> str:
         "conflict": "请求与现有数据冲突。",
         "preview_stale": "状态已变化，请重新发起。",
     }.get(code, f"无法生成管理预览（{code}）。")
+
+
+def _dev_claim_refusal_text(code: str) -> str:
+    return {
+        "participant_not_found": "找不到参与人。",
+        "participant_claimed_by_other": "该参与人已被其他成员认领。",
+        "actor_already_claimed_other": "你在该活动已认领了另一个参与人。",
+        "claim_not_found": "你没有可解除的认领。",
+        "claim_state_changed": "认领状态已变化，请重新发起。",
+        "participant_claim_conflict": "认领与现有记录冲突。",
+        "activity_not_found": "找不到活动。",
+        "activity_read_only": "活动已归档，不能再改。",
+        "management_state_changed": "活动状态已变化，请重新发起。",
+        "preview_stale": "活动财务版本已变化，请重新发起。",
+        "actor_not_permitted": "当前用户不是活动成员。",
+    }.get(code, f"无法生成认领预览（{code}）。")
+
+
+def _dev_sub_activity_refusal_text(code: str) -> str:
+    return {
+        "sub_activity_requires_large": "只有大型活动支持子活动。",
+        "sub_activity_root_missing": "大型活动缺少 root 账本单元。",
+        "sub_activity_name_conflict": "已有同名账本单元。",
+        "sub_activity_participant_invalid": "所选参与人不在当前活动名单或已删除。",
+        "sub_activity_not_found": "找不到子活动。",
+        "not_a_sub_activity": "该账本单元不是子活动。",
+        "sub_activity_state_changed": "子活动状态已变化，请重新发起。",
+        "activity_not_found": "找不到活动。",
+        "activity_read_only": "活动已归档，不能再改。",
+        "preview_stale": "活动财务版本已变化，请重新发起。",
+        "actor_not_permitted": "当前用户不是活动成员。",
+    }.get(code, f"无法生成子活动预览（{code}）。")
 _ACTIVE_CANDIDATE_PROFILE: ContextVar[str | None] = ContextVar(
     "p2_active_candidate_profile", default=None,
 )
@@ -749,12 +785,17 @@ class P2Runtime(MockRuntime):
             ):
                 from .p5_dev_intent import (
                     is_dev_activity_create_command, is_dev_activity_join_command,
-                    is_dev_delete_command, is_dev_final_settlement_command,
+                    is_dev_claim_command, is_dev_delete_command,
+                    is_dev_final_settlement_command,
                     is_dev_negative_adjustment_command, is_dev_negative_amount_create,
                     is_dev_participant_create_command, is_dev_participant_delete_command,
                     is_dev_prepayment_command, is_dev_prepayment_return_command,
                     is_dev_presentation_command, is_dev_refund_command,
-                    is_dev_repayment_command, is_dev_update_command,
+                    is_dev_repayment_command,
+                    is_dev_sub_activity_create_command,
+                    is_dev_sub_activity_delete_command,
+                    is_dev_sub_activity_restore_command,
+                    is_dev_unclaim_command, is_dev_update_command,
                     is_dev_void_command,
                 )
 
@@ -776,6 +817,35 @@ class P2Runtime(MockRuntime):
                 if is_dev_participant_delete_command(context.input_text):
                     await self._p5_dev_participant_delete_proposal(
                         aggregate, context, references, claimed, gate.disable_revision, state,
+                    )
+                    return
+                if is_dev_unclaim_command(context.input_text):
+                    await self._p5_dev_claim_proposal(
+                        aggregate, context, references, claimed, gate.disable_revision, state,
+                        is_unclaim=True,
+                    )
+                    return
+                if is_dev_claim_command(context.input_text):
+                    await self._p5_dev_claim_proposal(
+                        aggregate, context, references, claimed, gate.disable_revision, state,
+                        is_unclaim=False,
+                    )
+                    return
+                if is_dev_sub_activity_create_command(context.input_text):
+                    await self._p5_dev_sub_activity_create_proposal(
+                        aggregate, context, references, claimed, gate.disable_revision, state,
+                    )
+                    return
+                if is_dev_sub_activity_delete_command(context.input_text):
+                    await self._p5_dev_sub_activity_lifecycle_proposal(
+                        aggregate, context, references, claimed, gate.disable_revision, state,
+                        is_restore=False,
+                    )
+                    return
+                if is_dev_sub_activity_restore_command(context.input_text):
+                    await self._p5_dev_sub_activity_lifecycle_proposal(
+                        aggregate, context, references, claimed, gate.disable_revision, state,
+                        is_restore=True,
                     )
                     return
 
@@ -4796,6 +4866,309 @@ class P2Runtime(MockRuntime):
             )
             await self._p5_dev_refusal(
                 aggregate, context, "暂时无法生成删参与人预览，请重试。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        await self._p5_dev_offer_proposal(
+            aggregate, context, claimed, gate_revision, state, references, proposal,
+        )
+
+    async def _p5_dev_claim_proposal(
+        self,
+        aggregate: TurnAggregate,
+        context: c.ModelContext,
+        references: Sequence[c.BoundReference],
+        claimed: ClaimedTurn,
+        gate_revision: int,
+        state: _TurnP2State,
+        *,
+        is_unclaim: bool,
+    ) -> None:
+        """Claim or release this user's own Participant claim."""
+        from .p5_dev_intent import (
+            build_dev_claim_intent, build_dev_unclaim_intent,
+            parse_dev_claim_command, parse_dev_unclaim_command,
+        )
+        from .p5_write import LiveWriteError
+
+        verb = "解除认领" if is_unclaim else "认领"
+        if state.scope_activity_id is None:
+            await self._p5_dev_refusal(
+                aggregate, context, f"请从要{verb}的活动页面发起。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        owner_id = aggregate.record.turn.owner_user_id
+        turn_id = aggregate.record.turn.turn_id
+        grant = self._active_grant(owner_id, turn_id)
+        if is_unclaim:
+            if not parse_dev_unclaim_command(context.input_text):
+                await self._p5_dev_refusal(
+                    aggregate, context, "用法：解除认领",
+                    claimed, gate_revision, state, references,
+                )
+                return
+            intent: Any = build_dev_unclaim_intent(state.scope_activity_id)
+            builder = self._live_gateway.build_participant_unclaim_preview
+        else:
+            cmd = parse_dev_claim_command(context.input_text)
+            if cmd is None:
+                await self._p5_dev_refusal(
+                    aggregate, context, "用法：认领 <参与人名字>",
+                    claimed, gate_revision, state, references,
+                )
+                return
+            try:
+                participants = await self._live_gateway.list_participants(
+                    grant.token, state.scope_activity_id,
+                )
+            except Exception as exc:
+                _LOGGER.warning(
+                    "p5 dev claim participant read failed: turn=%s type=%s",
+                    turn_id, type(exc).__name__,
+                )
+                await self._p5_dev_refusal(
+                    aggregate, context, "暂时无法读取参与人列表，请重试。",
+                    claimed, gate_revision, state, references,
+                )
+                return
+            matches = [item for item in participants if item.name == cmd.name]
+            if len(matches) != 1:
+                await self._p5_dev_refusal(
+                    aggregate, context, f"参与人「{cmd.name}」匹配到多个或找不到。",
+                    claimed, gate_revision, state, references,
+                )
+                return
+            intent = build_dev_claim_intent(
+                state.scope_activity_id, matches[0].participant_id,
+            )
+            builder = self._live_gateway.build_participant_claim_preview
+        try:
+            proposal = await builder(
+                owner_user_id=owner_id,
+                session_id=aggregate.record.turn.session_id,
+                turn_id=turn_id,
+                intent=intent,
+                access_token=grant.token,
+                expires_at=grant.expires_at,
+                agent_disable_revision=gate_revision,
+                policy_version=P5_DEV_CLAIM_POLICY_VERSION,
+                summary_prefix=P5_DEV_CLAIM_SUMMARY_PREFIX,
+                now=datetime.now(timezone.utc),
+            )
+        except LiveWriteError as exc:
+            await self._p5_dev_refusal(
+                aggregate, context, _dev_claim_refusal_text(exc.code),
+                claimed, gate_revision, state, references,
+            )
+            return
+        except (BackendReadError, ScopeDenied, ValueError) as exc:
+            _LOGGER.warning(
+                "p5 dev claim preview declined: turn=%s type=%s",
+                turn_id, type(exc).__name__,
+            )
+            await self._p5_dev_refusal(
+                aggregate, context, f"暂时无法生成{verb}预览，请重试。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        await self._p5_dev_offer_proposal(
+            aggregate, context, claimed, gate_revision, state, references, proposal,
+        )
+
+    async def _p5_dev_sub_activity_create_proposal(
+        self,
+        aggregate: TurnAggregate,
+        context: c.ModelContext,
+        references: Sequence[c.BoundReference],
+        claimed: ClaimedTurn,
+        gate_revision: int,
+        state: _TurnP2State,
+    ) -> None:
+        from .p5_dev_intent import (
+            DevIntentRefused, build_dev_sub_activity_create_intent,
+            parse_dev_sub_activity_create_command,
+        )
+        from .p5_write import LiveWriteError
+
+        if state.scope_activity_id is None:
+            await self._p5_dev_refusal(
+                aggregate, context, "请从要建子活动的活动页面发起。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        cmd = parse_dev_sub_activity_create_command(context.input_text)
+        if cmd is None:
+            await self._p5_dev_refusal(
+                aggregate, context, "用法：建子活动 <名称> 参与人=<名字1>,<名字2>",
+                claimed, gate_revision, state, references,
+            )
+            return
+        owner_id = aggregate.record.turn.owner_user_id
+        turn_id = aggregate.record.turn.turn_id
+        grant = self._active_grant(owner_id, turn_id)
+        try:
+            participants = await self._live_gateway.list_participants(
+                grant.token, state.scope_activity_id,
+            )
+        except Exception as exc:
+            _LOGGER.warning(
+                "p5 dev sub-activity participant read failed: turn=%s type=%s",
+                turn_id, type(exc).__name__,
+            )
+            await self._p5_dev_refusal(
+                aggregate, context, "暂时无法读取参与人列表，请重试。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        participant_ids: list[uuid.UUID] = []
+        for raw_name in (cmd.participant_token or "").split(","):
+            name = raw_name.strip()
+            matches = [item for item in participants if item.name == name]
+            if len(matches) != 1:
+                await self._p5_dev_refusal(
+                    aggregate, context, f"参与人「{name}」匹配到多个或找不到。",
+                    claimed, gate_revision, state, references,
+                )
+                return
+            participant_ids.append(matches[0].participant_id)
+        try:
+            intent = build_dev_sub_activity_create_intent(
+                cmd, state.scope_activity_id, participant_ids,
+            )
+        except DevIntentRefused as exc:
+            await self._p5_dev_refusal(
+                aggregate, context, str(exc), claimed, gate_revision, state, references,
+            )
+            return
+        try:
+            proposal = await self._live_gateway.build_sub_activity_create_preview(
+                owner_user_id=owner_id,
+                session_id=aggregate.record.turn.session_id,
+                turn_id=turn_id,
+                intent=intent,
+                access_token=grant.token,
+                expires_at=grant.expires_at,
+                agent_disable_revision=gate_revision,
+                policy_version=P5_DEV_SUB_ACTIVITY_POLICY_VERSION,
+                summary_prefix=P5_DEV_SUB_ACTIVITY_SUMMARY_PREFIX,
+                now=datetime.now(timezone.utc),
+            )
+        except LiveWriteError as exc:
+            await self._p5_dev_refusal(
+                aggregate, context, _dev_sub_activity_refusal_text(exc.code),
+                claimed, gate_revision, state, references,
+            )
+            return
+        except (BackendReadError, ScopeDenied, ValueError) as exc:
+            _LOGGER.warning(
+                "p5 dev sub-activity create preview declined: turn=%s type=%s",
+                turn_id, type(exc).__name__,
+            )
+            await self._p5_dev_refusal(
+                aggregate, context, "暂时无法生成子活动预览，请重试。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        await self._p5_dev_offer_proposal(
+            aggregate, context, claimed, gate_revision, state, references, proposal,
+        )
+
+    async def _p5_dev_sub_activity_lifecycle_proposal(
+        self,
+        aggregate: TurnAggregate,
+        context: c.ModelContext,
+        references: Sequence[c.BoundReference],
+        claimed: ClaimedTurn,
+        gate_revision: int,
+        state: _TurnP2State,
+        *,
+        is_restore: bool,
+    ) -> None:
+        from .p5_dev_intent import (
+            build_dev_sub_activity_lifecycle_intent,
+            parse_dev_sub_activity_lifecycle_command,
+        )
+        from .p5_write import LiveWriteError
+
+        verb = "恢复" if is_restore else "删除"
+        command_verb = "恢复子活动" if is_restore else "删子活动"
+        if state.scope_activity_id is None:
+            await self._p5_dev_refusal(
+                aggregate, context, f"请从要{verb}子活动的活动页面发起。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        cmd = parse_dev_sub_activity_lifecycle_command(
+            context.input_text, command_verb,
+        )
+        if cmd is None:
+            await self._p5_dev_refusal(
+                aggregate, context, f"用法：{command_verb} <名称>",
+                claimed, gate_revision, state, references,
+            )
+            return
+        owner_id = aggregate.record.turn.owner_user_id
+        turn_id = aggregate.record.turn.turn_id
+        grant = self._active_grant(owner_id, turn_id)
+        try:
+            units = await self._live_gateway.list_ledger_units(
+                grant.token, state.scope_activity_id,
+            )
+        except Exception as exc:
+            _LOGGER.warning(
+                "p5 dev sub-activity unit read failed: turn=%s type=%s",
+                turn_id, type(exc).__name__,
+            )
+            await self._p5_dev_refusal(
+                aggregate, context, "暂时无法读取账本单元列表，请重试。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        matches = [
+            item for item in units
+            if item.unit_type == "sub_activity" and item.name == cmd.name
+        ]
+        if len(matches) != 1:
+            await self._p5_dev_refusal(
+                aggregate, context, f"子活动「{cmd.name}」匹配到多个或找不到。",
+                claimed, gate_revision, state, references,
+            )
+            return
+        intent = build_dev_sub_activity_lifecycle_intent(
+            cmd, state.scope_activity_id, matches[0].ledger_unit_id,
+            is_restore=is_restore,
+        )
+        builder = (
+            self._live_gateway.build_sub_activity_restore_preview if is_restore
+            else self._live_gateway.build_sub_activity_delete_preview
+        )
+        try:
+            proposal = await builder(
+                owner_user_id=owner_id,
+                session_id=aggregate.record.turn.session_id,
+                turn_id=turn_id,
+                intent=intent,
+                access_token=grant.token,
+                expires_at=grant.expires_at,
+                agent_disable_revision=gate_revision,
+                policy_version=P5_DEV_SUB_ACTIVITY_POLICY_VERSION,
+                summary_prefix=P5_DEV_SUB_ACTIVITY_SUMMARY_PREFIX,
+                now=datetime.now(timezone.utc),
+            )
+        except LiveWriteError as exc:
+            await self._p5_dev_refusal(
+                aggregate, context, _dev_sub_activity_refusal_text(exc.code),
+                claimed, gate_revision, state, references,
+            )
+            return
+        except (BackendReadError, ScopeDenied, ValueError) as exc:
+            _LOGGER.warning(
+                "p5 dev sub-activity lifecycle preview declined: turn=%s type=%s",
+                turn_id, type(exc).__name__,
+            )
+            await self._p5_dev_refusal(
+                aggregate, context, f"暂时无法生成{verb}子活动预览，请重试。",
                 claimed, gate_revision, state, references,
             )
             return

@@ -605,6 +605,131 @@ def build_dev_participant_delete_intent(
     )
 
 
+@dataclass(frozen=True, slots=True)
+class DevSubActivityCommand:
+    name: str
+    participant_token: str | None = None
+
+
+_SUB_ACTIVITY_CREATE = re.compile(
+    r"^\s*建子活动\s+(?P<name>.+?)\s+参与人\s*=\s*(?P<list>[^\s]+)\s*$"
+)
+_SUB_ACTIVITY_LIFECYCLE = {
+    "删子活动": re.compile(r"^\s*删子活动\s+(?P<name>.+?)\s*$"),
+    "恢复子活动": re.compile(r"^\s*恢复子活动\s+(?P<name>.+?)\s*$"),
+}
+
+
+def is_dev_claim_command(text: str) -> bool:
+    return isinstance(text, str) and text.lstrip().startswith("认领")
+
+
+def is_dev_unclaim_command(text: str) -> bool:
+    return isinstance(text, str) and text.lstrip().startswith("解除认领")
+
+
+def is_dev_sub_activity_create_command(text: str) -> bool:
+    return isinstance(text, str) and text.lstrip().startswith("建子活动")
+
+
+def is_dev_sub_activity_delete_command(text: str) -> bool:
+    return isinstance(text, str) and text.lstrip().startswith("删子活动")
+
+
+def is_dev_sub_activity_restore_command(text: str) -> bool:
+    return isinstance(text, str) and text.lstrip().startswith("恢复子活动")
+
+
+def parse_dev_claim_command(text: str) -> DevParticipantCommand | None:
+    """Parse `认领 <参与人名字>`."""
+    if not isinstance(text, str):
+        return None
+    stripped = text.lstrip()
+    if not stripped.startswith("认领"):
+        return None
+    name = stripped[len("认领"):].strip()
+    return DevParticipantCommand(name=name) if name else None
+
+
+def parse_dev_unclaim_command(text: str) -> bool:
+    """`解除认领` takes no argument."""
+    if not isinstance(text, str):
+        return False
+    return text.strip() == "解除认领"
+
+
+def parse_dev_sub_activity_create_command(text: str) -> DevSubActivityCommand | None:
+    """Parse `建子活动 <名称> 参与人=<名字1>,<名字2>`."""
+    if not isinstance(text, str):
+        return None
+    match = _SUB_ACTIVITY_CREATE.match(text)
+    if match is None:
+        return None
+    name = match.group("name").strip()
+    token = match.group("list").strip()
+    if not name or not token:
+        return None
+    return DevSubActivityCommand(name=name, participant_token=token)
+
+
+def parse_dev_sub_activity_lifecycle_command(
+    text: str, verb: str,
+) -> DevSubActivityCommand | None:
+    if not isinstance(text, str):
+        return None
+    pattern = _SUB_ACTIVITY_LIFECYCLE.get(verb)
+    if pattern is None:
+        return None
+    match = pattern.match(text)
+    if match is None:
+        return None
+    name = match.group("name").strip()
+    return DevSubActivityCommand(name=name) if name else None
+
+
+def build_dev_claim_intent(activity_id: Any, participant_id: Any) -> c.ParticipantClaimIntent:
+    return c.ParticipantClaimIntent(
+        kind="participant.claim",
+        activity_id=activity_id,
+        participant_id=participant_id,
+    )
+
+
+def build_dev_unclaim_intent(activity_id: Any) -> c.ParticipantUnclaimIntent:
+    return c.ParticipantUnclaimIntent(kind="participant.unclaim", activity_id=activity_id)
+
+
+def build_dev_sub_activity_create_intent(
+    cmd: DevSubActivityCommand, activity_id: Any, participant_ids: Sequence[Any],
+) -> c.SubActivityCreateIntent:
+    try:
+        return c.SubActivityCreateIntent(
+            kind="subactivity.create",
+            activity_id=activity_id,
+            name=cmd.name,
+            participant_ids=list(participant_ids),
+        )
+    except ValueError as exc:
+        raise DevIntentRefused("子活动名称或参与人集合不合法。") from exc
+
+
+def build_dev_sub_activity_lifecycle_intent(
+    cmd: DevSubActivityCommand, activity_id: Any, sub_activity_id: Any, *,
+    is_restore: bool,
+) -> Any:
+    if is_restore:
+        return c.SubActivityRestoreIntent(
+            kind="subactivity.restore",
+            activity_id=activity_id,
+            sub_activity_id=sub_activity_id,
+        )
+    return c.SubActivityDeleteIntent(
+        kind="subactivity.delete",
+        activity_id=activity_id,
+        sub_activity_id=sub_activity_id,
+    )
+
+
 def is_dev_repayment_command(text: str) -> bool:
     return isinstance(text, str) and text.lstrip().startswith("还款")
 

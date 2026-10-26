@@ -58,6 +58,11 @@ P5_ACTIVITY_CREATE_POLICY_VERSION = "p5-live-activity-create-v1"
 P5_ACTIVITY_JOIN_POLICY_VERSION = "p5-live-activity-join-v1"
 P5_PARTICIPANT_CREATE_POLICY_VERSION = "p5-live-participant-create-v1"
 P5_PARTICIPANT_DELETE_POLICY_VERSION = "p5-live-participant-delete-v1"
+P5_CLAIM_POLICY_VERSION = "p5-live-participant-claim-v1"
+P5_UNCLAIM_POLICY_VERSION = "p5-live-participant-unclaim-v1"
+P5_SUB_ACTIVITY_CREATE_POLICY_VERSION = "p5-live-sub-activity-create-v1"
+P5_SUB_ACTIVITY_DELETE_POLICY_VERSION = "p5-live-sub-activity-delete-v1"
+P5_SUB_ACTIVITY_RESTORE_POLICY_VERSION = "p5-live-sub-activity-restore-v1"
 RPC_CREATE_EXPENSE = "/rest/v1/rpc/create_expense_auto_rate"
 RPC_UPDATE_EXPENSE = "/rest/v1/rpc/update_expense_auto_rate"
 RPC_UPDATE_PRESENTATION = "/rest/v1/rpc/update_expense_presentation"
@@ -76,6 +81,13 @@ RPC_CREATE_ACTIVITY = "/rest/v1/rpc/create_activity"
 RPC_JOIN_ACTIVITY = "/rest/v1/rpc/join_activity_by_code"
 RPC_CREATE_PARTICIPANT = "/rest/v1/rpc/create_participant"
 RPC_DELETE_PARTICIPANT = "/rest/v1/rpc/delete_participant"
+RPC_CLAIM_PARTICIPANT = "/rest/v1/rpc/claim_participant"
+RPC_UNCLAIM_PARTICIPANT = "/rest/v1/rpc/unclaim_participant"
+RPC_CREATE_SUB_ACTIVITY = "/rest/v1/rpc/create_sub_activity"
+RPC_DELETE_SUB_ACTIVITY = "/rest/v1/rpc/delete_sub_activity"
+RPC_RESTORE_SUB_ACTIVITY = "/rest/v1/rpc/restore_sub_activity"
+_LEDGER_UNIT_SELECT = "id,activity_id,name,type,is_deleted"
+_CLAIM_SELECT = "id,activity_id,participant_id,user_id"
 _ACTIVITY_MANAGEMENT_SELECT = (
     "id,name,type,base_currency,multi_currency_enabled,created_by,"
     "archived_at,is_deleted,participants_locked_at,join_code"
@@ -97,6 +109,8 @@ SUPPORTED_ICON_KEYS = frozenset({
 
 _MANAGEMENT_OPERATIONS = frozenset({
     "activity.create", "activity.join", "participant.create", "participant.delete",
+    "participant.claim", "participant.unclaim",
+    "subactivity.create", "subactivity.delete", "subactivity.restore",
 })
 
 _EXPENSE_SELECT = (
@@ -184,6 +198,28 @@ _PREFLIGHT_CLOSE_SUMMARY = {
     "deleted_elsewhere": "the Participant is deleted but this execution cannot be proven to be the author",
     "delete_not_applied": "the Participant is not deleted",
     "conflict": "the request conflicts with existing data",
+    "sub_activity_requires_large": "sub-activities require a large activity",
+    "sub_activity_root_missing": "the large activity has no root ledger unit",
+    "sub_activity_name_conflict": "a ledger unit with this name already exists",
+    "sub_activity_participant_invalid": "the selected Participants are not all active in this Activity",
+    "sub_activity_not_found": "the sub-activity was not found",
+    "not_a_sub_activity": "the ledger unit is not a sub-activity",
+    "sub_activity_state_changed": "the sub-activity state changed after the preview",
+    "participant_claimed_by_other": "the Participant is already claimed by another member",
+    "actor_already_claimed_other": "you already claimed a different Participant in this Activity",
+    "claim_state_changed": "the claim state changed after the preview",
+    "claim_not_found": "you have no claim to release",
+    "participant_claim_conflict": "the Participant claim conflicts with an existing one",
+    "sub_activity_created_elsewhere": "a sub-activity matches but this execution cannot be proven to be its author",
+    "sub_activity_not_created": "no matching sub-activity exists",
+    "sub_activity_deleted_elsewhere": "the sub-activity is deleted but this execution cannot be proven to be the author",
+    "sub_activity_delete_not_applied": "the sub-activity is not deleted",
+    "sub_activity_restored_elsewhere": "the sub-activity is restored but this execution cannot be proven to be the author",
+    "sub_activity_restore_not_applied": "the sub-activity is still deleted",
+    "claimed_elsewhere": "a claim exists but this execution cannot be proven to be its author",
+    "claim_not_applied": "no claim exists",
+    "released_elsewhere": "the claim is released but this execution cannot be proven to be the author",
+    "unclaim_not_applied": "the claim still exists",
 }
 
 
@@ -384,6 +420,23 @@ class LiveParticipantState:
     name: str
     participant_order: int
     is_deleted: bool
+
+
+@dataclass(frozen=True, slots=True)
+class LiveLedgerUnitState:
+    ledger_unit_id: uuid.UUID
+    activity_id: uuid.UUID
+    name: str
+    unit_type: str
+    is_deleted: bool
+
+
+@dataclass(frozen=True, slots=True)
+class LiveClaimState:
+    claim_id: uuid.UUID
+    activity_id: uuid.UUID
+    participant_id: uuid.UUID
+    user_id: uuid.UUID
 
 
 @dataclass(frozen=True, slots=True)
@@ -712,6 +765,58 @@ class LiveExpenseGateway:
             if rows:
                 return True
         return False
+
+    async def read_ledger_unit_state(
+        self, access_token: str, ledger_unit_id: uuid.UUID,
+    ) -> LiveLedgerUnitState:
+        rows = await self._get_rows(
+            "ledger_units",
+            [
+                ("id", f"eq.{ledger_unit_id}"),
+                ("select", _LEDGER_UNIT_SELECT),
+                ("limit", "2"),
+            ],
+            access_token,
+        )
+        if len(rows) != 1:
+            raise LiveWriteError("sub_activity_not_found")
+        return _ledger_unit_state(rows[0])
+
+    async def list_ledger_units(
+        self, access_token: str, activity_id: uuid.UUID,
+    ) -> list[LiveLedgerUnitState]:
+        rows = await self._get_rows(
+            "ledger_units",
+            [
+                ("activity_id", f"eq.{activity_id}"),
+                ("select", _LEDGER_UNIT_SELECT),
+                ("order", "id.asc"),
+            ],
+            access_token,
+        )
+        return [_ledger_unit_state(row) for row in rows]
+
+    async def list_activity_claims(
+        self, access_token: str, activity_id: uuid.UUID,
+    ) -> list[LiveClaimState]:
+        rows = await self._get_rows(
+            "participant_claims",
+            [
+                ("activity_id", f"eq.{activity_id}"),
+                ("select", _CLAIM_SELECT),
+                ("order", "id.asc"),
+            ],
+            access_token,
+        )
+        return [
+            LiveClaimState(
+                claim_id=_uuid(row.get("id")),
+                activity_id=_uuid(row.get("activity_id")),
+                participant_id=_uuid(row.get("participant_id")),
+                user_id=_uuid(row.get("user_id")),
+            )
+            for row in rows
+        ]
 
     async def _post_rpc(
         self, path: str, access_token: str, payload: Mapping[str, Any],
@@ -2466,6 +2571,321 @@ class LiveExpenseGateway:
             policy_version=policy_version, now=instant,
         )
 
+    # -------------------------------------- claim and sub-activity previews (P5.8b)
+
+    async def build_participant_claim_preview(
+        self,
+        *,
+        owner_user_id: uuid.UUID,
+        session_id: uuid.UUID,
+        turn_id: uuid.UUID,
+        intent: c.ParticipantClaimIntent,
+        access_token: str,
+        expires_at: datetime,
+        agent_disable_revision: int,
+        policy_version: str | None = None,
+        summary_prefix: str = "",
+        now: datetime | None = None,
+    ) -> c.ProposalRecord:
+        if not isinstance(intent, c.ParticipantClaimIntent):
+            raise LiveWriteError("unsupported_operation")
+        instant = _aware(now)
+        grant = _activity_grant(
+            owner_user_id=owner_user_id, turn_id=turn_id,
+            access_token=access_token, expires_at=expires_at,
+            activity_id=intent.activity_id,
+        )
+        scope = await self._read_backend.resolve_scope(
+            grant, ScopeRequest(mode="activity", ui_activity_id_hint=intent.activity_id),
+        )
+        if scope.activity is None:
+            raise LiveWriteError("activity_not_found")
+        state = await self.read_activity_management_state(access_token, intent.activity_id)
+        if state.is_deleted:
+            raise LiveWriteError("activity_not_found")
+        participant = await self.read_participant_state(access_token, intent.participant_id)
+        if participant.activity_id != intent.activity_id or participant.is_deleted:
+            raise LiveWriteError("participant_not_found")
+        claims = await self.list_activity_claims(access_token, intent.activity_id)
+        mine = next((item for item in claims if item.user_id == owner_user_id), None)
+        target = next(
+            (item for item in claims if item.participant_id == intent.participant_id), None,
+        )
+        if target is not None and target.user_id != owner_user_id:
+            raise LiveWriteError("participant_claimed_by_other")
+        if mine is not None and mine.participant_id != intent.participant_id:
+            raise LiveWriteError("actor_already_claimed_other")
+        claim_state = "mine" if mine is not None else "none"
+        preview = c.ManagementPreview(
+            kind="management",
+            operation="participant.claim",
+            activity_id=intent.activity_id,
+            activity_name=state.name,
+            participant_id=intent.participant_id,
+            participant_name=participant.name,
+            summary=(
+                f"{summary_prefix}认领「{participant.name}」（活动「{state.name}」）；"
+                + (
+                    "本人已认领，重复确认不会新建"
+                    if claim_state == "mine" else "当前未认领"
+                )
+            ),
+            generated_at=instant,
+            simulation=False,
+        )
+        command = c.FixedParticipantClaimCommand(
+            operation="participant.claim",
+            activity_id=intent.activity_id,
+            participant_id=intent.participant_id,
+            expected_financial_version=str(scope.activity.financial_version),
+            expected_activity_archived=state.archived,
+            expected_claim_state=claim_state,
+        )
+        return self._management_proposal(
+            owner_user_id=owner_user_id, session_id=session_id, turn_id=turn_id,
+            operation="participant.claim", intent=intent, command=command, preview=preview,
+            activity_id=intent.activity_id, expense_version=None,
+            agent_disable_revision=agent_disable_revision,
+            policy_version=policy_version, now=instant,
+            financial_version=str(scope.activity.financial_version),
+        )
+
+    async def build_participant_unclaim_preview(
+        self,
+        *,
+        owner_user_id: uuid.UUID,
+        session_id: uuid.UUID,
+        turn_id: uuid.UUID,
+        intent: c.ParticipantUnclaimIntent,
+        access_token: str,
+        expires_at: datetime,
+        agent_disable_revision: int,
+        policy_version: str | None = None,
+        summary_prefix: str = "",
+        now: datetime | None = None,
+    ) -> c.ProposalRecord:
+        if not isinstance(intent, c.ParticipantUnclaimIntent):
+            raise LiveWriteError("unsupported_operation")
+        instant = _aware(now)
+        grant = _activity_grant(
+            owner_user_id=owner_user_id, turn_id=turn_id,
+            access_token=access_token, expires_at=expires_at,
+            activity_id=intent.activity_id,
+        )
+        scope = await self._read_backend.resolve_scope(
+            grant, ScopeRequest(mode="activity", ui_activity_id_hint=intent.activity_id),
+        )
+        if scope.activity is None:
+            raise LiveWriteError("activity_not_found")
+        state = await self.read_activity_management_state(access_token, intent.activity_id)
+        if state.is_deleted:
+            raise LiveWriteError("activity_not_found")
+        claims = await self.list_activity_claims(access_token, intent.activity_id)
+        mine = next((item for item in claims if item.user_id == owner_user_id), None)
+        if mine is None:
+            raise LiveWriteError("claim_not_found")
+        participant = await self.read_participant_state(access_token, mine.participant_id)
+        preview = c.ManagementPreview(
+            kind="management",
+            operation="participant.unclaim",
+            activity_id=intent.activity_id,
+            activity_name=state.name,
+            participant_id=mine.participant_id,
+            participant_name=participant.name,
+            summary=(
+                f"{summary_prefix}解除认领「{participant.name}」（活动「{state.name}」）"
+            ),
+            generated_at=instant,
+            simulation=False,
+        )
+        command = c.FixedParticipantUnclaimCommand(
+            operation="participant.unclaim",
+            activity_id=intent.activity_id,
+            expected_financial_version=str(scope.activity.financial_version),
+            expected_activity_archived=state.archived,
+            expected_claim_participant_id=mine.participant_id,
+        )
+        return self._management_proposal(
+            owner_user_id=owner_user_id, session_id=session_id, turn_id=turn_id,
+            operation="participant.unclaim", intent=intent, command=command, preview=preview,
+            activity_id=intent.activity_id, expense_version=None,
+            agent_disable_revision=agent_disable_revision,
+            policy_version=policy_version, now=instant,
+            financial_version=str(scope.activity.financial_version),
+        )
+
+    async def build_sub_activity_create_preview(
+        self,
+        *,
+        owner_user_id: uuid.UUID,
+        session_id: uuid.UUID,
+        turn_id: uuid.UUID,
+        intent: c.SubActivityCreateIntent,
+        access_token: str,
+        expires_at: datetime,
+        agent_disable_revision: int,
+        policy_version: str | None = None,
+        summary_prefix: str = "",
+        now: datetime | None = None,
+    ) -> c.ProposalRecord:
+        if not isinstance(intent, c.SubActivityCreateIntent):
+            raise LiveWriteError("unsupported_operation")
+        instant = _aware(now)
+        grant = _activity_grant(
+            owner_user_id=owner_user_id, turn_id=turn_id,
+            access_token=access_token, expires_at=expires_at,
+            activity_id=intent.activity_id,
+        )
+        scope = await self._read_backend.resolve_scope(
+            grant, ScopeRequest(mode="activity", ui_activity_id_hint=intent.activity_id),
+        )
+        activity = scope.activity
+        if activity is None:
+            raise LiveWriteError("activity_not_found")
+        if activity.activity_type != "large":
+            raise LiveWriteError("sub_activity_requires_large")
+        state = await self.read_activity_management_state(access_token, intent.activity_id)
+        if state.is_deleted:
+            raise LiveWriteError("activity_not_found")
+        if not any(
+            unit.unit_type == "root" and not unit.is_deleted
+            for unit in scope.ledger_units
+        ):
+            raise LiveWriteError("sub_activity_root_missing")
+        names = {
+            item.participant_id: item.name
+            for item in scope.participants if not item.is_deleted
+        }
+        if any(pid not in names for pid in intent.participant_ids):
+            raise LiveWriteError("sub_activity_participant_invalid")
+        if any(
+            unit.name == intent.name and not unit.is_deleted
+            for unit in scope.ledger_units
+        ):
+            raise LiveWriteError("sub_activity_name_conflict")
+        participant_names = [names[pid] for pid in intent.participant_ids]
+        preview = c.ManagementPreview(
+            kind="management",
+            operation="subactivity.create",
+            activity_id=intent.activity_id,
+            activity_name=state.name,
+            sub_activity_name=intent.name,
+            participant_names=participant_names,
+            summary=(
+                f"{summary_prefix}建子活动「{intent.name}」（活动「{state.name}」）"
+                f"；参与人 {'、'.join(participant_names)}"
+            ),
+            generated_at=instant,
+            simulation=False,
+        )
+        command = c.FixedSubActivityCreateCommand(
+            operation="subactivity.create",
+            activity_id=intent.activity_id,
+            name=intent.name,
+            participant_ids=list(intent.participant_ids),
+            expected_financial_version=str(activity.financial_version),
+            expected_activity_type=activity.activity_type,
+            expected_activity_archived=state.archived,
+        )
+        return self._management_proposal(
+            owner_user_id=owner_user_id, session_id=session_id, turn_id=turn_id,
+            operation="subactivity.create", intent=intent, command=command, preview=preview,
+            activity_id=intent.activity_id, expense_version=None,
+            agent_disable_revision=agent_disable_revision,
+            policy_version=policy_version, now=instant,
+            financial_version=str(activity.financial_version),
+        )
+
+    async def build_sub_activity_delete_preview(
+        self, **kwargs: Any,
+    ) -> c.ProposalRecord:
+        return await self._build_sub_activity_lifecycle_preview(
+            is_restore=False, **kwargs,
+        )
+
+    async def build_sub_activity_restore_preview(
+        self, **kwargs: Any,
+    ) -> c.ProposalRecord:
+        return await self._build_sub_activity_lifecycle_preview(
+            is_restore=True, **kwargs,
+        )
+
+    async def _build_sub_activity_lifecycle_preview(
+        self,
+        *,
+        is_restore: bool,
+        owner_user_id: uuid.UUID,
+        session_id: uuid.UUID,
+        turn_id: uuid.UUID,
+        intent: Any,
+        access_token: str,
+        expires_at: datetime,
+        agent_disable_revision: int,
+        policy_version: str | None = None,
+        summary_prefix: str = "",
+        now: datetime | None = None,
+    ) -> c.ProposalRecord:
+        expected = c.SubActivityRestoreIntent if is_restore else c.SubActivityDeleteIntent
+        if not isinstance(intent, expected):
+            raise LiveWriteError("unsupported_operation")
+        instant = _aware(now)
+        grant = _activity_grant(
+            owner_user_id=owner_user_id, turn_id=turn_id,
+            access_token=access_token, expires_at=expires_at,
+            activity_id=intent.activity_id,
+        )
+        scope = await self._read_backend.resolve_scope(
+            grant, ScopeRequest(mode="activity", ui_activity_id_hint=intent.activity_id),
+        )
+        activity = scope.activity
+        if activity is None:
+            raise LiveWriteError("activity_not_found")
+        state = await self.read_activity_management_state(access_token, intent.activity_id)
+        if state.is_deleted:
+            raise LiveWriteError("activity_not_found")
+        unit = await self.read_ledger_unit_state(access_token, intent.sub_activity_id)
+        if unit.activity_id != intent.activity_id:
+            raise LiveWriteError("sub_activity_not_found")
+        if unit.unit_type != "sub_activity":
+            raise LiveWriteError("not_a_sub_activity")
+        verb = "恢复" if is_restore else "删除"
+        operation = "subactivity.restore" if is_restore else "subactivity.delete"
+        preview = c.ManagementPreview(
+            kind="management",
+            operation=operation,
+            activity_id=intent.activity_id,
+            activity_name=state.name,
+            sub_activity_id=unit.ledger_unit_id,
+            sub_activity_name=unit.name,
+            summary=(
+                f"{summary_prefix}{verb}子活动「{unit.name}」（活动「{state.name}」）"
+                f"；当前{'已删除' if unit.is_deleted else '未删除'}"
+            ),
+            generated_at=instant,
+            simulation=False,
+        )
+        command_type = (
+            c.FixedSubActivityRestoreCommand if is_restore
+            else c.FixedSubActivityDeleteCommand
+        )
+        command = command_type(
+            operation=operation,
+            activity_id=intent.activity_id,
+            sub_activity_id=unit.ledger_unit_id,
+            expected_financial_version=str(activity.financial_version),
+            expected_is_deleted=unit.is_deleted,
+            expected_activity_type=activity.activity_type,
+            expected_activity_archived=state.archived,
+        )
+        return self._management_proposal(
+            owner_user_id=owner_user_id, session_id=session_id, turn_id=turn_id,
+            operation=operation, intent=intent, command=command, preview=preview,
+            activity_id=intent.activity_id, expense_version=None,
+            agent_disable_revision=agent_disable_revision,
+            policy_version=policy_version, now=instant,
+            financial_version=str(activity.financial_version),
+        )
+
     def _management_proposal(
         self,
         *,
@@ -2481,13 +2901,14 @@ class LiveExpenseGateway:
         agent_disable_revision: int,
         policy_version: str | None,
         now: datetime,
+        financial_version: str | None = None,
     ) -> c.ProposalRecord:
         policy = policy_version or self._config.policy_version
         preconditions = c.PreconditionSnapshot(
             activity_id=activity_id,
             permission_checked=True,
             agent_disable_revision=agent_disable_revision,
-            activity_financial_version=None,
+            activity_financial_version=financial_version,
             expense_version=expense_version,
             policy_version=policy,
             verified_at=now,
@@ -2642,6 +3063,11 @@ class LiveExpenseGateway:
             c.FixedActivityJoinCommand,
             c.FixedParticipantCreateCommand,
             c.FixedParticipantDeleteCommand,
+            c.FixedParticipantClaimCommand,
+            c.FixedParticipantUnclaimCommand,
+            c.FixedSubActivityCreateCommand,
+            c.FixedSubActivityDeleteCommand,
+            c.FixedSubActivityRestoreCommand,
         )):
             return await self._close(
                 principal, proposal,
@@ -2673,6 +3099,12 @@ class LiveExpenseGateway:
         is_activity_join = isinstance(command, c.FixedActivityJoinCommand)
         is_participant_create = isinstance(command, c.FixedParticipantCreateCommand)
         is_participant_delete = isinstance(command, c.FixedParticipantDeleteCommand)
+        is_claim = isinstance(command, c.FixedParticipantClaimCommand)
+        is_unclaim = isinstance(command, c.FixedParticipantUnclaimCommand)
+        is_sub_activity_create = isinstance(command, c.FixedSubActivityCreateCommand)
+        is_sub_activity_lifecycle = isinstance(command, (
+            c.FixedSubActivityDeleteCommand, c.FixedSubActivityRestoreCommand,
+        ))
         # Account-level management operations have no Activity to grant.
         grant = None
         command_activity_id = getattr(command, "activity_id", None)
@@ -2882,6 +3314,113 @@ class LiveExpenseGateway:
                     access_token, command.participant_id,
                 ):
                     raise LiveWriteError("participant_claimed_or_used")
+            elif is_claim or is_unclaim:
+                await self._read_backend.verify_financial_versions(
+                    grant, {command.activity_id: int(command.expected_financial_version)},
+                )
+                state = await self.read_activity_management_state(
+                    access_token, command.activity_id,
+                )
+                if state.is_deleted:
+                    raise LiveWriteError("activity_not_found")
+                if state.archived != command.expected_activity_archived:
+                    raise LiveWriteError("management_state_changed")
+                claims = await self.list_activity_claims(
+                    access_token, command.activity_id,
+                )
+                mine = next(
+                    (item for item in claims if item.user_id == principal.user_id), None,
+                )
+                if is_claim:
+                    participant = await self.read_participant_state(
+                        access_token, command.participant_id,
+                    )
+                    if (
+                        participant.activity_id != command.activity_id
+                        or participant.is_deleted
+                    ):
+                        raise LiveWriteError("participant_not_found")
+                    target = next(
+                        (item for item in claims
+                         if item.participant_id == command.participant_id), None,
+                    )
+                    if target is not None and target.user_id != principal.user_id:
+                        raise LiveWriteError("participant_claimed_by_other")
+                    if mine is not None and mine.participant_id != command.participant_id:
+                        raise LiveWriteError("actor_already_claimed_other")
+                    current = "mine" if mine is not None else "none"
+                    if current != command.expected_claim_state:
+                        raise LiveWriteError("claim_state_changed")
+                else:
+                    if (
+                        mine is None
+                        or mine.participant_id != command.expected_claim_participant_id
+                    ):
+                        raise LiveWriteError("claim_state_changed")
+            elif is_sub_activity_create:
+                await self._read_backend.verify_financial_versions(
+                    grant, {command.activity_id: int(command.expected_financial_version)},
+                )
+                scope = await self._read_backend.resolve_scope(
+                    grant, ScopeRequest(mode="activity", ui_activity_id_hint=command.activity_id),
+                )
+                activity = scope.activity
+                if activity is None:
+                    raise LiveWriteError("activity_not_found")
+                if activity.activity_type != command.expected_activity_type:
+                    raise LiveWriteError("sub_activity_state_changed")
+                if activity.activity_type != "large":
+                    raise LiveWriteError("sub_activity_requires_large")
+                state = await self.read_activity_management_state(
+                    access_token, command.activity_id,
+                )
+                if state.is_deleted:
+                    raise LiveWriteError("activity_not_found")
+                if state.archived != command.expected_activity_archived:
+                    raise LiveWriteError("sub_activity_state_changed")
+                if not any(
+                    unit.unit_type == "root" and not unit.is_deleted
+                    for unit in scope.ledger_units
+                ):
+                    raise LiveWriteError("sub_activity_root_missing")
+                active = {
+                    item.participant_id for item in scope.participants if not item.is_deleted
+                }
+                if any(pid not in active for pid in command.participant_ids):
+                    raise LiveWriteError("sub_activity_participant_invalid")
+                if any(
+                    unit.name == command.name and not unit.is_deleted
+                    for unit in scope.ledger_units
+                ):
+                    raise LiveWriteError("sub_activity_name_conflict")
+            elif is_sub_activity_lifecycle:
+                await self._read_backend.verify_financial_versions(
+                    grant, {command.activity_id: int(command.expected_financial_version)},
+                )
+                scope = await self._read_backend.resolve_scope(
+                    grant, ScopeRequest(mode="activity", ui_activity_id_hint=command.activity_id),
+                )
+                activity = scope.activity
+                if activity is None:
+                    raise LiveWriteError("activity_not_found")
+                if activity.activity_type != command.expected_activity_type:
+                    raise LiveWriteError("sub_activity_state_changed")
+                state = await self.read_activity_management_state(
+                    access_token, command.activity_id,
+                )
+                if state.is_deleted:
+                    raise LiveWriteError("activity_not_found")
+                if state.archived != command.expected_activity_archived:
+                    raise LiveWriteError("sub_activity_state_changed")
+                unit = await self.read_ledger_unit_state(
+                    access_token, command.sub_activity_id,
+                )
+                if (
+                    unit.activity_id != command.activity_id
+                    or unit.unit_type != "sub_activity"
+                    or unit.is_deleted != command.expected_is_deleted
+                ):
+                    raise LiveWriteError("sub_activity_state_changed")
             elif is_presentation:
                 # Presentation update: only the Expense's own version guards it.
                 # Do NOT use activities.financial_version, and do NOT pre-reject
@@ -3013,6 +3552,28 @@ class LiveExpenseGateway:
                 "deleted_elsewhere",
                 "delete_not_applied",
                 "conflict",
+                "sub_activity_requires_large",
+                "sub_activity_root_missing",
+                "sub_activity_name_conflict",
+                "sub_activity_participant_invalid",
+                "sub_activity_not_found",
+                "not_a_sub_activity",
+                "sub_activity_state_changed",
+                "participant_claimed_by_other",
+                "actor_already_claimed_other",
+                "claim_state_changed",
+                "claim_not_found",
+                "participant_claim_conflict",
+                "sub_activity_created_elsewhere",
+                "sub_activity_not_created",
+                "sub_activity_deleted_elsewhere",
+                "sub_activity_delete_not_applied",
+                "sub_activity_restored_elsewhere",
+                "sub_activity_restore_not_applied",
+                "claimed_elsewhere",
+                "claim_not_applied",
+                "released_elsewhere",
+                "unclaim_not_applied",
             ):
                 return await self._close(
                     principal, proposal,
@@ -3121,6 +3682,28 @@ class LiveExpenseGateway:
         elif isinstance(command, c.FixedParticipantDeleteCommand):
             rpc_path = RPC_DELETE_PARTICIPANT
             payload = {"participant_id": str(command.participant_id)}
+        elif isinstance(command, c.FixedParticipantClaimCommand):
+            rpc_path = RPC_CLAIM_PARTICIPANT
+            payload = {
+                "activity_id": str(command.activity_id),
+                "participant_id": str(command.participant_id),
+            }
+        elif isinstance(command, c.FixedParticipantUnclaimCommand):
+            rpc_path = RPC_UNCLAIM_PARTICIPANT
+            payload = {"activity_id": str(command.activity_id)}
+        elif isinstance(command, c.FixedSubActivityCreateCommand):
+            rpc_path = RPC_CREATE_SUB_ACTIVITY
+            payload = {
+                "activity_id": str(command.activity_id),
+                "name": command.name,
+                "participant_ids": [str(item) for item in command.participant_ids],
+            }
+        elif isinstance(command, c.FixedSubActivityDeleteCommand):
+            rpc_path = RPC_DELETE_SUB_ACTIVITY
+            payload = {"sub_activity_id": str(command.sub_activity_id)}
+        elif isinstance(command, c.FixedSubActivityRestoreCommand):
+            rpc_path = RPC_RESTORE_SUB_ACTIVITY
+            payload = {"sub_activity_id": str(command.sub_activity_id)}
         else:
             rpc_path = RPC_UPDATE_EXPENSE
             payload = _rpc_payload_update(command)
@@ -3229,6 +3812,24 @@ class LiveExpenseGateway:
             )
         if isinstance(command, c.FixedParticipantDeleteCommand):
             return await self._reconcile_participant_delete(
+                principal, proposal, command, access_token,
+            )
+        if isinstance(command, c.FixedParticipantClaimCommand):
+            return await self._reconcile_participant_claim(
+                principal, proposal, command, access_token,
+            )
+        if isinstance(command, c.FixedParticipantUnclaimCommand):
+            return await self._reconcile_participant_unclaim(
+                principal, proposal, command, access_token,
+            )
+        if isinstance(command, c.FixedSubActivityCreateCommand):
+            return await self._reconcile_sub_activity_create(
+                principal, proposal, command, access_token,
+            )
+        if isinstance(command, (
+            c.FixedSubActivityDeleteCommand, c.FixedSubActivityRestoreCommand,
+        )):
+            return await self._reconcile_sub_activity_lifecycle(
                 principal, proposal, command, access_token,
             )
         if not isinstance(command, c.FixedExpenseDeleteCommand):
@@ -3682,6 +4283,165 @@ class LiveExpenseGateway:
         )
         return LiveWriteOutcome(c.ExecutionResolution.CLOSED, code, summary)
 
+    async def _reconcile_participant_claim(
+        self,
+        principal: Principal,
+        proposal: c.ProposalRecord,
+        command: c.FixedParticipantClaimCommand,
+        access_token: str,
+    ) -> LiveWriteOutcome:
+        turn = (
+            await _call_store(self._store.get_turn, principal.user_id, proposal.turn_id)
+        ).record.turn
+        if turn.state not in (c.TurnState.RECOVERING, c.TurnState.EXECUTING):
+            return await self._existing_outcome(principal, proposal)
+        try:
+            claims = await self.list_activity_claims(access_token, command.activity_id)
+        except (LiveWriteError, BackendReadError):
+            return await self._existing_outcome(principal, proposal)
+        mine = next(
+            (item for item in claims if item.user_id == principal.user_id), None,
+        )
+        if mine is not None:
+            code = "claimed_elsewhere"
+            summary = "a claim exists but this execution cannot be proven to be its author"
+        else:
+            code = "claim_not_applied"
+            summary = "no claim exists"
+        await _call_store(
+            self._store.settle_mock_execution,
+            principal.user_id, proposal.proposal_id,
+            c.ExecutionResolution.CLOSED,
+            result_code=code,
+            result_summary=summary,
+        )
+        return LiveWriteOutcome(c.ExecutionResolution.CLOSED, code, summary)
+
+    async def _reconcile_participant_unclaim(
+        self,
+        principal: Principal,
+        proposal: c.ProposalRecord,
+        command: c.FixedParticipantUnclaimCommand,
+        access_token: str,
+    ) -> LiveWriteOutcome:
+        turn = (
+            await _call_store(self._store.get_turn, principal.user_id, proposal.turn_id)
+        ).record.turn
+        if turn.state not in (c.TurnState.RECOVERING, c.TurnState.EXECUTING):
+            return await self._existing_outcome(principal, proposal)
+        try:
+            claims = await self.list_activity_claims(access_token, command.activity_id)
+        except (LiveWriteError, BackendReadError):
+            return await self._existing_outcome(principal, proposal)
+        mine = next(
+            (item for item in claims if item.user_id == principal.user_id), None,
+        )
+        if mine is None:
+            code = "released_elsewhere"
+            summary = "the claim is released but this execution cannot be proven to be the author"
+        else:
+            code = "unclaim_not_applied"
+            summary = "the claim still exists"
+        await _call_store(
+            self._store.settle_mock_execution,
+            principal.user_id, proposal.proposal_id,
+            c.ExecutionResolution.CLOSED,
+            result_code=code,
+            result_summary=summary,
+        )
+        return LiveWriteOutcome(c.ExecutionResolution.CLOSED, code, summary)
+
+    async def _reconcile_sub_activity_create(
+        self,
+        principal: Principal,
+        proposal: c.ProposalRecord,
+        command: c.FixedSubActivityCreateCommand,
+        access_token: str,
+    ) -> LiveWriteOutcome:
+        turn = (
+            await _call_store(self._store.get_turn, principal.user_id, proposal.turn_id)
+        ).record.turn
+        if turn.state not in (c.TurnState.RECOVERING, c.TurnState.EXECUTING):
+            return await self._existing_outcome(principal, proposal)
+        try:
+            units = await self.list_ledger_units(access_token, command.activity_id)
+        except (LiveWriteError, BackendReadError):
+            return await self._existing_outcome(principal, proposal)
+        if any(
+            unit.name == command.name and unit.unit_type == "sub_activity"
+            and not unit.is_deleted
+            for unit in units
+        ):
+            code = "sub_activity_created_elsewhere"
+            summary = "a sub-activity matches but this execution cannot be proven to be its author"
+        else:
+            code = "sub_activity_not_created"
+            summary = "no matching sub-activity exists"
+        await _call_store(
+            self._store.settle_mock_execution,
+            principal.user_id, proposal.proposal_id,
+            c.ExecutionResolution.CLOSED,
+            result_code=code,
+            result_summary=summary,
+        )
+        return LiveWriteOutcome(c.ExecutionResolution.CLOSED, code, summary)
+
+    async def _reconcile_sub_activity_lifecycle(
+        self,
+        principal: Principal,
+        proposal: c.ProposalRecord,
+        command: Any,
+        access_token: str,
+    ) -> LiveWriteOutcome:
+        turn = (
+            await _call_store(self._store.get_turn, principal.user_id, proposal.turn_id)
+        ).record.turn
+        if turn.state not in (c.TurnState.RECOVERING, c.TurnState.EXECUTING):
+            return await self._existing_outcome(principal, proposal)
+        try:
+            unit = await self.read_ledger_unit_state(
+                access_token, command.sub_activity_id,
+            )
+        except LiveWriteError as exc:
+            if exc.code != "sub_activity_not_found":
+                return await self._existing_outcome(principal, proposal)
+            unit = None
+        except BackendReadError:
+            return await self._existing_outcome(principal, proposal)
+        is_delete = isinstance(command, c.FixedSubActivityDeleteCommand)
+        if unit is not None and unit.is_deleted:
+            code = (
+                "sub_activity_deleted_elsewhere" if is_delete
+                else "sub_activity_restore_not_applied"
+            )
+            summary = (
+                "the sub-activity is deleted but this execution cannot be proven to be the author"
+                if is_delete else "the sub-activity is still deleted"
+            )
+        elif unit is not None:
+            code = (
+                "sub_activity_delete_not_applied" if is_delete
+                else "sub_activity_restored_elsewhere"
+            )
+            summary = (
+                "the sub-activity is not deleted" if is_delete
+                else "the sub-activity is restored but this execution cannot be proven to be the author"
+            )
+        else:
+            code = (
+                "sub_activity_delete_not_applied" if is_delete
+                else "sub_activity_restore_not_applied"
+            )
+            summary = "the sub-activity could not be observed"
+        await _call_store(
+            self._store.settle_mock_execution,
+            principal.user_id, proposal.proposal_id,
+            c.ExecutionResolution.CLOSED,
+            result_code=code,
+            result_summary=summary,
+        )
+        return LiveWriteOutcome(c.ExecutionResolution.CLOSED, code, summary)
+
     async def _reconcile_void(        self,
         principal: Principal,
         proposal: c.ProposalRecord,
@@ -3717,12 +4477,74 @@ class LiveExpenseGateway:
         return LiveWriteOutcome(c.ExecutionResolution.CLOSED, code, summary)
 
     async def _settle_management_success(
-        self, principal: Principal, proposal: c.ProposalRecord, row: Any,
+        self, principal: Principal, proposal: c.ProposalRecord, row: Any, body: bytes,
     ) -> LiveWriteOutcome | None:
         """A 2xx management response must carry the row it claims to have made."""
         record = row if isinstance(row, dict) else {}
         operation = proposal.operation
-        if operation == "activity.create":
+        if operation == "participant.unclaim":
+            try:
+                released = json.loads(body.decode("utf-8")) if body else None
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                released = None
+            if not isinstance(released, bool):
+                return await self._management_invalid_success(principal, proposal)
+            code = "claim_released" if released else "claim_already_released"
+            summary = f"released={str(released).lower()}"
+            text = "claim released" if released else "no claim needed releasing"
+        elif operation == "participant.claim":
+            claim_id = record.get("claim_id")
+            claimed_participant_id = record.get("claimed_participant_id")
+            is_new = record.get("is_new")
+            if (
+                not isinstance(claim_id, str)
+                or not isinstance(claimed_participant_id, str)
+                or not isinstance(is_new, bool)
+            ):
+                return await self._management_invalid_success(principal, proposal)
+            code = "participant_claimed" if is_new else "participant_claim_already_exists"
+            summary = (
+                f"claim_id={claim_id};participant_id={claimed_participant_id};"
+                f"is_new={str(is_new).lower()}"
+            )
+            text = "participant claimed" if is_new else "claim already existed"
+        elif operation == "subactivity.create":
+            ledger_unit_id = record.get("ledger_unit_id")
+            created_name = record.get("created_name")
+            created_type = record.get("created_type")
+            if (
+                not isinstance(ledger_unit_id, str)
+                or not isinstance(created_name, str)
+                or created_type != "sub_activity"
+            ):
+                return await self._management_invalid_success(principal, proposal)
+            code = "sub_activity_created"
+            summary = f"ledger_unit_id={ledger_unit_id};name={created_name}"
+            text = "sub-activity created"
+        elif operation in ("subactivity.delete", "subactivity.restore"):
+            sub_activity_id = record.get("sub_activity_id")
+            changed = record.get("changed")
+            is_deleted = record.get("is_deleted")
+            financial_version = record.get("financial_version")
+            if (
+                not isinstance(sub_activity_id, str)
+                or not isinstance(changed, bool)
+                or not isinstance(is_deleted, bool)
+                or not isinstance(financial_version, int)
+            ):
+                return await self._management_invalid_success(principal, proposal)
+            if operation == "subactivity.delete":
+                code = "sub_activity_deleted" if changed else "sub_activity_already_deleted"
+                text = "sub-activity deleted" if changed else "sub-activity was already deleted"
+            else:
+                code = "sub_activity_restored" if changed else "sub_activity_not_deleted"
+                text = "sub-activity restored" if changed else "sub-activity was not deleted"
+            summary = (
+                f"ledger_unit_id={sub_activity_id};changed={str(changed).lower()};"
+                f"is_deleted={str(is_deleted).lower()};"
+                f"financial_version={financial_version}"
+            )
+        elif operation == "activity.create":
             activity_id = record.get("activity_id")
             join_code = record.get("join_code")
             name = record.get("activity_name")
@@ -4002,7 +4824,7 @@ class LiveExpenseGateway:
                 )
             if proposal.operation in _MANAGEMENT_OPERATIONS:
                 settled = await self._settle_management_success(
-                    principal, proposal, row,
+                    principal, proposal, row, body,
                 )
                 if settled is not None:
                     return settled
@@ -4549,6 +5371,16 @@ def _activity_management_state(row: dict[str, Any]) -> LiveActivityManagementSta
     )
 
 
+def _ledger_unit_state(row: dict[str, Any]) -> LiveLedgerUnitState:
+    return LiveLedgerUnitState(
+        ledger_unit_id=_uuid(row.get("id")),
+        activity_id=_uuid(row.get("activity_id")),
+        name=str(row.get("name")),
+        unit_type=str(row.get("type")),
+        is_deleted=_bool(row.get("is_deleted")),
+    )
+
+
 def _participant_state(row: dict[str, Any]) -> LiveParticipantState:
     return LiveParticipantState(
         participant_id=_uuid(row.get("id")),
@@ -4975,6 +5807,24 @@ def _management_error_code(operation: str, raw_code: str | None) -> str | None:
         return "actor_not_permitted"
     if raw_code == "28000":
         return "invalid_auth_context"
+    if operation in ("participant.claim", "participant.unclaim"):
+        if raw_code == "P0002":
+            return "participant_not_found"
+        if raw_code == "23505":
+            return "participant_claim_conflict"
+        if raw_code == "55000":
+            return "activity_read_only"
+        return None
+    if operation in ("subactivity.create", "subactivity.delete", "subactivity.restore"):
+        if raw_code == "P0002":
+            return "sub_activity_not_found"
+        if raw_code == "P0001":
+            return "sub_activity_root_missing"
+        if raw_code == "23514":
+            return "sub_activity_participant_invalid"
+        if raw_code == "55000":
+            return "activity_read_only"
+        return None
     if raw_code == "55000":
         return (
             "participant_list_locked"

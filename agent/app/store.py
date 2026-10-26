@@ -1897,6 +1897,9 @@ class SQLiteAgentStore(P2V3StoreMixin):
             FixedExpenseRefundCommand, FixedNegativeAdjustmentCommand,
             FixedActivityCreateCommand, FixedActivityJoinCommand,
             FixedParticipantCreateCommand, FixedParticipantDeleteCommand,
+            FixedParticipantClaimCommand, FixedParticipantUnclaimCommand,
+            FixedSubActivityCreateCommand, FixedSubActivityDeleteCommand,
+            FixedSubActivityRestoreCommand,
             FixedExpensePresentationCommand, FixedExpenseUpdateCommand,
             FixedFinalSettlementCommand,
             FixedPrepaymentCommand, FixedPrepaymentReturnCommand,
@@ -1941,6 +1944,11 @@ class SQLiteAgentStore(P2V3StoreMixin):
                 FixedActivityJoinCommand,
                 FixedParticipantCreateCommand,
                 FixedParticipantDeleteCommand,
+                FixedParticipantClaimCommand,
+                FixedParticipantUnclaimCommand,
+                FixedSubActivityCreateCommand,
+                FixedSubActivityDeleteCommand,
+                FixedSubActivityRestoreCommand,
             )):
                 raise MockExecutionStateError(
                     "the live write path does not support this command"

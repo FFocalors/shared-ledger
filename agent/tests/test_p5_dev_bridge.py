@@ -125,6 +125,18 @@ class _Transport:
         self.join_code = "12345678"
         self.participant_claims: list[dict] = []
         self.participant_usage_rows: dict[str, list[dict]] = {}
+        self.ledger_units = [
+            {
+                "id": str(UNIT), "activity_id": str(ACTIVITY), "name": "Main",
+                "type": "root", "is_deleted": False,
+            },
+        ]
+        self.claim_id = uuid.uuid4()
+        self.claim_is_new = True
+        self.unclaim_released = True
+        self.sub_unit_id = uuid.uuid4()
+        self.sub_delete_changed = True
+        self.sub_restore_changed = True
         self.participants_rows = [
             {
                 "id": str(PAYER), "activity_id": str(ACTIVITY), "name": "Alex",
@@ -211,10 +223,14 @@ class _Transport:
                 {"participant_id": str(PARTICIPANT_2), "amount": "2.50"},
             ]).encode()
         if table == "ledger_units":
-            return 200, json.dumps([{
-                "id": str(UNIT), "activity_id": str(ACTIVITY),
-                "name": "Main", "is_deleted": False,
-            }]).encode()
+            rows = self.ledger_units
+            if "id" in params:
+                wanted = params["id"].removeprefix("eq.")
+                rows = [row for row in rows if row["id"] == wanted]
+            if "activity_id" in params:
+                wanted = params["activity_id"].removeprefix("eq.")
+                rows = [row for row in rows if row["activity_id"] == wanted]
+            return 200, json.dumps(rows).encode()
         if table == "activities":
             row = {
                 "id": str(ACTIVITY),
@@ -269,6 +285,37 @@ class _Transport:
 
     def post_json(self, url, headers, payload, *, timeout, max_response_bytes):  # noqa: ANN001
         self.calls.append({"url": url, "headers": dict(headers), "payload": dict(payload)})
+        if url.endswith("/claim_participant"):
+            return 200, json.dumps([{
+                "claim_id": str(self.claim_id),
+                "claimed_participant_id": payload["participant_id"],
+                "is_new": self.claim_is_new,
+            }]).encode()
+        if url.endswith("/unclaim_participant"):
+            return 200, json.dumps(self.unclaim_released).encode()
+        if url.endswith("/create_sub_activity"):
+            return 200, json.dumps([{
+                "parent_activity_id": str(ACTIVITY),
+                "ledger_unit_id": str(self.sub_unit_id),
+                "created_name": payload["name"],
+                "created_type": "sub_activity",
+            }]).encode()
+        if url.endswith("/delete_sub_activity"):
+            return 200, json.dumps([{
+                "sub_activity_id": payload["sub_activity_id"],
+                "activity_id": str(ACTIVITY),
+                "changed": self.sub_delete_changed,
+                "is_deleted": True,
+                "financial_version": 2,
+            }]).encode()
+        if url.endswith("/restore_sub_activity"):
+            return 200, json.dumps([{
+                "sub_activity_id": payload["sub_activity_id"],
+                "activity_id": str(ACTIVITY),
+                "changed": self.sub_restore_changed,
+                "is_deleted": False,
+                "financial_version": 3,
+            }]).encode()
         if url.endswith("/create_activity"):
             return 200, json.dumps([{
                 "activity_id": str(uuid.uuid4()),
@@ -397,11 +444,15 @@ class _Transport:
         }]).encode()
 
 
-def _build_client(database, transport: _Transport, *, activity_type: str = "normal"):
+def _build_client(
+    database, transport: _Transport, *, activity_type: str = "normal",
+    ledger_unit_type: str = "normal",
+):
     store = SQLiteAgentStore(database, admission_enabled=True)
     provider = _Provider()
     backend = _Backend()
     backend.activity_type = activity_type
+    backend.ledger_unit_type = ledger_unit_type
     auth = _Auth()
     gateway = LiveExpenseGateway(
         LiveWriteConfig(project_url="https://example.supabase.co", publishable_key="test-key"),
@@ -1481,4 +1532,201 @@ def test_dev_management_bridge_refusals_do_not_reach_the_model_or_rpc(tmp_path) 
                 "/create_participant", "/delete_participant",
             ))
             for item in transport.calls
+        )
+
+
+def test_dev_claim_bridge_previews_and_executes(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-claim.sqlite3", transport,
+    )
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "认领 Alex", scoped=True)
+        _wait(components, turn_id, {c.TurnState.WAIT_CONFIRM})
+
+        assert provider.prompts == []
+        details = components.store.get_session_detail(OWNER, session)
+        proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert proposal.operation == "participant.claim"
+        assert proposal.policy_version == "p5-dev-claim-v1"
+        assert isinstance(proposal.preview, c.ManagementPreview)
+        assert proposal.preview.summary.startswith("【P5 开发验证·认领】")
+        assert proposal.preview.participant_name == "Alex"
+
+        response = _confirm(client, proposal)
+        assert response.status_code == 202, response.text
+        assert response.json()["turn"]["execution_resolution"] == "succeeded"
+        claim_calls = [
+            item for item in transport.calls if item["url"].endswith("/claim_participant")
+        ]
+        assert len(claim_calls) == 1
+        assert claim_calls[0]["payload"] == {
+            "activity_id": str(ACTIVITY), "participant_id": str(PAYER),
+        }
+
+
+def test_dev_unclaim_bridge_previews_and_executes(tmp_path) -> None:
+    transport = _Transport()
+    transport.participant_claims = [{
+        "id": str(uuid.uuid4()),
+        "activity_id": str(ACTIVITY),
+        "participant_id": str(PAYER),
+        "user_id": str(OWNER),
+    }]
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-unclaim.sqlite3", transport,
+    )
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "解除认领", scoped=True)
+        _wait(components, turn_id, {c.TurnState.WAIT_CONFIRM})
+
+        details = components.store.get_session_detail(OWNER, session)
+        proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert proposal.operation == "participant.unclaim"
+        assert proposal.preview.summary.startswith("【P5 开发验证·认领】")
+        assert proposal.preview.participant_name == "Alex"
+
+        response = _confirm(client, proposal)
+        assert response.status_code == 202, response.text
+        assert response.json()["turn"]["execution_resolution"] == "succeeded"
+        unclaim_calls = [
+            item for item in transport.calls if item["url"].endswith("/unclaim_participant")
+        ]
+        assert len(unclaim_calls) == 1
+        assert unclaim_calls[0]["payload"] == {"activity_id": str(ACTIVITY)}
+        assert provider.prompts == []
+
+
+def test_dev_sub_activity_bridge_create_delete_restore(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-sub-activity.sqlite3", transport,
+        activity_type="large", ledger_unit_type="root",
+    )
+    with client:
+        session = _create_session(client)
+
+        create_turn = _submit(
+            client, session, "建子活动 小组A 参与人=Alex,Rin", scoped=True,
+        )
+        _wait(components, create_turn, {c.TurnState.WAIT_CONFIRM})
+        details = components.store.get_session_detail(OWNER, session)
+        create_proposal = next(
+            item for item in details.proposals if item.status is c.ProposalStatus.PENDING
+        )
+        assert create_proposal.operation == "subactivity.create"
+        assert create_proposal.policy_version == "p5-dev-sub-activity-v1"
+        assert create_proposal.preview.summary.startswith("【P5 开发验证·子活动】")
+        assert create_proposal.preview.participant_names == ["Alex", "Rin"]
+        create_confirm = _confirm(client, create_proposal)
+        assert create_confirm.status_code == 202, create_confirm.text
+        create_calls = [
+            item for item in transport.calls if item["url"].endswith("/create_sub_activity")
+        ]
+        assert len(create_calls) == 1
+        assert create_calls[0]["payload"] == {
+            "activity_id": str(ACTIVITY),
+            "name": "小组A",
+            "participant_ids": [str(PAYER), str(PARTICIPANT_2)],
+        }
+
+        transport.ledger_units.append({
+            "id": str(transport.sub_unit_id), "activity_id": str(ACTIVITY),
+            "name": "小组A", "type": "sub_activity", "is_deleted": False,
+        })
+        delete_turn = _submit(client, session, "删子活动 小组A", scoped=True)
+        _wait(components, delete_turn, {c.TurnState.WAIT_CONFIRM})
+        details = components.store.get_session_detail(OWNER, session)
+        delete_proposal = next(
+            item for item in details.proposals if item.status is c.ProposalStatus.PENDING
+        )
+        assert delete_proposal.operation == "subactivity.delete"
+        delete_confirm = _confirm(client, delete_proposal)
+        assert delete_confirm.status_code == 202, delete_confirm.text
+        delete_calls = [
+            item for item in transport.calls if item["url"].endswith("/delete_sub_activity")
+        ]
+        assert len(delete_calls) == 1
+        assert delete_calls[0]["payload"] == {
+            "sub_activity_id": str(transport.sub_unit_id),
+        }
+
+        transport.ledger_units[-1]["is_deleted"] = True
+        restore_turn = _submit(client, session, "恢复子活动 小组A", scoped=True)
+        _wait(components, restore_turn, {c.TurnState.WAIT_CONFIRM})
+        details = components.store.get_session_detail(OWNER, session)
+        restore_proposal = next(
+            item for item in details.proposals if item.status is c.ProposalStatus.PENDING
+        )
+        assert restore_proposal.operation == "subactivity.restore"
+        restore_confirm = _confirm(client, restore_proposal)
+        assert restore_confirm.status_code == 202, restore_confirm.text
+        restore_calls = [
+            item for item in transport.calls if item["url"].endswith("/restore_sub_activity")
+        ]
+        assert len(restore_calls) == 1
+        assert provider.prompts == []
+
+
+def test_dev_claim_and_sub_activity_refusals(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-claim-refusals.sqlite3", transport,
+        activity_type="large", ledger_unit_type="root",
+    )
+    with client:
+        session = _create_session(client)
+
+        def refusal(text: str, marker: str) -> None:
+            turn_id = _submit(client, session, text, scoped=True)
+            _wait(components, turn_id, {c.TurnState.COMPLETED})
+            messages = [
+                item["payload"]["text"] for item in _events(client, turn_id)["events"]
+                if item.get("type") == "message"
+            ]
+            assert any(marker in value for value in messages), (text, messages)
+
+        refusal("认领 Nobody", "匹配到多个或找不到")
+        refusal("认领", "用法")
+        refusal("解除认领", "没有可解除的认领")
+        refusal("建子活动 小组A 参与人=Nobody", "匹配到多个或找不到")
+        refusal("建子活动 小组A", "用法")
+        refusal("删子活动 Missing", "匹配到多个或找不到")
+        refusal("恢复子活动", "用法")
+
+        details = components.store.get_session_detail(OWNER, session)
+        assert not any(item.status is c.ProposalStatus.PENDING for item in details.proposals)
+        assert provider.prompts == []
+        assert not any(
+            item["url"].endswith((
+                "/claim_participant", "/unclaim_participant",
+                "/create_sub_activity", "/delete_sub_activity",
+                "/restore_sub_activity",
+            ))
+            for item in transport.calls
+        )
+
+
+def test_dev_sub_activity_bridge_refuses_ordinary_activities(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-sub-normal.sqlite3", transport,
+        activity_type="normal", ledger_unit_type="root",
+    )
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "建子活动 小组A 参与人=Alex", scoped=True)
+        _wait(components, turn_id, {c.TurnState.COMPLETED})
+        messages = [
+            item["payload"]["text"] for item in _events(client, turn_id)["events"]
+            if item.get("type") == "message"
+        ]
+        assert any("只有大型活动支持子活动" in value for value in messages), messages
+        details = components.store.get_session_detail(OWNER, session)
+        assert not any(item.status is c.ProposalStatus.PENDING for item in details.proposals)
+        assert provider.prompts == []
+        assert not any(
+            item["url"].endswith("/create_sub_activity") for item in transport.calls
         )

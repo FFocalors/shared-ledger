@@ -118,6 +118,7 @@ class _Backend:
         self.version_checks: list[dict[uuid.UUID, int]] = []
         self.gateway_calls = 0
         self.activity_type = "normal"
+        self.ledger_unit_type = "normal"
 
     def start(self) -> None:
         pass
@@ -150,7 +151,7 @@ class _Backend:
                 P2ParticipantDTO(PAYER, ACTIVITY, "Alex", 1, False),
                 P2ParticipantDTO(PARTICIPANT_2, ACTIVITY, "Rin", 2, False),
             ),
-            (P2LedgerUnitDTO(UNIT, ACTIVITY, "Main", "normal", False, False),),
+            (P2LedgerUnitDTO(UNIT, ACTIVITY, "Main", self.ledger_unit_type, False, False),),
             (), datetime.now(timezone.utc),
         )
 
