@@ -1470,6 +1470,40 @@ class FinalSettlementIntent(ContractModel):
         return self
 
 
+JoinCode = Annotated[str, StringConstraints(strict=True, pattern=r"^[0-9]{8}$")]
+ActivityTypeName = Literal["normal", "large"]
+
+
+class ActivityCreateIntent(ContractModel):
+    """P5.8a: create an Activity owned by the authenticated caller."""
+
+    kind: Literal["activity.create"]
+    name: TitleText
+    activity_type: ActivityTypeName
+    base_currency: CurrencyCode
+    multi_currency_enabled: bool = False
+
+
+class ActivityJoinIntent(ContractModel):
+    """P5.8a: join an Activity by its 8-digit code. Never a Participant claim."""
+
+    kind: Literal["activity.join"]
+    join_code: JoinCode
+
+
+class ParticipantCreateIntent(ContractModel):
+    kind: Literal["participant.create"]
+    activity_id: EntityId
+    name: TitleText
+    participant_order: Optional[Annotated[int, Field(strict=True, ge=0)]] = None
+
+
+class ParticipantDeleteIntent(ContractModel):
+    kind: Literal["participant.delete"]
+    activity_id: EntityId
+    participant_id: EntityId
+
+
 class ExpenseRefundIntent(ContractModel):
     """Linked refund intent (P5.4). Amounts are positive magnitudes.
 
@@ -1640,6 +1674,10 @@ ProposalOperation = Literal[
     "settlement.final",
     "expense.refund",
     "expense.negative_adjustment",
+    "activity.create",
+    "activity.join",
+    "participant.create",
+    "participant.delete",
 ]
 ProposalIntent = Annotated[
     Union[
@@ -1654,6 +1692,10 @@ ProposalIntent = Annotated[
         FinalSettlementIntent,
         ExpenseRefundIntent,
         NegativeAdjustmentIntent,
+        ActivityCreateIntent,
+        ActivityJoinIntent,
+        ParticipantCreateIntent,
+        ParticipantDeleteIntent,
     ],
     Field(discriminator="kind"),
 ]
@@ -2672,6 +2714,49 @@ class FixedNegativeAdjustmentCommand(ContractModel):
         return self
 
 
+class FixedActivityCreateCommand(ContractModel):
+    """P5.8a. The server fixes the creator from the caller's own identity."""
+
+    operation: Literal["activity.create"]
+    name: TitleText
+    activity_type: ActivityTypeName
+    base_currency: CurrencyCode
+    multi_currency_enabled: bool = False
+
+
+class FixedActivityJoinCommand(ContractModel):
+    operation: Literal["activity.join"]
+    join_code: JoinCode
+
+
+class FixedParticipantCreateCommand(ContractModel):
+    operation: Literal["participant.create"]
+    activity_id: EntityId
+    name: TitleText
+    participant_order: Optional[Annotated[int, Field(strict=True, ge=0)]] = None
+    expected_participants_locked: bool = False
+    expected_activity_archived: bool = False
+    expected_activity_deleted: bool = False
+
+
+class FixedParticipantDeleteCommand(ContractModel):
+    operation: Literal["participant.delete"]
+    activity_id: EntityId
+    participant_id: EntityId
+    expected_participant_name: TitleText
+    expected_participant_deleted: bool = False
+    expected_claimed_or_used: bool = False
+    expected_participants_locked: bool = False
+    expected_activity_archived: bool = False
+    expected_activity_deleted: bool = False
+
+    @model_validator(mode="after")
+    def a_used_participant_cannot_be_deleted(self) -> "FixedParticipantDeleteCommand":
+        if self.expected_claimed_or_used:
+            raise ValueError("a claimed or financially used Participant cannot be deleted")
+        return self
+
+
 FixedCommand = Annotated[
     Union[
         FixedExpenseCreateCommand,
@@ -2685,13 +2770,18 @@ FixedCommand = Annotated[
         FixedFinalSettlementCommand,
         FixedExpenseRefundCommand,
         FixedNegativeAdjustmentCommand,
+        FixedActivityCreateCommand,
+        FixedActivityJoinCommand,
+        FixedParticipantCreateCommand,
+        FixedParticipantDeleteCommand,
     ],
     Field(discriminator="operation"),
 ]
 
 
 class PreconditionSnapshot(ContractModel):
-    activity_id: EntityId
+    # Account-level operations (create/join an Activity) have no Activity yet.
+    activity_id: Optional[EntityId] = None
     permission_checked: Literal[True]
     agent_disable_revision: Annotated[int, Field(strict=True, ge=0)]
     activity_financial_version: Optional[FinancialVersion] = None
@@ -3235,11 +3325,91 @@ class NegativeAdjustmentPreview(ContractModel):
         return self
 
 
+ManagementSummaryText = Annotated[
+    str, StringConstraints(strict=True, min_length=1, max_length=600),
+]
+
+
+class ManagementPreview(ContractModel):
+    """P5.8a Activity / Participant management preview.
+
+    These operations are not bound to an existing Activity scope: creating or
+    joining an Activity happens before one exists, and the proposal therefore
+    carries no Activity id for those two.
+    """
+
+    kind: Literal["management"]
+    summary: ManagementSummaryText
+    operation: Literal[
+        "activity.create", "activity.join", "participant.create", "participant.delete",
+    ]
+    activity_id: Optional[EntityId] = None
+    activity_name: Optional[TitleText] = None
+    activity_type: Optional[ActivityTypeName] = None
+    base_currency: Optional[CurrencyCode] = None
+    multi_currency_enabled: Optional[bool] = None
+    join_code: Optional[JoinCode] = None
+    participant_id: Optional[EntityId] = None
+    participant_name: Optional[TitleText] = None
+    participant_order: Optional[Annotated[int, Field(strict=True, ge=0)]] = None
+    generated_at: datetime
+    simulation: bool
+
+    @field_validator("generated_at")
+    @classmethod
+    def generated_at_is_aware(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("generated_at must include a timezone")
+        return value
+
+    @model_validator(mode="after")
+    def fields_match_the_operation(self) -> "ManagementPreview":
+        participant_fields = (
+            self.participant_id, self.participant_name, self.participant_order,
+        )
+        if self.operation == "activity.create":
+            if (
+                self.activity_name is None
+                or self.activity_type is None
+                or self.base_currency is None
+                or self.multi_currency_enabled is None
+            ):
+                raise ValueError("activity create preview needs name, type, currency and flag")
+            if self.activity_id is not None or self.join_code is not None:
+                raise ValueError("activity create preview has no Activity or join code yet")
+            if any(value is not None for value in participant_fields):
+                raise ValueError("activity create preview carries no participant fields")
+        elif self.operation == "activity.join":
+            if self.join_code is None:
+                raise ValueError("activity join preview needs the join code")
+            if self.activity_id is not None or self.activity_name is not None:
+                raise ValueError("activity join preview cannot disclose the Activity before joining")
+            if any(value is not None for value in participant_fields):
+                raise ValueError("activity join preview carries no participant fields")
+        elif self.operation == "participant.create":
+            if self.activity_id is None or self.participant_name is None:
+                raise ValueError("participant create preview needs the Activity and name")
+            if self.join_code is not None or self.participant_id is not None:
+                raise ValueError("participant create preview cannot carry ids it does not have")
+            if self.activity_name is None:
+                raise ValueError("participant create preview must name the Activity")
+        else:
+            if (
+                self.activity_id is None
+                or self.participant_id is None
+                or self.participant_name is None
+            ):
+                raise ValueError("participant delete preview needs the Activity and Participant")
+            if self.join_code is not None or self.participant_order is not None:
+                raise ValueError("participant delete preview carries no join code or order")
+        return self
+
+
 ProposalPreview = Annotated[
     Union[
         ExpensePreview, RepaymentPreview, TransferVoidPreview,
         PrepaymentPreview, PrepaymentReturnPreview, FinalSettlementPreview,
-        RefundPreview, NegativeAdjustmentPreview,
+        RefundPreview, NegativeAdjustmentPreview, ManagementPreview,
     ],
     Field(discriminator="kind"),
 ]
@@ -3728,8 +3898,11 @@ class ProposalRecord(ContractModel):
         if self.expires_at.tzinfo is None or self.expires_at.utcoffset() is None:
             raise ValueError("expires_at must include a timezone")
         if self.mode == "backend" and self.canonical_command is not None and self.preconditions is not None:
-            command_activity_id = self.canonical_command.activity_id
-            if self.preconditions.activity_id != command_activity_id:
+            command_activity_id = getattr(self.canonical_command, "activity_id", None)
+            if (
+                command_activity_id is not None
+                and self.preconditions.activity_id != command_activity_id
+            ):
                 raise ValueError("backend Proposal precondition must bind the command Activity")
             if self.preconditions.policy_version != self.policy_version:
                 raise ValueError("backend Proposal policy version must match its precondition snapshot")
@@ -3878,6 +4051,67 @@ class ProposalRecord(ContractModel):
                     or self.preview.title != command.title
                 ):
                     raise ValueError("negative adjustment preview must match the command")
+            elif isinstance(self.canonical_command, FixedActivityCreateCommand):
+                if not isinstance(self.preview, ManagementPreview) or self.preview.operation != "activity.create":
+                    raise ValueError("activity create command requires its management preview")
+                command = self.canonical_command
+                if self.preconditions.activity_id is not None:
+                    raise ValueError("activity create Proposal has no Activity yet")
+                if (
+                    self.preconditions.activity_financial_version is not None
+                    or self.preconditions.expense_version is not None
+                ):
+                    raise ValueError("activity create Proposal has no financial preconditions")
+                if (
+                    self.preview.activity_name != command.name
+                    or self.preview.activity_type != command.activity_type
+                    or self.preview.base_currency != command.base_currency
+                    or self.preview.multi_currency_enabled != command.multi_currency_enabled
+                ):
+                    raise ValueError("activity create preview must match the command")
+            elif isinstance(self.canonical_command, FixedActivityJoinCommand):
+                if not isinstance(self.preview, ManagementPreview) or self.preview.operation != "activity.join":
+                    raise ValueError("activity join command requires its management preview")
+                command = self.canonical_command
+                if self.preconditions.activity_id is not None:
+                    raise ValueError("activity join Proposal cannot disclose the Activity before joining")
+                if (
+                    self.preconditions.activity_financial_version is not None
+                    or self.preconditions.expense_version is not None
+                ):
+                    raise ValueError("activity join Proposal has no financial preconditions")
+                if self.preview.join_code != command.join_code:
+                    raise ValueError("activity join preview must match the command code")
+            elif isinstance(self.canonical_command, FixedParticipantCreateCommand):
+                if not isinstance(self.preview, ManagementPreview) or self.preview.operation != "participant.create":
+                    raise ValueError("participant create command requires its management preview")
+                command = self.canonical_command
+                if (
+                    self.preconditions.activity_financial_version is not None
+                    or self.preconditions.expense_version is not None
+                ):
+                    raise ValueError("participant create Proposal has no financial preconditions")
+                if (
+                    self.preview.activity_id != command.activity_id
+                    or self.preview.participant_name != command.name
+                    or self.preview.participant_order != command.participant_order
+                ):
+                    raise ValueError("participant create preview must match the command")
+            elif isinstance(self.canonical_command, FixedParticipantDeleteCommand):
+                if not isinstance(self.preview, ManagementPreview) or self.preview.operation != "participant.delete":
+                    raise ValueError("participant delete command requires its management preview")
+                command = self.canonical_command
+                if (
+                    self.preconditions.activity_financial_version is not None
+                    or self.preconditions.expense_version is not None
+                ):
+                    raise ValueError("participant delete Proposal has no financial preconditions")
+                if (
+                    self.preview.activity_id != command.activity_id
+                    or self.preview.participant_id != command.participant_id
+                    or self.preview.participant_name != command.expected_participant_name
+                ):
+                    raise ValueError("participant delete preview must match the command")
             elif isinstance(self.canonical_command, FixedExpenseCreateCommand):
                 if not isinstance(self.preview, ExpensePreview):
                     raise ValueError("expense command requires an Expense preview")

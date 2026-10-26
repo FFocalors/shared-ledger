@@ -1895,6 +1895,8 @@ class SQLiteAgentStore(P2V3StoreMixin):
             ConfirmProposalRequest, ExecutionIdentity, ExecutionReference,
             FixedExpenseCreateCommand, FixedExpenseDeleteCommand,
             FixedExpenseRefundCommand, FixedNegativeAdjustmentCommand,
+            FixedActivityCreateCommand, FixedActivityJoinCommand,
+            FixedParticipantCreateCommand, FixedParticipantDeleteCommand,
             FixedExpensePresentationCommand, FixedExpenseUpdateCommand,
             FixedFinalSettlementCommand,
             FixedPrepaymentCommand, FixedPrepaymentReturnCommand,
@@ -1935,6 +1937,10 @@ class SQLiteAgentStore(P2V3StoreMixin):
                 FixedPrepaymentCommand,
                 FixedPrepaymentReturnCommand,
                 FixedFinalSettlementCommand,
+                FixedActivityCreateCommand,
+                FixedActivityJoinCommand,
+                FixedParticipantCreateCommand,
+                FixedParticipantDeleteCommand,
             )):
                 raise MockExecutionStateError(
                     "the live write path does not support this command"
@@ -1953,10 +1959,11 @@ class SQLiteAgentStore(P2V3StoreMixin):
             effect = mock_effect_for_command(proposal.canonical_command)
             activity_id = effect.activity_id
         else:
-            activity_id = proposal.canonical_command.activity_id
+            # Account-level management operations have no Activity to guard.
+            activity_id = getattr(proposal.canonical_command, "activity_id", None)
         # Permission and Activity lifecycle are re-checked at dispatch, not only
         # when the preview was rendered: a proposal can outlive either.
-        if activity_guard is not None:
+        if activity_guard is not None and activity_id is not None:
             activity_guard(activity_id)
         if execution_kind == "mock":
             with self._connection() as connection:

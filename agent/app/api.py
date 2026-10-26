@@ -376,10 +376,17 @@ async def _scope_authorize(
         raise _ApiFailure(503, ApiErrorCode.DEPENDENCY_UNAVAILABLE, "Activity access verification is unavailable.", retryable=True) from None
 
 
-async def _scope_card_visible(components: AppComponents, principal: Principal, ids: set[uuid.UUID], action: str) -> bool:
-    # A persisted preview/card must always have a server-resolved activity binding.
-    # An empty set means this card cannot establish the scope it would disclose.
-    if not ids or components.scope_authorizer is None:
+async def _scope_card_visible(
+    components: AppComponents, principal: Principal, ids: set[uuid.UUID], action: str,
+    *, scope_free: bool = False,
+) -> bool:
+    # A persisted preview/card must always have a server-resolved activity binding,
+    # unless the proposal is an account-level management operation that has no
+    # Activity yet. An empty set otherwise means this card cannot establish the
+    # scope it would disclose.
+    if not ids:
+        return scope_free
+    if components.scope_authorizer is None:
         return False
     try:
         await asyncio.to_thread(components.scope_authorizer.authorize, principal, frozenset(ids), action=action)
@@ -394,11 +401,54 @@ def _scope_ids_for_turn(aggregate: TurnAggregate, proposals: tuple[ProposalRecor
     ids = {item.scope_activity_id for item in aggregate.record.bound_references}
     ids.update(item.scope_activity_id for item in aggregate.record.bound_evidence_references)
     for proposal in proposals:
-        if proposal.preconditions is not None:
+        if proposal.preconditions is not None and proposal.preconditions.activity_id is not None:
             ids.add(proposal.preconditions.activity_id)
         if proposal.canonical_command is not None:
-            ids.add(proposal.canonical_command.activity_id)
+            command_activity_id = getattr(proposal.canonical_command, "activity_id", None)
+            if command_activity_id is not None:
+                ids.add(command_activity_id)
     return ids
+
+
+# Account-level management operations run before an Activity exists (create) or
+# without knowing it (join), so their proposals legitimately carry no scope.
+_MANAGEMENT_OPERATIONS = frozenset({
+    "activity.create", "activity.join", "participant.create", "participant.delete",
+})
+
+
+def _is_management_proposal(proposal: ProposalRecord) -> bool:
+    return proposal.operation in _MANAGEMENT_OPERATIONS
+
+
+def _scope_free_management_turn(
+    aggregate: TurnAggregate, proposals: tuple[ProposalRecord, ...],
+) -> bool:
+    """A Turn whose only proposal is an account-level management one.
+
+    It must carry no bound references, no read results and no policy evidence.
+    Its execution receipt describes only the caller's own management write.
+    """
+    if not proposals:
+        return False
+    if aggregate.record.bound_references or aggregate.record.bound_evidence_references:
+        return False
+    checkpoint = aggregate.checkpoint
+    if checkpoint.read_results or checkpoint.persisted_policy_evidence:
+        return False
+    return all(_is_management_proposal(item) for item in proposals)
+
+
+def _is_dev_bridge_refusal_event(aggregate: TurnAggregate, event: Any) -> bool:
+    """A dev-bridge refusal is one non-simulated message in a decision-free Turn."""
+    if getattr(event, "type", None) != "message" or getattr(event, "simulation", True):
+        return False
+    if aggregate.record.bound_references or aggregate.record.bound_evidence_references:
+        return False
+    checkpoint = aggregate.checkpoint
+    if checkpoint.read_results or checkpoint.persisted_policy_evidence:
+        return False
+    return checkpoint.last_decision is None
 
 
 def _safe_scope_free_event(aggregate: TurnAggregate, event: Any, runtime: Any = None) -> bool:
@@ -814,9 +864,15 @@ def install_api_routes(app: FastAPI) -> None:
         except _ApiFailure:
             control = AgentControlSnapshot(enabled=False, disable_revision=0)
         candidates = _cards(view.proposals, states, control)
+        management_ids = {
+            item.proposal_id for item in view.proposals if _is_management_proposal(item)
+        }
         visible_cards = []
         for card in candidates:
-            if await _scope_card_visible(components, principal, proposal_scopes.get(card.proposal_id, set()), "session_card"):
+            if await _scope_card_visible(
+                components, principal, proposal_scopes.get(card.proposal_id, set()),
+                "session_card", scope_free=card.proposal_id in management_ids,
+            ):
                 visible_cards.append(card)
         response = SessionDetailResponse(session=view.summary, turns=list(view.turns), proposal_cards=visible_cards)
         return _wire_response(response)
@@ -900,11 +956,16 @@ def install_api_routes(app: FastAPI) -> None:
                 protected_v3_sequences.add(event.seq)
                 protected_v3_activity_ids.update(protected_ids)
                 continue
+            if _is_dev_bridge_refusal_event(view.turn, event):
+                continue
             needs_scope.append(event)
         all_scope_ids = scope_ids | protected_v3_activity_ids
-        if needs_scope and not scope_ids:
+        scope_free_turn = not scope_ids and _scope_free_management_turn(
+            view.turn, view.proposals,
+        )
+        if needs_scope and not scope_ids and not scope_free_turn:
             raise _ApiFailure(503, ApiErrorCode.DEPENDENCY_UNAVAILABLE, "Activity scope for stored facts is unavailable.", retryable=True)
-        if needs_scope or protected_v3_sequences:
+        if (needs_scope or protected_v3_sequences) and not scope_free_turn:
             await _scope_authorize(components, principal, all_scope_ids, "turn_events", request=request)
         try:
             control = await _agent_snapshot(components)
@@ -915,9 +976,15 @@ def install_api_routes(app: FastAPI) -> None:
         has_more_visible_or_unread = bool(view.has_more or raw_after_delivered)
         states = {proposal.proposal_id: view.turn.record.turn for proposal in view.proposals}
         candidates = _cards(view.proposals, states, control)
+        management_ids = {
+            item.proposal_id for item in view.proposals if _is_management_proposal(item)
+        }
         visible_cards = []
         for card in candidates:
-            if await _scope_card_visible(components, principal, scope_ids, "turn_card"):
+            if await _scope_card_visible(
+                components, principal, scope_ids, "turn_card",
+                scope_free=card.proposal_id in management_ids,
+            ):
                 visible_cards.append(card)
         response = PollEventsResponse(turn=_public_status(view.turn.record.turn), after_seq=query.after_seq,
             events=events, next_after_seq=next_after,
@@ -1135,8 +1202,11 @@ def install_api_routes(app: FastAPI) -> None:
         turn: TurnAggregate = await _store_call(components.store.get_turn, principal.user_id, proposal.turn_id)
         scope_ids = _scope_ids_for_turn(turn, (proposal,))
         if not scope_ids:
-            raise _ApiFailure(503, ApiErrorCode.DEPENDENCY_UNAVAILABLE, "Activity scope for the proposal is unavailable.", retryable=True)
-        await _scope_authorize(components, principal, scope_ids, "proposal_confirm", request=request)
+            # Account-level management operations have no Activity to authorize.
+            if not _is_management_proposal(proposal):
+                raise _ApiFailure(503, ApiErrorCode.DEPENDENCY_UNAVAILABLE, "Activity scope for the proposal is unavailable.", retryable=True)
+        else:
+            await _scope_authorize(components, principal, scope_ids, "proposal_confirm", request=request)
         if (
             components.live_gateway is not None
             and proposal.execution is not None

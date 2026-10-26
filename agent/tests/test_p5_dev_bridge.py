@@ -122,6 +122,19 @@ class _Transport:
         }]
         self.voided_result = True
         self.refunds: list[dict] = []
+        self.join_code = "12345678"
+        self.participant_claims: list[dict] = []
+        self.participant_usage_rows: dict[str, list[dict]] = {}
+        self.participants_rows = [
+            {
+                "id": str(PAYER), "activity_id": str(ACTIVITY), "name": "Alex",
+                "participant_order": 0, "is_deleted": False,
+            },
+            {
+                "id": str(PARTICIPANT_2), "activity_id": str(ACTIVITY), "name": "Rin",
+                "participant_order": 1, "is_deleted": False,
+            },
+        ]
         self.prepayment_balance = "0.0000"
         self.prepayment_remaining = "0.0000"
         self.settlement_plan = [
@@ -185,10 +198,14 @@ class _Transport:
                 ]).encode()
             return 200, json.dumps([self.expense]).encode()
         if table == "payments":
+            if "participant_id" in params:
+                return 200, json.dumps(self.participant_usage_rows.get("payments", [])).encode()
             return 200, json.dumps([{
                 "participant_id": str(PAYER), "amount": "5.00",
             }]).encode()
         if table == "splits":
+            if "participant_id" in params:
+                return 200, json.dumps(self.participant_usage_rows.get("splits", [])).encode()
             return 200, json.dumps([
                 {"participant_id": str(PAYER), "amount": "2.50"},
                 {"participant_id": str(PARTICIPANT_2), "amount": "2.50"},
@@ -199,14 +216,44 @@ class _Transport:
                 "name": "Main", "is_deleted": False,
             }]).encode()
         if table == "activities":
-            return 200, json.dumps([{
+            row = {
                 "id": str(ACTIVITY),
+                "name": "Trip",
+                "type": "normal",
+                "base_currency": "USD",
+                "multi_currency_enabled": False,
                 "created_by": self.activity_creator,
                 "archived_at": None,
                 "is_deleted": False,
+                "participants_locked_at": None,
+                "join_code": self.join_code,
                 "financial_version": 1,
-            }]).encode()
+            }
+            if "join_code" in params and params["join_code"].removeprefix("eq.") != row["join_code"]:
+                return 200, b"[]"
+            if "name" in params and params["name"].removeprefix("eq.") != row["name"]:
+                return 200, b"[]"
+            return 200, json.dumps([row]).encode()
+        if table == "participants":
+            rows = self.participants_rows
+            if "id" in params:
+                wanted = params["id"].removeprefix("eq.")
+                rows = [item for item in rows if item["id"] == wanted]
+            if "activity_id" in params:
+                wanted = params["activity_id"].removeprefix("eq.")
+                rows = [item for item in rows if item["activity_id"] == wanted]
+            return 200, json.dumps(rows).encode()
+        if table == "participant_claims":
+            return 200, json.dumps(self.participant_claims).encode()
         if table == "transfers":
+            if any(
+                key in params for key in (
+                    "from_participant_id", "to_participant_id", "on_behalf_of_participant_id",
+                )
+            ):
+                return 200, json.dumps(
+                    self.participant_usage_rows.get("transfers", []),
+                ).encode()
             wanted = params.get("id")
             if wanted is not None:
                 wanted_id = wanted.removeprefix("eq.")
@@ -222,6 +269,28 @@ class _Transport:
 
     def post_json(self, url, headers, payload, *, timeout, max_response_bytes):  # noqa: ANN001
         self.calls.append({"url": url, "headers": dict(headers), "payload": dict(payload)})
+        if url.endswith("/create_activity"):
+            return 200, json.dumps([{
+                "activity_id": str(uuid.uuid4()),
+                "join_code": "87654321",
+                "activity_name": payload["name"],
+                "activity_type": payload["type"],
+                "activity_base_currency": payload["base_currency"],
+                "activity_multi_currency_enabled": payload["multi_currency_enabled"],
+            }]).encode()
+        if url.endswith("/join_activity_by_code"):
+            return 200, json.dumps([{"activity_id": str(ACTIVITY), "is_new": True}]).encode()
+        if url.endswith("/create_participant"):
+            return 200, json.dumps([{
+                "participant_id": str(uuid.uuid4()),
+                "participant_name": payload["name"],
+                "participant_order": 2,
+            }]).encode()
+        if url.endswith("/delete_participant"):
+            return 200, json.dumps([{
+                "participant_id": payload["participant_id"],
+                "deleted": True,
+            }]).encode()
         if url.endswith("/preview_final_settlement_v2"):
             return 200, json.dumps(self.settlement_plan).encode()
         if url.endswith("/execute_final_settlement_v2"):
@@ -1257,3 +1326,159 @@ def test_dev_plain_create_refuses_a_negative_amount(tmp_path) -> None:
         assert not any(item.status is c.ProposalStatus.PENDING for item in details.proposals)
         assert provider.prompts == []
         assert transport.calls == []
+
+
+def test_dev_activity_create_bridge_works_without_a_scope(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-activity-create.sqlite3", transport,
+    )
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "建活动 秋游 大型 JPY", scoped=False)
+        _wait(components, turn_id, {c.TurnState.WAIT_CONFIRM})
+
+        assert provider.prompts == []
+        details = components.store.get_session_detail(OWNER, session)
+        proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert proposal.operation == "activity.create"
+        assert proposal.policy_version == "p5-dev-management-v1"
+        assert isinstance(proposal.preview, c.ManagementPreview)
+        assert proposal.preview.summary.startswith("【P5 开发验证·管理】")
+        assert proposal.preconditions.activity_id is None
+
+        # The card is listable and confirmable without any Activity scope.
+        listed = client.get(f"/v1/sessions/{session}", headers=_auth())
+        assert listed.status_code == 200, listed.text
+        assert any(
+            card["proposal_id"] == str(proposal.proposal_id)
+            for card in listed.json()["proposal_cards"]
+        )
+
+        response = _confirm(client, proposal)
+        assert response.status_code == 202, response.text
+        assert response.json()["turn"]["execution_resolution"] == "succeeded"
+        create_calls = [
+            item for item in transport.calls if item["url"].endswith("/create_activity")
+        ]
+        assert len(create_calls) == 1
+        assert create_calls[0]["payload"] == {
+            "name": "秋游",
+            "type": "large",
+            "base_currency": "JPY",
+            "multi_currency_enabled": False,
+        }
+        # The Turn's own receipt stays readable without an Activity scope.
+        events_body = _events(client, turn_id)
+        assert any(
+            item.get("type") == "execution_result" for item in events_body["events"]
+        )
+
+
+def test_dev_activity_join_bridge_works_without_a_scope(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-activity-join.sqlite3", transport,
+    )
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "加入活动 12345678", scoped=False)
+        _wait(components, turn_id, {c.TurnState.WAIT_CONFIRM})
+
+        assert provider.prompts == []
+        details = components.store.get_session_detail(OWNER, session)
+        proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert proposal.operation == "activity.join"
+        assert proposal.preview.join_code == "12345678"
+        assert "加入不等于认领参与人" in proposal.preview.summary
+        assert proposal.preconditions.activity_id is None
+
+        response = _confirm(client, proposal)
+        assert response.status_code == 202, response.text
+        assert response.json()["turn"]["execution_resolution"] == "succeeded"
+        join_calls = [
+            item for item in transport.calls if item["url"].endswith("/join_activity_by_code")
+        ]
+        assert len(join_calls) == 1
+        assert join_calls[0]["payload"] == {"join_code": "12345678"}
+
+
+def test_dev_participant_bridge_adds_and_deletes(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-participants.sqlite3", transport,
+    )
+    with client:
+        session = _create_session(client)
+
+        add_turn = _submit(client, session, "加参与人 Ben", scoped=True)
+        _wait(components, add_turn, {c.TurnState.WAIT_CONFIRM})
+        details = components.store.get_session_detail(OWNER, session)
+        add_proposal = next(
+            item for item in details.proposals if item.status is c.ProposalStatus.PENDING
+        )
+        assert add_proposal.operation == "participant.create"
+        assert add_proposal.preview.participant_name == "Ben"
+        add_confirm = _confirm(client, add_proposal)
+        assert add_confirm.status_code == 202, add_confirm.text
+        assert add_confirm.json()["turn"]["execution_resolution"] == "succeeded"
+        add_calls = [
+            item for item in transport.calls if item["url"].endswith("/create_participant")
+        ]
+        assert len(add_calls) == 1
+        assert add_calls[0]["payload"] == {
+            "activity_id": str(ACTIVITY), "name": "Ben", "participant_order": None,
+        }
+
+        delete_turn = _submit(client, session, "删参与人 Alex", scoped=True)
+        _wait(components, delete_turn, {c.TurnState.WAIT_CONFIRM})
+        details = components.store.get_session_detail(OWNER, session)
+        delete_proposal = next(
+            item for item in details.proposals if item.status is c.ProposalStatus.PENDING
+        )
+        assert delete_proposal.operation == "participant.delete"
+        assert delete_proposal.preview.participant_name == "Alex"
+        delete_confirm = _confirm(client, delete_proposal)
+        assert delete_confirm.status_code == 202, delete_confirm.text
+        assert delete_confirm.json()["turn"]["execution_resolution"] == "succeeded"
+        delete_calls = [
+            item for item in transport.calls if item["url"].endswith("/delete_participant")
+        ]
+        assert len(delete_calls) == 1
+        assert delete_calls[0]["payload"] == {"participant_id": str(PAYER)}
+        assert provider.prompts == []
+
+
+def test_dev_management_bridge_refusals_do_not_reach_the_model_or_rpc(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-management-refusals.sqlite3", transport,
+    )
+    with client:
+        session = _create_session(client)
+
+        def refusal(text: str, marker: str, *, scoped: bool = True) -> None:
+            turn_id = _submit(client, session, text, scoped=scoped)
+            _wait(components, turn_id, {c.TurnState.COMPLETED})
+            messages = [
+                item["payload"]["text"] for item in _events(client, turn_id)["events"]
+                if item.get("type") == "message"
+            ]
+            assert any(marker in value for value in messages), (text, messages)
+
+        refusal("加参与人 Alex", "已有同名参与人")
+        refusal("加参与人", "用法")
+        refusal("删参与人 Nobody", "匹配到多个或找不到")
+        refusal("建活动 秋游 中型 JPY", "用法", scoped=False)
+        refusal("加入活动 1234", "用法", scoped=False)
+
+        details = components.store.get_session_detail(OWNER, session)
+        assert not any(item.status is c.ProposalStatus.PENDING for item in details.proposals)
+        assert provider.prompts == []
+        assert not any(
+            item["url"].endswith((
+                "/create_activity", "/join_activity_by_code",
+                "/create_participant", "/delete_participant",
+            ))
+            for item in transport.calls
+        )

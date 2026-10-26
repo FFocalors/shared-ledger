@@ -475,6 +475,136 @@ def build_dev_negative_adjustment_intent(
         raise DevIntentRefused("负调整金额或分摊集合不合法。") from exc
 
 
+@dataclass(frozen=True, slots=True)
+class DevActivityCreateCommand:
+    name: str
+    activity_type: str
+    currency: str
+
+
+@dataclass(frozen=True, slots=True)
+class DevActivityJoinCommand:
+    join_code: str
+
+
+@dataclass(frozen=True, slots=True)
+class DevParticipantCommand:
+    name: str
+
+
+_ACTIVITY_CREATE = re.compile(
+    r"^\s*建活动\s+(?P<name>.+?)\s+(?P<type>普通|大型)\s+(?P<currency>[A-Za-z]{3})\s*$"
+)
+_ACTIVITY_JOIN = re.compile(r"^\s*加入活动\s+(?P<code>[0-9]{8})\s*$")
+_PARTICIPANT_ADD = re.compile(r"^\s*加参与人\s+(?P<name>.+?)\s*$")
+_PARTICIPANT_DELETE = re.compile(r"^\s*删参与人\s+(?P<name>.+?)\s*$")
+
+
+def is_dev_activity_create_command(text: str) -> bool:
+    return isinstance(text, str) and text.lstrip().startswith("建活动")
+
+
+def is_dev_activity_join_command(text: str) -> bool:
+    return isinstance(text, str) and text.lstrip().startswith("加入活动")
+
+
+def is_dev_participant_create_command(text: str) -> bool:
+    return isinstance(text, str) and text.lstrip().startswith("加参与人")
+
+
+def is_dev_participant_delete_command(text: str) -> bool:
+    return isinstance(text, str) and text.lstrip().startswith("删参与人")
+
+
+def parse_dev_activity_create_command(text: str) -> DevActivityCreateCommand | None:
+    """Parse `建活动 <名称> <普通|大型> <币种>`."""
+    if not isinstance(text, str):
+        return None
+    match = _ACTIVITY_CREATE.match(text)
+    if match is None:
+        return None
+    name = match.group("name").strip()
+    if not name:
+        return None
+    return DevActivityCreateCommand(
+        name=name,
+        activity_type="large" if match.group("type") == "大型" else "normal",
+        currency=match.group("currency").upper(),
+    )
+
+
+def parse_dev_activity_join_command(text: str) -> DevActivityJoinCommand | None:
+    if not isinstance(text, str):
+        return None
+    match = _ACTIVITY_JOIN.match(text)
+    if match is None:
+        return None
+    return DevActivityJoinCommand(join_code=match.group("code"))
+
+
+def parse_dev_participant_create_command(text: str) -> DevParticipantCommand | None:
+    if not isinstance(text, str):
+        return None
+    match = _PARTICIPANT_ADD.match(text)
+    if match is None:
+        return None
+    name = match.group("name").strip()
+    return DevParticipantCommand(name=name) if name else None
+
+
+def parse_dev_participant_delete_command(text: str) -> DevParticipantCommand | None:
+    if not isinstance(text, str):
+        return None
+    match = _PARTICIPANT_DELETE.match(text)
+    if match is None:
+        return None
+    name = match.group("name").strip()
+    return DevParticipantCommand(name=name) if name else None
+
+
+def build_dev_activity_create_intent(
+    cmd: DevActivityCreateCommand,
+) -> c.ActivityCreateIntent:
+    try:
+        return c.ActivityCreateIntent(
+            kind="activity.create",
+            name=cmd.name,
+            activity_type=cmd.activity_type,
+            base_currency=cmd.currency,
+            multi_currency_enabled=False,
+        )
+    except ValueError as exc:
+        raise DevIntentRefused("活动名称、类型或币种不合法。") from exc
+
+
+def build_dev_activity_join_intent(cmd: DevActivityJoinCommand) -> c.ActivityJoinIntent:
+    try:
+        return c.ActivityJoinIntent(kind="activity.join", join_code=cmd.join_code)
+    except ValueError as exc:
+        raise DevIntentRefused("加入码必须是 8 位数字。") from exc
+
+
+def build_dev_participant_create_intent(
+    cmd: DevParticipantCommand, activity_id: Any,
+) -> c.ParticipantCreateIntent:
+    try:
+        return c.ParticipantCreateIntent(
+            kind="participant.create", activity_id=activity_id, name=cmd.name,
+        )
+    except ValueError as exc:
+        raise DevIntentRefused("参与人名称不合法。") from exc
+
+
+def build_dev_participant_delete_intent(
+    cmd: DevParticipantCommand, activity_id: Any, participant_id: Any,
+) -> c.ParticipantDeleteIntent:
+    return c.ParticipantDeleteIntent(
+        kind="participant.delete",
+        activity_id=activity_id,
+        participant_id=participant_id,
+    )
+
+
 def is_dev_repayment_command(text: str) -> bool:
     return isinstance(text, str) and text.lstrip().startswith("还款")
 

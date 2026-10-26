@@ -589,6 +589,73 @@ Activity ID: <专用测试 Activity>
   resolution: succeeded / rejected / closed / unknown
 ```
 
+## 5.8a P5.8a 活动与参与人管理
+
+命令：
+
+```text
+建活动 <名称> <普通|大型> <币种>
+加入活动 <8位加入码>
+加参与人 <名字>
+删参与人 <名字>
+```
+
+示例：
+
+```text
+建活动 秋游 大型 JPY
+加入活动 12345678
+加参与人 Ben
+删参与人 Alex
+```
+
+规则：
+
+- `建活动` / `加入活动` **不需要**当前活动 scope；`加参与人` / `删参与人` 用当前面板
+  Activity。
+- 创建活动的 Creator 由服务端取 `auth.uid()`，请求体里没有用户 ID；`multi_currency_enabled`
+  固定关闭（命令没有该开关）。
+- `加入活动` 用 8 位数字加入码；**加入不等于认领参与人**，Agent 不会顺手 claim。
+- `加参与人` 在参与人名单锁定、或活动内已有同名参与人时拒绝。
+- `删参与人` 按名字在当前活动唯一匹配；已被认领、或被付款/分摊/转账引用时拒绝，0 次 RPC；
+  已删除的参与人再次删除视为幂等成功。
+- 已归档 / 已删除 Activity 以服务端返回为准；预览后状态变化会关闭提案。
+- 预览摘要带 `【P5 开发验证·管理】`。
+
+**四条通用检查点**
+
+1. **未确认不写**：生成预览但不确认 → 没有新活动/参与人、没有 RPC。
+2. **重复确认只写一次**：连续确认 3 次 → 1 次对应 RPC，同一 `execution_id`。
+3. **版本冲突作废旧预览**：预览后活动归档/锁定、参与人被删除或被引用、参与人重名出现 →
+   0 次 RPC、Proposal `closed`、Turn `CANCELLED`。
+4. **未知不冒充成功**：确认后断网/注入超时 → `RECOVERING/UNKNOWN`，不重发；按自然键只读
+   核对（活动名+Creator、加入码成员关系、参与人名+活动），无法证明归属 → `closed`。
+
+**管理专项**
+
+| # | 操作 | 预期 |
+|---|---|---|
+| 44 | 在活动列表（无 scope）执行 `建活动 秋游 大型 JPY` | 卡片可见、可确认；请求只含 name/type/base_currency/multi_currency_enabled；回执含活动 ID 与加入码 |
+| 45 | 执行 `加入活动 <合法码>` | 成功；请求只含 `join_code`；已是成员时返回 `activity_already_member`，不报错 |
+| 46 | 执行 `加入活动 1234` / 不存在的 8 位码 / 已归档活动的码 | 参数非法直接拒绝；未知码与归档由服务端拒绝 |
+| 47 | 在活动内执行 `加参与人 Ben` | 生成参与人；`participant_order` 为空时由服务端分配；活动内已有同名参与人则拒绝 |
+| 48 | 名单锁定后执行 `加参与人` / `删参与人` | Turn 完成拒绝消息；无 RPC；无提案卡 |
+| 49 | 执行 `删参与人 Alex`；再对同一个人执行一次 | 首次成功；再次删除返回 `deleted=false`，视为幂等成功；已被引用/认领则直接拒绝 |
+
+证据模板：
+
+```text
+管理命令: 建活动/加入活动/加参与人/删参与人 ...
+  operation: activity.create / activity.join / participant.create / participant.delete
+  activity_id（建活动成功前为空）:
+  join_code（仅加入）:
+  participant_id / participant_name:
+  execution_id:
+  request 是否包含用户 ID: 否
+  resolution: succeeded / rejected / closed / unknown
+  回执: activity/participant id、join_code、is_new/deleted
+```
+
 ## 7. 回滚
 
 1. 将 `AGENT_P5_DEV_INTENT_ENABLED=false`，`AGENT_LIVE_WRITE_ENABLED=false`，重启 Agent。确认接口回到冻结的 501，`记账` 输入回到普通路径。

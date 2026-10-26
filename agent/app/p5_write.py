@@ -54,6 +54,10 @@ P5_PREPAYMENT_RETURN_POLICY_VERSION = "p5-live-prepayment-return-v1"
 P5_FINAL_SETTLEMENT_POLICY_VERSION = "p5-live-final-settlement-v1"
 P5_REFUND_POLICY_VERSION = "p5-live-refund-v1"
 P5_NEGATIVE_ADJUSTMENT_POLICY_VERSION = "p5-live-negative-adjustment-v1"
+P5_ACTIVITY_CREATE_POLICY_VERSION = "p5-live-activity-create-v1"
+P5_ACTIVITY_JOIN_POLICY_VERSION = "p5-live-activity-join-v1"
+P5_PARTICIPANT_CREATE_POLICY_VERSION = "p5-live-participant-create-v1"
+P5_PARTICIPANT_DELETE_POLICY_VERSION = "p5-live-participant-delete-v1"
 RPC_CREATE_EXPENSE = "/rest/v1/rpc/create_expense_auto_rate"
 RPC_UPDATE_EXPENSE = "/rest/v1/rpc/update_expense_auto_rate"
 RPC_UPDATE_PRESENTATION = "/rest/v1/rpc/update_expense_presentation"
@@ -68,6 +72,15 @@ RPC_CREATE_PREPAYMENT = "/rest/v1/rpc/create_prepayment_v2"
 RPC_CREATE_PREPAYMENT_RETURN = "/rest/v1/rpc/create_prepayment_return_v2"
 RPC_PREVIEW_FINAL_SETTLEMENT = "/rest/v1/rpc/preview_final_settlement_v2"
 RPC_EXECUTE_FINAL_SETTLEMENT = "/rest/v1/rpc/execute_final_settlement_v2"
+RPC_CREATE_ACTIVITY = "/rest/v1/rpc/create_activity"
+RPC_JOIN_ACTIVITY = "/rest/v1/rpc/join_activity_by_code"
+RPC_CREATE_PARTICIPANT = "/rest/v1/rpc/create_participant"
+RPC_DELETE_PARTICIPANT = "/rest/v1/rpc/delete_participant"
+_ACTIVITY_MANAGEMENT_SELECT = (
+    "id,name,type,base_currency,multi_currency_enabled,created_by,"
+    "archived_at,is_deleted,participants_locked_at,join_code"
+)
+_PARTICIPANT_SELECT = "id,activity_id,name,participant_order,is_deleted"
 _PREPAYMENT_ACCOUNT_SELECT = "id,balance"
 _TRANSFER_SELECT = (
     "id,activity_id,type,from_participant_id,to_participant_id,amount,currency,"
@@ -80,6 +93,10 @@ _ACTIVITY_STATE_SELECT = "id,created_by,archived_at,is_deleted,financial_version
 SUPPORTED_ICON_KEYS = frozenset({
     "money", "dining", "shopping", "transport", "hotel", "ticket",
     "fuel", "entertainment", "medical", "gift", "grocery", "flight",
+})
+
+_MANAGEMENT_OPERATIONS = frozenset({
+    "activity.create", "activity.join", "participant.create", "participant.delete",
 })
 
 _EXPENSE_SELECT = (
@@ -150,6 +167,23 @@ _PREFLIGHT_CLOSE_SUMMARY = {
     "refunded_elsewhere": "a refund landed but this execution cannot be proven to be its author",
     "refund_not_applied": "no refund was recorded and the original Expense is unchanged",
     "adjustment_not_applied": "no negative adjustment was recorded and the Activity is unchanged",
+    "management_invalid": "the management request is invalid",
+    "activity_name_conflict": "an Activity with this name already exists for this user",
+    "participant_list_locked": "the participant list is locked",
+    "participant_name_conflict": "a Participant with this name already exists in the Activity",
+    "participant_claimed_or_used": "the Participant is claimed or used by financial facts",
+    "participant_not_found": "the Participant was not found",
+    "join_code_inactive": "the join code is no longer usable",
+    "management_state_changed": "the management state changed after the preview",
+    "activity_created_elsewhere": "an Activity was created but this execution cannot be proven to be its author",
+    "activity_not_created": "no matching Activity exists",
+    "joined_elsewhere": "membership exists but this execution cannot be proven to have joined",
+    "join_not_applied": "no membership exists for this join code",
+    "participant_created_elsewhere": "a Participant was created but this execution cannot be proven to be its author",
+    "participant_not_created": "no matching Participant exists",
+    "deleted_elsewhere": "the Participant is deleted but this execution cannot be proven to be the author",
+    "delete_not_applied": "the Participant is not deleted",
+    "conflict": "the request conflicts with existing data",
 }
 
 
@@ -327,6 +361,29 @@ class LiveWriteOutcome:
     resolution: c.ExecutionResolution
     code: str
     summary: str
+
+
+@dataclass(frozen=True, slots=True)
+class LiveActivityManagementState:
+    activity_id: uuid.UUID
+    name: str
+    activity_type: str
+    base_currency: str
+    multi_currency_enabled: bool
+    created_by: uuid.UUID | None
+    archived: bool
+    is_deleted: bool
+    participants_locked: bool
+    join_code: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class LiveParticipantState:
+    participant_id: uuid.UUID
+    activity_id: uuid.UUID
+    name: str
+    participant_order: int
+    is_deleted: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -552,6 +609,109 @@ class LiveExpenseGateway:
         if len(rows) != 1:
             raise LiveWriteError("activity_not_found")
         return _uuid_or_none(rows[0].get("created_by"))
+
+    async def read_activity_management_state(
+        self, access_token: str, activity_id: uuid.UUID,
+    ) -> LiveActivityManagementState:
+        rows = await self._get_rows(
+            "activities",
+            [
+                ("id", f"eq.{activity_id}"),
+                ("select", _ACTIVITY_MANAGEMENT_SELECT),
+                ("limit", "2"),
+            ],
+            access_token,
+        )
+        if len(rows) != 1:
+            raise LiveWriteError("activity_not_found")
+        return _activity_management_state(rows[0])
+
+    async def read_activity_by_join_code(
+        self, access_token: str, join_code: str,
+    ) -> LiveActivityManagementState | None:
+        """Only members can read an Activity; a non-member sees no row."""
+        rows = await self._get_rows(
+            "activities",
+            [
+                ("join_code", f"eq.{join_code}"),
+                ("select", _ACTIVITY_MANAGEMENT_SELECT),
+                ("limit", "2"),
+            ],
+            access_token,
+        )
+        if not rows:
+            return None
+        if len(rows) != 1:
+            raise LiveWriteError("upstream_invalid_response")
+        return _activity_management_state(rows[0])
+
+    async def list_activities_by_name(
+        self, access_token: str, name: str,
+    ) -> list[LiveActivityManagementState]:
+        rows = await self._get_rows(
+            "activities",
+            [
+                ("name", f"eq.{name}"),
+                ("is_deleted", "eq.false"),
+                ("select", _ACTIVITY_MANAGEMENT_SELECT),
+                ("order", "id.asc"),
+            ],
+            access_token,
+        )
+        return [_activity_management_state(row) for row in rows]
+
+    async def list_participants(
+        self, access_token: str, activity_id: uuid.UUID,
+    ) -> list[LiveParticipantState]:
+        rows = await self._get_rows(
+            "participants",
+            [
+                ("activity_id", f"eq.{activity_id}"),
+                ("is_deleted", "eq.false"),
+                ("select", _PARTICIPANT_SELECT),
+                ("order", "participant_order.asc"),
+            ],
+            access_token,
+        )
+        return [_participant_state(row) for row in rows]
+
+    async def read_participant_state(
+        self, access_token: str, participant_id: uuid.UUID,
+    ) -> LiveParticipantState:
+        rows = await self._get_rows(
+            "participants",
+            [
+                ("id", f"eq.{participant_id}"),
+                ("select", _PARTICIPANT_SELECT),
+                ("limit", "2"),
+            ],
+            access_token,
+        )
+        if len(rows) != 1:
+            raise LiveWriteError("participant_not_found")
+        return _participant_state(rows[0])
+
+    async def read_participant_usage(
+        self, access_token: str, participant_id: uuid.UUID,
+    ) -> bool:
+        """True when the Participant is claimed or referenced by any fact."""
+        for route in ("participant_claims", "payments", "splits"):
+            rows = await self._get_rows(
+                route,
+                [("participant_id", f"eq.{participant_id}"), ("select", "id"), ("limit", "1")],
+                access_token,
+            )
+            if rows:
+                return True
+        for column in ("from_participant_id", "to_participant_id", "on_behalf_of_participant_id"):
+            rows = await self._get_rows(
+                "transfers",
+                [(column, f"eq.{participant_id}"), ("select", "id"), ("limit", "1")],
+                access_token,
+            )
+            if rows:
+                return True
+        return False
 
     async def _post_rpc(
         self, path: str, access_token: str, payload: Mapping[str, Any],
@@ -2073,6 +2233,287 @@ class LiveExpenseGateway:
             request_receipts=[],
         )
 
+    # ------------------------------------------------- management previews (P5.8a)
+
+    async def build_activity_create_preview(
+        self,
+        *,
+        owner_user_id: uuid.UUID,
+        session_id: uuid.UUID,
+        turn_id: uuid.UUID,
+        intent: c.ActivityCreateIntent,
+        access_token: str,
+        agent_disable_revision: int,
+        policy_version: str | None = None,
+        summary_prefix: str = "",
+        now: datetime | None = None,
+    ) -> c.ProposalRecord:
+        """Create an Activity. The caller never supplies a creator id."""
+        if not isinstance(intent, c.ActivityCreateIntent):
+            raise LiveWriteError("unsupported_operation")
+        instant = _aware(now)
+        existing = await self.list_activities_by_name(access_token, intent.name)
+        if existing:
+            raise LiveWriteError("activity_name_conflict")
+        preview = c.ManagementPreview(
+            kind="management",
+            summary=(
+                f"{summary_prefix}建活动「{intent.name}」"
+                f"（{'大型' if intent.activity_type == 'large' else '普通'}）"
+                f"{intent.base_currency}；多币种"
+                f"{'开启' if intent.multi_currency_enabled else '关闭'}"
+            ),
+            operation="activity.create",
+            activity_name=intent.name,
+            activity_type=intent.activity_type,
+            base_currency=intent.base_currency,
+            multi_currency_enabled=intent.multi_currency_enabled,
+            generated_at=instant,
+            simulation=False,
+        )
+        command = c.FixedActivityCreateCommand(
+            operation="activity.create",
+            name=intent.name,
+            activity_type=intent.activity_type,
+            base_currency=intent.base_currency,
+            multi_currency_enabled=intent.multi_currency_enabled,
+        )
+        return self._management_proposal(
+            owner_user_id=owner_user_id, session_id=session_id, turn_id=turn_id,
+            operation="activity.create", intent=intent, command=command, preview=preview,
+            activity_id=None, expense_version=None,
+            agent_disable_revision=agent_disable_revision,
+            policy_version=policy_version, now=instant,
+        )
+
+    async def build_activity_join_preview(
+        self,
+        *,
+        owner_user_id: uuid.UUID,
+        session_id: uuid.UUID,
+        turn_id: uuid.UUID,
+        intent: c.ActivityJoinIntent,
+        access_token: str,
+        agent_disable_revision: int,
+        policy_version: str | None = None,
+        summary_prefix: str = "",
+        now: datetime | None = None,
+    ) -> c.ProposalRecord:
+        """Join by code. Joining is not claiming a Participant."""
+        if not isinstance(intent, c.ActivityJoinIntent):
+            raise LiveWriteError("unsupported_operation")
+        instant = _aware(now)
+        existing = await self.read_activity_by_join_code(access_token, intent.join_code)
+        hint = ""
+        if existing is not None:
+            hint = f"（已加入：{existing.name}）"
+        preview = c.ManagementPreview(
+            kind="management",
+            summary=(
+                f"{summary_prefix}加入活动，加入码 {intent.join_code}{hint}；"
+                "加入不等于认领参与人"
+            ),
+            operation="activity.join",
+            join_code=intent.join_code,
+            generated_at=instant,
+            simulation=False,
+        )
+        command = c.FixedActivityJoinCommand(
+            operation="activity.join", join_code=intent.join_code,
+        )
+        return self._management_proposal(
+            owner_user_id=owner_user_id, session_id=session_id, turn_id=turn_id,
+            operation="activity.join", intent=intent, command=command, preview=preview,
+            activity_id=None, expense_version=None,
+            agent_disable_revision=agent_disable_revision,
+            policy_version=policy_version, now=instant,
+        )
+
+    async def build_participant_create_preview(
+        self,
+        *,
+        owner_user_id: uuid.UUID,
+        session_id: uuid.UUID,
+        turn_id: uuid.UUID,
+        intent: c.ParticipantCreateIntent,
+        access_token: str,
+        expires_at: datetime,
+        agent_disable_revision: int,
+        policy_version: str | None = None,
+        summary_prefix: str = "",
+        now: datetime | None = None,
+    ) -> c.ProposalRecord:
+        if not isinstance(intent, c.ParticipantCreateIntent):
+            raise LiveWriteError("unsupported_operation")
+        instant = _aware(now)
+        grant = _activity_grant(
+            owner_user_id=owner_user_id, turn_id=turn_id,
+            access_token=access_token, expires_at=expires_at,
+            activity_id=intent.activity_id,
+        )
+        await self._read_backend.resolve_scope(
+            grant, ScopeRequest(mode="activity", ui_activity_id_hint=intent.activity_id),
+        )
+        state = await self.read_activity_management_state(access_token, intent.activity_id)
+        if state.is_deleted:
+            raise LiveWriteError("activity_not_found")
+        if state.participants_locked:
+            raise LiveWriteError("participant_list_locked")
+        participants = await self.list_participants(access_token, intent.activity_id)
+        if any(item.name == intent.name for item in participants):
+            raise LiveWriteError("participant_name_conflict")
+        next_order = max((item.participant_order for item in participants), default=-1) + 1
+        order_text = (
+            str(intent.participant_order) if intent.participant_order is not None
+            else f"自动（当前下一个为 {next_order}）"
+        )
+        preview = c.ManagementPreview(
+            kind="management",
+            summary=(
+                f"{summary_prefix}加参与人「{intent.name}」到「{state.name}」；"
+                f"顺序 {order_text}"
+            ),
+            operation="participant.create",
+            activity_id=intent.activity_id,
+            activity_name=state.name,
+            participant_name=intent.name,
+            participant_order=intent.participant_order,
+            generated_at=instant,
+            simulation=False,
+        )
+        command = c.FixedParticipantCreateCommand(
+            operation="participant.create",
+            activity_id=intent.activity_id,
+            name=intent.name,
+            participant_order=intent.participant_order,
+            expected_participants_locked=False,
+            expected_activity_archived=state.archived,
+            expected_activity_deleted=False,
+        )
+        return self._management_proposal(
+            owner_user_id=owner_user_id, session_id=session_id, turn_id=turn_id,
+            operation="participant.create", intent=intent, command=command, preview=preview,
+            activity_id=intent.activity_id, expense_version=None,
+            agent_disable_revision=agent_disable_revision,
+            policy_version=policy_version, now=instant,
+        )
+
+    async def build_participant_delete_preview(
+        self,
+        *,
+        owner_user_id: uuid.UUID,
+        session_id: uuid.UUID,
+        turn_id: uuid.UUID,
+        intent: c.ParticipantDeleteIntent,
+        access_token: str,
+        expires_at: datetime,
+        agent_disable_revision: int,
+        policy_version: str | None = None,
+        summary_prefix: str = "",
+        now: datetime | None = None,
+    ) -> c.ProposalRecord:
+        if not isinstance(intent, c.ParticipantDeleteIntent):
+            raise LiveWriteError("unsupported_operation")
+        instant = _aware(now)
+        grant = _activity_grant(
+            owner_user_id=owner_user_id, turn_id=turn_id,
+            access_token=access_token, expires_at=expires_at,
+            activity_id=intent.activity_id,
+        )
+        await self._read_backend.resolve_scope(
+            grant, ScopeRequest(mode="activity", ui_activity_id_hint=intent.activity_id),
+        )
+        participant = await self.read_participant_state(access_token, intent.participant_id)
+        if participant.activity_id != intent.activity_id:
+            raise LiveWriteError("participant_not_found")
+        state = await self.read_activity_management_state(access_token, intent.activity_id)
+        if state.is_deleted:
+            raise LiveWriteError("activity_not_found")
+        if state.participants_locked:
+            raise LiveWriteError("participant_list_locked")
+        if await self.read_participant_usage(access_token, intent.participant_id):
+            raise LiveWriteError("participant_claimed_or_used")
+        preview = c.ManagementPreview(
+            kind="management",
+            summary=(
+                f"{summary_prefix}删参与人「{participant.name}」"
+                f"（活动「{state.name}」）；未认领、未被付款/分摊/转账引用"
+            ),
+            operation="participant.delete",
+            activity_id=intent.activity_id,
+            activity_name=state.name,
+            participant_id=intent.participant_id,
+            participant_name=participant.name,
+            generated_at=instant,
+            simulation=False,
+        )
+        command = c.FixedParticipantDeleteCommand(
+            operation="participant.delete",
+            activity_id=intent.activity_id,
+            participant_id=intent.participant_id,
+            expected_participant_name=participant.name,
+            expected_participant_deleted=participant.is_deleted,
+            expected_claimed_or_used=False,
+            expected_participants_locked=False,
+            expected_activity_archived=state.archived,
+            expected_activity_deleted=False,
+        )
+        return self._management_proposal(
+            owner_user_id=owner_user_id, session_id=session_id, turn_id=turn_id,
+            operation="participant.delete", intent=intent, command=command, preview=preview,
+            activity_id=intent.activity_id, expense_version=None,
+            agent_disable_revision=agent_disable_revision,
+            policy_version=policy_version, now=instant,
+        )
+
+    def _management_proposal(
+        self,
+        *,
+        owner_user_id: uuid.UUID,
+        session_id: uuid.UUID,
+        turn_id: uuid.UUID,
+        operation: str,
+        intent: Any,
+        command: Any,
+        preview: c.ManagementPreview,
+        activity_id: uuid.UUID | None,
+        expense_version: str | None,
+        agent_disable_revision: int,
+        policy_version: str | None,
+        now: datetime,
+    ) -> c.ProposalRecord:
+        policy = policy_version or self._config.policy_version
+        preconditions = c.PreconditionSnapshot(
+            activity_id=activity_id,
+            permission_checked=True,
+            agent_disable_revision=agent_disable_revision,
+            activity_financial_version=None,
+            expense_version=expense_version,
+            policy_version=policy,
+            verified_at=now,
+        )
+        digest = c.canonical_command_digest(command, preconditions, policy_version=policy)
+        return c.ProposalRecord(
+            proposal_id=uuid.uuid4(),
+            owner_user_id=owner_user_id,
+            session_id=session_id,
+            turn_id=turn_id,
+            revision=1,
+            operation=operation,
+            mode="backend",
+            status=c.ProposalStatus.PENDING,
+            intent=intent,
+            canonical_command=command,
+            preview=preview,
+            preconditions=preconditions,
+            command_digest=digest,
+            confirmation_nonce=_new_nonce(),
+            policy_version=policy,
+            expires_at=now.replace(microsecond=0) + timedelta(minutes=10),
+            execution=None,
+            request_receipts=[],
+        )
+
     # ----------------------------------------------------------------- void preview
 
     async def build_void_preview(
@@ -2197,11 +2638,15 @@ class LiveExpenseGateway:
             c.FixedFinalSettlementCommand,
             c.FixedExpenseRefundCommand,
             c.FixedNegativeAdjustmentCommand,
+            c.FixedActivityCreateCommand,
+            c.FixedActivityJoinCommand,
+            c.FixedParticipantCreateCommand,
+            c.FixedParticipantDeleteCommand,
         )):
             return await self._close(
                 principal, proposal,
                 code="unsupported_operation",
-                summary="P5 executes expense writes, refunds, repayments, prepayments, settlements and voids only",
+                summary="P5 executes expense, transfer and management writes only",
                 expected_state_revision=expected_state_revision,
             )
         if proposal.execution is not None:
@@ -2224,11 +2669,19 @@ class LiveExpenseGateway:
         is_final_settlement = isinstance(command, c.FixedFinalSettlementCommand)
         is_refund = isinstance(command, c.FixedExpenseRefundCommand)
         is_negative_adjustment = isinstance(command, c.FixedNegativeAdjustmentCommand)
-        grant = _activity_grant(
-            owner_user_id=principal.user_id, turn_id=proposal.turn_id,
-            access_token=access_token, expires_at=_grant_expiry(principal),
-            activity_id=command.activity_id,
-        )
+        is_activity_create = isinstance(command, c.FixedActivityCreateCommand)
+        is_activity_join = isinstance(command, c.FixedActivityJoinCommand)
+        is_participant_create = isinstance(command, c.FixedParticipantCreateCommand)
+        is_participant_delete = isinstance(command, c.FixedParticipantDeleteCommand)
+        # Account-level management operations have no Activity to grant.
+        grant = None
+        command_activity_id = getattr(command, "activity_id", None)
+        if command_activity_id is not None:
+            grant = _activity_grant(
+                owner_user_id=principal.user_id, turn_id=proposal.turn_id,
+                access_token=access_token, expires_at=_grant_expiry(principal),
+                activity_id=command_activity_id,
+            )
         try:
             if is_void:
                 transfer = await self.read_transfer_state(access_token, command.transfer_id)
@@ -2372,6 +2825,63 @@ class LiveExpenseGateway:
                 ):
                     raise LiveWriteError("preview_stale")
                 _require_writable_activity(scope, original_currency=command.currency)
+            elif is_activity_create:
+                # Nothing about the Activity exists yet, so there is nothing to
+                # re-read; the server fixes the creator from the caller identity.
+                pass
+            elif is_activity_join:
+                existing = await self.read_activity_by_join_code(
+                    access_token, command.join_code,
+                )
+                if existing is not None and (existing.archived or existing.is_deleted):
+                    raise LiveWriteError("join_code_inactive")
+            elif is_participant_create:
+                await self._read_backend.resolve_scope(
+                    grant,
+                    ScopeRequest(mode="activity", ui_activity_id_hint=command.activity_id),
+                )
+                state = await self.read_activity_management_state(
+                    access_token, command.activity_id,
+                )
+                if state.is_deleted:
+                    raise LiveWriteError("activity_not_found")
+                if (
+                    state.archived != command.expected_activity_archived
+                    or state.participants_locked != command.expected_participants_locked
+                ):
+                    raise LiveWriteError("management_state_changed")
+                participants = await self.list_participants(
+                    access_token, command.activity_id,
+                )
+                if any(item.name == command.name for item in participants):
+                    raise LiveWriteError("participant_name_conflict")
+            elif is_participant_delete:
+                await self._read_backend.resolve_scope(
+                    grant,
+                    ScopeRequest(mode="activity", ui_activity_id_hint=command.activity_id),
+                )
+                state = await self.read_activity_management_state(
+                    access_token, command.activity_id,
+                )
+                if (
+                    state.is_deleted != command.expected_activity_deleted
+                    or state.archived != command.expected_activity_archived
+                    or state.participants_locked != command.expected_participants_locked
+                ):
+                    raise LiveWriteError("management_state_changed")
+                participant = await self.read_participant_state(
+                    access_token, command.participant_id,
+                )
+                if (
+                    participant.activity_id != command.activity_id
+                    or participant.name != command.expected_participant_name
+                    or participant.is_deleted != command.expected_participant_deleted
+                ):
+                    raise LiveWriteError("management_state_changed")
+                if await self.read_participant_usage(
+                    access_token, command.participant_id,
+                ):
+                    raise LiveWriteError("participant_claimed_or_used")
             elif is_presentation:
                 # Presentation update: only the Expense's own version guards it.
                 # Do NOT use activities.financial_version, and do NOT pre-reject
@@ -2486,6 +2996,23 @@ class LiveExpenseGateway:
                 "refund_source_changed",
                 "refund_source_unavailable",
                 "negative_adjustment_invalid",
+                "management_invalid",
+                "activity_name_conflict",
+                "participant_list_locked",
+                "participant_name_conflict",
+                "participant_claimed_or_used",
+                "participant_not_found",
+                "join_code_inactive",
+                "management_state_changed",
+                "activity_created_elsewhere",
+                "activity_not_created",
+                "joined_elsewhere",
+                "join_not_applied",
+                "participant_created_elsewhere",
+                "participant_not_created",
+                "deleted_elsewhere",
+                "delete_not_applied",
+                "conflict",
             ):
                 return await self._close(
                     principal, proposal,
@@ -2582,6 +3109,18 @@ class LiveExpenseGateway:
         elif isinstance(command, c.FixedNegativeAdjustmentCommand):
             rpc_path = RPC_CREATE_EXPENSE
             payload = _rpc_payload_negative_adjustment(command)
+        elif isinstance(command, c.FixedActivityCreateCommand):
+            rpc_path = RPC_CREATE_ACTIVITY
+            payload = _rpc_payload_activity_create(command)
+        elif isinstance(command, c.FixedActivityJoinCommand):
+            rpc_path = RPC_JOIN_ACTIVITY
+            payload = {"join_code": command.join_code}
+        elif isinstance(command, c.FixedParticipantCreateCommand):
+            rpc_path = RPC_CREATE_PARTICIPANT
+            payload = _rpc_payload_participant_create(command)
+        elif isinstance(command, c.FixedParticipantDeleteCommand):
+            rpc_path = RPC_DELETE_PARTICIPANT
+            payload = {"participant_id": str(command.participant_id)}
         else:
             rpc_path = RPC_UPDATE_EXPENSE
             payload = _rpc_payload_update(command)
@@ -2674,6 +3213,22 @@ class LiveExpenseGateway:
             )
         if isinstance(command, c.FixedNegativeAdjustmentCommand):
             return await self._reconcile_negative_adjustment(
+                principal, proposal, command, access_token,
+            )
+        if isinstance(command, c.FixedActivityCreateCommand):
+            return await self._reconcile_activity_create(
+                principal, proposal, command, access_token,
+            )
+        if isinstance(command, c.FixedActivityJoinCommand):
+            return await self._reconcile_activity_join(
+                principal, proposal, command, access_token,
+            )
+        if isinstance(command, c.FixedParticipantCreateCommand):
+            return await self._reconcile_participant_create(
+                principal, proposal, command, access_token,
+            )
+        if isinstance(command, c.FixedParticipantDeleteCommand):
+            return await self._reconcile_participant_delete(
                 principal, proposal, command, access_token,
             )
         if not isinstance(command, c.FixedExpenseDeleteCommand):
@@ -2986,6 +3541,147 @@ class LiveExpenseGateway:
         )
         return LiveWriteOutcome(c.ExecutionResolution.CLOSED, code, summary)
 
+    async def _reconcile_activity_create(
+        self,
+        principal: Principal,
+        proposal: c.ProposalRecord,
+        command: c.FixedActivityCreateCommand,
+        access_token: str,
+    ) -> LiveWriteOutcome:
+        turn = (
+            await _call_store(self._store.get_turn, principal.user_id, proposal.turn_id)
+        ).record.turn
+        if turn.state not in (c.TurnState.RECOVERING, c.TurnState.EXECUTING):
+            return await self._existing_outcome(principal, proposal)
+        try:
+            rows = await self.list_activities_by_name(access_token, command.name)
+        except (LiveWriteError, BackendReadError):
+            return await self._existing_outcome(principal, proposal)
+        matches = [
+            item for item in rows
+            if item.name == command.name
+            and item.activity_type == command.activity_type
+            and item.base_currency == command.base_currency
+            and item.multi_currency_enabled == command.multi_currency_enabled
+        ]
+        if matches:
+            code = "activity_created_elsewhere"
+            summary = "an Activity matches but this execution cannot be proven to be its author"
+        else:
+            code = "activity_not_created"
+            summary = "no matching Activity exists"
+        await _call_store(
+            self._store.settle_mock_execution,
+            principal.user_id, proposal.proposal_id,
+            c.ExecutionResolution.CLOSED,
+            result_code=code,
+            result_summary=summary,
+        )
+        return LiveWriteOutcome(c.ExecutionResolution.CLOSED, code, summary)
+
+    async def _reconcile_activity_join(
+        self,
+        principal: Principal,
+        proposal: c.ProposalRecord,
+        command: c.FixedActivityJoinCommand,
+        access_token: str,
+    ) -> LiveWriteOutcome:
+        turn = (
+            await _call_store(self._store.get_turn, principal.user_id, proposal.turn_id)
+        ).record.turn
+        if turn.state not in (c.TurnState.RECOVERING, c.TurnState.EXECUTING):
+            return await self._existing_outcome(principal, proposal)
+        try:
+            existing = await self.read_activity_by_join_code(
+                access_token, command.join_code,
+            )
+        except (LiveWriteError, BackendReadError):
+            return await self._existing_outcome(principal, proposal)
+        if existing is not None:
+            code = "joined_elsewhere"
+            summary = "membership exists but this execution cannot be proven to have joined"
+        else:
+            code = "join_not_applied"
+            summary = "no membership is visible for this join code"
+        await _call_store(
+            self._store.settle_mock_execution,
+            principal.user_id, proposal.proposal_id,
+            c.ExecutionResolution.CLOSED,
+            result_code=code,
+            result_summary=summary,
+        )
+        return LiveWriteOutcome(c.ExecutionResolution.CLOSED, code, summary)
+
+    async def _reconcile_participant_create(
+        self,
+        principal: Principal,
+        proposal: c.ProposalRecord,
+        command: c.FixedParticipantCreateCommand,
+        access_token: str,
+    ) -> LiveWriteOutcome:
+        turn = (
+            await _call_store(self._store.get_turn, principal.user_id, proposal.turn_id)
+        ).record.turn
+        if turn.state not in (c.TurnState.RECOVERING, c.TurnState.EXECUTING):
+            return await self._existing_outcome(principal, proposal)
+        try:
+            participants = await self.list_participants(
+                access_token, command.activity_id,
+            )
+        except (LiveWriteError, BackendReadError):
+            return await self._existing_outcome(principal, proposal)
+        if any(item.name == command.name for item in participants):
+            code = "participant_created_elsewhere"
+            summary = "a Participant matches but this execution cannot be proven to be its author"
+        else:
+            code = "participant_not_created"
+            summary = "no matching Participant exists"
+        await _call_store(
+            self._store.settle_mock_execution,
+            principal.user_id, proposal.proposal_id,
+            c.ExecutionResolution.CLOSED,
+            result_code=code,
+            result_summary=summary,
+        )
+        return LiveWriteOutcome(c.ExecutionResolution.CLOSED, code, summary)
+
+    async def _reconcile_participant_delete(
+        self,
+        principal: Principal,
+        proposal: c.ProposalRecord,
+        command: c.FixedParticipantDeleteCommand,
+        access_token: str,
+    ) -> LiveWriteOutcome:
+        turn = (
+            await _call_store(self._store.get_turn, principal.user_id, proposal.turn_id)
+        ).record.turn
+        if turn.state not in (c.TurnState.RECOVERING, c.TurnState.EXECUTING):
+            return await self._existing_outcome(principal, proposal)
+        try:
+            participant = await self.read_participant_state(
+                access_token, command.participant_id,
+            )
+        except LiveWriteError as exc:
+            if exc.code != "participant_not_found":
+                return await self._existing_outcome(principal, proposal)
+            participant = None
+        except BackendReadError:
+            return await self._existing_outcome(principal, proposal)
+        if participant is not None and participant.is_deleted:
+            code = "deleted_elsewhere"
+            summary = "the Participant is deleted but this execution cannot be proven to be the author"
+        else:
+            code = "delete_not_applied"
+            summary = "the Participant is not deleted"
+        await _call_store(
+            self._store.settle_mock_execution,
+            principal.user_id, proposal.proposal_id,
+            c.ExecutionResolution.CLOSED,
+            result_code=code,
+            result_summary=summary,
+        )
+        return LiveWriteOutcome(c.ExecutionResolution.CLOSED, code, summary)
+
     async def _reconcile_void(        self,
         principal: Principal,
         proposal: c.ProposalRecord,
@@ -3019,6 +3715,84 @@ class LiveExpenseGateway:
             result_summary=summary,
         )
         return LiveWriteOutcome(c.ExecutionResolution.CLOSED, code, summary)
+
+    async def _settle_management_success(
+        self, principal: Principal, proposal: c.ProposalRecord, row: Any,
+    ) -> LiveWriteOutcome | None:
+        """A 2xx management response must carry the row it claims to have made."""
+        record = row if isinstance(row, dict) else {}
+        operation = proposal.operation
+        if operation == "activity.create":
+            activity_id = record.get("activity_id")
+            join_code = record.get("join_code")
+            name = record.get("activity_name")
+            activity_type = record.get("activity_type")
+            currency = record.get("activity_base_currency")
+            multi = record.get("activity_multi_currency_enabled")
+            if (
+                not isinstance(activity_id, str)
+                or not isinstance(join_code, str)
+                or len(join_code) != 8
+                or not join_code.isdigit()
+                or not isinstance(name, str)
+                or activity_type not in ("normal", "large")
+                or not isinstance(currency, str)
+                or not isinstance(multi, bool)
+            ):
+                return await self._management_invalid_success(principal, proposal)
+            code = "activity_created"
+            summary = f"activity_id={activity_id};join_code={join_code}"
+            text = "activity created"
+        elif operation == "activity.join":
+            activity_id = record.get("activity_id")
+            is_new = record.get("is_new")
+            if not isinstance(activity_id, str) or not isinstance(is_new, bool):
+                return await self._management_invalid_success(principal, proposal)
+            code = "activity_joined" if is_new else "activity_already_member"
+            summary = f"activity_id={activity_id};is_new={str(is_new).lower()}"
+            text = "activity joined" if is_new else "already a member"
+        elif operation == "participant.create":
+            participant_id = record.get("participant_id")
+            name = record.get("participant_name")
+            order = record.get("participant_order")
+            if (
+                not isinstance(participant_id, str)
+                or not isinstance(name, str)
+                or not isinstance(order, int)
+            ):
+                return await self._management_invalid_success(principal, proposal)
+            code = "participant_created"
+            summary = f"participant_id={participant_id};participant_order={order}"
+            text = "participant created"
+        else:
+            participant_id = record.get("participant_id")
+            deleted = record.get("deleted")
+            if not isinstance(participant_id, str) or not isinstance(deleted, bool):
+                return await self._management_invalid_success(principal, proposal)
+            code = "participant_deleted" if deleted else "participant_already_deleted"
+            summary = f"participant_id={participant_id};deleted={str(deleted).lower()}"
+            text = "participant deleted" if deleted else "participant was already deleted"
+        await _call_store(
+            self._store.settle_mock_execution,
+            principal.user_id, proposal.proposal_id,
+            c.ExecutionResolution.SUCCEEDED,
+            result_code=code,
+            result_summary=summary,
+        )
+        return LiveWriteOutcome(c.ExecutionResolution.SUCCEEDED, code, text)
+
+    async def _management_invalid_success(
+        self, principal: Principal, proposal: c.ProposalRecord,
+    ) -> LiveWriteOutcome:
+        # A 2xx without the expected row is NOT proof of success.
+        await _call_store(
+            self._store.mark_execution_unknown,
+            principal.user_id, proposal.proposal_id,
+        )
+        return LiveWriteOutcome(
+            c.ExecutionResolution.UNKNOWN, "upstream_invalid_success",
+            "write outcome is unresolved",
+        )
 
     async def _existing_outcome(self, principal: Principal, proposal: c.ProposalRecord) -> LiveWriteOutcome:
         turn = (
@@ -3226,6 +4000,12 @@ class LiveExpenseGateway:
                     c.ExecutionResolution.SUCCEEDED, "final_settlement_created",
                     "final settlement created",
                 )
+            if proposal.operation in _MANAGEMENT_OPERATIONS:
+                settled = await self._settle_management_success(
+                    principal, proposal, row,
+                )
+                if settled is not None:
+                    return settled
             if proposal.operation == "expense.delete":
                 deleted_expense_id = row.get("deleted_expense_id") if isinstance(row, dict) else None
                 deleted = row.get("deleted") if isinstance(row, dict) else None
@@ -3386,6 +4166,20 @@ class LiveExpenseGateway:
                 return LiveWriteOutcome(
                     c.ExecutionResolution.REJECTED, settlement_code,
                     "server rejected the final settlement",
+                )
+        if proposal.operation in _MANAGEMENT_OPERATIONS:
+            management_code = _management_error_code(proposal.operation, raw_code)
+            if management_code is not None:
+                await _call_store(
+                    self._store.settle_mock_execution,
+                    principal.user_id, proposal.proposal_id,
+                    c.ExecutionResolution.REJECTED,
+                    result_code=management_code,
+                    result_summary="server rejected the management write",
+                )
+                return LiveWriteOutcome(
+                    c.ExecutionResolution.REJECTED, management_code,
+                    "server rejected the management write",
                 )
         if proposal.operation in ("prepayment.create", "prepayment.return"):
             message = _raw_error_message(parsed) or ""
@@ -3737,6 +4531,32 @@ def _prepayment_result_summary(result: Mapping[str, Any]) -> str:
             parts.append(f"{key}={result[key]}")
     parts.append(f"financial_version={result.get('financial_version')}")
     return ";".join(parts)
+
+
+def _activity_management_state(row: dict[str, Any]) -> LiveActivityManagementState:
+    join_code = row.get("join_code")
+    return LiveActivityManagementState(
+        activity_id=_uuid(row.get("id")),
+        name=str(row.get("name")),
+        activity_type=str(row.get("type")),
+        base_currency=str(row.get("base_currency")),
+        multi_currency_enabled=_bool(row.get("multi_currency_enabled")),
+        created_by=_uuid_or_none(row.get("created_by")),
+        archived=_parse_timestamp(row.get("archived_at")) is not None,
+        is_deleted=_bool(row.get("is_deleted")),
+        participants_locked=_parse_timestamp(row.get("participants_locked_at")) is not None,
+        join_code=join_code if isinstance(join_code, str) else None,
+    )
+
+
+def _participant_state(row: dict[str, Any]) -> LiveParticipantState:
+    return LiveParticipantState(
+        participant_id=_uuid(row.get("id")),
+        activity_id=_uuid(row.get("activity_id")),
+        name=str(row.get("name")),
+        participant_order=_int(row.get("participant_order")),
+        is_deleted=_bool(row.get("is_deleted")),
+    )
 
 
 def _transfer_state(row: dict[str, Any]) -> LiveTransferState:
@@ -4121,6 +4941,56 @@ def _negate(amount: str) -> str:
     if value <= 0:
         raise LiveWriteError("invalid_command")
     return format(-value, "f")
+
+
+def _rpc_payload_activity_create(
+    command: c.FixedActivityCreateCommand,
+) -> dict[str, Any]:
+    # The creator is never sent: the server fixes it from auth.uid().
+    return {
+        "name": command.name,
+        "type": command.activity_type,
+        "base_currency": command.base_currency,
+        "multi_currency_enabled": command.multi_currency_enabled,
+    }
+
+
+def _rpc_payload_participant_create(
+    command: c.FixedParticipantCreateCommand,
+) -> dict[str, Any]:
+    return {
+        "activity_id": str(command.activity_id),
+        "name": command.name,
+        "participant_order": command.participant_order,
+    }
+
+
+def _management_error_code(operation: str, raw_code: str | None) -> str | None:
+    """Map a management RPC failure, or None when the code is unrecognised."""
+    if raw_code is None:
+        return None
+    if raw_code == "22023":
+        return "management_invalid"
+    if raw_code == "42501":
+        return "actor_not_permitted"
+    if raw_code == "28000":
+        return "invalid_auth_context"
+    if raw_code == "55000":
+        return (
+            "participant_list_locked"
+            if operation in ("participant.create", "participant.delete")
+            else "activity_read_only"
+        )
+    if raw_code == "P0002":
+        return (
+            "participant_not_found" if operation == "participant.delete"
+            else "activity_not_found"
+        )
+    if raw_code == "23514":
+        return "participant_claimed_or_used"
+    if raw_code == "23505":
+        return "conflict"
+    return None
 
 
 def _rpc_payload_refund(command: c.FixedExpenseRefundCommand) -> dict[str, Any]:
