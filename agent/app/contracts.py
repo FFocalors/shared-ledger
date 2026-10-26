@@ -1470,6 +1470,77 @@ class FinalSettlementIntent(ContractModel):
         return self
 
 
+class ExpenseRefundIntent(ContractModel):
+    """Linked refund intent (P5.4). Amounts are positive magnitudes.
+
+    The write is a negative Expense carrying ``original_expense_id``; the
+    currency and FX snapshot are inherited from the original, never chosen here.
+    """
+
+    kind: Literal["expense.refund"]
+    original_expense_ref: ExpenseRef
+    title: TitleText
+    original_amount: MoneyString
+    payment_allocations: list[PaymentAllocation] = Field(min_length=1, max_length=32)
+    split: SplitIntent
+    occurred_at: Optional[datetime] = None
+    note: Optional[NoteText] = None
+
+    @model_validator(mode="after")
+    def amounts_are_valid(self) -> "ExpenseRefundIntent":
+        amount = _money(self.original_amount, positive=True)
+        payer_refs = [item.participant_ref for item in self.payment_allocations]
+        if len(payer_refs) != len(set(payer_refs)):
+            raise ValueError("refund payment participant references must be unique")
+        if sum((_money(item.amount, positive=True) for item in self.payment_allocations), Decimal("0")) != amount:
+            raise ValueError("refund payment allocations must sum exactly to original_amount")
+        if isinstance(self.split, ManualSplitIntent):
+            split_refs = [item.participant_ref for item in self.split.allocations]
+            if len(split_refs) != len(set(split_refs)):
+                raise ValueError("refund split participant references must be unique")
+            if sum((_money(item.amount, positive=True) for item in self.split.allocations), Decimal("0")) != amount:
+                raise ValueError("refund split allocations must sum exactly to original_amount")
+        if self.occurred_at is not None and (
+            self.occurred_at.tzinfo is None or self.occurred_at.utcoffset() is None
+        ):
+            raise ValueError("occurred_at must include a timezone")
+        return self
+
+
+class NegativeAdjustmentIntent(ContractModel):
+    """Explicit unlinked negative Expense (P5.4). Never a silent refund fallback."""
+
+    kind: Literal["expense.negative_adjustment"]
+    ledger_unit_ref: LedgerUnitRef
+    title: TitleText
+    original_amount: MoneyString
+    original_currency: CurrencyCode
+    payment_allocations: list[PaymentAllocation] = Field(min_length=1, max_length=32)
+    split: SplitIntent
+    occurred_at: Optional[datetime] = None
+    note: Optional[NoteText] = None
+
+    @model_validator(mode="after")
+    def amounts_are_valid(self) -> "NegativeAdjustmentIntent":
+        amount = _money(self.original_amount, positive=True)
+        payer_refs = [item.participant_ref for item in self.payment_allocations]
+        if len(payer_refs) != len(set(payer_refs)):
+            raise ValueError("negative adjustment payment participant references must be unique")
+        if sum((_money(item.amount, positive=True) for item in self.payment_allocations), Decimal("0")) != amount:
+            raise ValueError("negative adjustment payment allocations must sum exactly to original_amount")
+        if isinstance(self.split, ManualSplitIntent):
+            split_refs = [item.participant_ref for item in self.split.allocations]
+            if len(split_refs) != len(set(split_refs)):
+                raise ValueError("negative adjustment split participant references must be unique")
+            if sum((_money(item.amount, positive=True) for item in self.split.allocations), Decimal("0")) != amount:
+                raise ValueError("negative adjustment split allocations must sum exactly to original_amount")
+        if self.occurred_at is not None and (
+            self.occurred_at.tzinfo is None or self.occurred_at.utcoffset() is None
+        ):
+            raise ValueError("occurred_at must include a timezone")
+        return self
+
+
 class AnswerDecision(ContractModel):
     kind: Literal["answer"]
     basis: Literal["grounded", "conversation"]
@@ -1567,6 +1638,8 @@ ProposalOperation = Literal[
     "prepayment.create",
     "prepayment.return",
     "settlement.final",
+    "expense.refund",
+    "expense.negative_adjustment",
 ]
 ProposalIntent = Annotated[
     Union[
@@ -1579,6 +1652,8 @@ ProposalIntent = Annotated[
         PrepaymentIntent,
         PrepaymentReturnIntent,
         FinalSettlementIntent,
+        ExpenseRefundIntent,
+        NegativeAdjustmentIntent,
     ],
     Field(discriminator="kind"),
 ]
@@ -2514,6 +2589,89 @@ class FixedFinalSettlementCommand(ContractModel):
         return self
 
 
+class FixedExpenseRefundCommand(ContractModel):
+    """P5.4 linked refund. Amounts stay positive here; the RPC payload negates them."""
+
+    operation: Literal["expense.refund"]
+    activity_id: EntityId
+    original_expense_id: EntityId
+    ledger_unit_id: EntityId
+    title: TitleText
+    amount: MoneyString
+    currency: CurrencyCode
+    payment_allocations: list[CanonicalPayment] = Field(min_length=1, max_length=32)
+    split: CanonicalSplit
+    occurred_at: datetime
+    note: Optional[NoteText] = None
+    expected_financial_version: FinancialVersion
+    expected_original_version: ExpenseVersion
+    expected_original_financial_locked: bool
+    expected_refunded_amount: MoneyString
+    expected_original_amount: MoneyString
+
+    @model_validator(mode="after")
+    def amounts_conserve_within_the_original(self) -> "FixedExpenseRefundCommand":
+        amount = _money(self.amount, positive=True)
+        original = _money(self.expected_original_amount, positive=True)
+        refunded = _money(self.expected_refunded_amount)
+        if refunded < 0:
+            raise ValueError("already refunded amount cannot be negative")
+        if refunded + amount > original:
+            raise ValueError("linked refunds cannot exceed the original expense amount")
+        payer_ids = [item.participant_id for item in self.payment_allocations]
+        if len(payer_ids) != len(set(payer_ids)):
+            raise ValueError("refund payment Participant IDs must be unique")
+        if sum((_money(item.amount, positive=True) for item in self.payment_allocations), Decimal("0")) != amount:
+            raise ValueError("refund payment allocations must sum to the refund amount")
+        if isinstance(self.split, CanonicalManualSplit):
+            split_ids = [item.participant_id for item in self.split.allocations]
+            if len(split_ids) != len(set(split_ids)):
+                raise ValueError("refund manual split Participant IDs must be unique")
+            if sum((_money(item.amount, positive=True) for item in self.split.allocations), Decimal("0")) != amount:
+                raise ValueError("refund manual split allocations must sum to the refund amount")
+        elif len(self.split.participant_ids) != len(set(self.split.participant_ids)):
+            raise ValueError("refund equal split Participant IDs must be unique")
+        if self.occurred_at.tzinfo is None or self.occurred_at.utcoffset() is None:
+            raise ValueError("occurred_at must include a timezone")
+        return self
+
+
+class FixedNegativeAdjustmentCommand(ContractModel):
+    """P5.4 explicit unlinked negative Expense. It never references an original."""
+
+    operation: Literal["expense.negative_adjustment"]
+    activity_id: EntityId
+    ledger_unit_id: EntityId
+    title: TitleText
+    amount: MoneyString
+    currency: CurrencyCode
+    payment_allocations: list[CanonicalPayment] = Field(min_length=1, max_length=32)
+    split: CanonicalSplit
+    occurred_at: datetime
+    note: Optional[NoteText] = None
+    expected_financial_version: FinancialVersion
+
+    @model_validator(mode="after")
+    def amounts_conserve(self) -> "FixedNegativeAdjustmentCommand":
+        amount = _money(self.amount, positive=True)
+        payer_ids = [item.participant_id for item in self.payment_allocations]
+        if len(payer_ids) != len(set(payer_ids)):
+            raise ValueError("negative adjustment payment Participant IDs must be unique")
+        if sum((_money(item.amount, positive=True) for item in self.payment_allocations), Decimal("0")) != amount:
+            raise ValueError("negative adjustment payment allocations must sum to the amount")
+        if isinstance(self.split, CanonicalManualSplit):
+            split_ids = [item.participant_id for item in self.split.allocations]
+            if len(split_ids) != len(set(split_ids)):
+                raise ValueError("negative adjustment manual split Participant IDs must be unique")
+            if sum((_money(item.amount, positive=True) for item in self.split.allocations), Decimal("0")) != amount:
+                raise ValueError("negative adjustment manual split allocations must sum to the amount")
+        elif len(self.split.participant_ids) != len(set(self.split.participant_ids)):
+            raise ValueError("negative adjustment equal split Participant IDs must be unique")
+        if self.occurred_at.tzinfo is None or self.occurred_at.utcoffset() is None:
+            raise ValueError("occurred_at must include a timezone")
+        return self
+
+
 FixedCommand = Annotated[
     Union[
         FixedExpenseCreateCommand,
@@ -2525,6 +2683,8 @@ FixedCommand = Annotated[
         FixedPrepaymentCommand,
         FixedPrepaymentReturnCommand,
         FixedFinalSettlementCommand,
+        FixedExpenseRefundCommand,
+        FixedNegativeAdjustmentCommand,
     ],
     Field(discriminator="operation"),
 ]
@@ -3002,10 +3162,84 @@ class FinalSettlementPreview(ContractModel):
         return self
 
 
+RefundSummaryText = Annotated[
+    str, StringConstraints(strict=True, min_length=1, max_length=600),
+]
+
+
+class RefundPreview(ContractModel):
+    """Linked refund preview: the original, what is already refunded, and the cap."""
+
+    kind: Literal["refund"]
+    summary: RefundSummaryText
+    activity_id: EntityId
+    original_expense_id: EntityId
+    original_title: TitleText
+    refund_title: TitleText
+    original_amount: MoneyString
+    refunded_amount: MoneyString
+    refund_amount: MoneyString
+    remaining_amount: MoneyString
+    currency: CurrencyCode
+    expected_financial_version: FinancialVersion
+    expected_original_version: ExpenseVersion
+    expected_original_financial_locked: bool
+    generated_at: datetime
+    simulation: bool
+
+    @field_validator("generated_at")
+    @classmethod
+    def generated_at_is_aware(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("generated_at must include a timezone")
+        return value
+
+    @model_validator(mode="after")
+    def amounts_respect_the_cap(self) -> "RefundPreview":
+        original = _money(self.original_amount, positive=True)
+        refunded = _money(self.refunded_amount)
+        refund = _money(self.refund_amount, positive=True)
+        remaining = _money(self.remaining_amount, positive=True)
+        if refunded < 0:
+            raise ValueError("already refunded amount cannot be negative")
+        if remaining != original - refunded:
+            raise ValueError("remaining refund capacity must equal original minus refunded")
+        if refund > remaining:
+            raise ValueError("refund amount cannot exceed the remaining capacity")
+        return self
+
+
+class NegativeAdjustmentPreview(ContractModel):
+    """Explicit unlinked negative Expense. There is no original to inherit from."""
+
+    kind: Literal["negative_adjustment"]
+    summary: RefundSummaryText
+    activity_id: EntityId
+    title: TitleText
+    amount: MoneyString
+    currency: CurrencyCode
+    expected_financial_version: FinancialVersion
+    generated_at: datetime
+    simulation: bool
+
+    @field_validator("generated_at")
+    @classmethod
+    def generated_at_is_aware(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("generated_at must include a timezone")
+        return value
+
+    @model_validator(mode="after")
+    def amount_is_positive(self) -> "NegativeAdjustmentPreview":
+        _money(self.amount, positive=True)
+        return self
+
+
 ProposalPreview = Annotated[
     Union[
         ExpensePreview, RepaymentPreview, TransferVoidPreview,
         PrepaymentPreview, PrepaymentReturnPreview, FinalSettlementPreview,
+        RefundPreview, NegativeAdjustmentPreview,
     ],
     Field(discriminator="kind"),
 ]
@@ -3598,6 +3832,52 @@ class ProposalRecord(ContractModel):
                     != command.expected_prepayment_return_amount
                 ):
                     raise ValueError("final settlement preview parts must match the command expectations")
+            elif isinstance(self.canonical_command, FixedExpenseRefundCommand):
+                if not isinstance(self.preview, RefundPreview):
+                    raise ValueError("refund command requires a refund preview")
+                command = self.canonical_command
+                if command.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("refund command Activity version must match the precondition")
+                if self.preview.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("refund preview must bind the same Activity financial version")
+                if self.preconditions.expense_version != command.expected_original_version:
+                    raise ValueError("refund original version must match the precondition")
+                if self.preview.expected_original_version != command.expected_original_version:
+                    raise ValueError("refund preview must bind the original Expense version")
+                if self.preview.expected_original_financial_locked != command.expected_original_financial_locked:
+                    raise ValueError("refund preview must bind the original lock state")
+                if self.preview.original_expense_id != command.original_expense_id:
+                    raise ValueError("refund preview must bind the original Expense")
+                if self.preview.activity_id != command.activity_id:
+                    raise ValueError("refund preview must bind the command Activity")
+                if self.preview.currency != command.currency:
+                    raise ValueError("refund currency must follow the original Expense")
+                if self.preview.refund_title != command.title:
+                    raise ValueError("refund preview title must match the command")
+                if (
+                    self.preview.refund_amount != command.amount
+                    or self.preview.refunded_amount != command.expected_refunded_amount
+                    or self.preview.original_amount != command.expected_original_amount
+                ):
+                    raise ValueError("refund preview amounts must match the command expectations")
+            elif isinstance(self.canonical_command, FixedNegativeAdjustmentCommand):
+                if not isinstance(self.preview, NegativeAdjustmentPreview):
+                    raise ValueError("negative adjustment command requires its own preview")
+                command = self.canonical_command
+                if command.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("negative adjustment Activity version must match the precondition")
+                if self.preview.expected_financial_version != self.preconditions.activity_financial_version:
+                    raise ValueError("negative adjustment preview must bind the same Activity financial version")
+                if self.preconditions.expense_version is not None:
+                    raise ValueError("negative adjustment Proposal does not have an existing Expense version")
+                if self.preview.activity_id != command.activity_id:
+                    raise ValueError("negative adjustment preview must bind the command Activity")
+                if (
+                    self.preview.amount != command.amount
+                    or self.preview.currency != command.currency
+                    or self.preview.title != command.title
+                ):
+                    raise ValueError("negative adjustment preview must match the command")
             elif isinstance(self.canonical_command, FixedExpenseCreateCommand):
                 if not isinstance(self.preview, ExpensePreview):
                     raise ValueError("expense command requires an Expense preview")

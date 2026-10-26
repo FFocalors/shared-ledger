@@ -1894,6 +1894,7 @@ class SQLiteAgentStore(P2V3StoreMixin):
         from .contracts import (
             ConfirmProposalRequest, ExecutionIdentity, ExecutionReference,
             FixedExpenseCreateCommand, FixedExpenseDeleteCommand,
+            FixedExpenseRefundCommand, FixedNegativeAdjustmentCommand,
             FixedExpensePresentationCommand, FixedExpenseUpdateCommand,
             FixedFinalSettlementCommand,
             FixedPrepaymentCommand, FixedPrepaymentReturnCommand,
@@ -1927,6 +1928,8 @@ class SQLiteAgentStore(P2V3StoreMixin):
                 FixedExpenseUpdateCommand,
                 FixedExpensePresentationCommand,
                 FixedExpenseDeleteCommand,
+                FixedExpenseRefundCommand,
+                FixedNegativeAdjustmentCommand,
                 FixedRepaymentCommand,
                 FixedVoidTransferCommand,
                 FixedPrepaymentCommand,

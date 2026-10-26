@@ -121,6 +121,7 @@ class _Transport:
             "void_reason": None,
         }]
         self.voided_result = True
+        self.refunds: list[dict] = []
         self.prepayment_balance = "0.0000"
         self.prepayment_remaining = "0.0000"
         self.settlement_plan = [
@@ -175,6 +176,8 @@ class _Transport:
         table = parsed.path.rsplit("/", 1)[-1]
         params = dict(parse_qsl(parsed.query))
         if table == "expenses":
+            if "original_expense_id" in params:
+                return 200, json.dumps(self.refunds).encode()
             if self.duplicate_title:
                 return 200, json.dumps([
                     self.expense,
@@ -1125,3 +1128,132 @@ def test_dev_final_settlement_bridge_refuses_mismatches_without_model_or_rpc(tmp
         assert not any(
             item["url"].endswith("/execute_final_settlement_v2") for item in transport.calls
         )
+
+
+def test_dev_refund_bridge_previews_and_executes_a_linked_refund(tmp_path) -> None:
+    transport = _Transport()
+    transport.expense["original_amount"] = "20.00"
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-refund.sqlite3", transport,
+    )
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "退款 Lunch 10.0 收款人=Rin 受益=Alex", scoped=True)
+        _wait(components, turn_id, {c.TurnState.WAIT_CONFIRM})
+
+        assert provider.prompts == []
+        details = components.store.get_session_detail(OWNER, session)
+        proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert proposal.operation == "expense.refund"
+        assert proposal.policy_version == "p5-dev-refund-v1"
+        assert isinstance(proposal.preview, c.RefundPreview)
+        assert proposal.preview.summary.startswith("【P5 开发验证·退款】")
+        assert proposal.preview.original_title == "Lunch"
+        assert proposal.preview.refunded_amount == "0"
+        assert proposal.preview.remaining_amount == "20.00"
+        assert not any(
+            item["url"].endswith("/create_expense_auto_rate") for item in transport.calls
+        )
+
+        response = _confirm(client, proposal)
+        assert response.status_code == 202, response.text
+        assert response.json()["turn"]["execution_resolution"] == "succeeded"
+        create_calls = [
+            item for item in transport.calls
+            if item["url"].endswith("/create_expense_auto_rate")
+        ]
+        assert len(create_calls) == 1
+        payload = create_calls[0]["payload"]
+        assert payload["original_amount"] == "-10.0"
+        assert payload["original_expense_id"] == str(transport.expense_id)
+        assert payload["original_currency"] == "USD"
+        assert payload["title"] == "退款-Lunch"
+        assert payload["payments"] == [{"participant_id": str(PARTICIPANT_2), "amount": "-10.0"}]
+        assert payload["aa_participant_ids"] == [str(PAYER)]
+
+
+def test_dev_refund_bridge_refuses_bad_targets_and_caps(tmp_path) -> None:
+    transport = _Transport()
+    transport.expense["original_amount"] = "20.00"
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-refund-refusals.sqlite3", transport,
+    )
+    with client:
+        session = _create_session(client)
+
+        def refusal(text: str, marker: str) -> None:
+            turn_id = _submit(client, session, text, scoped=True)
+            _wait(components, turn_id, {c.TurnState.COMPLETED})
+            messages = [
+                item["payload"]["text"] for item in _events(client, turn_id)["events"]
+                if item.get("type") == "message"
+            ]
+            assert any(marker in value for value in messages), (text, messages)
+
+        refusal("退款 Missing 1.0", "匹配到多笔或找不到")
+        refusal("退款 Lunch 99.0", "超过原单可退上限")
+        refusal("退款 Lunch 10.0 付款人=Alex", "用法")
+
+        transport.expense["original_expense_id"] = str(uuid.uuid4())
+        refusal("退款 Lunch 1.0", "不能作为退款原单")
+
+        details = components.store.get_session_detail(OWNER, session)
+        assert not any(item.status is c.ProposalStatus.PENDING for item in details.proposals)
+        assert provider.prompts == []
+        assert not any(
+            item["url"].endswith("/create_expense_auto_rate") for item in transport.calls
+        )
+
+
+def test_dev_negative_adjustment_bridge_previews_and_executes(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-negative.sqlite3", transport,
+    )
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "负调整 折扣 4.0 付款人=Rin 分摊=Alex", scoped=True)
+        _wait(components, turn_id, {c.TurnState.WAIT_CONFIRM})
+
+        assert provider.prompts == []
+        details = components.store.get_session_detail(OWNER, session)
+        proposal = next(item for item in details.proposals if item.status is c.ProposalStatus.PENDING)
+        assert proposal.operation == "expense.negative_adjustment"
+        assert proposal.policy_version == "p5-dev-negative-adjustment-v1"
+        assert isinstance(proposal.preview, c.NegativeAdjustmentPreview)
+        assert proposal.preview.summary.startswith("【P5 开发验证·负调整】")
+        assert "未关联原单" in proposal.preview.summary
+
+        response = _confirm(client, proposal)
+        assert response.status_code == 202, response.text
+        assert response.json()["turn"]["execution_resolution"] == "succeeded"
+        create_calls = [
+            item for item in transport.calls
+            if item["url"].endswith("/create_expense_auto_rate")
+        ]
+        assert len(create_calls) == 1
+        payload = create_calls[0]["payload"]
+        assert payload["original_amount"] == "-4.0"
+        assert payload["original_expense_id"] is None
+        assert payload["payments"] == [{"participant_id": str(PARTICIPANT_2), "amount": "-4.0"}]
+        assert payload["aa_participant_ids"] == [str(PAYER)]
+
+
+def test_dev_plain_create_refuses_a_negative_amount(tmp_path) -> None:
+    transport = _Transport()
+    client, components, provider, _ = _build_client(
+        tmp_path / "p5dev-negative-create.sqlite3", transport,
+    )
+    with client:
+        session = _create_session(client)
+        turn_id = _submit(client, session, "记账 午餐 -5", scoped=True)
+        _wait(components, turn_id, {c.TurnState.COMPLETED})
+        messages = [
+            item["payload"]["text"] for item in _events(client, turn_id)["events"]
+            if item.get("type") == "message"
+        ]
+        assert any("负调整" in value for value in messages), messages
+        details = components.store.get_session_detail(OWNER, session)
+        assert not any(item.status is c.ProposalStatus.PENDING for item in details.proposals)
+        assert provider.prompts == []
+        assert transport.calls == []

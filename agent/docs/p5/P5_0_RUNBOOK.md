@@ -271,6 +271,79 @@ Activity ID: <专用测试 Activity>
 备注:
 ```
 
+## 5.4 P5.4 退款（负消费）与未关联负调整
+
+> 本切片在 P5.7 之后补做，专项行号接在最后（38–43），便于与既有证据对照。
+
+命令：
+
+```text
+退款 <原单标题> <金额> [收款人=<名字>] [受益=<名字1>,<名字2>]
+负调整 <标题> <金额> [付款人=<名字>] [分摊=<名字1>,<名字2>]
+```
+
+示例：
+
+```text
+退款 Lunch 10.0
+退款 Lunch 10.0 收款人=Rin 受益=Alex
+负调整 折扣 8.0 付款人=Rin 分摊=Alex
+```
+
+规则：
+
+- `退款` 的 `<原单标题>` 必须在当前 Activity 内唯一匹配一笔未删除消费；匹配不到或重名
+  直接拒绝。金额按正数输入，写入时统一转成负金额，并带上 `original_expense_id`。
+- 退款币种与 FX 由服务端从原单继承，Agent 不发送汇率、也不允许换币种。
+- 退款上限 = 原单金额 − 服务端当前活跃退款累计；超限直接拒绝，不发 RPC。
+- 原单必须是同活动、未删除、正金额、且本身不是退款；否则拒绝。
+- 退款收款人 / 受益人不沿用原单：dev 桥默认收款人=第一个有效参与人、受益=全部参与人，
+  可在命令里显式覆盖；这只是验收便利，不是产品推断。
+- 退款新消费标题为 `退款-<原单标题>`。
+- `负调整` 是未关联负消费的唯一入口；普通 `记账` 出现负金额会被拒绝并提示改用
+  `负调整` / `退款`，不调用模型。
+- 预览摘要带 `【P5 开发验证·退款】` / `【P5 开发验证·负调整】`；退款摘要显示原单、
+  累计已退、本次上限。
+
+**四条通用检查点**
+
+1. **未确认不写**：生成预览但不确认 → 无新 Expense、无创建 RPC。
+2. **重复确认只写一次**：连续确认 3 次 → 1 次 `create_expense_auto_rate`，同一
+   `execution_id`。
+3. **版本冲突作废旧预览**：预览后原单 `version` / 累计退款 / `financial_locked` /
+   `is_deleted` 或 Activity 财务版本变化 → 0 次 RPC、Proposal `closed`、Turn `CANCELLED`。
+4. **未知不冒充成功**：确认后断网/注入超时 → `RECOVERING/UNKNOWN`，不重发；核对时只要
+   无法证明属于本次 execution 就落 `closed`（`refunded_elsewhere` / `refund_source_changed`
+   / `refund_not_applied`）。
+
+**退款专项**
+
+| # | 操作 | 预期 |
+|---|---|---|
+| 38 | 对一笔正金额消费执行 `退款 <标题> 10.0` | 预览显示原单、累计已退、本次上限；确认后生成 1 条负金额 Expense，带 `original_expense_id`，请求 `payments`/`split` 为负值 |
+| 39 | 退款金额超过剩余可退上限 | Turn 完成拒绝消息；无 RPC；无提案卡 |
+| 40 | 对已删除、或本身是退款、或金额非正的消费执行 `退款` | 拒绝；无 RPC |
+| 41 | 任意一笔关联退款成功后再读原单 | 原单 `financial_locked = true`；再次 `退款` 仍可预览（锁定值作为前置被记录），不会因为锁定而误拒 |
+| 42 | 执行 `负调整 <标题> 8.0` | 生成未关联负消费；请求 `original_expense_id` 为 `null` |
+| 43 | 执行 `记账 <标题> -5` | Turn 完成拒绝消息，提示改用 `负调整` / `退款`；不调用模型、无 RPC |
+
+证据模板：
+
+```text
+退款命令: 退款 <原单标题> <金额> [收款人=...] [受益=...]
+  activity_id:
+  original_expense_id:
+  original_version / original_financial_locked:
+  original_amount / refunded_amount / remaining_amount:
+  activity_financial_version:
+  execution_id:
+  new_expense_id:
+  payload.original_amount: -<金额>
+  payload.original_expense_id:
+  payload.payments / manual_splits / aa_participant_ids:
+  resolution: succeeded / rejected / closed / unknown
+```
+
 ## 5.5a P5.5a 真实还款/转账（只做新增）
 
 命令：

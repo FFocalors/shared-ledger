@@ -262,6 +262,219 @@ def parse_dev_final_settlement_command(
     )
 
 
+@dataclass(frozen=True, slots=True)
+class DevRefundCommand:
+    target_title: str
+    amount: str
+    receiver_name: str | None
+    benefit_token: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class DevNegativeAdjustmentCommand:
+    title: str
+    amount: str
+    payer_name: str | None
+    split_token: str | None
+
+
+_REFUND_COMMAND = re.compile(
+    r"^\s*退款\s+(?P<title>.+?)\s+(?P<amount>\d{1,9}(?:\.\d{1,4})?)\s*(?P<rest>.*)$"
+)
+_NEGATIVE_COMMAND = re.compile(
+    r"^\s*负调整\s+(?P<title>.+?)\s+(?P<amount>\d{1,9}(?:\.\d{1,4})?)\s*(?P<rest>.*)$"
+)
+_REFUND_DIRECTIVE = re.compile(r"(收款人|受益)\s*=\s*([^\s]+)")
+
+
+def is_dev_refund_command(text: str) -> bool:
+    return isinstance(text, str) and text.lstrip().startswith("退款")
+
+
+def is_dev_negative_adjustment_command(text: str) -> bool:
+    return isinstance(text, str) and text.lstrip().startswith("负调整")
+
+
+def is_dev_negative_amount_create(text: str) -> bool:
+    """`记账` with a negative amount is refused, never reinterpreted."""
+    if not isinstance(text, str):
+        return False
+    stripped = text.lstrip()
+    if not stripped.startswith("记账"):
+        return False
+    return re.search(r"(?:^|\s)-\d", stripped) is not None
+
+
+def parse_dev_refund_command(text: str) -> DevRefundCommand | None:
+    """Parse `退款 <原单标题> <金额> [收款人=<名字>] [受益=<名字1>,<名字2>]`."""
+    if not isinstance(text, str):
+        return None
+    match = _REFUND_COMMAND.match(text)
+    if match is None:
+        return None
+    title = match.group("title").strip()
+    amount = match.group("amount")
+    rest = match.group("rest") or ""
+    if not title or not amount or any(marker in rest for marker in _FOREIGN_MARKERS):
+        return None
+    directives = dict(_REFUND_DIRECTIVE.findall(rest))
+    if _REFUND_DIRECTIVE.sub("", rest).strip():
+        return None
+    return DevRefundCommand(
+        target_title=title,
+        amount=amount,
+        receiver_name=directives.get("收款人"),
+        benefit_token=directives.get("受益"),
+    )
+
+
+def parse_dev_negative_adjustment_command(
+    text: str,
+) -> DevNegativeAdjustmentCommand | None:
+    """Parse `负调整 <标题> <金额> [付款人=<名字>] [分摊=<名字1>,<名字2>]`."""
+    if not isinstance(text, str):
+        return None
+    match = _NEGATIVE_COMMAND.match(text)
+    if match is None:
+        return None
+    title = match.group("title").strip()
+    amount = match.group("amount")
+    rest = match.group("rest") or ""
+    if not title or not amount or any(marker in rest for marker in _FOREIGN_MARKERS):
+        return None
+    directives = dict(_DIRECTIVE.findall(rest))
+    return DevNegativeAdjustmentCommand(
+        title=title,
+        amount=amount,
+        payer_name=directives.get("付款人"),
+        split_token=directives.get("分摊"),
+    )
+
+
+def _dev_participants(
+    references: Sequence[c.BoundReference], activity_id: Any,
+) -> list[c.BoundParticipantReference]:
+    return [
+        item for item in references
+        if isinstance(item, c.BoundParticipantReference)
+        and item.scope_activity_id == activity_id
+    ]
+
+
+def _dev_participant_names(labels: Mapping[Any, Any]) -> dict[str, str]:
+    return {
+        _ref_key(label.ref): str(label.display_name)
+        for label in labels.values()
+        if getattr(label, "kind", None) == "participant"
+    }
+
+
+def _dev_split_refs(
+    token: str | None,
+    participants: Sequence[c.BoundParticipantReference],
+    names: Mapping[str, str],
+) -> list[Any]:
+    if token is None or token in _ALL_TOKENS:
+        return [item.ref for item in participants]
+    resolved: list[Any] = []
+    for name in token.split(","):
+        item = _resolve(participants, names, name)
+        if item is None:
+            raise DevIntentRefused(f"找不到唯一匹配的分摊人「{name}」。")
+        resolved.append(item.ref)
+    return resolved
+
+
+def build_dev_refund_intent(
+    cmd: DevRefundCommand,
+    references: Sequence[c.BoundReference],
+    labels: Mapping[Any, Any],
+    *,
+    expense_id: Any,
+    source_turn_id: Any,
+    activity_id: Any,
+) -> tuple[c.ExpenseRefundIntent, c.BoundExpenseReference]:
+    """Bind a refund to its original; receiver/beneficiary are chosen here."""
+    participants = _dev_participants(references, activity_id)
+    if not participants:
+        raise DevIntentRefused("当前活动没有可用参与人。")
+    names = _dev_participant_names(labels)
+    if cmd.receiver_name is not None:
+        receiver = _resolve(participants, names, cmd.receiver_name)
+        if receiver is None:
+            raise DevIntentRefused(f"找不到唯一匹配的收款人「{cmd.receiver_name}」。")
+    else:
+        receiver = participants[0]
+    try:
+        intent = c.ExpenseRefundIntent(
+            kind="expense.refund",
+            original_expense_ref=c.ExpenseRef.SELECTED,
+            title=f"退款-{cmd.target_title}",
+            original_amount=cmd.amount,
+            payment_allocations=[
+                c.PaymentAllocation(participant_ref=receiver.ref, amount=cmd.amount),
+            ],
+            split=c.EqualSplitIntent(
+                mode="equal",
+                participant_refs=_dev_split_refs(cmd.benefit_token, participants, names),
+            ),
+            occurred_at=None,
+        )
+    except ValueError as exc:
+        raise DevIntentRefused("退款金额或受益人集合不合法。") from exc
+    binding = c.BoundExpenseReference(
+        kind="expense", ref=c.ExpenseRef.SELECTED, entity_id=expense_id,
+        source_turn_id=source_turn_id, scope_activity_id=activity_id,
+    )
+    return intent, binding
+
+
+def build_dev_negative_adjustment_intent(
+    cmd: DevNegativeAdjustmentCommand,
+    references: Sequence[c.BoundReference],
+    labels: Mapping[Any, Any],
+    base_currency: str | None,
+    *,
+    activity_id: Any,
+) -> c.NegativeAdjustmentIntent:
+    """Build the explicit unlinked negative Expense intent."""
+    if not base_currency:
+        raise DevIntentRefused("当前活动没有可用的基础币种。")
+    participants = _dev_participants(references, activity_id)
+    units = [
+        item for item in references
+        if isinstance(item, c.BoundLedgerUnitReference)
+        and item.scope_activity_id == activity_id
+    ]
+    if not participants or not units:
+        raise DevIntentRefused("当前活动没有可用参与人或账本单元。")
+    names = _dev_participant_names(labels)
+    if cmd.payer_name is not None:
+        payer = _resolve(participants, names, cmd.payer_name)
+        if payer is None:
+            raise DevIntentRefused(f"找不到唯一匹配的付款人「{cmd.payer_name}」。")
+    else:
+        payer = participants[0]
+    try:
+        return c.NegativeAdjustmentIntent(
+            kind="expense.negative_adjustment",
+            ledger_unit_ref=units[0].ref,
+            title=cmd.title,
+            original_amount=cmd.amount,
+            original_currency=base_currency,
+            payment_allocations=[
+                c.PaymentAllocation(participant_ref=payer.ref, amount=cmd.amount),
+            ],
+            split=c.EqualSplitIntent(
+                mode="equal",
+                participant_refs=_dev_split_refs(cmd.split_token, participants, names),
+            ),
+            occurred_at=None,
+        )
+    except ValueError as exc:
+        raise DevIntentRefused("负调整金额或分摊集合不合法。") from exc
+
+
 def is_dev_repayment_command(text: str) -> bool:
     return isinstance(text, str) and text.lstrip().startswith("还款")
 

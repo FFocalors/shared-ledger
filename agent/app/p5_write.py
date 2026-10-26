@@ -29,7 +29,7 @@ import ssl
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from typing import Any, Mapping, Protocol, Sequence
 from urllib.parse import urlencode, urlsplit
 
@@ -52,6 +52,8 @@ P5_VOID_POLICY_VERSION = "p5-live-transfer-void-v1"
 P5_PREPAYMENT_POLICY_VERSION = "p5-live-prepayment-v1"
 P5_PREPAYMENT_RETURN_POLICY_VERSION = "p5-live-prepayment-return-v1"
 P5_FINAL_SETTLEMENT_POLICY_VERSION = "p5-live-final-settlement-v1"
+P5_REFUND_POLICY_VERSION = "p5-live-refund-v1"
+P5_NEGATIVE_ADJUSTMENT_POLICY_VERSION = "p5-live-negative-adjustment-v1"
 RPC_CREATE_EXPENSE = "/rest/v1/rpc/create_expense_auto_rate"
 RPC_UPDATE_EXPENSE = "/rest/v1/rpc/update_expense_auto_rate"
 RPC_UPDATE_PRESENTATION = "/rest/v1/rpc/update_expense_presentation"
@@ -138,6 +140,16 @@ _PREFLIGHT_CLOSE_SUMMARY = {
     "final_settlement_stale_plan": "the server's final settlement plan changed",
     "final_settlement_rejected": "the server refused the final settlement",
     "activity_type_changed": "the Activity type changed after the preview",
+    "refund_original_not_found": "the original Expense was not found",
+    "refund_original_invalid": "the original Expense cannot be refunded",
+    "refund_currency_mismatch": "the refund must use the original Expense currency",
+    "refund_exceeds_remaining": "the refund exceeds what is still refundable",
+    "refund_source_changed": "the original Expense or its refunds changed after the preview",
+    "refund_source_unavailable": "the refund source history could not be read",
+    "negative_adjustment_invalid": "the negative adjustment request is invalid",
+    "refunded_elsewhere": "a refund landed but this execution cannot be proven to be its author",
+    "refund_not_applied": "no refund was recorded and the original Expense is unchanged",
+    "adjustment_not_applied": "no negative adjustment was recorded and the Activity is unchanged",
 }
 
 
@@ -601,6 +613,35 @@ class LiveExpenseGateway:
         if len(rows) != 1:
             raise LiveWriteError("upstream_invalid_response")
         return rows[0]
+
+    async def read_refunded_amount(
+        self, access_token: str, original_expense_id: uuid.UUID,
+    ) -> Decimal:
+        """Sum the active linked refunds the server currently holds.
+
+        This is the only authority for the refund cap; the Agent never adds up
+        its own history.
+        """
+        rows = await self._get_rows(
+            "expenses",
+            [
+                ("original_expense_id", f"eq.{original_expense_id}"),
+                ("is_deleted", "eq.false"),
+                ("select", "id,original_amount"),
+                ("order", "id.asc"),
+                ("limit", "1000"),
+            ],
+            access_token,
+        )
+        if len(rows) >= 1000:
+            raise LiveWriteError("refund_source_unavailable")
+        total = Decimal("0")
+        for row in rows:
+            try:
+                total += abs(Decimal(_num_text(row.get("original_amount"))))
+            except (InvalidOperation, ValueError):
+                raise LiveWriteError("upstream_invalid_response") from None
+        return total
 
     async def read_prepayment_balance(
         self,
@@ -1808,6 +1849,230 @@ class LiveExpenseGateway:
             request_receipts=[],
         )
 
+    # -------------------------------------------------------------- refund preview
+
+    async def build_refund_preview(
+        self,
+        *,
+        owner_user_id: uuid.UUID,
+        session_id: uuid.UUID,
+        turn_id: uuid.UUID,
+        intent: c.ExpenseRefundIntent,
+        bound_references: Sequence[c.BoundReference],
+        access_token: str,
+        expires_at: datetime,
+        agent_disable_revision: int,
+        policy_version: str | None = None,
+        summary_prefix: str = "",
+        now: datetime | None = None,
+    ) -> c.ProposalRecord:
+        """Build a linked-refund proposal from server reads only.
+
+        Currency and FX come from the original Expense; the cap uses the
+        server's current active-refund total, never a local running sum.
+        """
+        if not isinstance(intent, c.ExpenseRefundIntent):
+            raise LiveWriteError("unsupported_operation")
+        instant = _aware(now)
+        activity_id, original_id, payments, split = _resolve_refund_bindings(
+            intent, bound_references, turn_id=turn_id,
+        )
+        grant = _activity_grant(
+            owner_user_id=owner_user_id, turn_id=turn_id,
+            access_token=access_token, expires_at=expires_at,
+            activity_id=activity_id,
+        )
+        scope = await self._read_backend.resolve_scope(
+            grant, ScopeRequest(mode="activity", ui_activity_id_hint=activity_id),
+        )
+        if scope.activity is None:
+            raise LiveWriteError("activity_not_found")
+        try:
+            state = await self.read_expense_state(access_token, original_id)
+        except LiveWriteError as exc:
+            if exc.code == "expense_not_found":
+                raise LiveWriteError("refund_original_not_found") from None
+            raise
+        if state.is_deleted or state.original_expense_id is not None:
+            raise LiveWriteError("refund_original_invalid")
+        try:
+            original_amount = Decimal(state.original_amount)
+        except (InvalidOperation, ValueError):
+            raise LiveWriteError("upstream_invalid_response") from None
+        if original_amount <= 0:
+            raise LiveWriteError("refund_original_invalid")
+        refunded = await self.read_refunded_amount(access_token, original_id)
+        remaining = original_amount - refunded
+        if remaining <= 0 or Decimal(intent.original_amount) > remaining:
+            raise LiveWriteError("refund_exceeds_remaining")
+        currency = state.original_currency
+        expected_version = scope.activity.financial_version
+
+        preview = c.RefundPreview(
+            kind="refund",
+            summary=(
+                f"{summary_prefix}退款 {intent.original_amount} {currency} "
+                f"退自「{state.title}」（原单 {_num_text(original_amount)} {currency}，"
+                f"version {state.version}）；累计已退 {_num_text(refunded)}；"
+                f"本次上限 {_num_text(remaining)}"
+            ),
+            activity_id=activity_id,
+            original_expense_id=original_id,
+            original_title=state.title,
+            refund_title=intent.title,
+            original_amount=_num_text(original_amount),
+            refunded_amount=_num_text(refunded),
+            refund_amount=intent.original_amount,
+            remaining_amount=_num_text(remaining),
+            currency=currency,
+            expected_financial_version=str(expected_version),
+            expected_original_version=str(state.version),
+            expected_original_financial_locked=state.financial_locked,
+            generated_at=instant,
+            simulation=False,
+        )
+        command = c.FixedExpenseRefundCommand(
+            operation="expense.refund",
+            activity_id=activity_id,
+            original_expense_id=original_id,
+            ledger_unit_id=state.ledger_unit_id,
+            title=intent.title,
+            amount=intent.original_amount,
+            currency=currency,
+            payment_allocations=payments,
+            split=split,
+            occurred_at=instant,
+            note=intent.note,
+            expected_financial_version=preview.expected_financial_version,
+            expected_original_version=preview.expected_original_version,
+            expected_original_financial_locked=preview.expected_original_financial_locked,
+            expected_refunded_amount=preview.refunded_amount,
+            expected_original_amount=preview.original_amount,
+        )
+
+        policy = policy_version or self._config.policy_version
+        preconditions = c.PreconditionSnapshot(
+            activity_id=activity_id,
+            permission_checked=True,
+            agent_disable_revision=agent_disable_revision,
+            activity_financial_version=preview.expected_financial_version,
+            expense_version=preview.expected_original_version,
+            policy_version=policy,
+            verified_at=instant,
+        )
+        digest = c.canonical_command_digest(command, preconditions, policy_version=policy)
+        return c.ProposalRecord(
+            proposal_id=uuid.uuid4(),
+            owner_user_id=owner_user_id,
+            session_id=session_id,
+            turn_id=turn_id,
+            revision=1,
+            operation="expense.refund",
+            mode="backend",
+            status=c.ProposalStatus.PENDING,
+            intent=intent,
+            canonical_command=command,
+            preview=preview,
+            preconditions=preconditions,
+            command_digest=digest,
+            confirmation_nonce=_new_nonce(),
+            policy_version=policy,
+            expires_at=instant.replace(microsecond=0) + timedelta(minutes=10),
+            execution=None,
+            request_receipts=[],
+        )
+
+    async def build_negative_adjustment_preview(
+        self,
+        *,
+        owner_user_id: uuid.UUID,
+        session_id: uuid.UUID,
+        turn_id: uuid.UUID,
+        intent: c.NegativeAdjustmentIntent,
+        bound_references: Sequence[c.BoundReference],
+        access_token: str,
+        expires_at: datetime,
+        agent_disable_revision: int,
+        policy_version: str | None = None,
+        summary_prefix: str = "",
+        now: datetime | None = None,
+    ) -> c.ProposalRecord:
+        """Build an explicit unlinked negative Expense; no original is involved."""
+        if not isinstance(intent, c.NegativeAdjustmentIntent):
+            raise LiveWriteError("unsupported_operation")
+        instant = _aware(now)
+        activity_id, ledger_unit_id, payments, split = _resolve_create_bindings(
+            intent, bound_references, turn_id=turn_id,
+        )
+        grant = _activity_grant(
+            owner_user_id=owner_user_id, turn_id=turn_id,
+            access_token=access_token, expires_at=expires_at,
+            activity_id=activity_id,
+        )
+        scope = await self._read_backend.resolve_scope(
+            grant, ScopeRequest(mode="activity", ui_activity_id_hint=activity_id),
+        )
+        _require_writable_activity(scope, original_currency=intent.original_currency)
+        preview = c.NegativeAdjustmentPreview(
+            kind="negative_adjustment",
+            summary=(
+                f"{summary_prefix}负调整 {intent.title} {intent.original_amount} "
+                f"{intent.original_currency}；未关联原单（显式负向调整，不占用退款上限）"
+            ),
+            activity_id=activity_id,
+            title=intent.title,
+            amount=intent.original_amount,
+            currency=intent.original_currency,
+            expected_financial_version=str(scope.activity.financial_version),
+            generated_at=instant,
+            simulation=False,
+        )
+        command = c.FixedNegativeAdjustmentCommand(
+            operation="expense.negative_adjustment",
+            activity_id=activity_id,
+            ledger_unit_id=ledger_unit_id,
+            title=intent.title,
+            amount=intent.original_amount,
+            currency=intent.original_currency,
+            payment_allocations=payments,
+            split=split,
+            occurred_at=instant,
+            note=intent.note,
+            expected_financial_version=preview.expected_financial_version,
+        )
+
+        policy = policy_version or self._config.policy_version
+        preconditions = c.PreconditionSnapshot(
+            activity_id=activity_id,
+            permission_checked=True,
+            agent_disable_revision=agent_disable_revision,
+            activity_financial_version=preview.expected_financial_version,
+            expense_version=None,
+            policy_version=policy,
+            verified_at=instant,
+        )
+        digest = c.canonical_command_digest(command, preconditions, policy_version=policy)
+        return c.ProposalRecord(
+            proposal_id=uuid.uuid4(),
+            owner_user_id=owner_user_id,
+            session_id=session_id,
+            turn_id=turn_id,
+            revision=1,
+            operation="expense.negative_adjustment",
+            mode="backend",
+            status=c.ProposalStatus.PENDING,
+            intent=intent,
+            canonical_command=command,
+            preview=preview,
+            preconditions=preconditions,
+            command_digest=digest,
+            confirmation_nonce=_new_nonce(),
+            policy_version=policy,
+            expires_at=instant.replace(microsecond=0) + timedelta(minutes=10),
+            execution=None,
+            request_receipts=[],
+        )
+
     # ----------------------------------------------------------------- void preview
 
     async def build_void_preview(
@@ -1930,11 +2195,13 @@ class LiveExpenseGateway:
             c.FixedPrepaymentCommand,
             c.FixedPrepaymentReturnCommand,
             c.FixedFinalSettlementCommand,
+            c.FixedExpenseRefundCommand,
+            c.FixedNegativeAdjustmentCommand,
         )):
             return await self._close(
                 principal, proposal,
                 code="unsupported_operation",
-                summary="P5 executes expense writes, repayments, prepayments, settlements and voids only",
+                summary="P5 executes expense writes, refunds, repayments, prepayments, settlements and voids only",
                 expected_state_revision=expected_state_revision,
             )
         if proposal.execution is not None:
@@ -1955,6 +2222,8 @@ class LiveExpenseGateway:
             c.FixedPrepaymentCommand, c.FixedPrepaymentReturnCommand,
         ))
         is_final_settlement = isinstance(command, c.FixedFinalSettlementCommand)
+        is_refund = isinstance(command, c.FixedExpenseRefundCommand)
+        is_negative_adjustment = isinstance(command, c.FixedNegativeAdjustmentCommand)
         grant = _activity_grant(
             owner_user_id=principal.user_id, turn_id=proposal.turn_id,
             access_token=access_token, expires_at=_grant_expiry(principal),
@@ -2043,6 +2312,66 @@ class LiveExpenseGateway:
                     or command.to_participant_id not in active
                 ):
                     raise LiveWriteError("final_settlement_participant_invalid")
+            elif is_refund:
+                # A linked refund is a negative Expense. Everything it inherits
+                # (currency, FX, cap) comes from a fresh server read.
+                await self._read_backend.verify_financial_versions(
+                    grant, {command.activity_id: int(command.expected_financial_version)},
+                )
+                scope = await self._read_backend.resolve_scope(
+                    grant, ScopeRequest(mode="activity", ui_activity_id_hint=command.activity_id),
+                )
+                if (
+                    scope.activity is None
+                    or scope.activity.financial_version != int(command.expected_financial_version)
+                ):
+                    raise LiveWriteError("preview_stale")
+                try:
+                    state = await self.read_expense_state(
+                        access_token, command.original_expense_id,
+                    )
+                except LiveWriteError as exc:
+                    if exc.code != "expense_not_found":
+                        raise
+                    raise LiveWriteError("refund_original_not_found") from None
+                if state.is_deleted or state.original_expense_id is not None:
+                    raise LiveWriteError("refund_original_invalid")
+                if state.version != int(command.expected_original_version):
+                    raise LiveWriteError("refund_source_changed")
+                if state.financial_locked != command.expected_original_financial_locked:
+                    raise LiveWriteError("refund_source_changed")
+                if state.original_currency != command.currency:
+                    raise LiveWriteError("refund_currency_mismatch")
+                if state.ledger_unit_id != command.ledger_unit_id:
+                    raise LiveWriteError("refund_source_changed")
+                try:
+                    original_amount = Decimal(state.original_amount)
+                except (InvalidOperation, ValueError):
+                    raise LiveWriteError("upstream_invalid_response") from None
+                if original_amount <= 0:
+                    raise LiveWriteError("refund_original_invalid")
+                if original_amount != Decimal(command.expected_original_amount):
+                    raise LiveWriteError("refund_source_changed")
+                refunded = await self.read_refunded_amount(
+                    access_token, command.original_expense_id,
+                )
+                if refunded != Decimal(command.expected_refunded_amount):
+                    raise LiveWriteError("refund_source_changed")
+                if refunded + Decimal(command.amount) > original_amount:
+                    raise LiveWriteError("refund_exceeds_remaining")
+            elif is_negative_adjustment:
+                await self._read_backend.verify_financial_versions(
+                    grant, {command.activity_id: int(command.expected_financial_version)},
+                )
+                scope = await self._read_backend.resolve_scope(
+                    grant, ScopeRequest(mode="activity", ui_activity_id_hint=command.activity_id),
+                )
+                if (
+                    scope.activity is None
+                    or scope.activity.financial_version != int(command.expected_financial_version)
+                ):
+                    raise LiveWriteError("preview_stale")
+                _require_writable_activity(scope, original_currency=command.currency)
             elif is_presentation:
                 # Presentation update: only the Expense's own version guards it.
                 # Do NOT use activities.financial_version, and do NOT pre-reject
@@ -2150,6 +2479,13 @@ class LiveExpenseGateway:
                 "final_settlement_stale_plan",
                 "final_settlement_rejected",
                 "activity_type_changed",
+                "refund_original_not_found",
+                "refund_original_invalid",
+                "refund_currency_mismatch",
+                "refund_exceeds_remaining",
+                "refund_source_changed",
+                "refund_source_unavailable",
+                "negative_adjustment_invalid",
             ):
                 return await self._close(
                     principal, proposal,
@@ -2240,6 +2576,12 @@ class LiveExpenseGateway:
                     principal.user_id, proposal.proposal_id, proposal.revision,
                 ),
             )
+        elif isinstance(command, c.FixedExpenseRefundCommand):
+            rpc_path = RPC_CREATE_EXPENSE
+            payload = _rpc_payload_refund(command)
+        elif isinstance(command, c.FixedNegativeAdjustmentCommand):
+            rpc_path = RPC_CREATE_EXPENSE
+            payload = _rpc_payload_negative_adjustment(command)
         else:
             rpc_path = RPC_UPDATE_EXPENSE
             payload = _rpc_payload_update(command)
@@ -2324,6 +2666,14 @@ class LiveExpenseGateway:
             )
         if isinstance(command, c.FixedFinalSettlementCommand):
             return await self._reconcile_final_settlement(
+                principal, proposal, command, access_token,
+            )
+        if isinstance(command, c.FixedExpenseRefundCommand):
+            return await self._reconcile_refund(
+                principal, proposal, command, access_token,
+            )
+        if isinstance(command, c.FixedNegativeAdjustmentCommand):
+            return await self._reconcile_negative_adjustment(
                 principal, proposal, command, access_token,
             )
         if not isinstance(command, c.FixedExpenseDeleteCommand):
@@ -2553,6 +2903,88 @@ class LiveExpenseGateway:
             c.ExecutionResolution.SUCCEEDED, "final_settlement_created",
             "final settlement reconciled by request id",
         )
+
+    async def _reconcile_refund(
+        self,
+        principal: Principal,
+        proposal: c.ProposalRecord,
+        command: c.FixedExpenseRefundCommand,
+        access_token: str,
+    ) -> LiveWriteOutcome:
+        """A lost refund response can never be attributed to this execution."""
+        turn = (
+            await _call_store(self._store.get_turn, principal.user_id, proposal.turn_id)
+        ).record.turn
+        if turn.state not in (c.TurnState.RECOVERING, c.TurnState.EXECUTING):
+            return await self._existing_outcome(principal, proposal)
+        try:
+            state = await self.read_expense_state(
+                access_token, command.original_expense_id,
+            )
+            refunded = await self.read_refunded_amount(
+                access_token, command.original_expense_id,
+            )
+        except (LiveWriteError, BackendReadError):
+            return await self._existing_outcome(principal, proposal)
+        if refunded > Decimal(command.expected_refunded_amount):
+            code = "refunded_elsewhere"
+            summary = "a refund landed but this execution cannot be proven to be its author"
+        elif state.version != int(command.expected_original_version):
+            code = "refund_source_changed"
+            summary = "the original Expense changed while the refund outcome was unresolved"
+        else:
+            code = "refund_not_applied"
+            summary = "no refund is recorded and the original Expense is unchanged"
+        await _call_store(
+            self._store.settle_mock_execution,
+            principal.user_id, proposal.proposal_id,
+            c.ExecutionResolution.CLOSED,
+            result_code=code,
+            result_summary=summary,
+        )
+        return LiveWriteOutcome(c.ExecutionResolution.CLOSED, code, summary)
+
+    async def _reconcile_negative_adjustment(
+        self,
+        principal: Principal,
+        proposal: c.ProposalRecord,
+        command: c.FixedNegativeAdjustmentCommand,
+        access_token: str,
+    ) -> LiveWriteOutcome:
+        turn = (
+            await _call_store(self._store.get_turn, principal.user_id, proposal.turn_id)
+        ).record.turn
+        if turn.state not in (c.TurnState.RECOVERING, c.TurnState.EXECUTING):
+            return await self._existing_outcome(principal, proposal)
+        grant = _activity_grant(
+            owner_user_id=principal.user_id, turn_id=proposal.turn_id,
+            access_token=access_token, expires_at=_grant_expiry(principal),
+            activity_id=command.activity_id,
+        )
+        try:
+            scope = await self._read_backend.resolve_scope(
+                grant, ScopeRequest(mode="activity", ui_activity_id_hint=command.activity_id),
+            )
+        except (BackendReadError, ScopeDenied):
+            return await self._existing_outcome(principal, proposal)
+        if (
+            scope.activity is None
+            or scope.activity.financial_version
+            != int(command.expected_financial_version)
+        ):
+            code = "activity_changed"
+            summary = "the Activity changed while the adjustment outcome was unresolved"
+        else:
+            code = "adjustment_not_applied"
+            summary = "no adjustment is recorded and the Activity is unchanged"
+        await _call_store(
+            self._store.settle_mock_execution,
+            principal.user_id, proposal.proposal_id,
+            c.ExecutionResolution.CLOSED,
+            result_code=code,
+            result_summary=summary,
+        )
+        return LiveWriteOutcome(c.ExecutionResolution.CLOSED, code, summary)
 
     async def _reconcile_void(        self,
         principal: Principal,
@@ -2841,6 +3273,12 @@ class LiveExpenseGateway:
             elif proposal.operation == "expense.update":
                 code = "expense_updated"
                 summary_text = "expense updated"
+            elif proposal.operation == "expense.refund":
+                code = "refund_created"
+                summary_text = "refund recorded"
+            elif proposal.operation == "expense.negative_adjustment":
+                code = "negative_adjustment_created"
+                summary_text = "negative adjustment recorded"
             else:
                 code = "expense_created"
                 summary_text = "expense created"
@@ -3335,11 +3773,19 @@ def _resolve_expense_binding(
     references: Sequence[c.BoundReference],
     turn_id: uuid.UUID,
 ) -> c.BoundExpenseReference:
+    return _resolve_expense_ref(intent.expense_ref, references, turn_id)
+
+
+def _resolve_expense_ref(
+    ref: Any,
+    references: Sequence[c.BoundReference],
+    turn_id: uuid.UUID,
+) -> c.BoundExpenseReference:
     for reference in references:
         if (
             isinstance(reference, c.BoundExpenseReference)
             and reference.source_turn_id == turn_id
-            and reference.ref == intent.expense_ref
+            and reference.ref == ref
         ):
             return reference
     raise ScopeDenied("expense reference is not bound to this turn")
@@ -3547,25 +3993,51 @@ def _resolve_update_bindings(
 
 
 def _resolve_create_bindings(
-    intent: c.ExpenseCreateIntent,
+    intent: Any,
     references: Sequence[c.BoundReference],
     *,
     turn_id: uuid.UUID,
 ) -> tuple[uuid.UUID, uuid.UUID, list[c.CanonicalPayment], c.CanonicalSplit]:
     units: dict[str, c.BoundLedgerUnitReference] = {}
-    participants: dict[str, c.BoundParticipantReference] = {}
     for reference in references:
         if reference.source_turn_id != turn_id:
             continue
         if isinstance(reference, c.BoundLedgerUnitReference):
             units[reference.ref.value] = reference
-        elif isinstance(reference, c.BoundParticipantReference):
-            participants[reference.ref.value] = reference
 
     unit = units.get(intent.ledger_unit_ref.value)
     if unit is None:
         raise ScopeDenied("ledger unit reference is not bound to this turn")
     activity_id = unit.scope_activity_id
+    payments, split = _canonical_children(intent, references, turn_id, activity_id)
+    return activity_id, unit.entity_id, payments, split
+
+
+def _resolve_refund_bindings(
+    intent: c.ExpenseRefundIntent,
+    references: Sequence[c.BoundReference],
+    *,
+    turn_id: uuid.UUID,
+) -> tuple[uuid.UUID, uuid.UUID, list[c.CanonicalPayment], c.CanonicalSplit]:
+    """Bind the refund to its original Expense; the original owns the unit."""
+    original = _resolve_expense_ref(intent.original_expense_ref, references, turn_id)
+    activity_id = original.scope_activity_id
+    payments, split = _canonical_children(intent, references, turn_id, activity_id)
+    return activity_id, original.entity_id, payments, split
+
+
+def _canonical_children(
+    intent: Any,
+    references: Sequence[c.BoundReference],
+    turn_id: uuid.UUID,
+    activity_id: uuid.UUID,
+) -> tuple[list[c.CanonicalPayment], c.CanonicalSplit]:
+    participants: dict[str, c.BoundParticipantReference] = {}
+    for reference in references:
+        if reference.source_turn_id != turn_id:
+            continue
+        if isinstance(reference, c.BoundParticipantReference):
+            participants[reference.ref.value] = reference
 
     def participant(ref: Any) -> c.BoundParticipantReference:
         bound = participants.get(getattr(ref, "value", str(ref)))
@@ -3590,7 +4062,7 @@ def _resolve_create_bindings(
                 for item in intent.split.allocations
             ],
         )
-    return activity_id, unit.entity_id, payments, split
+    return payments, split
 
 
 def _require_writable_activity(scope: Any, *, original_currency: str) -> None:
@@ -3638,6 +4110,94 @@ def _create_changes(after: c.ExpenseSnapshot) -> list[c.ExpenseFieldChange]:
     if after.note is not None:
         changes.append(c.ExpenseNoteChange(field="note", before=None, after=after.note))
     return changes
+
+
+def _negate(amount: str) -> str:
+    """Turn a positive magnitude into the negative text the RPC expects."""
+    try:
+        value = Decimal(amount)
+    except (InvalidOperation, ValueError):
+        raise LiveWriteError("invalid_command") from None
+    if value <= 0:
+        raise LiveWriteError("invalid_command")
+    return format(-value, "f")
+
+
+def _rpc_payload_refund(command: c.FixedExpenseRefundCommand) -> dict[str, Any]:
+    return _expense_create_payload(
+        ledger_unit_id=command.ledger_unit_id,
+        title=command.title,
+        amount=command.amount,
+        currency=command.currency,
+        payment_allocations=command.payment_allocations,
+        split=command.split,
+        occurred_at=command.occurred_at,
+        note=command.note,
+        original_expense_id=command.original_expense_id,
+    )
+
+
+def _rpc_payload_negative_adjustment(
+    command: c.FixedNegativeAdjustmentCommand,
+) -> dict[str, Any]:
+    return _expense_create_payload(
+        ledger_unit_id=command.ledger_unit_id,
+        title=command.title,
+        amount=command.amount,
+        currency=command.currency,
+        payment_allocations=command.payment_allocations,
+        split=command.split,
+        occurred_at=command.occurred_at,
+        note=command.note,
+        original_expense_id=None,
+    )
+
+
+def _expense_create_payload(
+    *,
+    ledger_unit_id: uuid.UUID,
+    title: str,
+    amount: str,
+    currency: str,
+    payment_allocations: Sequence[c.CanonicalPayment],
+    split: c.CanonicalSplit,
+    occurred_at: datetime,
+    note: str | None,
+    original_expense_id: uuid.UUID | None,
+) -> dict[str, Any]:
+    """Negative-Expense create payload; every child amount carries the sign."""
+    payments = [
+        {"participant_id": str(item.participant_id), "amount": _negate(item.amount)}
+        for item in payment_allocations
+    ]
+    if isinstance(split, c.CanonicalEqualSplit):
+        split_method = "equal"
+        manual_splits: list[dict[str, Any]] = []
+        aa_participant_ids = [str(item) for item in split.participant_ids]
+    elif isinstance(split, c.CanonicalManualSplit):
+        split_method = "manual"
+        manual_splits = [
+            {"participant_id": str(item.participant_id), "amount": _negate(item.amount)}
+            for item in split.allocations
+        ]
+        aa_participant_ids = []
+    else:  # pragma: no cover - the discriminated union makes this unreachable
+        raise LiveWriteError("unsupported_split")
+    return {
+        "ledger_unit_id": str(ledger_unit_id),
+        "title": title,
+        "original_amount": _negate(amount),
+        "original_currency": currency,
+        "split_method": split_method,
+        "payments": payments,
+        "manual_splits": manual_splits,
+        "aa_participant_ids": aa_participant_ids,
+        "occurred_at": occurred_at.isoformat(),
+        "note": note,
+        "original_expense_id": (
+            str(original_expense_id) if original_expense_id is not None else None
+        ),
+    }
 
 
 def _rpc_payload(command: c.FixedExpenseCreateCommand) -> dict[str, Any]:
