@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "api_version": {
+      "const": "1.1.0",
+      "default": "1.1.0",
+      "title": "Api Version",
+      "type": "string"
+    },
+    "code": {
+      "enum": [
+        "unauthenticated",
+        "forbidden",
+        "not_found",
+        "idempotency_conflict",
+        "state_revision_conflict",
+        "proposal_revision_conflict",
+        "proposal_expired",
+        "execution_capability_unavailable",
+        "agent_disabled",
+        "rate_limited",
+        "dependency_unavailable",
+        "invalid_request"
+      ],
+      "title": "ApiErrorCode",
+      "type": "string"
+    },
+    "message": {
+      "maxLength": 240,
+      "minLength": 1,
+      "title": "Message",
+      "type": "string"
+    },
+    "retryable": {
+      "default": false,
+      "title": "Retryable",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "code",
+    "message"
+  ],
+  "title": "ApiErrorResponse",
+  "type": "object"
+}

@@ -1,0 +1,145 @@
+{
+  "$defs": {
+    "CreateSessionResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "api_version": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Api Version",
+          "type": "string"
+        },
+        "session": {
+          "$ref": "#/$defs/SessionSummary"
+        }
+      },
+      "required": [
+        "session"
+      ],
+      "title": "CreateSessionResponse",
+      "type": "object"
+    },
+    "SessionSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "active_turn_count": {
+          "minimum": 0,
+          "title": "Active Turn Count",
+          "type": "integer"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "session_id": {
+          "format": "uuid",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "title": "Updated At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "created_at",
+        "updated_at",
+        "active_turn_count"
+      ],
+      "title": "SessionSummary",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "create_payload_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Create Payload Hash",
+      "type": "string"
+    },
+    "create_request_id": {
+      "format": "uuid",
+      "title": "Create Request Id",
+      "type": "string"
+    },
+    "create_response": {
+      "$ref": "#/$defs/CreateSessionResponse"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "default_activity_hint": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Default Activity Hint"
+    },
+    "owner_user_id": {
+      "format": "uuid",
+      "title": "Owner User Id",
+      "type": "string"
+    },
+    "session_id": {
+      "format": "uuid",
+      "title": "Session Id",
+      "type": "string"
+    },
+    "title": {
+      "anyOf": [
+        {
+          "maxLength": 120,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Title"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "title": "Updated At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "session_id",
+    "owner_user_id",
+    "create_request_id",
+    "create_payload_hash",
+    "create_response",
+    "created_at",
+    "updated_at"
+  ],
+  "title": "SessionRecord",
+  "type": "object"
+}

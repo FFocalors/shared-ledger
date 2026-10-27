@@ -1,6 +1,6 @@
 # Agent 应用端：当前状态与后续接入（2026-10-22）
 
-分支 `feature/agent-app-ui`，基于 `main@d5ff4f0`。对应 Agent 侧契约 `shared-ledger-agent/agent/contracts/v1.0.0`（api 1.0.0，快照 manifest 56 个文件 / `c1f7775ad…`，已复制到 `app/src/test/resources/agent-contract-v1.0.0/`）。视觉与交互方案见 [UI_PLAN.md](UI_PLAN.md)。
+分支 `feature/dev-workflow`。对应 Agent 侧契约 `shared-ledger-agent/agent/contracts/v1.1.0`（api **1.1.0**，operations / semantic 仍为 1.0.0，56 个生成文件）。两份快照并存于测试资源：`agent-contract-v1.1.0/`（当前）与 `agent-contract-v1.0.0/`（历史）。视觉与交互方案见 [UI_PLAN.md](UI_PLAN.md)。
 
 ## 已完成（只读阶段）
 
@@ -10,6 +10,7 @@
 | 配置 | `app/build.gradle.kts`、`AgentConfig.kt` | `local.properties`：`agent.baseUrl`（https；http 只允许 debug 下的 10.0.2.2/127.0.0.1/localhost）、`agent.demo`（仅 debug 生效）。 |
 | 会话逻辑 | `ui/agent/AgentAssistantViewModel.kt` | 建会话、提交回合、按 `after_seq` 轮询并按 `seq` 去重、草稿按 revision 合并、`auth_required` 自动恢复一次、澄清续答、停止、历史重建；同一请求重试复用 `client_request_id`。 |
 | 确认执行 | `ui/agent/AgentAssistantViewModel.kt`、`ProposalDraftCard.kt` | 后端草稿的「确认记账」可用：按钮进入「确认中…」，202 后记录执行回执（执行 ID + 回合状态）并从返回的 `event_cursor` 继续轮询；执行中显示「正在记账」，`RECOVERING`/unknown 一律显示「正在核对结果」，绝不显示成功或失败；501 显示「执行暂不可用」；失败可重试且复用同一 `client_request_id`。演示草稿（simulation）永远不可执行。 |
+| P5 预览（api 1.1.0） | `data/agent/AgentDtos.kt`、`ui/agent/ProposalPresentation.kt` | 25 个 proposal operation 均有标题与一句话摘要；9 种 preview 按 `kind` 解码（expense / management / refund / prepayment / prepayment_return / negative_adjustment / repayment / transfer_void / final_settlement），未知 kind 解码为 `UnknownPreview` 并以服务端摘要兜底，未知 operation 落为 `UNKNOWN` 并显示通用标题「变更草稿」。卡片渲染对每种 preview 都有显式分支，不会白屏。 |
 | 页面上下文 | `ui/agent/AgentUiContext.kt` | 当前路由 → `UiContext.page_type` / `activity_id` / `selected_entity`，以及面板的「正在看：…」文案；参与人/账本 UUID 用已加载的活动详情解析成名字。 |
 | 悬浮入口 | `AgentFloatingEntry.kt`、`AgentEntryController.kt` | 左下边缘索引贴：点一下滑出、再点打开；4 秒/面板关闭/换页自动收回；可拖动并排除系统返回手势；有进行中回合时握条变琥珀色。 |
 | 底部抽屉 | `AgentBottomSheet.kt`、`AgentSheetPhysics.kt` | 全开/半开/关闭三档；上拉过头橡皮筋阻尼；松手按速度投射选锚点；与对话列表嵌套滚动联动。 |

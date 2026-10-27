@@ -26,7 +26,12 @@ import kotlinx.serialization.json.contentOrNull
  * Money and decimals are always [String]; timestamps stay ISO-8601 strings so the data layer never
  * rounds or reinterprets them.
  */
-const val AGENT_API_VERSION = "1.0.0"
+/** API version this client speaks (contract snapshot in `agent-contract-v1.1.0`). */
+const val AGENT_API_VERSION = "1.1.0"
+
+/** Operation and semantic versions did not change in api 1.1.0. */
+const val AGENT_OPERATIONS_VERSION = "1.0.0"
+const val AGENT_SEMANTIC_VERSION = "1.0.0"
 
 val AgentJson: Json = Json {
     ignoreUnknownKeys = true
@@ -151,6 +156,28 @@ enum class ProposalOperation(override val wire: String) : WireEnum {
     EXPENSE_CREATE("expense.create"),
     EXPENSE_UPDATE("expense.update"),
     EXPENSE_PRESENTATION_UPDATE("expense.presentation.update"),
+    EXPENSE_DELETE("expense.delete"),
+    SETTLEMENT_REPAYMENT("settlement.repayment"),
+    TRANSFER_VOID("transfer.void"),
+    PREPAYMENT_CREATE("prepayment.create"),
+    PREPAYMENT_RETURN("prepayment.return"),
+    SETTLEMENT_FINAL("settlement.final"),
+    EXPENSE_REFUND("expense.refund"),
+    EXPENSE_NEGATIVE_ADJUSTMENT("expense.negative_adjustment"),
+    ACTIVITY_CREATE("activity.create"),
+    ACTIVITY_JOIN("activity.join"),
+    PARTICIPANT_CREATE("participant.create"),
+    PARTICIPANT_DELETE("participant.delete"),
+    PARTICIPANT_CLAIM("participant.claim"),
+    PARTICIPANT_UNCLAIM("participant.unclaim"),
+    SUBACTIVITY_CREATE("subactivity.create"),
+    SUBACTIVITY_DELETE("subactivity.delete"),
+    SUBACTIVITY_RESTORE("subactivity.restore"),
+    ACTIVITY_MEMBER_REMOVE("activity.member.remove"),
+    ACTIVITY_CREATOR_TRANSFER("activity.creator.transfer"),
+    ACTIVITY_ARCHIVE("activity.archive"),
+    ACTIVITY_UNARCHIVE("activity.unarchive"),
+    ACTIVITY_DELETE("activity.delete"),
     UNKNOWN("unknown"),
 }
 
@@ -265,8 +292,8 @@ enum class UiEntityType {
 @Serializable
 data class ClientProtocolVersions(
     val api: String = AGENT_API_VERSION,
-    val operations: String = AGENT_API_VERSION,
-    val semantic: String = AGENT_API_VERSION,
+    val operations: String = AGENT_OPERATIONS_VERSION,
+    val semantic: String = AGENT_SEMANTIC_VERSION,
 )
 
 @Serializable
@@ -667,7 +694,7 @@ data class ConfirmableProposalCard(
     val proposalId: String,
     val revision: Int,
     val operation: ProposalOperation,
-    val preview: ExpensePreview,
+    val preview: ProposalPreview,
     val commandDigest: String,
     val confirmationNonce: String,
     val expiresAt: String,
@@ -687,7 +714,7 @@ data class InactiveProposalCard(
     val status: ProposalStatus,
     val simulation: Boolean,
     val commandDigest: String? = null,
-    val preview: ExpensePreview? = null,
+    val preview: ProposalPreview? = null,
 ) : ProposalCard {
     override val cardKind: String get() = "inactive"
 }
@@ -762,6 +789,219 @@ data class ExpenseSnapshot(
     val occurredAt: String? = null,
 )
 
+/**
+ * Preview carried by a proposal card, discriminated by `kind`. api 1.1.0 added the management,
+ * refund, prepayment, repayment, transfer-void and final-settlement kinds; anything newer decodes as
+ * [UnknownPreview] so a card is never dropped or crashes.
+ */
+@Serializable(with = ProposalPreviewSerializer::class)
+sealed interface ProposalPreview {
+    val kind: String
+    val summary: String
+}
+
+object ProposalPreviewSerializer : JsonContentPolymorphicSerializer<ProposalPreview>(ProposalPreview::class) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<ProposalPreview> =
+        when (element.discriminator("kind")) {
+            "expense" -> ExpensePreview.serializer()
+            "management" -> ManagementPreview.serializer()
+            "refund" -> RefundPreview.serializer()
+            "prepayment" -> PrepaymentPreview.serializer()
+            "prepayment_return" -> PrepaymentReturnPreview.serializer()
+            "negative_adjustment" -> NegativeAdjustmentPreview.serializer()
+            "repayment" -> RepaymentPreview.serializer()
+            "transfer_void" -> TransferVoidPreview.serializer()
+            "final_settlement" -> FinalSettlementPreview.serializer()
+            else -> UnknownPreview.serializer()
+        }
+}
+
+@Serializable
+data class ManagementPreview(
+    val operation: ProposalOperation,
+    val generatedAt: String,
+    val simulation: Boolean,
+    override val summary: String,
+    val activityId: String? = null,
+    val activityName: String? = null,
+    val activityType: String? = null,
+    val baseCurrency: String? = null,
+    val financialSummary: String? = null,
+    val joinCode: String? = null,
+    val multiCurrencyEnabled: Boolean? = null,
+    val participantId: String? = null,
+    val participantName: String? = null,
+    val participantNames: List<String> = emptyList(),
+    val participantOrder: Int? = null,
+    val subActivityId: String? = null,
+    val subActivityName: String? = null,
+    val targetUserRef: String? = null,
+    val unsettled: Boolean? = null,
+) : ProposalPreview {
+    override val kind: String get() = "management"
+}
+
+@Serializable
+data class RefundPreview(
+    val activityId: String,
+    val originalExpenseId: String,
+    val originalTitle: String,
+    val refundTitle: String,
+    val originalAmount: String,
+    val refundedAmount: String,
+    val refundAmount: String,
+    val remainingAmount: String,
+    val currency: String,
+    val expectedFinancialVersion: String,
+    val expectedOriginalVersion: String,
+    val expectedOriginalFinancialLocked: Boolean,
+    val generatedAt: String,
+    val simulation: Boolean,
+    override val summary: String,
+) : ProposalPreview {
+    override val kind: String get() = "refund"
+}
+
+@Serializable
+data class PrepaymentPreview(
+    val activityId: String,
+    val ownerParticipantId: String,
+    val custodianParticipantId: String,
+    val amount: String,
+    val currency: String,
+    val settlementAmount: String,
+    val prepaymentAmount: String,
+    val newBalance: String,
+    val expectedFinancialVersion: String,
+    val generatedAt: String,
+    val simulation: Boolean,
+    override val summary: String,
+) : ProposalPreview {
+    override val kind: String get() = "prepayment"
+}
+
+@Serializable
+data class PrepaymentReturnPreview(
+    val activityId: String,
+    val ownerParticipantId: String,
+    val custodianParticipantId: String,
+    val amount: String,
+    val currency: String,
+    val currentBalance: String,
+    val expectedFinancialVersion: String,
+    val generatedAt: String,
+    val simulation: Boolean,
+    override val summary: String,
+    val postBalanceNote: String? = null,
+) : ProposalPreview {
+    override val kind: String get() = "prepayment_return"
+}
+
+@Serializable
+data class NegativeAdjustmentPreview(
+    val activityId: String,
+    val title: String,
+    val amount: String,
+    val currency: String,
+    val expectedFinancialVersion: String,
+    val generatedAt: String,
+    val simulation: Boolean,
+    override val summary: String,
+) : ProposalPreview {
+    override val kind: String get() = "negative_adjustment"
+}
+
+@Serializable
+data class RepaymentPreview(
+    val activityId: String,
+    val fromParticipantId: String,
+    val toParticipantId: String,
+    val amount: String,
+    val currency: String,
+    val mode: String,
+    val allocations: List<RepaymentAllocation> = emptyList(),
+    val expectedFinancialVersion: String,
+    val generatedAt: String,
+    val simulation: Boolean,
+    override val summary: String,
+    val targetExpenseIds: List<String> = emptyList(),
+) : ProposalPreview {
+    override val kind: String get() = "repayment"
+}
+
+@Serializable
+data class RepaymentAllocation(
+    val allocationMode: String,
+    val baseAmount: String,
+    val expenseId: String,
+    val fxRate: String,
+    val ledgerUnitId: String,
+    val originalAmount: String,
+    val originalCurrency: String,
+    val paymentAmount: String,
+    val paymentCurrency: String,
+    val remainingBaseAmount: String,
+    val remainingOriginalAmount: String,
+    val sourceFinancialVersion: String,
+)
+
+@Serializable
+data class TransferVoidPreview(
+    val activityId: String,
+    val transferId: String,
+    val transferType: String,
+    val fromParticipantId: String,
+    val toParticipantId: String,
+    val amount: String,
+    val currency: String,
+    val voidReason: String,
+    val isVoided: Boolean,
+    val expectedFinancialVersion: String,
+    val generatedAt: String,
+    val simulation: Boolean,
+    override val summary: String,
+) : ProposalPreview {
+    override val kind: String get() = "transfer_void"
+}
+
+@Serializable
+data class FinalSettlementPreview(
+    val activityId: String,
+    val mode: String,
+    val fromParticipantId: String,
+    val toParticipantId: String,
+    val amount: String,
+    val currency: String,
+    val ordinaryAmount: String,
+    val prepaymentReturnAmount: String,
+    val isPrepaymentReturn: Boolean,
+    val plan: List<FinalSettlementPlanItem> = emptyList(),
+    val expectedFinancialVersion: String,
+    val generatedAt: String,
+    val simulation: Boolean,
+    override val summary: String,
+) : ProposalPreview {
+    override val kind: String get() = "final_settlement"
+}
+
+@Serializable
+data class FinalSettlementPlanItem(
+    val amount: String,
+    val currency: String,
+    val fromParticipantId: String,
+    val isPrepaymentReturn: Boolean,
+    val ordinaryAmount: String,
+    val prepaymentReturnAmount: String,
+    val toParticipantId: String,
+)
+
+/** A preview kind this client does not know yet: keep the server's own summary instead of guessing. */
+@Serializable
+data class UnknownPreview(
+    override val kind: String = "",
+    override val summary: String = "",
+) : ProposalPreview
+
 @Serializable
 data class ExpensePreview(
     val activityFinancialVersion: String,
@@ -769,10 +1009,10 @@ data class ExpensePreview(
     val changes: List<ExpenseChange>,
     val generatedAt: String,
     val simulation: Boolean,
-    val summary: String,
+    override val summary: String,
     val before: ExpenseSnapshot? = null,
-) {
-    val kind: String get() = "expense"
+) : ProposalPreview {
+    override val kind: String get() = "expense"
 }
 
 /**

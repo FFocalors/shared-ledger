@@ -1,0 +1,2009 @@
+{
+  "$defs": {
+    "CanonicalEqualSplit": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "const": "equal",
+          "title": "Mode",
+          "type": "string"
+        },
+        "participant_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "Participant Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "mode",
+        "participant_ids"
+      ],
+      "title": "CanonicalEqualSplit",
+      "type": "object"
+    },
+    "CanonicalManualSplit": {
+      "additionalProperties": false,
+      "properties": {
+        "allocations": {
+          "items": {
+            "$ref": "#/$defs/CanonicalPayment"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "Allocations",
+          "type": "array"
+        },
+        "mode": {
+          "const": "manual",
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "mode",
+        "allocations"
+      ],
+      "title": "CanonicalManualSplit",
+      "type": "object"
+    },
+    "CanonicalPayment": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Amount",
+          "type": "string"
+        },
+        "participant_id": {
+          "format": "uuid",
+          "title": "Participant Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "participant_id",
+        "amount"
+      ],
+      "title": "CanonicalPayment",
+      "type": "object"
+    },
+    "ExpenseAmountChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "After",
+          "type": "string"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Before"
+        },
+        "field": {
+          "enum": [
+            "original_amount",
+            "base_amount"
+          ],
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "after"
+      ],
+      "title": "ExpenseAmountChange",
+      "type": "object"
+    },
+    "ExpenseCurrencyChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "After",
+          "type": "string"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z]{3}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Before"
+        },
+        "field": {
+          "const": "original_currency",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "after"
+      ],
+      "title": "ExpenseCurrencyChange",
+      "type": "object"
+    },
+    "ExpenseDeletedChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "title": "After",
+          "type": "boolean"
+        },
+        "before": {
+          "title": "Before",
+          "type": "boolean"
+        },
+        "field": {
+          "const": "is_deleted",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "before",
+        "after"
+      ],
+      "title": "ExpenseDeletedChange",
+      "type": "object"
+    },
+    "ExpenseFxChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FxSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "before": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FxSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "field": {
+          "const": "fx_snapshot",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field"
+      ],
+      "title": "ExpenseFxChange",
+      "type": "object"
+    },
+    "ExpenseIconChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9_]{1,48}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "After"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9_]{1,48}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Before"
+        },
+        "field": {
+          "const": "icon_key",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field"
+      ],
+      "title": "ExpenseIconChange",
+      "type": "object"
+    },
+    "ExpenseLedgerUnitChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "format": "uuid",
+          "title": "After",
+          "type": "string"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Before"
+        },
+        "field": {
+          "const": "ledger_unit_id",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "after"
+      ],
+      "title": "ExpenseLedgerUnitChange",
+      "type": "object"
+    },
+    "ExpenseNoteChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "After"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Before"
+        },
+        "field": {
+          "const": "note",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field"
+      ],
+      "title": "ExpenseNoteChange",
+      "type": "object"
+    },
+    "ExpenseOccurredAtChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "After"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Before"
+        },
+        "field": {
+          "const": "occurred_at",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field"
+      ],
+      "title": "ExpenseOccurredAtChange",
+      "type": "object"
+    },
+    "ExpensePaymentsChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "items": {
+            "$ref": "#/$defs/CanonicalPayment"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "After",
+          "type": "array"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/CanonicalPayment"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Before"
+        },
+        "field": {
+          "const": "payment_allocations",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "after"
+      ],
+      "title": "ExpensePaymentsChange",
+      "type": "object"
+    },
+    "ExpensePreview": {
+      "additionalProperties": false,
+      "properties": {
+        "activity_financial_version": {
+          "pattern": "^(?:0|[1-9]|[1-9][0-9]{1}|[1-9][0-9]{2}|[1-9][0-9]{3}|[1-9][0-9]{4}|[1-9][0-9]{5}|[1-9][0-9]{6}|[1-9][0-9]{7}|[1-9][0-9]{8}|[1-9][0-9]{9}|[1-9][0-9]{10}|[1-9][0-9]{11}|[1-9][0-9]{12}|[1-9][0-9]{13}|[1-9][0-9]{14}|[1-9][0-9]{15}|[1-9][0-9]{16}|[1-9][0-9]{17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6]|9223372036854775807)$",
+          "title": "Activity Financial Version",
+          "type": "string",
+          "x-database-type": "signed-bigint",
+          "x-maximum": "9223372036854775807",
+          "x-minimum": "0"
+        },
+        "after": {
+          "$ref": "#/$defs/ExpenseSnapshot"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExpenseSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "changes": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "base_amount": "#/$defs/ExpenseAmountChange",
+                "fx_snapshot": "#/$defs/ExpenseFxChange",
+                "icon_key": "#/$defs/ExpenseIconChange",
+                "is_deleted": "#/$defs/ExpenseDeletedChange",
+                "ledger_unit_id": "#/$defs/ExpenseLedgerUnitChange",
+                "note": "#/$defs/ExpenseNoteChange",
+                "occurred_at": "#/$defs/ExpenseOccurredAtChange",
+                "original_amount": "#/$defs/ExpenseAmountChange",
+                "original_currency": "#/$defs/ExpenseCurrencyChange",
+                "payment_allocations": "#/$defs/ExpensePaymentsChange",
+                "split": "#/$defs/ExpenseSplitChange",
+                "title": "#/$defs/ExpenseTitleChange"
+              },
+              "propertyName": "field"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ExpenseTitleChange"
+              },
+              {
+                "$ref": "#/$defs/ExpenseAmountChange"
+              },
+              {
+                "$ref": "#/$defs/ExpenseCurrencyChange"
+              },
+              {
+                "$ref": "#/$defs/ExpenseLedgerUnitChange"
+              },
+              {
+                "$ref": "#/$defs/ExpensePaymentsChange"
+              },
+              {
+                "$ref": "#/$defs/ExpenseSplitChange"
+              },
+              {
+                "$ref": "#/$defs/ExpenseNoteChange"
+              },
+              {
+                "$ref": "#/$defs/ExpenseOccurredAtChange"
+              },
+              {
+                "$ref": "#/$defs/ExpenseIconChange"
+              },
+              {
+                "$ref": "#/$defs/ExpenseFxChange"
+              },
+              {
+                "$ref": "#/$defs/ExpenseDeletedChange"
+              }
+            ]
+          },
+          "maxItems": 12,
+          "minItems": 1,
+          "title": "Changes",
+          "type": "array"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        },
+        "kind": {
+          "const": "expense",
+          "title": "Kind",
+          "type": "string"
+        },
+        "simulation": {
+          "title": "Simulation",
+          "type": "boolean"
+        },
+        "summary": {
+          "maxLength": 240,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "summary",
+        "after",
+        "changes",
+        "activity_financial_version",
+        "generated_at",
+        "simulation"
+      ],
+      "title": "ExpensePreview",
+      "type": "object"
+    },
+    "ExpenseSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "base_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Base Amount",
+          "type": "string"
+        },
+        "expense_version": {
+          "pattern": "^(?:[1-9]|[1-9][0-9]{1}|[1-9][0-9]{2}|[1-9][0-9]{3}|[1-9][0-9]{4}|[1-9][0-9]{5}|[1-9][0-9]{6}|[1-9][0-9]{7}|[1-9][0-9]{8}|[1-9][0-9]{9}|[1-9][0-9]{10}|[1-9][0-9]{11}|[1-9][0-9]{12}|[1-9][0-9]{13}|[1-9][0-9]{14}|[1-9][0-9]{15}|[1-9][0-9]{16}|[1-9][0-9]{17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6]|9223372036854775807)$",
+          "title": "Expense Version",
+          "type": "string",
+          "x-database-type": "signed-bigint",
+          "x-maximum": "9223372036854775807",
+          "x-minimum": "1"
+        },
+        "financial_locked": {
+          "title": "Financial Locked",
+          "type": "boolean"
+        },
+        "fx_snapshot": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FxSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "icon_key": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9_]{1,48}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Icon Key"
+        },
+        "is_deleted": {
+          "default": false,
+          "title": "Is Deleted",
+          "type": "boolean"
+        },
+        "ledger_unit_id": {
+          "format": "uuid",
+          "title": "Ledger Unit Id",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "occurred_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Occurred At"
+        },
+        "original_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Original Amount",
+          "type": "string"
+        },
+        "original_currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Original Currency",
+          "type": "string"
+        },
+        "payment_allocations": {
+          "items": {
+            "$ref": "#/$defs/CanonicalPayment"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "Payment Allocations",
+          "type": "array"
+        },
+        "split": {
+          "discriminator": {
+            "mapping": {
+              "equal": "#/$defs/CanonicalEqualSplit",
+              "manual": "#/$defs/CanonicalManualSplit"
+            },
+            "propertyName": "mode"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/CanonicalEqualSplit"
+            },
+            {
+              "$ref": "#/$defs/CanonicalManualSplit"
+            }
+          ],
+          "title": "Split"
+        },
+        "title": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ledger_unit_id",
+        "title",
+        "original_amount",
+        "original_currency",
+        "base_amount",
+        "payment_allocations",
+        "split",
+        "expense_version",
+        "financial_locked"
+      ],
+      "title": "ExpenseSnapshot",
+      "type": "object"
+    },
+    "ExpenseSplitChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "discriminator": {
+            "mapping": {
+              "equal": "#/$defs/CanonicalEqualSplit",
+              "manual": "#/$defs/CanonicalManualSplit"
+            },
+            "propertyName": "mode"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/CanonicalEqualSplit"
+            },
+            {
+              "$ref": "#/$defs/CanonicalManualSplit"
+            }
+          ],
+          "title": "After"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "discriminator": {
+                "mapping": {
+                  "equal": "#/$defs/CanonicalEqualSplit",
+                  "manual": "#/$defs/CanonicalManualSplit"
+                },
+                "propertyName": "mode"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/CanonicalEqualSplit"
+                },
+                {
+                  "$ref": "#/$defs/CanonicalManualSplit"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Before"
+        },
+        "field": {
+          "const": "split",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "after"
+      ],
+      "title": "ExpenseSplitChange",
+      "type": "object"
+    },
+    "ExpenseTitleChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "After"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Before"
+        },
+        "field": {
+          "const": "title",
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field"
+      ],
+      "title": "ExpenseTitleChange",
+      "type": "object"
+    },
+    "FinalSettlementPlanItem": {
+      "additionalProperties": false,
+      "description": "One item of the server's complete current final-settlement plan.",
+      "properties": {
+        "amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Amount",
+          "type": "string"
+        },
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Currency",
+          "type": "string"
+        },
+        "from_participant_id": {
+          "format": "uuid",
+          "title": "From Participant Id",
+          "type": "string"
+        },
+        "is_prepayment_return": {
+          "title": "Is Prepayment Return",
+          "type": "boolean"
+        },
+        "ordinary_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Ordinary Amount",
+          "type": "string"
+        },
+        "prepayment_return_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Prepayment Return Amount",
+          "type": "string"
+        },
+        "to_participant_id": {
+          "format": "uuid",
+          "title": "To Participant Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "from_participant_id",
+        "to_participant_id",
+        "amount",
+        "ordinary_amount",
+        "prepayment_return_amount",
+        "currency",
+        "is_prepayment_return"
+      ],
+      "title": "FinalSettlementPlanItem",
+      "type": "object"
+    },
+    "FinalSettlementPreview": {
+      "additionalProperties": false,
+      "description": "One selected plan item plus the complete plan it must come from.",
+      "properties": {
+        "activity_id": {
+          "format": "uuid",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Amount",
+          "type": "string"
+        },
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Currency",
+          "type": "string"
+        },
+        "expected_financial_version": {
+          "pattern": "^(?:0|[1-9]|[1-9][0-9]{1}|[1-9][0-9]{2}|[1-9][0-9]{3}|[1-9][0-9]{4}|[1-9][0-9]{5}|[1-9][0-9]{6}|[1-9][0-9]{7}|[1-9][0-9]{8}|[1-9][0-9]{9}|[1-9][0-9]{10}|[1-9][0-9]{11}|[1-9][0-9]{12}|[1-9][0-9]{13}|[1-9][0-9]{14}|[1-9][0-9]{15}|[1-9][0-9]{16}|[1-9][0-9]{17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6]|9223372036854775807)$",
+          "title": "Expected Financial Version",
+          "type": "string",
+          "x-database-type": "signed-bigint",
+          "x-maximum": "9223372036854775807",
+          "x-minimum": "0"
+        },
+        "from_participant_id": {
+          "format": "uuid",
+          "title": "From Participant Id",
+          "type": "string"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        },
+        "is_prepayment_return": {
+          "title": "Is Prepayment Return",
+          "type": "boolean"
+        },
+        "kind": {
+          "const": "final_settlement",
+          "title": "Kind",
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "base_unified",
+            "original_currency"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "ordinary_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Ordinary Amount",
+          "type": "string"
+        },
+        "plan": {
+          "items": {
+            "$ref": "#/$defs/FinalSettlementPlanItem"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "title": "Plan",
+          "type": "array"
+        },
+        "prepayment_return_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Prepayment Return Amount",
+          "type": "string"
+        },
+        "simulation": {
+          "title": "Simulation",
+          "type": "boolean"
+        },
+        "summary": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        },
+        "to_participant_id": {
+          "format": "uuid",
+          "title": "To Participant Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "summary",
+        "activity_id",
+        "mode",
+        "from_participant_id",
+        "to_participant_id",
+        "amount",
+        "currency",
+        "ordinary_amount",
+        "prepayment_return_amount",
+        "is_prepayment_return",
+        "plan",
+        "expected_financial_version",
+        "generated_at",
+        "simulation"
+      ],
+      "title": "FinalSettlementPreview",
+      "type": "object"
+    },
+    "FxSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "base_currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Base Currency",
+          "type": "string"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "title": "Observed At",
+          "type": "string"
+        },
+        "original_currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Original Currency",
+          "type": "string"
+        },
+        "rate": {
+          "pattern": "^(0|[1-9][0-9]{0,19})(\\.[0-9]{1,10})?$",
+          "title": "Rate",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "ecb_snapshot",
+            "server_snapshot",
+            "identity"
+          ],
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "base_currency",
+        "original_currency",
+        "rate",
+        "source",
+        "observed_at"
+      ],
+      "title": "FxSnapshot",
+      "type": "object"
+    },
+    "ManagementPreview": {
+      "additionalProperties": false,
+      "description": "P5.8a Activity / Participant management preview.\n\nThese operations are not bound to an existing Activity scope: creating or\njoining an Activity happens before one exists, and the proposal therefore\ncarries no Activity id for those two.",
+      "properties": {
+        "activity_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activity Id"
+        },
+        "activity_name": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activity Name"
+        },
+        "activity_type": {
+          "anyOf": [
+            {
+              "enum": [
+                "normal",
+                "large"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activity Type"
+        },
+        "base_currency": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z]{3}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Base Currency"
+        },
+        "financial_summary": {
+          "anyOf": [
+            {
+              "maxLength": 240,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Financial Summary"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        },
+        "join_code": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9]{8}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Join Code"
+        },
+        "kind": {
+          "const": "management",
+          "title": "Kind",
+          "type": "string"
+        },
+        "multi_currency_enabled": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Multi Currency Enabled"
+        },
+        "operation": {
+          "enum": [
+            "activity.create",
+            "activity.join",
+            "participant.create",
+            "participant.delete",
+            "participant.claim",
+            "participant.unclaim",
+            "subactivity.create",
+            "subactivity.delete",
+            "subactivity.restore",
+            "activity.member.remove",
+            "activity.creator.transfer",
+            "activity.archive",
+            "activity.unarchive",
+            "activity.delete"
+          ],
+          "title": "Operation",
+          "type": "string"
+        },
+        "participant_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Participant Id"
+        },
+        "participant_name": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Participant Name"
+        },
+        "participant_names": {
+          "items": {
+            "maxLength": 120,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 64,
+          "title": "Participant Names",
+          "type": "array"
+        },
+        "participant_order": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Participant Order"
+        },
+        "simulation": {
+          "title": "Simulation",
+          "type": "boolean"
+        },
+        "sub_activity_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sub Activity Id"
+        },
+        "sub_activity_name": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sub Activity Name"
+        },
+        "summary": {
+          "maxLength": 600,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        },
+        "target_user_ref": {
+          "anyOf": [
+            {
+              "maxLength": 40,
+              "minLength": 8,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target User Ref"
+        },
+        "unsettled": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unsettled"
+        }
+      },
+      "required": [
+        "kind",
+        "summary",
+        "operation",
+        "generated_at",
+        "simulation"
+      ],
+      "title": "ManagementPreview",
+      "type": "object"
+    },
+    "NegativeAdjustmentPreview": {
+      "additionalProperties": false,
+      "description": "Explicit unlinked negative Expense. There is no original to inherit from.",
+      "properties": {
+        "activity_id": {
+          "format": "uuid",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Amount",
+          "type": "string"
+        },
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Currency",
+          "type": "string"
+        },
+        "expected_financial_version": {
+          "pattern": "^(?:0|[1-9]|[1-9][0-9]{1}|[1-9][0-9]{2}|[1-9][0-9]{3}|[1-9][0-9]{4}|[1-9][0-9]{5}|[1-9][0-9]{6}|[1-9][0-9]{7}|[1-9][0-9]{8}|[1-9][0-9]{9}|[1-9][0-9]{10}|[1-9][0-9]{11}|[1-9][0-9]{12}|[1-9][0-9]{13}|[1-9][0-9]{14}|[1-9][0-9]{15}|[1-9][0-9]{16}|[1-9][0-9]{17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6]|9223372036854775807)$",
+          "title": "Expected Financial Version",
+          "type": "string",
+          "x-database-type": "signed-bigint",
+          "x-maximum": "9223372036854775807",
+          "x-minimum": "0"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        },
+        "kind": {
+          "const": "negative_adjustment",
+          "title": "Kind",
+          "type": "string"
+        },
+        "simulation": {
+          "title": "Simulation",
+          "type": "boolean"
+        },
+        "summary": {
+          "maxLength": 600,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "summary",
+        "activity_id",
+        "title",
+        "amount",
+        "currency",
+        "expected_financial_version",
+        "generated_at",
+        "simulation"
+      ],
+      "title": "NegativeAdjustmentPreview",
+      "type": "object"
+    },
+    "PrepaymentPreview": {
+      "additionalProperties": false,
+      "description": "Server-previewed prepayment: debt settlement and balance top-up, split.",
+      "properties": {
+        "activity_id": {
+          "format": "uuid",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Amount",
+          "type": "string"
+        },
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Currency",
+          "type": "string"
+        },
+        "custodian_participant_id": {
+          "format": "uuid",
+          "title": "Custodian Participant Id",
+          "type": "string"
+        },
+        "expected_financial_version": {
+          "pattern": "^(?:0|[1-9]|[1-9][0-9]{1}|[1-9][0-9]{2}|[1-9][0-9]{3}|[1-9][0-9]{4}|[1-9][0-9]{5}|[1-9][0-9]{6}|[1-9][0-9]{7}|[1-9][0-9]{8}|[1-9][0-9]{9}|[1-9][0-9]{10}|[1-9][0-9]{11}|[1-9][0-9]{12}|[1-9][0-9]{13}|[1-9][0-9]{14}|[1-9][0-9]{15}|[1-9][0-9]{16}|[1-9][0-9]{17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6]|9223372036854775807)$",
+          "title": "Expected Financial Version",
+          "type": "string",
+          "x-database-type": "signed-bigint",
+          "x-maximum": "9223372036854775807",
+          "x-minimum": "0"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        },
+        "kind": {
+          "const": "prepayment",
+          "title": "Kind",
+          "type": "string"
+        },
+        "new_balance": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "New Balance",
+          "type": "string"
+        },
+        "owner_participant_id": {
+          "format": "uuid",
+          "title": "Owner Participant Id",
+          "type": "string"
+        },
+        "prepayment_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Prepayment Amount",
+          "type": "string"
+        },
+        "settlement_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Settlement Amount",
+          "type": "string"
+        },
+        "simulation": {
+          "title": "Simulation",
+          "type": "boolean"
+        },
+        "summary": {
+          "maxLength": 240,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "summary",
+        "activity_id",
+        "owner_participant_id",
+        "custodian_participant_id",
+        "amount",
+        "currency",
+        "settlement_amount",
+        "prepayment_amount",
+        "new_balance",
+        "expected_financial_version",
+        "generated_at",
+        "simulation"
+      ],
+      "title": "PrepaymentPreview",
+      "type": "object"
+    },
+    "PrepaymentReturnPreview": {
+      "additionalProperties": false,
+      "description": "Account balance is read; the post-return balance is the server's answer.\n\nThere is deliberately no post-return balance field: it cannot be computed\nfrom the preview, so the card must not show one.",
+      "properties": {
+        "activity_id": {
+          "format": "uuid",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Amount",
+          "type": "string"
+        },
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Currency",
+          "type": "string"
+        },
+        "current_balance": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Current Balance",
+          "type": "string"
+        },
+        "custodian_participant_id": {
+          "format": "uuid",
+          "title": "Custodian Participant Id",
+          "type": "string"
+        },
+        "expected_financial_version": {
+          "pattern": "^(?:0|[1-9]|[1-9][0-9]{1}|[1-9][0-9]{2}|[1-9][0-9]{3}|[1-9][0-9]{4}|[1-9][0-9]{5}|[1-9][0-9]{6}|[1-9][0-9]{7}|[1-9][0-9]{8}|[1-9][0-9]{9}|[1-9][0-9]{10}|[1-9][0-9]{11}|[1-9][0-9]{12}|[1-9][0-9]{13}|[1-9][0-9]{14}|[1-9][0-9]{15}|[1-9][0-9]{16}|[1-9][0-9]{17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6]|9223372036854775807)$",
+          "title": "Expected Financial Version",
+          "type": "string",
+          "x-database-type": "signed-bigint",
+          "x-maximum": "9223372036854775807",
+          "x-minimum": "0"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        },
+        "kind": {
+          "const": "prepayment_return",
+          "title": "Kind",
+          "type": "string"
+        },
+        "owner_participant_id": {
+          "format": "uuid",
+          "title": "Owner Participant Id",
+          "type": "string"
+        },
+        "post_balance_note": {
+          "const": "返还后余额以服务端执行结果为准",
+          "default": "返还后余额以服务端执行结果为准",
+          "title": "Post Balance Note",
+          "type": "string"
+        },
+        "simulation": {
+          "title": "Simulation",
+          "type": "boolean"
+        },
+        "summary": {
+          "maxLength": 240,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "summary",
+        "activity_id",
+        "owner_participant_id",
+        "custodian_participant_id",
+        "amount",
+        "currency",
+        "current_balance",
+        "expected_financial_version",
+        "generated_at",
+        "simulation"
+      ],
+      "title": "PrepaymentReturnPreview",
+      "type": "object"
+    },
+    "RefundPreview": {
+      "additionalProperties": false,
+      "description": "Linked refund preview: the original, what is already refunded, and the cap.",
+      "properties": {
+        "activity_id": {
+          "format": "uuid",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Currency",
+          "type": "string"
+        },
+        "expected_financial_version": {
+          "pattern": "^(?:0|[1-9]|[1-9][0-9]{1}|[1-9][0-9]{2}|[1-9][0-9]{3}|[1-9][0-9]{4}|[1-9][0-9]{5}|[1-9][0-9]{6}|[1-9][0-9]{7}|[1-9][0-9]{8}|[1-9][0-9]{9}|[1-9][0-9]{10}|[1-9][0-9]{11}|[1-9][0-9]{12}|[1-9][0-9]{13}|[1-9][0-9]{14}|[1-9][0-9]{15}|[1-9][0-9]{16}|[1-9][0-9]{17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6]|9223372036854775807)$",
+          "title": "Expected Financial Version",
+          "type": "string",
+          "x-database-type": "signed-bigint",
+          "x-maximum": "9223372036854775807",
+          "x-minimum": "0"
+        },
+        "expected_original_financial_locked": {
+          "title": "Expected Original Financial Locked",
+          "type": "boolean"
+        },
+        "expected_original_version": {
+          "pattern": "^(?:[1-9]|[1-9][0-9]{1}|[1-9][0-9]{2}|[1-9][0-9]{3}|[1-9][0-9]{4}|[1-9][0-9]{5}|[1-9][0-9]{6}|[1-9][0-9]{7}|[1-9][0-9]{8}|[1-9][0-9]{9}|[1-9][0-9]{10}|[1-9][0-9]{11}|[1-9][0-9]{12}|[1-9][0-9]{13}|[1-9][0-9]{14}|[1-9][0-9]{15}|[1-9][0-9]{16}|[1-9][0-9]{17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6]|9223372036854775807)$",
+          "title": "Expected Original Version",
+          "type": "string",
+          "x-database-type": "signed-bigint",
+          "x-maximum": "9223372036854775807",
+          "x-minimum": "1"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        },
+        "kind": {
+          "const": "refund",
+          "title": "Kind",
+          "type": "string"
+        },
+        "original_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Original Amount",
+          "type": "string"
+        },
+        "original_expense_id": {
+          "format": "uuid",
+          "title": "Original Expense Id",
+          "type": "string"
+        },
+        "original_title": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Original Title",
+          "type": "string"
+        },
+        "refund_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Refund Amount",
+          "type": "string"
+        },
+        "refund_title": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Refund Title",
+          "type": "string"
+        },
+        "refunded_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Refunded Amount",
+          "type": "string"
+        },
+        "remaining_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Remaining Amount",
+          "type": "string"
+        },
+        "simulation": {
+          "title": "Simulation",
+          "type": "boolean"
+        },
+        "summary": {
+          "maxLength": 600,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "summary",
+        "activity_id",
+        "original_expense_id",
+        "original_title",
+        "refund_title",
+        "original_amount",
+        "refunded_amount",
+        "refund_amount",
+        "remaining_amount",
+        "currency",
+        "expected_financial_version",
+        "expected_original_version",
+        "expected_original_financial_locked",
+        "generated_at",
+        "simulation"
+      ],
+      "title": "RefundPreview",
+      "type": "object"
+    },
+    "RepaymentAllocation": {
+      "additionalProperties": false,
+      "properties": {
+        "allocation_mode": {
+          "enum": [
+            "FIFO",
+            "TARGETED"
+          ],
+          "title": "Allocation Mode",
+          "type": "string"
+        },
+        "base_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Base Amount",
+          "type": "string"
+        },
+        "expense_id": {
+          "format": "uuid",
+          "title": "Expense Id",
+          "type": "string"
+        },
+        "fx_rate": {
+          "pattern": "^(0|[1-9][0-9]{0,19})(\\.[0-9]{1,10})?$",
+          "title": "Fx Rate",
+          "type": "string"
+        },
+        "ledger_unit_id": {
+          "format": "uuid",
+          "title": "Ledger Unit Id",
+          "type": "string"
+        },
+        "original_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Original Amount",
+          "type": "string"
+        },
+        "original_currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Original Currency",
+          "type": "string"
+        },
+        "payment_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Payment Amount",
+          "type": "string"
+        },
+        "payment_currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Payment Currency",
+          "type": "string"
+        },
+        "remaining_base_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Remaining Base Amount",
+          "type": "string"
+        },
+        "remaining_original_amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Remaining Original Amount",
+          "type": "string"
+        },
+        "source_financial_version": {
+          "pattern": "^(?:0|[1-9]|[1-9][0-9]{1}|[1-9][0-9]{2}|[1-9][0-9]{3}|[1-9][0-9]{4}|[1-9][0-9]{5}|[1-9][0-9]{6}|[1-9][0-9]{7}|[1-9][0-9]{8}|[1-9][0-9]{9}|[1-9][0-9]{10}|[1-9][0-9]{11}|[1-9][0-9]{12}|[1-9][0-9]{13}|[1-9][0-9]{14}|[1-9][0-9]{15}|[1-9][0-9]{16}|[1-9][0-9]{17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6]|9223372036854775807)$",
+          "title": "Source Financial Version",
+          "type": "string",
+          "x-database-type": "signed-bigint",
+          "x-maximum": "9223372036854775807",
+          "x-minimum": "0"
+        }
+      },
+      "required": [
+        "expense_id",
+        "ledger_unit_id",
+        "allocation_mode",
+        "payment_currency",
+        "payment_amount",
+        "original_currency",
+        "original_amount",
+        "base_amount",
+        "fx_rate",
+        "remaining_original_amount",
+        "remaining_base_amount",
+        "source_financial_version"
+      ],
+      "title": "RepaymentAllocation",
+      "type": "object"
+    },
+    "RepaymentPreview": {
+      "additionalProperties": false,
+      "properties": {
+        "activity_id": {
+          "format": "uuid",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "allocations": {
+          "items": {
+            "$ref": "#/$defs/RepaymentAllocation"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "title": "Allocations",
+          "type": "array"
+        },
+        "amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Amount",
+          "type": "string"
+        },
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Currency",
+          "type": "string"
+        },
+        "expected_financial_version": {
+          "pattern": "^(?:0|[1-9]|[1-9][0-9]{1}|[1-9][0-9]{2}|[1-9][0-9]{3}|[1-9][0-9]{4}|[1-9][0-9]{5}|[1-9][0-9]{6}|[1-9][0-9]{7}|[1-9][0-9]{8}|[1-9][0-9]{9}|[1-9][0-9]{10}|[1-9][0-9]{11}|[1-9][0-9]{12}|[1-9][0-9]{13}|[1-9][0-9]{14}|[1-9][0-9]{15}|[1-9][0-9]{16}|[1-9][0-9]{17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6]|9223372036854775807)$",
+          "title": "Expected Financial Version",
+          "type": "string",
+          "x-database-type": "signed-bigint",
+          "x-maximum": "9223372036854775807",
+          "x-minimum": "0"
+        },
+        "from_participant_id": {
+          "format": "uuid",
+          "title": "From Participant Id",
+          "type": "string"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        },
+        "kind": {
+          "const": "repayment",
+          "title": "Kind",
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "FIFO",
+            "TARGETED"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "simulation": {
+          "title": "Simulation",
+          "type": "boolean"
+        },
+        "summary": {
+          "maxLength": 240,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        },
+        "target_expense_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 64,
+          "title": "Target Expense Ids",
+          "type": "array"
+        },
+        "to_participant_id": {
+          "format": "uuid",
+          "title": "To Participant Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "summary",
+        "activity_id",
+        "from_participant_id",
+        "to_participant_id",
+        "amount",
+        "currency",
+        "mode",
+        "allocations",
+        "expected_financial_version",
+        "generated_at",
+        "simulation"
+      ],
+      "title": "RepaymentPreview",
+      "type": "object"
+    },
+    "TransferVoidPreview": {
+      "additionalProperties": false,
+      "properties": {
+        "activity_id": {
+          "format": "uuid",
+          "title": "Activity Id",
+          "type": "string"
+        },
+        "amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Amount",
+          "type": "string"
+        },
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Currency",
+          "type": "string"
+        },
+        "expected_financial_version": {
+          "pattern": "^(?:0|[1-9]|[1-9][0-9]{1}|[1-9][0-9]{2}|[1-9][0-9]{3}|[1-9][0-9]{4}|[1-9][0-9]{5}|[1-9][0-9]{6}|[1-9][0-9]{7}|[1-9][0-9]{8}|[1-9][0-9]{9}|[1-9][0-9]{10}|[1-9][0-9]{11}|[1-9][0-9]{12}|[1-9][0-9]{13}|[1-9][0-9]{14}|[1-9][0-9]{15}|[1-9][0-9]{16}|[1-9][0-9]{17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6]|9223372036854775807)$",
+          "title": "Expected Financial Version",
+          "type": "string",
+          "x-database-type": "signed-bigint",
+          "x-maximum": "9223372036854775807",
+          "x-minimum": "0"
+        },
+        "from_participant_id": {
+          "format": "uuid",
+          "title": "From Participant Id",
+          "type": "string"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        },
+        "is_voided": {
+          "title": "Is Voided",
+          "type": "boolean"
+        },
+        "kind": {
+          "const": "transfer_void",
+          "title": "Kind",
+          "type": "string"
+        },
+        "simulation": {
+          "title": "Simulation",
+          "type": "boolean"
+        },
+        "summary": {
+          "maxLength": 240,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        },
+        "to_participant_id": {
+          "format": "uuid",
+          "title": "To Participant Id",
+          "type": "string"
+        },
+        "transfer_id": {
+          "format": "uuid",
+          "title": "Transfer Id",
+          "type": "string"
+        },
+        "transfer_type": {
+          "enum": [
+            "settlement",
+            "prepayment",
+            "prepayment_return",
+            "final_settlement"
+          ],
+          "title": "Transfer Type",
+          "type": "string"
+        },
+        "void_reason": {
+          "maxLength": 240,
+          "minLength": 1,
+          "title": "Void Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "summary",
+        "activity_id",
+        "transfer_id",
+        "transfer_type",
+        "from_participant_id",
+        "to_participant_id",
+        "amount",
+        "currency",
+        "void_reason",
+        "is_voided",
+        "expected_financial_version",
+        "generated_at",
+        "simulation"
+      ],
+      "title": "TransferVoidPreview",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "card_kind": {
+      "const": "backend_pending",
+      "title": "Card Kind",
+      "type": "string"
+    },
+    "command_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Command Digest",
+      "type": "string"
+    },
+    "confirmation_nonce": {
+      "pattern": "^[A-Za-z0-9_-]{32,128}$",
+      "title": "Confirmation Nonce",
+      "type": "string",
+      "x-never-model-event-or-log": true,
+      "x-sensitive": true
+    },
+    "expires_at": {
+      "format": "date-time",
+      "title": "Expires At",
+      "type": "string"
+    },
+    "mode": {
+      "const": "backend",
+      "title": "Mode",
+      "type": "string"
+    },
+    "operation": {
+      "enum": [
+        "expense.create",
+        "expense.update",
+        "expense.presentation.update",
+        "expense.delete",
+        "settlement.repayment",
+        "transfer.void",
+        "prepayment.create",
+        "prepayment.return",
+        "settlement.final",
+        "expense.refund",
+        "expense.negative_adjustment",
+        "activity.create",
+        "activity.join",
+        "participant.create",
+        "participant.delete",
+        "participant.claim",
+        "participant.unclaim",
+        "subactivity.create",
+        "subactivity.delete",
+        "subactivity.restore",
+        "activity.member.remove",
+        "activity.creator.transfer",
+        "activity.archive",
+        "activity.unarchive",
+        "activity.delete"
+      ],
+      "title": "Operation",
+      "type": "string"
+    },
+    "preview": {
+      "discriminator": {
+        "mapping": {
+          "expense": "#/$defs/ExpensePreview",
+          "final_settlement": "#/$defs/FinalSettlementPreview",
+          "management": "#/$defs/ManagementPreview",
+          "negative_adjustment": "#/$defs/NegativeAdjustmentPreview",
+          "prepayment": "#/$defs/PrepaymentPreview",
+          "prepayment_return": "#/$defs/PrepaymentReturnPreview",
+          "refund": "#/$defs/RefundPreview",
+          "repayment": "#/$defs/RepaymentPreview",
+          "transfer_void": "#/$defs/TransferVoidPreview"
+        },
+        "propertyName": "kind"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ExpensePreview"
+        },
+        {
+          "$ref": "#/$defs/RepaymentPreview"
+        },
+        {
+          "$ref": "#/$defs/TransferVoidPreview"
+        },
+        {
+          "$ref": "#/$defs/PrepaymentPreview"
+        },
+        {
+          "$ref": "#/$defs/PrepaymentReturnPreview"
+        },
+        {
+          "$ref": "#/$defs/FinalSettlementPreview"
+        },
+        {
+          "$ref": "#/$defs/RefundPreview"
+        },
+        {
+          "$ref": "#/$defs/NegativeAdjustmentPreview"
+        },
+        {
+          "$ref": "#/$defs/ManagementPreview"
+        }
+      ],
+      "title": "Preview"
+    },
+    "proposal_id": {
+      "format": "uuid",
+      "title": "Proposal Id",
+      "type": "string"
+    },
+    "revision": {
+      "minimum": 1,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "simulation": {
+      "const": false,
+      "default": false,
+      "title": "Simulation",
+      "type": "boolean"
+    },
+    "status": {
+      "const": "pending",
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "card_kind",
+    "mode",
+    "status",
+    "proposal_id",
+    "revision",
+    "operation",
+    "command_digest",
+    "confirmation_nonce",
+    "expires_at",
+    "preview"
+  ],
+  "title": "ConfirmableProposalCard",
+  "type": "object"
+}

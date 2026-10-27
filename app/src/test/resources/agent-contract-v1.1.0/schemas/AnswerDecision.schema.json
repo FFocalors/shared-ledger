@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "basis": {
+      "enum": [
+        "grounded",
+        "conversation"
+      ],
+      "title": "Basis",
+      "type": "string"
+    },
+    "citations": {
+      "items": {
+        "anyOf": [
+          {
+            "enum": [
+              "fact_activity_1",
+              "fact_activity_2",
+              "fact_activity_3",
+              "fact_activity_4",
+              "fact_activity_5",
+              "fact_activity_6",
+              "fact_activity_7",
+              "fact_activity_8",
+              "fact_activity_9",
+              "fact_activity_10",
+              "fact_activity_11",
+              "fact_activity_12",
+              "fact_activity_13",
+              "fact_activity_14",
+              "fact_activity_15",
+              "fact_activity_16"
+            ],
+            "title": "ActivityEvidenceRef",
+            "type": "string"
+          },
+          {
+            "enum": [
+              "fact_expense_1",
+              "fact_expense_2",
+              "fact_expense_3",
+              "fact_expense_4",
+              "fact_expense_5",
+              "fact_expense_6",
+              "fact_expense_7",
+              "fact_expense_8",
+              "fact_expense_9",
+              "fact_expense_10",
+              "fact_expense_11",
+              "fact_expense_12",
+              "fact_expense_13",
+              "fact_expense_14",
+              "fact_expense_15",
+              "fact_expense_16"
+            ],
+            "title": "ExpenseEvidenceRef",
+            "type": "string"
+          },
+          {
+            "enum": [
+              "fact_debt_1",
+              "fact_debt_2",
+              "fact_debt_3",
+              "fact_debt_4",
+              "fact_debt_5",
+              "fact_debt_6",
+              "fact_debt_7",
+              "fact_debt_8",
+              "fact_debt_9",
+              "fact_debt_10",
+              "fact_debt_11",
+              "fact_debt_12",
+              "fact_debt_13",
+              "fact_debt_14",
+              "fact_debt_15",
+              "fact_debt_16"
+            ],
+            "title": "DebtEvidenceRef",
+            "type": "string"
+          },
+          {
+            "enum": [
+              "policy_fact_1",
+              "policy_fact_2",
+              "policy_fact_3",
+              "policy_fact_4",
+              "policy_fact_5",
+              "policy_fact_6",
+              "policy_fact_7",
+              "policy_fact_8"
+            ],
+            "title": "PolicyEvidenceRef",
+            "type": "string"
+          }
+        ]
+      },
+      "maxItems": 16,
+      "title": "Citations",
+      "type": "array"
+    },
+    "kind": {
+      "const": "answer",
+      "title": "Kind",
+      "type": "string"
+    },
+    "text": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Text",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "basis",
+    "text",
+    "citations"
+  ],
+  "title": "AnswerDecision",
+  "type": "object"
+}

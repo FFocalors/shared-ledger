@@ -1,0 +1,93 @@
+{
+  "$defs": {
+    "ProposalEventPayload": {
+      "additionalProperties": false,
+      "description": "Persist only a typed proposal reference. Hydrate cards after current auth checks.",
+      "properties": {
+        "operation": {
+          "enum": [
+            "expense.create",
+            "expense.update",
+            "expense.presentation.update",
+            "expense.delete",
+            "settlement.repayment",
+            "transfer.void",
+            "prepayment.create",
+            "prepayment.return",
+            "settlement.final",
+            "expense.refund",
+            "expense.negative_adjustment",
+            "activity.create",
+            "activity.join",
+            "participant.create",
+            "participant.delete",
+            "participant.claim",
+            "participant.unclaim",
+            "subactivity.create",
+            "subactivity.delete",
+            "subactivity.restore",
+            "activity.member.remove",
+            "activity.creator.transfer",
+            "activity.archive",
+            "activity.unarchive",
+            "activity.delete"
+          ],
+          "title": "Operation",
+          "type": "string"
+        },
+        "proposal_id": {
+          "format": "uuid",
+          "title": "Proposal Id",
+          "type": "string"
+        },
+        "revision": {
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "proposal_id",
+        "revision",
+        "operation"
+      ],
+      "title": "ProposalEventPayload",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "occurred_at": {
+      "format": "date-time",
+      "title": "Occurred At",
+      "type": "string"
+    },
+    "payload": {
+      "$ref": "#/$defs/ProposalEventPayload"
+    },
+    "seq": {
+      "minimum": 1,
+      "title": "Seq",
+      "type": "integer"
+    },
+    "simulation": {
+      "title": "Simulation",
+      "type": "boolean"
+    },
+    "type": {
+      "const": "proposal",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "seq",
+    "occurred_at",
+    "simulation",
+    "payload"
+  ],
+  "title": "ProposalEvent",
+  "type": "object"
+}

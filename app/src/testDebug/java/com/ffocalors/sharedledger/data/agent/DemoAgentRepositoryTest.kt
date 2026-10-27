@@ -103,10 +103,11 @@ class DemoAgentRepositoryTest {
         assertEquals(TurnState.WAIT_CONFIRM, r.turn.state)
         assertEquals(WaitReason.CONFIRM_REQUIRED, r.turn.waitReason)
         val card = r.proposalCards.single() as ConfirmableProposalCard
-        assertEquals("750.00", card.preview.after.originalAmount)
-        assertEquals("烧烤", card.preview.after.title)
-        assertEquals(4, (card.preview.after.split as CanonicalEqualSplit).participantIds.size)
-        assertFalse(card.simulation || card.preview.simulation)
+        val preview = card.preview as ExpensePreview
+        assertEquals("750.00", preview.after.originalAmount)
+        assertEquals("烧烤", preview.after.title)
+        assertEquals(4, (preview.after.split as CanonicalEqualSplit).participantIds.size)
+        assertFalse(card.simulation || preview.simulation)
         assertTrue(r.events.all { it.isSimulated() })
         assertTrue(r.events.filterIsInstance<StatusEvent>().last().payload.stateRevision >= 1)
     }
@@ -130,7 +131,8 @@ class DemoAgentRepositoryTest {
         val done = poll(turn, ask.nextAfterSeq)
         assertEquals(TurnState.WAIT_CONFIRM, done.turn.state)
         assertTrue(done.turn.stateRevision > ask.turn.stateRevision)
-        assertEquals("300.00", (done.proposalCards.single() as ConfirmableProposalCard).preview.after.originalAmount)
+        val doneCard = done.proposalCards.single() as ConfirmableProposalCard
+        assertEquals("300.00", (doneCard.preview as ExpensePreview).after.originalAmount)
         assertEquals(ask.nextAfterSeq + 1, done.events.first().seq)
     }
 

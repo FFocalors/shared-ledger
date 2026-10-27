@@ -8,7 +8,7 @@ import kotlinx.serialization.json.jsonPrimitive
 
 internal object AgentTestFixtures {
     fun trace(name: String): JsonObject {
-        val path = "/agent-contract-v1.0.0/mock_traces/$name.json"
+        val path = "/agent-contract-v1.1.0/mock_traces/$name.json"
         val text = checkNotNull(AgentTestFixtures::class.java.getResourceAsStream(path)) { "missing $path" }
             .use { it.readBytes().toString(Charsets.UTF_8) }
         return Json.parseToJsonElement(text).jsonObject

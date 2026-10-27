@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "availability": {
+      "enum": [
+        "mock_read_only",
+        "mock_proposal_only",
+        "unavailable"
+      ],
+      "title": "CapabilityAvailability",
+      "type": "string"
+    },
+    "capability_id": {
+      "pattern": "^CAP(0[1-9]|1[0-7])$",
+      "title": "Capability Id",
+      "type": "string"
+    },
+    "capability_name": {
+      "maxLength": 240,
+      "minLength": 1,
+      "title": "Capability Name",
+      "type": "string"
+    },
+    "execution_enabled": {
+      "const": false,
+      "default": false,
+      "title": "Execution Enabled",
+      "type": "boolean"
+    },
+    "operations": {
+      "items": {
+        "pattern": "^[a-z][a-z0-9_.]{2,63}$",
+        "type": "string"
+      },
+      "maxItems": 4,
+      "title": "Operations",
+      "type": "array"
+    },
+    "proposal_enabled": {
+      "title": "Proposal Enabled",
+      "type": "boolean"
+    },
+    "required_server_checks": {
+      "items": {
+        "maxLength": 240,
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 12,
+      "title": "Required Server Checks",
+      "type": "array"
+    },
+    "semantic_enabled": {
+      "title": "Semantic Enabled",
+      "type": "boolean"
+    },
+    "source_note": {
+      "maxLength": 240,
+      "minLength": 1,
+      "title": "Source Note",
+      "type": "string"
+    },
+    "target_stage": {
+      "enum": [
+        "P1-01",
+        "P2",
+        "P3a",
+        "P3b+T3",
+        "P4",
+        "P5/T4"
+      ],
+      "title": "CapabilityStage",
+      "type": "string"
+    }
+  },
+  "required": [
+    "capability_id",
+    "capability_name",
+    "operations",
+    "target_stage",
+    "availability",
+    "semantic_enabled",
+    "proposal_enabled",
+    "required_server_checks",
+    "source_note"
+  ],
+  "title": "OperationRegistryEntry",
+  "type": "object"
+}

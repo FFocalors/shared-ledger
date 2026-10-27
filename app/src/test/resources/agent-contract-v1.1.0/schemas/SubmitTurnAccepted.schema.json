@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "accepted_at": {
+      "format": "date-time",
+      "title": "Accepted At",
+      "type": "string"
+    },
+    "api_version": {
+      "const": "1.1.0",
+      "default": "1.1.0",
+      "title": "Api Version",
+      "type": "string"
+    },
+    "state": {
+      "const": "QUEUED",
+      "title": "State",
+      "type": "string"
+    },
+    "state_revision": {
+      "const": 1,
+      "default": 1,
+      "title": "State Revision",
+      "type": "integer"
+    },
+    "turn_id": {
+      "format": "uuid",
+      "title": "Turn Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "turn_id",
+    "state",
+    "accepted_at"
+  ],
+  "title": "SubmitTurnAccepted",
+  "type": "object"
+}

@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.ffocalors.sharedledger.data.agent.ConfirmableProposalCard
 import com.ffocalors.sharedledger.data.agent.ExpensePreview
+import com.ffocalors.sharedledger.data.agent.ProposalPreview
 import com.ffocalors.sharedledger.data.agent.InactiveProposalCard
 import com.ffocalors.sharedledger.data.agent.ProposalCard
 import com.ffocalors.sharedledger.data.agent.ProposalMode
@@ -153,7 +154,7 @@ private fun DraftCardFrame(
     operation: ProposalOperation,
     mode: ProposalMode,
     headerNote: String?,
-    preview: ExpensePreview?,
+    preview: ProposalPreview?,
     showConfirm: Boolean,
     inactive: Boolean,
     names: AgentNameResolver,
@@ -209,15 +210,22 @@ private fun DraftCardFrame(
             }
         }
         if (preview != null) {
+            val view = ProposalPresentation.previewView(preview, operation, names)
             DraftBody(
-                preview = preview,
-                names = names,
+                view = view,
+                amountText = {
+                    // Only the expense preview has a figure that rolls in; other kinds show theirs at rest.
+                    if (preview is ExpensePreview) {
+                        rollingAmountText(preview, drawOn.amount.value)
+                    } else {
+                        view.amount.orEmpty()
+                    }
+                },
                 showConfirm = showConfirm,
                 simulation = simulation,
                 proposalId = proposalId,
                 confirmState = confirmState,
                 onConfirm = onConfirm,
-                amountProgress = { drawOn.amount.value },
             )
         }
     }
@@ -225,14 +233,13 @@ private fun DraftCardFrame(
 
 @Composable
 private fun DraftBody(
-    preview: ExpensePreview,
-    names: AgentNameResolver,
+    view: PreviewView,
+    amountText: () -> String,
     showConfirm: Boolean,
     simulation: Boolean,
     proposalId: String,
     confirmState: ProposalConfirmUiState,
     onConfirm: (String) -> Unit,
-    amountProgress: () -> Float,
 ) {
     Column(
         modifier = Modifier
@@ -242,19 +249,21 @@ private fun DraftBody(
     ) {
         Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.Small)) {
             Text(
-                text = preview.after.title,
+                text = view.title,
                 style = SharedLedgerTextStyles.SectionTitle,
                 color = DeepCharcoal,
                 modifier = Modifier.weight(1f),
             )
-            Text(
-                text = rollingAmountText(preview, amountProgress()),
-                style = SharedLedgerTextStyles.SubActivityAmount.copy(fontFeatureSettings = "tnum"),
-                color = DeepCharcoal,
-                textAlign = TextAlign.End,
-            )
+            if (view.amount != null) {
+                Text(
+                    text = amountText(),
+                    style = SharedLedgerTextStyles.SubActivityAmount.copy(fontFeatureSettings = "tnum"),
+                    color = DeepCharcoal,
+                    textAlign = TextAlign.End,
+                )
+            }
         }
-        ProposalPresentation.rows(preview, names).forEach { row ->
+        view.rows.forEach { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(SharedLedgerSpacing.MediumSmall)) {
                 Text(
                     text = row.label,
@@ -269,6 +278,13 @@ private fun DraftBody(
                     modifier = Modifier.weight(1f),
                 )
             }
+        }
+        view.note?.takeIf(String::isNotBlank)?.let { note ->
+            Text(
+                text = note,
+                style = SharedLedgerTextStyles.BodySecondary,
+                color = SoftCharcoal,
+            )
         }
         if (showConfirm) {
             Spacer(Modifier.height(SharedLedgerSpacing.XSmall))

@@ -16,7 +16,10 @@ class AgentRequestEncodeTest {
     private fun assertVersions(obj: JsonObject) {
         val v = obj.getValue("versions").jsonObject
         assertEquals(setOf("api", "operations", "semantic"), v.keys)
-        v.values.forEach { assertEquals("1.0.0", it.jsonPrimitive.content) }
+        assertEquals("1.1.0", v.getValue("api").jsonPrimitive.content)
+        // api 1.1.0 did not change the operation or semantic versions.
+        assertEquals("1.0.0", v.getValue("operations").jsonPrimitive.content)
+        assertEquals("1.0.0", v.getValue("semantic").jsonPrimitive.content)
     }
 
     @Test
@@ -110,6 +113,6 @@ class AgentRequestEncodeTest {
 
         val create = parse(AgentJson.encodeToString(CreateSessionRequest.serializer(), CreateSessionRequest(rid)))
         assertEquals(setOf("client_request_id", "api_version"), create.keys)
-        assertEquals("1.0.0", create.getValue("api_version").jsonPrimitive.content)
+        assertEquals("1.1.0", create.getValue("api_version").jsonPrimitive.content)
     }
 }
