@@ -30,7 +30,7 @@ from pydantic import (
 from pydantic_core import core_schema
 
 
-API_VERSION = "1.0.0"
+API_VERSION = "1.1.0"
 SEMANTIC_VERSION = "1.0.0"
 OPERATIONS_VERSION = "1.0.0"
 TRAJECTORY_VERSION = "1.0.0"
@@ -185,7 +185,7 @@ class TrajectoryVersion(ContractEnum):
 
 
 class ProtocolVersions(ContractModel):
-    api: Literal["1.0.0"] = API_VERSION
+    api: Literal["1.1.0"] = API_VERSION
     semantic: Literal["1.0.0"] = SEMANTIC_VERSION
     operations: Literal["1.0.0"] = OPERATIONS_VERSION
     trajectory: Literal["1.0.0"] = TRAJECTORY_VERSION
@@ -194,7 +194,7 @@ class ProtocolVersions(ContractModel):
 class ClientProtocolVersions(ContractModel):
     """Versions negotiated by API clients; trajectory schema is offline-only."""
 
-    api: Literal["1.0.0"] = API_VERSION
+    api: Literal["1.1.0"] = API_VERSION
     semantic: Literal["1.0.0"] = SEMANTIC_VERSION
     operations: Literal["1.0.0"] = OPERATIONS_VERSION
 
@@ -2286,7 +2286,7 @@ class ProposalExecutionAccepted(ContractModel):
     outcome is presented as RECOVERING/UNKNOWN, never as a success claim.
     """
 
-    api_version: Literal["1.0.0"] = API_VERSION
+    api_version: Literal["1.1.0"] = API_VERSION
     turn: TurnPublicStatus
     execution: ExecutionReference
     event_cursor: Annotated[int, Field(strict=True, ge=0)]
@@ -3839,14 +3839,14 @@ class ApiErrorCode(ContractEnum):
 
 
 class ApiErrorResponse(ContractModel):
-    api_version: Literal["1.0.0"] = API_VERSION
+    api_version: Literal["1.1.0"] = API_VERSION
     code: ApiErrorCode
     message: ShortText
     retryable: bool = False
 
 
 class CreateSessionRequest(ContractModel):
-    api_version: Literal["1.0.0"] = API_VERSION
+    api_version: Literal["1.1.0"] = API_VERSION
     client_request_id: ClientRequestId
     title: Optional[TitleText] = None
     ui_context: Optional[UIContext] = None
@@ -3868,12 +3868,12 @@ class SessionSummary(ContractModel):
 
 
 class CreateSessionResponse(ContractModel):
-    api_version: Literal["1.0.0"] = API_VERSION
+    api_version: Literal["1.1.0"] = API_VERSION
     session: SessionSummary
 
 
 class ListSessionsResponse(ContractModel):
-    api_version: Literal["1.0.0"] = API_VERSION
+    api_version: Literal["1.1.0"] = API_VERSION
     items: list[SessionSummary] = Field(max_length=100)
     next_cursor: Optional[ShortText] = None
 
@@ -3894,7 +3894,7 @@ class TurnSummary(ContractModel):
 
 
 class SessionDetailResponse(ContractModel):
-    api_version: Literal["1.0.0"] = API_VERSION
+    api_version: Literal["1.1.0"] = API_VERSION
     session: SessionSummary
     turns: list[TurnSummary] = Field(max_length=100)
     proposal_cards: list[ProposalCard] = Field(max_length=8)
@@ -3913,7 +3913,7 @@ class SubmitTurnRequest(ContractModel):
 
 
 class SubmitTurnAccepted(ContractModel):
-    api_version: Literal["1.0.0"] = API_VERSION
+    api_version: Literal["1.1.0"] = API_VERSION
     turn_id: TurnId
     state: Literal["QUEUED"]
     state_revision: Literal[1] = 1
@@ -3985,7 +3985,7 @@ class ConfirmProposalRequest(ContractModel):
 
 
 class TurnMutationAccepted(ContractModel):
-    api_version: Literal["1.0.0"] = API_VERSION
+    api_version: Literal["1.1.0"] = API_VERSION
     turn_id: TurnId
     state: TurnState
     state_revision: Annotated[int, Field(strict=True, ge=1)]
@@ -3993,13 +3993,13 @@ class TurnMutationAccepted(ContractModel):
 
 
 class CancelTurnResponse(ContractModel):
-    api_version: Literal["1.0.0"] = API_VERSION
+    api_version: Literal["1.1.0"] = API_VERSION
     turn: TurnPublicStatus
     result: Literal["cancelled", "cancel_requested", "reconciling"]
 
 
 class ProposalAdjustedAccepted(ContractModel):
-    api_version: Literal["1.0.0"] = API_VERSION
+    api_version: Literal["1.1.0"] = API_VERSION
     proposal_id: ProposalId
     proposal_revision: Annotated[int, Field(strict=True, ge=1)]
     turn_id: TurnId
@@ -4009,7 +4009,7 @@ class ProposalAdjustedAccepted(ContractModel):
 
 
 class ConfirmationUnavailableResponse(ContractModel):
-    api_version: Literal["1.0.0"] = API_VERSION
+    api_version: Literal["1.1.0"] = API_VERSION
     code: Literal["execution_capability_unavailable"]
     message: ShortText
     execution_enabled: Literal[False] = False
@@ -4853,7 +4853,7 @@ class EventRecord(ContractModel):
 
 
 class PollEventsResponse(ContractModel):
-    api_version: Literal["1.0.0"] = API_VERSION
+    api_version: Literal["1.1.0"] = API_VERSION
     turn: TurnPublicStatus
     after_seq: Annotated[int, Field(strict=True, ge=0)]
     events: list[AgentEvent] = Field(max_length=500)

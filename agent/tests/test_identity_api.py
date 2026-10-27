@@ -131,7 +131,7 @@ def _headers(token: str = "token-a") -> dict[str, str]:
 
 def _create_session(client: TestClient, token: str = "token-a") -> uuid.UUID:
     response = client.post("/v1/sessions", headers=_headers(token), json={
-        "api_version": "1.0.0", "client_request_id": str(uuid.uuid4()), "title": "Trip",
+        "api_version": "1.1.0", "client_request_id": str(uuid.uuid4()), "title": "Trip",
     })
     assert response.status_code == 201, response.text
     return uuid.UUID(response.json()["session"]["session_id"])
@@ -170,7 +170,7 @@ def _assert_typed_error(response: Any, status: int) -> dict[str, Any]:
     assert response.status_code == status
     body = response.json()
     assert set(body) == {"api_version", "code", "message", "retryable"}
-    assert body["api_version"] == "1.0.0"
+    assert body["api_version"] == "1.1.0"
     assert "private" not in json.dumps(body).lower()
     return body
 
@@ -203,7 +203,7 @@ def test_routes_are_authenticated_owner_scoped_and_errors_are_frozen(tmp_path: P
 
         # Client-supplied identities and unknown fields cannot affect ownership.
         invalid = client.post("/v1/sessions", headers=_headers(), json={
-            "api_version": "1.0.0", "client_request_id": str(uuid.uuid4()), "owner_user_id": str(OWNER_B),
+            "api_version": "1.1.0", "client_request_id": str(uuid.uuid4()), "owner_user_id": str(OWNER_B),
         })
         _assert_typed_error(invalid, 422)
         _assert_typed_error(client.get("/v1/sessions?owner_user_id=" + str(OWNER_B), headers=_headers()), 400)
@@ -227,10 +227,10 @@ def test_json_parser_rejects_duplicate_nonfinite_oversized_and_wrong_content_typ
     try:
         headers = {**_headers(), "Content-Type": "application/json"}
         duplicate = client.post("/v1/sessions", headers=headers,
-            content=b'{"api_version":"1.0.0","client_request_id":"' + str(uuid.uuid4()).encode() + b'","client_request_id":"' + str(uuid.uuid4()).encode() + b'"}')
+            content=b'{"api_version":"1.1.0","client_request_id":"' + str(uuid.uuid4()).encode() + b'","client_request_id":"' + str(uuid.uuid4()).encode() + b'"}')
         _assert_typed_error(duplicate, 400)
         nonfinite = client.post("/v1/sessions", headers=headers,
-            content=b'{"api_version":"1.0.0","client_request_id":"' + str(uuid.uuid4()).encode() + b'","extra":NaN}')
+            content=b'{"api_version":"1.1.0","client_request_id":"' + str(uuid.uuid4()).encode() + b'","extra":NaN}')
         _assert_typed_error(nonfinite, 400)
         too_large = client.post("/v1/sessions", headers=headers, content=b" " * 1100)
         _assert_typed_error(too_large, 400)
@@ -349,7 +349,7 @@ def test_store_calls_run_off_event_loop_and_health_live_survives_database_lock(t
     lock = sqlite3.connect(components.value.store._path, timeout=1)
     lock.execute("BEGIN IMMEDIATE")
     try:
-        body = {"api_version": "1.0.0", "client_request_id": str(uuid.uuid4()), "title": "locked"}
+        body = {"api_version": "1.1.0", "client_request_id": str(uuid.uuid4()), "title": "locked"}
         with ThreadPoolExecutor(max_workers=1) as pool:
             blocked = pool.submit(client.post, "/v1/sessions", headers=_headers(), json=body)
             time.sleep(0.2)

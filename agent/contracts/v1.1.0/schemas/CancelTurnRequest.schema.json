@@ -1,0 +1,66 @@
+{
+  "$defs": {
+    "ClientProtocolVersions": {
+      "additionalProperties": false,
+      "description": "Versions negotiated by API clients; trajectory schema is offline-only.",
+      "properties": {
+        "api": {
+          "const": "1.1.0",
+          "default": "1.1.0",
+          "title": "Api",
+          "type": "string"
+        },
+        "operations": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Operations",
+          "type": "string"
+        },
+        "semantic": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Semantic",
+          "type": "string"
+        }
+      },
+      "title": "ClientProtocolVersions",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "client_request_id": {
+      "format": "uuid",
+      "title": "Client Request Id",
+      "type": "string"
+    },
+    "expected_state_revision": {
+      "minimum": 1,
+      "title": "Expected State Revision",
+      "type": "integer"
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "maxLength": 500,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reason"
+    },
+    "versions": {
+      "$ref": "#/$defs/ClientProtocolVersions"
+    }
+  },
+  "required": [
+    "client_request_id",
+    "expected_state_revision"
+  ],
+  "title": "CancelTurnRequest",
+  "type": "object"
+}

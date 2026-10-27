@@ -295,7 +295,7 @@ def test_v3_api_activity_read_is_returned_to_model_and_committed_as_answer(
     with TestClient(app) as client:
         headers = {"Authorization": f"Bearer {TOKEN}"}
         created = client.post("/v1/sessions", headers=headers, json={
-            "api_version": "1.0.0",
+            "api_version": "1.1.0",
             "client_request_id": str(uuid.uuid4()),
             "title": "v3 CPU runtime",
         })
@@ -395,7 +395,7 @@ def test_v3_auth_resume_reuses_scoped_expense_query_and_starts_fresh_attempt(
     with TestClient(app) as client:
         headers = {"Authorization": f"Bearer {TOKEN}"}
         created = client.post("/v1/sessions", headers=headers, json={
-            "api_version": "1.0.0",
+            "api_version": "1.1.0",
             "client_request_id": str(uuid.uuid4()),
             "title": "v3 scoped query recovery",
         })
@@ -600,7 +600,7 @@ def test_v3_model_dispatch_budget_survives_repeated_answer_failure_and_resume(
     with TestClient(app) as client:
         headers = {"Authorization": f"Bearer {TOKEN}"}
         created = client.post("/v1/sessions", headers=headers, json={
-            "api_version": "1.0.0",
+            "api_version": "1.1.0",
             "client_request_id": str(uuid.uuid4()),
             "title": "v3 durable model budget",
         })
@@ -715,7 +715,7 @@ def test_v3_provider_failure_is_persisted_without_automatic_regeneration(
     with TestClient(app) as client:
         headers = {"Authorization": f"Bearer {TOKEN}"}
         created = client.post("/v1/sessions", headers=headers, json={
-            "api_version": "1.0.0",
+            "api_version": "1.1.0",
             "client_request_id": str(uuid.uuid4()),
             "title": "v3 CPU length failure",
         })

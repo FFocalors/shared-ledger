@@ -229,7 +229,7 @@ def _client_app(components: AppComponents, database: Path):
 
 def _new_session(client: TestClient) -> str:
     created = client.post("/v1/sessions", headers={"Authorization": f"Bearer {TOKEN}"}, json={
-        "api_version": "1.0.0",
+        "api_version": "1.1.0",
         "client_request_id": str(uuid.uuid4()),
         "title": "v3 runtime semantic CPU",
     })

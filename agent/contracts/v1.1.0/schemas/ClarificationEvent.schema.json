@@ -1,0 +1,92 @@
+{
+  "$defs": {
+    "ClarificationEventPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "missing_slots": {
+          "items": {
+            "enum": [
+              "activity_ref",
+              "ledger_unit_ref",
+              "expense_ref",
+              "original_amount",
+              "original_currency",
+              "payment_allocations",
+              "title",
+              "split",
+              "split_participant_refs",
+              "note",
+              "icon_key",
+              "update_fields"
+            ],
+            "title": "ClarificationSlot",
+            "type": "string"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "Missing Slots",
+          "type": "array"
+        },
+        "prompt": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Prompt",
+          "type": "string"
+        },
+        "resume_state": {
+          "enum": [
+            "QUEUED",
+            "RUNNING",
+            "WAIT_CONFIRM",
+            "EXECUTING",
+            "RECOVERING"
+          ],
+          "title": "ResumeState",
+          "type": "string"
+        }
+      },
+      "required": [
+        "prompt",
+        "missing_slots",
+        "resume_state"
+      ],
+      "title": "ClarificationEventPayload",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "occurred_at": {
+      "format": "date-time",
+      "title": "Occurred At",
+      "type": "string"
+    },
+    "payload": {
+      "$ref": "#/$defs/ClarificationEventPayload"
+    },
+    "seq": {
+      "minimum": 1,
+      "title": "Seq",
+      "type": "integer"
+    },
+    "simulation": {
+      "title": "Simulation",
+      "type": "boolean"
+    },
+    "type": {
+      "const": "clarification",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "seq",
+    "occurred_at",
+    "simulation",
+    "payload"
+  ],
+  "title": "ClarificationEvent",
+  "type": "object"
+}

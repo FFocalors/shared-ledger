@@ -92,7 +92,7 @@ def test_confirm_returns_202_and_settles_the_execution(tmp_path) -> None:
         assert response.status_code == 202, response.text
         body = response.json()
         expected_id = c.derive_execution_id(OWNER_A, proposal.proposal_id, proposal.revision)
-        assert body["api_version"] == "1.0.0"
+        assert body["api_version"] == "1.1.0"
         assert body["turn"]["state"] == "COMPLETED"
         assert body["turn"]["execution_assigned"] is True
         assert body["turn"]["execution_resolution"] == "succeeded"

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "api": {
+      "const": "1.1.0",
+      "default": "1.1.0",
+      "title": "Api",
+      "type": "string"
+    },
+    "operations": {
+      "const": "1.0.0",
+      "default": "1.0.0",
+      "title": "Operations",
+      "type": "string"
+    },
+    "semantic": {
+      "const": "1.0.0",
+      "default": "1.0.0",
+      "title": "Semantic",
+      "type": "string"
+    },
+    "trajectory": {
+      "const": "1.0.0",
+      "default": "1.0.0",
+      "title": "Trajectory",
+      "type": "string"
+    }
+  },
+  "title": "ProtocolVersions",
+  "type": "object"
+}

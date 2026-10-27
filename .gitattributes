@@ -1,0 +1,3 @@
+# The contract snapshot is byte-exact: export_contracts --check hashes the
+# working-tree bytes, so these files must never be EOL-converted on checkout.
+agent/contracts/** text eol=lf

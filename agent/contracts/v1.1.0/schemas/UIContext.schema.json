@@ -1,0 +1,155 @@
+{
+  "$defs": {
+    "UiEntityHint": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "format": "uuid",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "entity_type": {
+          "enum": [
+            "activity",
+            "ledger_unit",
+            "expense",
+            "participant"
+          ],
+          "title": "UiEntityType",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_type",
+        "entity_id"
+      ],
+      "title": "UiEntityHint",
+      "type": "object"
+    },
+    "UiFilters": {
+      "additionalProperties": false,
+      "properties": {
+        "from_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "From Date"
+        },
+        "participant_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 32,
+          "title": "Participant Ids",
+          "type": "array"
+        },
+        "to_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "To Date"
+        }
+      },
+      "title": "UiFilters",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Untrusted navigation hints. These values never establish identity or permission.",
+  "properties": {
+    "activity_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Activity Id"
+    },
+    "captured_at": {
+      "format": "date-time",
+      "title": "Captured At",
+      "type": "string"
+    },
+    "client_version": {
+      "maxLength": 240,
+      "minLength": 1,
+      "title": "Client Version",
+      "type": "string"
+    },
+    "filters": {
+      "$ref": "#/$defs/UiFilters"
+    },
+    "ledger_unit_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ledger Unit Id"
+    },
+    "page_type": {
+      "enum": [
+        "home",
+        "activity_overview",
+        "expense_list",
+        "expense_detail",
+        "debt_list",
+        "prepayment",
+        "settlement",
+        "settings"
+      ],
+      "title": "PageType",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "selected_entity": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/UiEntityHint"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "page_type",
+    "captured_at",
+    "client_version"
+  ],
+  "title": "UIContext",
+  "type": "object"
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Versions negotiated by API clients; trajectory schema is offline-only.",
+  "properties": {
+    "api": {
+      "const": "1.1.0",
+      "default": "1.1.0",
+      "title": "Api",
+      "type": "string"
+    },
+    "operations": {
+      "const": "1.0.0",
+      "default": "1.0.0",
+      "title": "Operations",
+      "type": "string"
+    },
+    "semantic": {
+      "const": "1.0.0",
+      "default": "1.0.0",
+      "title": "Semantic",
+      "type": "string"
+    }
+  },
+  "title": "ClientProtocolVersions",
+  "type": "object"
+}

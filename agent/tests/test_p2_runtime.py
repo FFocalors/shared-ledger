@@ -253,7 +253,7 @@ def _auth() -> dict[str, str]:
 
 def _create_session(client: TestClient) -> uuid.UUID:
     response = client.post("/v1/sessions", headers=_auth(), json={
-        "api_version": "1.0.0", "client_request_id": str(uuid.uuid4()), "title": "P2 runtime test",
+        "api_version": "1.1.0", "client_request_id": str(uuid.uuid4()), "title": "P2 runtime test",
     })
     assert response.status_code == 201, response.text
     return uuid.UUID(response.json()["session"]["session_id"])

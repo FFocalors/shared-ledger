@@ -1,0 +1,254 @@
+{
+  "$defs": {
+    "CanonicalEqualSplit": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "const": "equal",
+          "title": "Mode",
+          "type": "string"
+        },
+        "participant_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "Participant Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "mode",
+        "participant_ids"
+      ],
+      "title": "CanonicalEqualSplit",
+      "type": "object"
+    },
+    "CanonicalExpenseUpdatePatch": {
+      "additionalProperties": false,
+      "description": "Fully bound expense fields. No semantic refs remain after confirmation.",
+      "properties": {
+        "ledger_unit_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ledger Unit Id"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "occurred_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Occurred At"
+        },
+        "original_amount": {
+          "anyOf": [
+            {
+              "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Original Amount"
+        },
+        "original_currency": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z]{3}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Original Currency"
+        },
+        "payment_allocations": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/CanonicalPayment"
+              },
+              "maxItems": 32,
+              "minItems": 1,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Payment Allocations"
+        },
+        "split": {
+          "anyOf": [
+            {
+              "discriminator": {
+                "mapping": {
+                  "equal": "#/$defs/CanonicalEqualSplit",
+                  "manual": "#/$defs/CanonicalManualSplit"
+                },
+                "propertyName": "mode"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/CanonicalEqualSplit"
+                },
+                {
+                  "$ref": "#/$defs/CanonicalManualSplit"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Split"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        }
+      },
+      "title": "CanonicalExpenseUpdatePatch",
+      "type": "object"
+    },
+    "CanonicalManualSplit": {
+      "additionalProperties": false,
+      "properties": {
+        "allocations": {
+          "items": {
+            "$ref": "#/$defs/CanonicalPayment"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "Allocations",
+          "type": "array"
+        },
+        "mode": {
+          "const": "manual",
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "mode",
+        "allocations"
+      ],
+      "title": "CanonicalManualSplit",
+      "type": "object"
+    },
+    "CanonicalPayment": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "pattern": "^(0|[1-9][0-9]{0,11})(\\.[0-9]{1,4})?$",
+          "title": "Amount",
+          "type": "string"
+        },
+        "participant_id": {
+          "format": "uuid",
+          "title": "Participant Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "participant_id",
+        "amount"
+      ],
+      "title": "CanonicalPayment",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "activity_id": {
+      "format": "uuid",
+      "title": "Activity Id",
+      "type": "string"
+    },
+    "expected_expense_version": {
+      "pattern": "^(?:[1-9]|[1-9][0-9]{1}|[1-9][0-9]{2}|[1-9][0-9]{3}|[1-9][0-9]{4}|[1-9][0-9]{5}|[1-9][0-9]{6}|[1-9][0-9]{7}|[1-9][0-9]{8}|[1-9][0-9]{9}|[1-9][0-9]{10}|[1-9][0-9]{11}|[1-9][0-9]{12}|[1-9][0-9]{13}|[1-9][0-9]{14}|[1-9][0-9]{15}|[1-9][0-9]{16}|[1-9][0-9]{17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6]|9223372036854775807)$",
+      "title": "Expected Expense Version",
+      "type": "string",
+      "x-database-type": "signed-bigint",
+      "x-maximum": "9223372036854775807",
+      "x-minimum": "1"
+    },
+    "expected_financial_version": {
+      "pattern": "^(?:0|[1-9]|[1-9][0-9]{1}|[1-9][0-9]{2}|[1-9][0-9]{3}|[1-9][0-9]{4}|[1-9][0-9]{5}|[1-9][0-9]{6}|[1-9][0-9]{7}|[1-9][0-9]{8}|[1-9][0-9]{9}|[1-9][0-9]{10}|[1-9][0-9]{11}|[1-9][0-9]{12}|[1-9][0-9]{13}|[1-9][0-9]{14}|[1-9][0-9]{15}|[1-9][0-9]{16}|[1-9][0-9]{17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6]|9223372036854775807)$",
+      "title": "Expected Financial Version",
+      "type": "string",
+      "x-database-type": "signed-bigint",
+      "x-maximum": "9223372036854775807",
+      "x-minimum": "0"
+    },
+    "expense_id": {
+      "format": "uuid",
+      "title": "Expense Id",
+      "type": "string"
+    },
+    "operation": {
+      "const": "expense.update",
+      "title": "Operation",
+      "type": "string"
+    },
+    "patch": {
+      "$ref": "#/$defs/CanonicalExpenseUpdatePatch"
+    }
+  },
+  "required": [
+    "operation",
+    "activity_id",
+    "expense_id",
+    "expected_expense_version",
+    "expected_financial_version",
+    "patch"
+  ],
+  "title": "FixedExpenseUpdateCommand",
+  "type": "object"
+}

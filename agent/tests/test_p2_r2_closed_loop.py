@@ -612,7 +612,7 @@ def _request(client: TestClient, method: str, path: str, **kwargs: Any):
 
 def _create_session(client: TestClient) -> uuid.UUID:
     response = _request(client, "POST", "/v1/sessions", json={
-        "api_version": "1.0.0", "client_request_id": str(uuid.uuid4()), "title": "R2 CPU fixture",
+        "api_version": "1.1.0", "client_request_id": str(uuid.uuid4()), "title": "R2 CPU fixture",
     })
     assert response.status_code == 201, response.text
     return uuid.UUID(response.json()["session"]["session_id"])

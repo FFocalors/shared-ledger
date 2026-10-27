@@ -176,7 +176,7 @@ def create_app(
 
     app = FastAPI(
         title="Shared Ledger Agent API",
-        version="1.0.0",
+        version="1.1.0",
         description=(
             "Frozen v1 identity and durable request APIs. The provider is disabled by default. "
             "When explicitly configured for mock mode, the bounded Runtime performs deterministic "

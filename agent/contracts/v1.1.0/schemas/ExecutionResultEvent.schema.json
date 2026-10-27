@@ -1,0 +1,124 @@
+{
+  "$defs": {
+    "ExecutionReference": {
+      "additionalProperties": false,
+      "properties": {
+        "execution_id": {
+          "format": "uuid",
+          "title": "Execution Id",
+          "type": "string"
+        },
+        "operations_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Operations Version",
+          "type": "string"
+        },
+        "proposal_id": {
+          "format": "uuid",
+          "title": "Proposal Id",
+          "type": "string"
+        },
+        "proposal_revision": {
+          "minimum": 1,
+          "title": "Proposal Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "execution_id",
+        "proposal_id",
+        "proposal_revision"
+      ],
+      "title": "ExecutionReference",
+      "type": "object"
+    },
+    "ExecutionResultPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "execution": {
+          "$ref": "#/$defs/ExecutionReference"
+        },
+        "resolution": {
+          "enum": [
+            "succeeded",
+            "rejected",
+            "closed",
+            "unknown"
+          ],
+          "title": "ExecutionResolution",
+          "type": "string"
+        },
+        "result_code": {
+          "anyOf": [
+            {
+              "maxLength": 240,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Result Code"
+        },
+        "result_summary": {
+          "anyOf": [
+            {
+              "maxLength": 240,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Result Summary"
+        }
+      },
+      "required": [
+        "execution",
+        "resolution"
+      ],
+      "title": "ExecutionResultPayload",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "occurred_at": {
+      "format": "date-time",
+      "title": "Occurred At",
+      "type": "string"
+    },
+    "payload": {
+      "$ref": "#/$defs/ExecutionResultPayload"
+    },
+    "seq": {
+      "minimum": 1,
+      "title": "Seq",
+      "type": "integer"
+    },
+    "simulation": {
+      "title": "Simulation",
+      "type": "boolean"
+    },
+    "type": {
+      "const": "execution_result",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "seq",
+    "occurred_at",
+    "simulation",
+    "payload"
+  ],
+  "title": "ExecutionResultEvent",
+  "type": "object"
+}

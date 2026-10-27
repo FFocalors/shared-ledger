@@ -1,0 +1,290 @@
+[
+  {
+    "availability": "mock_read_only",
+    "capability_id": "CAP01",
+    "capability_name": "Activity, ledger, expense, and debt reads",
+    "execution_enabled": false,
+    "operations": [
+      "read.activities",
+      "read.expenses",
+      "read.debts"
+    ],
+    "proposal_enabled": false,
+    "required_server_checks": [
+      "current Authorization identity",
+      "session ownership",
+      "activity membership",
+      "RLS-backed read"
+    ],
+    "semantic_enabled": true,
+    "source_note": "CAP01 only; mock DTOs are simulation and never prove live access.",
+    "target_stage": "P2"
+  },
+  {
+    "availability": "unavailable",
+    "capability_id": "CAP02",
+    "capability_name": "Activity create and join",
+    "execution_enabled": false,
+    "operations": [],
+    "proposal_enabled": false,
+    "required_server_checks": [
+      "authenticated creator identity",
+      "join-code validation",
+      "no full-ledger read before join"
+    ],
+    "semantic_enabled": false,
+    "source_note": "No create/join adapter or preview in P1-01.",
+    "target_stage": "P5/T4"
+  },
+  {
+    "availability": "unavailable",
+    "capability_id": "CAP03",
+    "capability_name": "Activity settings and currency switches",
+    "execution_enabled": false,
+    "operations": [],
+    "proposal_enabled": false,
+    "required_server_checks": [
+      "Creator role",
+      "active and non-deleted activity",
+      "base-currency financial-history rule"
+    ],
+    "semantic_enabled": false,
+    "source_note": "No settings write is exposed to the model.",
+    "target_stage": "P5/T4"
+  },
+  {
+    "availability": "unavailable",
+    "capability_id": "CAP04",
+    "capability_name": "Participant roster and claims",
+    "execution_enabled": false,
+    "operations": [],
+    "proposal_enabled": false,
+    "required_server_checks": [
+      "active Participant validation",
+      "claim uniqueness",
+      "roster lock rules"
+    ],
+    "semantic_enabled": false,
+    "source_note": "No roster or claim adapter is exposed.",
+    "target_stage": "P5/T4"
+  },
+  {
+    "availability": "unavailable",
+    "capability_id": "CAP05",
+    "capability_name": "Activity membership and Creator transfer",
+    "execution_enabled": false,
+    "operations": [],
+    "proposal_enabled": false,
+    "required_server_checks": [
+      "Creator authorization",
+      "activity lifecycle",
+      "target is existing member"
+    ],
+    "semantic_enabled": false,
+    "source_note": "No membership-management proposal is exposed.",
+    "target_stage": "P5/T4"
+  },
+  {
+    "availability": "unavailable",
+    "capability_id": "CAP06",
+    "capability_name": "Sub-activities and ledger-unit scope",
+    "execution_enabled": false,
+    "operations": [],
+    "proposal_enabled": false,
+    "required_server_checks": [
+      "large activity",
+      "non-empty explicit scope for new sub-activity",
+      "payer and split scope"
+    ],
+    "semantic_enabled": false,
+    "source_note": "No ledger-unit management proposal is exposed.",
+    "target_stage": "P5/T4"
+  },
+  {
+    "availability": "mock_proposal_only",
+    "capability_id": "CAP07",
+    "capability_name": "Create and modify expenses",
+    "execution_enabled": false,
+    "operations": [
+      "expense.create"
+    ],
+    "proposal_enabled": true,
+    "required_server_checks": [
+      "authenticated active member",
+      "ledger-unit scope",
+      "payment and split conservation",
+      "server FX snapshot"
+    ],
+    "semantic_enabled": true,
+    "source_note": "Only a simulation proposal; no live preview or write adapter.",
+    "target_stage": "P3b+T3"
+  },
+  {
+    "availability": "mock_proposal_only",
+    "capability_id": "CAP08",
+    "capability_name": "Existing expense financial and presentation changes",
+    "execution_enabled": false,
+    "operations": [
+      "expense.update",
+      "expense.presentation.update"
+    ],
+    "proposal_enabled": true,
+    "required_server_checks": [
+      "authenticated Member or Creator policy",
+      "financial lock and refund-source history",
+      "Agent-owned version precondition",
+      "presentation expected_version"
+    ],
+    "semantic_enabled": true,
+    "source_note": "D4 is not globally forbidden; financial lock, permission, confirmation, and version checks remain mandatory; no restore operation exists.",
+    "target_stage": "P3b+T3"
+  },
+  {
+    "availability": "unavailable",
+    "capability_id": "CAP09",
+    "capability_name": "Expense logical delete and restore boundary",
+    "execution_enabled": false,
+    "operations": [],
+    "proposal_enabled": false,
+    "required_server_checks": [
+      "creator or Activity Creator for delete",
+      "financial lock",
+      "refund and Transfer source history"
+    ],
+    "semantic_enabled": false,
+    "source_note": "Restore is deliberately absent: current backend does not expose authenticated restore.",
+    "target_stage": "P5/T4"
+  },
+  {
+    "availability": "unavailable",
+    "capability_id": "CAP10",
+    "capability_name": "Foreign-currency expense and FX facts",
+    "execution_enabled": false,
+    "operations": [],
+    "proposal_enabled": false,
+    "required_server_checks": [
+      "supported currency",
+      "server FX snapshot",
+      "original and base precision"
+    ],
+    "semantic_enabled": false,
+    "source_note": "No live FX query or write adapter in P1-01.",
+    "target_stage": "P5/T4"
+  },
+  {
+    "availability": "unavailable",
+    "capability_id": "CAP11",
+    "capability_name": "Linked refunds",
+    "execution_enabled": false,
+    "operations": [],
+    "proposal_enabled": false,
+    "required_server_checks": [
+      "refund source belongs to activity",
+      "refund limits",
+      "prepayment usage restoration",
+      "source-history financial lock"
+    ],
+    "semantic_enabled": false,
+    "source_note": "Negative expense/refund intent is outside the first semantic slice.",
+    "target_stage": "P5/T4"
+  },
+  {
+    "availability": "unavailable",
+    "capability_id": "CAP12",
+    "capability_name": "Ordinary settlement transfers",
+    "execution_enabled": false,
+    "operations": [],
+    "proposal_enabled": false,
+    "required_server_checks": [
+      "participant actor rules",
+      "current debt and candidate targets",
+      "financial version and request receipt"
+    ],
+    "semantic_enabled": false,
+    "source_note": "Bottom-level RPC names are never model operations.",
+    "target_stage": "P5/T4"
+  },
+  {
+    "availability": "unavailable",
+    "capability_id": "CAP13",
+    "capability_name": "Large-activity prepayment",
+    "execution_enabled": false,
+    "operations": [],
+    "proposal_enabled": false,
+    "required_server_checks": [
+      "Large Activity only",
+      "owner and custodian rules",
+      "same-direction debt before balance",
+      "return within available balance"
+    ],
+    "semantic_enabled": false,
+    "source_note": "Ordinary activities must reject prepayment; no prepayment tool is exposed.",
+    "target_stage": "P5/T4"
+  },
+  {
+    "availability": "unavailable",
+    "capability_id": "CAP14",
+    "capability_name": "Immutable transfer void and replacement",
+    "execution_enabled": false,
+    "operations": [],
+    "proposal_enabled": false,
+    "required_server_checks": [
+      "recorded_by or Activity Creator",
+      "void reason",
+      "dependent return ordering",
+      "no restore"
+    ],
+    "semantic_enabled": false,
+    "source_note": "No transfer mutation or restore tool is exposed.",
+    "target_stage": "P5/T4"
+  },
+  {
+    "availability": "unavailable",
+    "capability_id": "CAP15",
+    "capability_name": "Final settlement plan and recorded payment",
+    "execution_enabled": false,
+    "operations": [],
+    "proposal_enabled": false,
+    "required_server_checks": [
+      "server-generated full current plan",
+      "ordinary vs large prepayment path",
+      "financial version and request receipt"
+    ],
+    "semantic_enabled": false,
+    "source_note": "No settlement-plan or payment operation is exposed.",
+    "target_stage": "P5/T4"
+  },
+  {
+    "availability": "unavailable",
+    "capability_id": "CAP16",
+    "capability_name": "Disputes, notes, and audit facts",
+    "execution_enabled": false,
+    "operations": [],
+    "proposal_enabled": false,
+    "required_server_checks": [
+      "related Participant or recorder dispute policy",
+      "disputer or Creator removal policy",
+      "notes financial lock"
+    ],
+    "semantic_enabled": false,
+    "source_note": "CAP01 debt/expense reads do not imply dispute write access.",
+    "target_stage": "P5/T4"
+  },
+  {
+    "availability": "unavailable",
+    "capability_id": "CAP17",
+    "capability_name": "Activity archive, unarchive, and delete",
+    "execution_enabled": false,
+    "operations": [],
+    "proposal_enabled": false,
+    "required_server_checks": [
+      "Creator authorization",
+      "archive warnings",
+      "unarchive lifecycle",
+      "delete only unarchived activity"
+    ],
+    "semantic_enabled": false,
+    "source_note": "No lifecycle operation is exposed.",
+    "target_stage": "P5/T4"
+  }
+]

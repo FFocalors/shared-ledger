@@ -1,0 +1,46 @@
+{
+  "CANCELLED": [],
+  "COMPLETED": [],
+  "EXECUTING": [
+    "WAIT_INPUT",
+    "RECOVERING",
+    "COMPLETED",
+    "FAILED"
+  ],
+  "FAILED": [],
+  "QUEUED": [
+    "RUNNING",
+    "CANCELLED",
+    "FAILED"
+  ],
+  "RECOVERING": [
+    "WAIT_INPUT",
+    "EXECUTING",
+    "COMPLETED",
+    "FAILED",
+    "CANCELLED"
+  ],
+  "RUNNING": [
+    "QUEUED",
+    "WAIT_INPUT",
+    "WAIT_CONFIRM",
+    "COMPLETED",
+    "CANCELLED",
+    "FAILED"
+  ],
+  "WAIT_CONFIRM": [
+    "WAIT_INPUT",
+    "RUNNING",
+    "EXECUTING",
+    "CANCELLED",
+    "FAILED"
+  ],
+  "WAIT_INPUT": [
+    "QUEUED",
+    "RUNNING",
+    "WAIT_CONFIRM",
+    "RECOVERING",
+    "CANCELLED",
+    "FAILED"
+  ]
+}

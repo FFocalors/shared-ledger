@@ -333,7 +333,7 @@ class P2V3EventItem(_V3EventWireModel):
 
 
 class P2V3EventPollResponse(_V3EventWireModel):
-    api_version: Literal["1.0.0"]
+    api_version: Literal["1.1.0"]
     protocol_versions: P2V3ProtocolVersions
     turn_ref: OpaqueRef
     after_seq: Annotated[StrictInt, Field(ge=0)]
@@ -1146,7 +1146,7 @@ def project_p2_v3_event_page(
     next_after_seq = status_events[-1].seq if status_events else query.after_seq
     try:
         return P2V3EventPollResponse(
-            api_version="1.0.0",
+            api_version="1.1.0",
             protocol_versions=snapshot.protocol_versions,
             turn_ref=snapshot.turn_ref,
             after_seq=query.after_seq,

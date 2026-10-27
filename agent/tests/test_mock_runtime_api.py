@@ -177,7 +177,7 @@ def _headers(token: str = "token-a") -> dict[str, str]:
 
 def _create_session(client: TestClient, token: str = "token-a") -> uuid.UUID:
     response = client.post("/v1/sessions", headers=_headers(token), json={
-        "api_version": "1.0.0",
+        "api_version": "1.1.0",
         "client_request_id": str(uuid.uuid4()),
         "title": "Mock API integration",
     })
@@ -250,7 +250,7 @@ def _assert_typed_error(response: Any, status: int) -> dict[str, Any]:
     assert response.status_code == status, response.text
     body = response.json()
     assert set(body) == {"api_version", "code", "message", "retryable"}
-    assert body["api_version"] == "1.0.0"
+    assert body["api_version"] == "1.1.0"
     return body
 
 

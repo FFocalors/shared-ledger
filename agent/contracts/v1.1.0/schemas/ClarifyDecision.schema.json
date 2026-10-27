@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "const": "clarify",
+      "title": "Kind",
+      "type": "string"
+    },
+    "missing_slots": {
+      "items": {
+        "enum": [
+          "activity_ref",
+          "ledger_unit_ref",
+          "expense_ref",
+          "original_amount",
+          "original_currency",
+          "payment_allocations",
+          "title",
+          "split",
+          "split_participant_refs",
+          "note",
+          "icon_key",
+          "update_fields"
+        ],
+        "title": "ClarificationSlot",
+        "type": "string"
+      },
+      "maxItems": 8,
+      "minItems": 1,
+      "title": "Missing Slots",
+      "type": "array"
+    },
+    "prompt": {
+      "maxLength": 1000,
+      "minLength": 1,
+      "title": "Prompt",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "prompt",
+    "missing_slots"
+  ],
+  "title": "ClarifyDecision",
+  "type": "object"
+}

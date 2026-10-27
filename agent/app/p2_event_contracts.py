@@ -293,7 +293,7 @@ class P2ProjectedEvent(P2EventWireModel):
 
 
 class P2EventPollResponse(P2EventWireModel):
-    api_version: Literal["1.0.0"] = API_VERSION
+    api_version: Literal["1.1.0"] = API_VERSION
     versions: P2ProtocolVersions
     turn: TurnPublicStatus
     after_seq: Annotated[StrictInt, Field(ge=0)]
