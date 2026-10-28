@@ -378,7 +378,7 @@ async def _scope_authorize(
 
 async def _scope_card_visible(
     components: AppComponents, principal: Principal, ids: set[uuid.UUID], action: str,
-    *, scope_free: bool = False,
+    *, scope_free: bool = False, request: Request | None = None,
 ) -> bool:
     # A persisted preview/card must always have a server-resolved activity binding,
     # unless the proposal is an account-level management operation that has no
@@ -386,12 +386,15 @@ async def _scope_card_visible(
     # scope it would disclose.
     if not ids:
         return scope_free
-    if components.scope_authorizer is None:
-        return False
+    # Card visibility must use exactly the same decision as _scope_authorize:
+    # in P2 mode the authoritative check is backend.authorize_api_scope with the
+    # caller's own access token, and scope_authorizer is only the fallback for
+    # deployments that do not expose it. A denied or unavailable check still
+    # fails closed here, so a card is never disclosed on an unverified scope.
     try:
-        await asyncio.to_thread(components.scope_authorizer.authorize, principal, frozenset(ids), action=action)
+        await _scope_authorize(components, principal, ids, action, request=request)
         return True
-    except (ScopeDenied, ScopeUnavailable):
+    except _ApiFailure:
         return False
     except Exception:
         raise _ApiFailure(503, ApiErrorCode.DEPENDENCY_UNAVAILABLE, "Activity access verification is unavailable.", retryable=True) from None
@@ -872,6 +875,7 @@ def install_api_routes(app: FastAPI) -> None:
             if await _scope_card_visible(
                 components, principal, proposal_scopes.get(card.proposal_id, set()),
                 "session_card", scope_free=card.proposal_id in management_ids,
+                request=request,
             ):
                 visible_cards.append(card)
         response = SessionDetailResponse(session=view.summary, turns=list(view.turns), proposal_cards=visible_cards)
@@ -984,6 +988,7 @@ def install_api_routes(app: FastAPI) -> None:
             if await _scope_card_visible(
                 components, principal, scope_ids, "turn_card",
                 scope_free=card.proposal_id in management_ids,
+                request=request,
             ):
                 visible_cards.append(card)
         response = PollEventsResponse(turn=_public_status(view.turn.record.turn), after_seq=query.after_seq,

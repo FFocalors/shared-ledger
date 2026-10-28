@@ -667,6 +667,39 @@ def test_api_scope_denial_hides_business_events_and_cards_but_allows_safe_conver
         assert _message(safe_events)["payload"]["citations"] == []
 
 
+def test_api_card_visibility_still_uses_the_scope_authorizer_in_mock_mode(tmp_path: Path) -> None:
+    # The mock backend has no authoritative Activity check, so card visibility
+    # must keep falling back to scope_authorizer; the P2 backend path must not
+    # change this.
+    database = tmp_path / "scope-mock-cards.sqlite3"
+    scope = _Scope()
+    client, components = _client(database, scope=scope)
+    with client:
+        session_id = _create_session(client)
+        turn_id = _submit(client, session_id, "记录午餐 12.50 CNY")
+        _wait_state(components, OWNER_A, turn_id, {"WAIT_CONFIRM"})
+        proposal = next(
+            item for item in components.store.read_turn_view(OWNER_A, turn_id).proposals
+            if item.status.value == "pending"
+        )
+
+        visible = client.get(f"/v1/sessions/{session_id}", headers=_headers())
+        assert [card["proposal_id"] for card in visible.json()["proposal_cards"]] == [
+            str(proposal.proposal_id)
+        ]
+
+        scope.denied = True
+        denied = client.get(f"/v1/sessions/{session_id}", headers=_headers())
+        assert denied.status_code == 200
+        assert denied.json()["proposal_cards"] == []
+
+        scope.denied = False
+        scope.unavailable = True
+        unavailable = client.get(f"/v1/sessions/{session_id}", headers=_headers())
+        assert unavailable.status_code == 200
+        assert unavailable.json()["proposal_cards"] == []
+
+
 def test_api_owner_boundary_covers_events_cards_and_all_mutations(tmp_path: Path) -> None:
     database = tmp_path / "owner-api.sqlite3"
     client, components = _client(database)
