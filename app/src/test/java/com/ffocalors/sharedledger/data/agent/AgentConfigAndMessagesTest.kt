@@ -55,6 +55,20 @@ class AgentConfigAndMessagesTest {
     }
 
     @Test
+    fun stalePreviewErrorsNeverShowTheServerSentence() {
+        // The Agent answers a confirm against a settled proposal with 409 and an
+        // English sentence; the user must see what to do next instead.
+        assertEquals(
+            "这张预览已经失效，请重新生成预览。",
+            AgentErrorMessages.forFailure(apiError(AgentErrorCode.PROPOSAL_REVISION_CONFLICT)),
+        )
+        assertEquals(
+            "这张预览已过期，请重新生成预览。",
+            AgentErrorMessages.forFailure(apiError(AgentErrorCode.PROPOSAL_EXPIRED)),
+        )
+    }
+
+    @Test
     fun unavailableRepositoryFailsFastAsAgentDisabled() = runBlocking {
         val result = UnavailableAgentRepository().listSessions()
         assertEquals(AgentErrorCode.AGENT_DISABLED, (result as AgentApiResult.ApiError).code)

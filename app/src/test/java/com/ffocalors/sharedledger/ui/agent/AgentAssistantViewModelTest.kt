@@ -390,6 +390,9 @@ class AgentAssistantViewModelTest {
             AgentErrorCode.FORBIDDEN to AgentErrorMessages.FORBIDDEN,
             AgentErrorCode.AGENT_DISABLED to AgentErrorMessages.AGENT_DISABLED,
             AgentErrorCode.DEPENDENCY_UNAVAILABLE to AgentErrorMessages.DEPENDENCY_UNAVAILABLE,
+            // A stale card must never leak the server's English 409 sentence.
+            AgentErrorCode.PROPOSAL_REVISION_CONFLICT to AgentErrorMessages.PROPOSAL_REVISION_CONFLICT,
+            AgentErrorCode.PROPOSAL_EXPIRED to AgentErrorMessages.PROPOSAL_EXPIRED,
         )
         for ((code, copy) in cases) {
             val h = Harness()
@@ -612,6 +615,73 @@ class AgentAssistantViewModelTest {
         val result = h.state.items.filterIsInstance<ExecutionResultItem>().single()
         assertEquals("正在核对结果", result.line)
         assertFalse(h.state.items.any { it is ExecutionResultItem && it.line.contains("已记账") })
+    }
+
+    @Test
+    fun rejectedExecutionShowsTheChineseReasonFromTheResultCode() {
+        val h = harnessAtConfirmCard()
+        h.repo.confirmResults += accepted(
+            status(TurnState.EXECUTING, TurnStep.DISPATCH, revision = 4, executionAssigned = true),
+            cursor = 6,
+        )
+        h.repo.pollResults += AgentApiResult.Success(
+            poll(
+                6, 8,
+                status(
+                    TurnState.FAILED, TurnStep.TERMINAL, revision = 5,
+                    executionAssigned = true, resolution = ExecutionResolution.REJECTED,
+                ),
+                listOf(
+                    ExecutionResultEvent(
+                        7, "2026-10-28T08:00:00Z", false,
+                        ExecutionResultPayload(
+                            execution("exec-rejected"), ExecutionResolution.REJECTED,
+                            resultCode = "invalid_parameter",
+                            resultSummary = "server rejected the write",
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        h.vm.confirm("pr1")
+
+        val result = h.state.items.filterIsInstance<ExecutionResultItem>().single()
+        assertEquals("未记账：服务器不接受这次请求的参数", result.line)
+        assertFalse(result.line.contains("server rejected"))
+    }
+
+    @Test
+    fun rejectedExecutionFallsBackToTheCodeWhenTheReasonIsUnknown() {
+        val h = harnessAtConfirmCard()
+        h.repo.confirmResults += accepted(
+            status(TurnState.EXECUTING, TurnStep.DISPATCH, revision = 4, executionAssigned = true),
+            cursor = 6,
+        )
+        h.repo.pollResults += AgentApiResult.Success(
+            poll(
+                6, 8,
+                status(
+                    TurnState.FAILED, TurnStep.TERMINAL, revision = 5,
+                    executionAssigned = true, resolution = ExecutionResolution.REJECTED,
+                ),
+                listOf(
+                    ExecutionResultEvent(
+                        7, "2026-10-28T08:00:00Z", false,
+                        ExecutionResultPayload(
+                            execution("exec-rejected"), ExecutionResolution.REJECTED,
+                            resultCode = "rpc_rejected",
+                            resultSummary = "server rejected the write",
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        h.vm.confirm("pr1")
+
+        val result = h.state.items.filterIsInstance<ExecutionResultItem>().single()
+        assertEquals("未记账：服务器拒绝了这次写入", result.line)
     }
 
     @Test

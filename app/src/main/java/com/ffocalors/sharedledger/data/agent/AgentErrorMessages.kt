@@ -4,6 +4,8 @@ package com.ffocalors.sharedledger.data.agent
 object AgentErrorMessages {
     const val UNAUTHENTICATED = "登录已过期，请重新登录后再试。"
     const val FORBIDDEN = "你没有这个活动的权限。"
+    const val PROPOSAL_REVISION_CONFLICT = "这张预览已经失效，请重新生成预览。"
+    const val PROPOSAL_EXPIRED = "这张预览已过期，请重新生成预览。"
     const val AGENT_DISABLED = "助手已被关闭，可以继续手动记账。"
     const val RATE_LIMITED = "说得太快了，稍等几秒再发。"
     const val DEPENDENCY_UNAVAILABLE = "助手服务暂时连不上，稍后再试；手动记账不受影响。"
@@ -19,6 +21,8 @@ object AgentErrorMessages {
     fun forApiError(error: AgentApiResult.ApiError): String = when (error.code) {
         AgentErrorCode.UNAUTHENTICATED -> UNAUTHENTICATED
         AgentErrorCode.FORBIDDEN -> FORBIDDEN
+        AgentErrorCode.PROPOSAL_REVISION_CONFLICT -> PROPOSAL_REVISION_CONFLICT
+        AgentErrorCode.PROPOSAL_EXPIRED -> PROPOSAL_EXPIRED
         AgentErrorCode.AGENT_DISABLED -> AGENT_DISABLED
         AgentErrorCode.RATE_LIMITED -> RATE_LIMITED
         AgentErrorCode.DEPENDENCY_UNAVAILABLE -> DEPENDENCY_UNAVAILABLE

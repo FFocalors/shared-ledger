@@ -185,11 +185,30 @@ object AgentStatusCopy {
         MissingSlot.UNKNOWN -> "信息"
     }
 
-    fun executionLine(resolution: ExecutionResolution, summary: String?): String = when (resolution) {
+    fun executionLine(resolution: ExecutionResolution, resultCode: String?): String = when (resolution) {
         ExecutionResolution.SUCCEEDED -> "已记账"
-        ExecutionResolution.REJECTED -> "没有记账：" + (summary?.takeIf { it.isNotBlank() } ?: "请求被拒绝")
+        ExecutionResolution.REJECTED -> "未记账：" + rejectedReason(resultCode)
         ExecutionResolution.CLOSED -> "已关闭"
         ExecutionResolution.UNKNOWN -> "正在核对结果"
+    }
+
+    /**
+     * The server's `result_summary` is diagnostic English. The stable
+     * `result_code` carries the reason the user can act on.
+     */
+    fun rejectedReason(resultCode: String?): String = when (resultCode) {
+        "permission_denied" -> "没有这个活动的记账权限"
+        "invalid_auth_context" -> "登录状态失效，请重新登录后再试"
+        "invalid_parameter" -> "服务器不接受这次请求的参数"
+        "constraint_rejected" -> "不符合账目规则，检查金额和分摊后再试"
+        "conflict" -> "同一笔账目重复提交了"
+        "not_found" -> "账目或活动已经不存在"
+        "activity_read_only" -> "活动已归档，不能记账"
+        "expense_version_conflict", "expense_changed", "expense_deleted" ->
+            "账目刚被改过，请重新生成预览"
+        "expense_financial_locked" -> "这笔账目已经锁定，不能修改"
+        null, "", "rpc_rejected" -> "服务器拒绝了这次写入"
+        else -> "服务器拒绝了这次写入（$resultCode）"
     }
 
     fun cancelNotice(result: CancelResult): String = when (result) {
@@ -575,7 +594,7 @@ class AgentAssistantViewModel(
                 }
                 is ExecutionResultEvent -> out += ExecutionResultItem(
                     key,
-                    AgentStatusCopy.executionLine(event.payload.resolution, event.payload.resultSummary),
+                    AgentStatusCopy.executionLine(event.payload.resolution, event.payload.resultCode),
                     event.payload.resolution,
                     live,
                 )
