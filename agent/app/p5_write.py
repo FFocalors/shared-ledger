@@ -25,6 +25,7 @@ from __future__ import annotations
 import hashlib
 import http.client
 import json
+import logging
 import socket
 import ssl
 import uuid
@@ -42,6 +43,15 @@ from .ports import ComponentHealth, Principal, ScopeDenied
 from .store import (
     ProposalConflict, ProposalExpired, SQLiteAgentStore, StateConflict,
 )
+
+
+_LOGGER = logging.getLogger(__name__)
+
+# The database enum `public.expense_split_method` is ('aa', 'manual'): equal
+# splitting is expressed as `aa` plus the participant list. Sending anything
+# else (such as a literal "equal") fails the argument cast with 22P02.
+RPC_EQUAL_SPLIT_METHOD = "aa"
+RPC_MANUAL_SPLIT_METHOD = "manual"
 
 
 P5_POLICY_VERSION = "p5-live-expense-create-v1"
@@ -495,7 +505,9 @@ class LiveExpenseState:
     splits: tuple[tuple[uuid.UUID, str], ...]
 
     def canonical_split(self) -> c.CanonicalSplit:
-        if self.split_method == "equal":
+        # The server stores an equal split as `aa`; legacy rows may still carry
+        # the Agent's own `equal` spelling.
+        if self.split_method in (RPC_EQUAL_SPLIT_METHOD, "equal"):
             return c.CanonicalEqualSplit(
                 mode="equal",
                 participant_ids=[participant_id for participant_id, _ in self.splits],
@@ -5315,6 +5327,10 @@ class LiveExpenseGateway:
     async def _settle_transport_failure(
         self, principal: Principal, proposal: c.ProposalRecord, exc: LiveWriteError,
     ) -> LiveWriteOutcome:
+        _LOGGER.warning(
+            "p5 write transport failure: operation=%s proposal_id=%s code=%s ambiguous=%s",
+            proposal.operation, proposal.proposal_id, exc.code, exc.ambiguous,
+        )
         if exc.ambiguous:
             await _call_store(
                 self._store.mark_execution_unknown,
@@ -5552,6 +5568,10 @@ class LiveExpenseGateway:
             )
             return LiveWriteOutcome(c.ExecutionResolution.SUCCEEDED, code, summary_text)
 
+        # A refusal must stay diagnosable. Record the HTTP status and the
+        # PostgREST error fields only: never the access token, the request
+        # headers, or the request body.
+        _log_pg_rejection(proposal, status, parsed)
         raw_code = _raw_error_code(parsed)
         if (
             proposal.operation == "transfer.void"
@@ -5850,17 +5870,11 @@ def _repayment_error_code(status: int, raw_code: str | None) -> str:
 
 
 def _raw_error_code(rows: list[Any]) -> str | None:
-    if not rows or not isinstance(rows[0], dict):
-        return None
-    code = rows[0].get("code")
-    return code if isinstance(code, str) else None
+    return _error_fields(rows)["code"]
 
 
 def _raw_error_message(rows: list[Any]) -> str | None:
-    if not rows or not isinstance(rows[0], dict):
-        return None
-    message = rows[0].get("message")
-    return message if isinstance(message, str) else None
+    return _error_fields(rows)["message"]
 
 
 def _require_large_activity(scope: Any) -> None:
@@ -6201,11 +6215,11 @@ def _rpc_payload_update(command: c.FixedExpenseUpdateCommand) -> dict[str, Any]:
         for item in patch.payment_allocations or ()
     ]
     if isinstance(patch.split, c.CanonicalEqualSplit):
-        split_method = "equal"
+        split_method = RPC_EQUAL_SPLIT_METHOD
         manual_splits: list[dict[str, Any]] = []
         aa_participant_ids = [str(item) for item in patch.split.participant_ids]
     elif isinstance(patch.split, c.CanonicalManualSplit):
-        split_method = "manual"
+        split_method = RPC_MANUAL_SPLIT_METHOD
         manual_splits = [
             {"participant_id": str(item.participant_id), "amount": item.amount}
             for item in patch.split.allocations
@@ -6596,11 +6610,11 @@ def _expense_create_payload(
         for item in payment_allocations
     ]
     if isinstance(split, c.CanonicalEqualSplit):
-        split_method = "equal"
+        split_method = RPC_EQUAL_SPLIT_METHOD
         manual_splits: list[dict[str, Any]] = []
         aa_participant_ids = [str(item) for item in split.participant_ids]
     elif isinstance(split, c.CanonicalManualSplit):
-        split_method = "manual"
+        split_method = RPC_MANUAL_SPLIT_METHOD
         manual_splits = [
             {"participant_id": str(item.participant_id), "amount": _negate(item.amount)}
             for item in split.allocations
@@ -6631,11 +6645,11 @@ def _rpc_payload(command: c.FixedExpenseCreateCommand) -> dict[str, Any]:
         for item in command.payment_allocations
     ]
     if isinstance(command.split, c.CanonicalEqualSplit):
-        split_method = "equal"
+        split_method = RPC_EQUAL_SPLIT_METHOD
         manual_splits: list[dict[str, Any]] = []
         aa_participant_ids = [str(item) for item in command.split.participant_ids]
     elif isinstance(command.split, c.CanonicalManualSplit):
-        split_method = "manual"
+        split_method = RPC_MANUAL_SPLIT_METHOD
         manual_splits = [
             {"participant_id": str(item.participant_id), "amount": item.amount}
             for item in command.split.allocations
@@ -6664,10 +6678,9 @@ def _business_error_code(status: int, rows: list[Any]) -> str | None:
     Anything unrecognised below 500 is still a deterministic refusal, just with a
     generic code. 5xx without a recognised business code is treated as unknown.
     """
-    if not rows or not isinstance(rows[0], dict):
-        return None
-    code = rows[0].get("code")
-    if not isinstance(code, str):
+    fields = _error_fields(rows)
+    code = fields["code"]
+    if code is None:
         return None
     if code == "42501":
         return "permission_denied"
@@ -6681,6 +6694,13 @@ def _business_error_code(status: int, rows: list[Any]) -> str | None:
         return "invalid_parameter"
     if code == "23505":
         return "conflict"
+    if code == "22P02":
+        # The server could not cast a value the Agent sent (for example an
+        # argument that is not a member of its enum). The logged message names
+        # the exact parameter.
+        return "invalid_parameter"
+    if code == "28000":
+        return "invalid_auth_context"
     return None
 
 
@@ -6696,6 +6716,51 @@ def _decode_rows(body: bytes) -> list[Any]:
     if isinstance(parsed, dict):
         return [parsed]
     return []
+
+
+def _error_fields(rows: list[Any]) -> dict[str, str | None]:
+    """Read a PostgREST error body.
+
+    PostgREST answers a failed RPC with an *object*
+    (`{"code":..,"message":..,"details":..,"hint":..}`), never with a row array.
+    A single-element array wrapping that object is tolerated as well.
+    """
+    empty: dict[str, str | None] = {"code": None, "message": None, "details": None, "hint": None}
+    if not rows or not isinstance(rows[0], dict):
+        return empty
+    first = rows[0]
+    for key in empty:
+        value = first.get(key)
+        if isinstance(value, str):
+            empty[key] = value
+    return empty
+
+
+def _log_value(value: str | None, limit: int = 200) -> str:
+    if not value:
+        return "-"
+    # Collapse whitespace so a server message cannot forge extra log lines.
+    return " ".join(value.split())[:limit]
+
+
+def _log_pg_rejection(proposal: c.ProposalRecord, status: int, rows: list[Any]) -> None:
+    """Diagnostic line for a refused write RPC.
+
+    Contains only the operation, public identifiers, HTTP status, and the
+    PostgREST error fields. The access token, request headers and request body
+    are never logged.
+    """
+    fields = _error_fields(rows)
+    execution = proposal.execution.execution_id if proposal.execution is not None else None
+    _LOGGER.warning(
+        "p5 write rejected: operation=%s proposal_id=%s execution_id=%s http_status=%s "
+        "pg_code=%s message=%s details=%s hint=%s",
+        proposal.operation, proposal.proposal_id, execution, status,
+        fields["code"] or "-",
+        _log_value(fields["message"]),
+        _log_value(fields["details"]),
+        _log_value(fields["hint"]),
+    )
 
 
 def _new_nonce() -> str:

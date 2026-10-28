@@ -198,7 +198,7 @@ class _Transport:
             "original_amount": "5.00",
             "original_currency": "USD",
             "base_amount": "5.0",
-            "split_method": "equal",
+            "split_method": "aa",
             "occurred_at": "2026-10-25T12:00:00+00:00",
             "note": None,
             "original_expense_id": None,

@@ -55,12 +55,14 @@ P2 运行时的 v3 模型输出契约是只读识别（`P2ProposalRecognition` �
 | `title` | `title` | 直接 |
 | `original_amount` | `original_amount` | 十进制字符串 → numeric |
 | `original_currency` | `original_currency` | 大写三字母 |
-| `split` | `split_method` + `aa_participant_ids` / `manual_splits` | equal → `equal` + ID 数组；manual → `manual` + `[{participant_id, amount}]` |
+| `split` | `split_method` + `aa_participant_ids` / `manual_splits` | equal → `aa` + ID 数组；manual → `manual` + `[{participant_id, amount}]` |
 | `payment_allocations` | `payments` | `[{participant_id, amount}]` |
 | `occurred_at` | `occurred_at` | ISO-8601 带时区；预览时固定 |
 | `note` | `note` | 直接 |
 | — | `original_expense_id` | 固定 `null` |
 | `expected_financial_version` | 无对应参数 | 只在 Gateway 执行前重读校验；RPC 本身不校验 |
+
+数据库枚举 `public.expense_split_method` 只有 `aa` 与 `manual` 两个值，均摊在服务端就是 `aa`（服务端按 `aa_participant_ids` 均分）。`equal` 只是 Agent 契约里的叫法，落库前必须转换；P5.0 首次真机验收正是因为发送了字面量 `equal`，被参数转换拒绝为 `22P02 invalid input value for enum expense_split_method`。
 
 **已知竞态**：`create_expense_auto_rate` 没有 `expected_financial_version` 参数，重读与 RPC 之间仍有窗口。P5.0 不宣称消除该窗口；RPC 服务端仍会重新校验权限、成员、归档与账本归属。
 

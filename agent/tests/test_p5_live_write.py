@@ -82,6 +82,7 @@ class FakeTransport:
         self.calls: list[dict] = []
         self.mode = "success"
         self.expense_id = uuid.uuid4()
+        self.reject_with: tuple[int, bytes] | None = None
 
     def post_json(self, url, headers, payload, *, timeout, max_response_bytes):  # noqa: ANN001
         self.calls.append({"url": url, "headers": dict(headers), "payload": dict(payload)})
@@ -91,6 +92,8 @@ class FakeTransport:
             raise LiveWriteError("upstream_unreachable", retryable=True)
         if self.mode == "reject":
             return 403, json.dumps({"code": "42501", "message": "not a member"}).encode()
+        if self.mode == "custom" and self.reject_with is not None:
+            return self.reject_with
         return 200, json.dumps([{
             "expense_id": str(self.expense_id), "base_amount": "12.5", "version": 1,
         }]).encode()
@@ -214,7 +217,7 @@ def test_confirmation_writes_once_with_the_real_rpc_shape(tmp_path) -> None:
             "title": "Lunch",
             "original_amount": "12.50",
             "original_currency": "CNY",
-            "split_method": "equal",
+            "split_method": "aa",
             "payments": [{"participant_id": str(P1), "amount": "12.50"}],
             "manual_splits": [],
             "aa_participant_ids": [str(P1), str(P2)],
@@ -329,3 +332,147 @@ def test_foreign_currency_is_outside_p5_and_never_reaches_the_rpc(tmp_path) -> N
     with pytest.raises(LiveWriteError) as caught:
         _setup(tmp_path, "p5-foreign", currency="USD")
     assert caught.value.code == "foreign_currency_not_in_p5"
+
+
+# --- PostgREST error objects -------------------------------------------------------------
+#
+# A failed RPC answers with an object, not a row array. Losing its `code` turned
+# a diagnosable refusal into the opaque `rpc_rejected` seen in P5.0 acceptance.
+
+@pytest.mark.parametrize(
+    ("status", "error", "expected"),
+    [
+        (403, {"code": "42501", "message": "caller is not an activity member"}, "permission_denied"),
+        (400, {"code": "22023", "message": "original amount must be non-zero"}, "invalid_parameter"),
+        (400, {"code": "22P02", "message": 'invalid input value for enum expense_split_method: "equal"'}, "invalid_parameter"),
+        (400, {"code": "23514", "message": "payment base total must equal expense base amount"}, "constraint_rejected"),
+        (409, {"code": "23505", "message": "duplicate participant"}, "conflict"),
+        (404, {"code": "P0002", "message": "expense was not found"}, "not_found"),
+        (409, {"code": "55000", "message": "activity is archived"}, "activity_read_only"),
+        (400, {"code": "28000", "message": "authentication is required"}, "invalid_auth_context"),
+    ],
+)
+def test_postgrest_error_object_is_classified(tmp_path, status, error, expected) -> None:
+    store, gateway, _, transport, proposal, waiting, principal, _ = _setup(
+        tmp_path, f"p5-reject-{expected}-{status}",
+    )
+    try:
+        transport.mode = "custom"
+        transport.reject_with = (status, json.dumps(error).encode())
+        outcome = _execute(gateway, principal, proposal, waiting)
+        assert outcome.resolution is c.ExecutionResolution.REJECTED
+        assert outcome.code == expected
+    finally:
+        store.close()
+
+
+def test_unknown_pg_code_stays_a_generic_rejection(tmp_path) -> None:
+    store, gateway, _, transport, proposal, waiting, principal, _ = _setup(tmp_path, "p5-reject-unknown")
+    try:
+        transport.mode = "custom"
+        transport.reject_with = (404, json.dumps({
+            "code": "PGRST202", "message": "Could not find the function in the schema cache",
+        }).encode())
+        outcome = _execute(gateway, principal, proposal, waiting)
+        assert outcome.resolution is c.ExecutionResolution.REJECTED
+        assert outcome.code == "rpc_rejected"
+    finally:
+        store.close()
+
+
+def test_rejection_log_carries_the_pg_fields_and_no_secrets(tmp_path, caplog) -> None:
+    import logging
+
+    store, gateway, _, transport, proposal, waiting, principal, _ = _setup(tmp_path, "p5-reject-log")
+    try:
+        transport.mode = "custom"
+        transport.reject_with = (400, json.dumps({
+            "code": "22P02",
+            "message": 'invalid input value for enum expense_split_method: "equal"',
+            "details": "line 1",
+            "hint": "use aa or manual",
+        }).encode())
+        with caplog.at_level(logging.WARNING):
+            outcome = _execute(gateway, principal, proposal, waiting)
+        assert outcome.code == "invalid_parameter"
+
+        lines = [
+            record.getMessage() for record in caplog.records
+            if record.name.endswith("p5_write")
+        ]
+        assert len(lines) == 1, lines
+        line = lines[0]
+        assert "operation=expense.create" in line
+        assert f"proposal_id={proposal.proposal_id}" in line
+        assert "http_status=400" in line
+        assert "pg_code=22P02" in line
+        assert "expense_split_method" in line
+        assert "details=line 1" in line
+        assert "hint=use aa or manual" in line
+        # No token, no headers, no request body values.
+        assert "token-a" not in line
+        assert "Authorization" not in line
+        assert "12.50" not in line
+    finally:
+        store.close()
+
+
+def test_error_fields_read_objects_and_arrays_only() -> None:
+    from agent.app import p5_write
+
+    payload = {
+        "code": "42501", "message": "denied", "details": "d1", "hint": "h1",
+    }
+    assert p5_write._decode_rows(json.dumps(payload).encode()) == [payload]
+    assert p5_write._error_fields([payload]) == {
+        "code": "42501", "message": "denied", "details": "d1", "hint": "h1",
+    }
+    # A row array never yields an error code.
+    assert p5_write._error_fields([{"expense_id": "x"}])["code"] is None
+    assert p5_write._error_fields([])["message"] is None
+    assert p5_write._error_fields([{"code": 42501}])["code"] is None
+
+
+def test_equal_split_is_sent_as_the_database_aa_method() -> None:
+    from agent.app import p5_write
+
+    update = c.FixedExpenseUpdateCommand(
+        operation="expense.update",
+        activity_id=ACTIVITY,
+        expense_id=uuid.uuid4(),
+        expected_expense_version="1",
+        expected_financial_version="1",
+        patch=c.CanonicalExpenseUpdatePatch(
+            title="Lunch",
+            original_amount="12.50",
+            original_currency="CNY",
+            ledger_unit_id=UNIT,
+            payment_allocations=[
+                c.CanonicalPayment(participant_id=P1, amount="12.50"),
+            ],
+            split=c.CanonicalEqualSplit(mode="equal", participant_ids=[P1, P2]),
+            note=None,
+            occurred_at=datetime.now(timezone.utc),
+        ),
+    )
+    payload = p5_write._rpc_payload_update(update)
+    assert payload["split_method"] == "aa"
+    assert payload["aa_participant_ids"] == [str(P1), str(P2)]
+    assert payload["manual_splits"] == []
+
+
+def test_server_aa_split_reads_back_as_an_equal_split() -> None:
+    from agent.app import p5_write
+
+    state = p5_write.LiveExpenseState(
+        expense_id=uuid.uuid4(), ledger_unit_id=UNIT, title="Lunch",
+        original_amount="12.50", original_currency="CNY", base_amount="12.5",
+        split_method="aa", occurred_at=datetime.now(timezone.utc), note=None,
+        original_expense_id=None, version=1, is_deleted=False,
+        financial_locked=False, icon_key=None, created_by=None,
+        payments=((P1, "12.50"),), splits=((P1, "6.25"), (P2, "6.25")),
+    )
+    split = state.canonical_split()
+    assert isinstance(split, c.CanonicalEqualSplit)
+    assert split.participant_ids == [P1, P2]
+

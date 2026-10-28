@@ -36,7 +36,7 @@ class FakeRefundTransport:
             "original_amount": "50.00",
             "original_currency": "CNY",
             "base_amount": "50.0",
-            "split_method": "equal",
+            "split_method": "aa",
             "occurred_at": "2026-10-25T12:00:00+00:00",
             "note": None,
             "original_expense_id": None,
