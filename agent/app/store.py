@@ -117,6 +117,11 @@ from .contracts import (
     TurnPublicStatus,
     UIContext,
     UserId,
+    _json_has_historical_api_version,
+    _restore_historical_api_versions,
+    _rewrite_historical_api_version_for_validation,
+    _validate_json_allowing_historical_api_version,
+    _value_has_historical_api_version,
     canonical_payload_hash,
     validate_auth_resume,
     validate_cancel_transition,
@@ -173,6 +178,59 @@ class InvariantViolation(StoreError):
 
 class _StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
+
+    @classmethod
+    def model_validate(
+        cls,
+        obj: Any,
+        *,
+        strict: Optional[bool] = None,
+        from_attributes: Optional[bool] = None,
+        context: Optional[dict[str, Any]] = None,
+        by_alias: Optional[bool] = None,
+        by_name: Optional[bool] = None,
+    ) -> Any:
+        if isinstance(obj, dict) and _value_has_historical_api_version(obj):
+            rewritten = _rewrite_historical_api_version_for_validation(obj)
+            instance = super().model_validate(
+                rewritten,
+                strict=strict,
+                from_attributes=from_attributes,
+                context=context,
+                by_alias=by_alias,
+                by_name=by_name,
+            )
+            return _restore_historical_api_versions(instance, obj)
+        return super().model_validate(
+            obj,
+            strict=strict,
+            from_attributes=from_attributes,
+            context=context,
+            by_alias=by_alias,
+            by_name=by_name,
+        )
+
+    @classmethod
+    def model_validate_json(
+        cls,
+        json_data: Union[str, bytes, bytearray],
+        *,
+        strict: Optional[bool] = None,
+        context: Optional[dict[str, Any]] = None,
+        by_alias: Optional[bool] = None,
+        by_name: Optional[bool] = None,
+    ) -> Any:
+        return _validate_json_allowing_historical_api_version(
+            json_data,
+            validate=lambda data, **kwargs: super(_StrictModel, cls).model_validate_json(
+                data, **kwargs
+            ),
+            strict=strict,
+            context=context,
+            by_alias=by_alias,
+            by_name=by_name,
+        )
+
 
 
 AcceptedRequest = Union[

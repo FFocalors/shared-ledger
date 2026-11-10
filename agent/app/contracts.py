@@ -24,6 +24,7 @@ from pydantic import (
     Field,
     StringConstraints,
     TypeAdapter,
+    ValidationError,
     field_validator,
     model_validator,
 )
@@ -118,6 +119,117 @@ WireDateTime = Annotated[datetime, BeforeValidator(_wire_datetime), Field(strict
 WireDate = Annotated[date, BeforeValidator(_wire_date), Field(strict=True)]
 
 
+
+
+HISTORICAL_API_VERSION = "1.0.0"
+
+
+def _value_has_historical_api_version(value: object) -> bool:
+    if isinstance(value, dict):
+        if value.get("api_version") == HISTORICAL_API_VERSION:
+            return True
+        versions = value.get("versions")
+        if isinstance(versions, dict) and versions.get("api") == HISTORICAL_API_VERSION:
+            return True
+        if (
+            value.get("api") == HISTORICAL_API_VERSION
+            and "semantic" in value
+            and "operations" in value
+        ):
+            return True
+        return any(_value_has_historical_api_version(item) for item in value.values())
+    if isinstance(value, list):
+        return any(_value_has_historical_api_version(item) for item in value)
+    return False
+
+
+def _json_has_historical_api_version(json_data: Union[str, bytes, bytearray]) -> bool:
+    try:
+        document = json.loads(json_data)
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return False
+    return _value_has_historical_api_version(document)
+
+
+def _rewrite_historical_api_version_for_validation(value: object) -> object:
+    """Copy a document, lifting historical API version fields to the current version."""
+    if isinstance(value, dict):
+        rewritten = {
+            key: _rewrite_historical_api_version_for_validation(item)
+            for key, item in value.items()
+        }
+        if rewritten.get("api_version") == HISTORICAL_API_VERSION:
+            rewritten["api_version"] = API_VERSION
+        versions = rewritten.get("versions")
+        if isinstance(versions, dict) and versions.get("api") == HISTORICAL_API_VERSION:
+            versions = dict(versions)
+            versions["api"] = API_VERSION
+            rewritten["versions"] = versions
+        if (
+            rewritten.get("api") == HISTORICAL_API_VERSION
+            and "semantic" in rewritten
+            and "operations" in rewritten
+        ):
+            rewritten["api"] = API_VERSION
+        return rewritten
+    if isinstance(value, list):
+        return [_rewrite_historical_api_version_for_validation(item) for item in value]
+    return value
+
+
+def _restore_historical_api_versions(obj: Any, original: Any) -> Any:
+    """Write stored 1.0.0 version fields back onto a just-validated model tree."""
+    if isinstance(obj, BaseModel) and isinstance(original, dict):
+        for name, field in type(obj).model_fields.items():
+            alias = field.alias
+            serialization_alias = field.serialization_alias
+            if alias and alias in original:
+                key = alias
+            elif serialization_alias and serialization_alias in original:
+                key = serialization_alias
+            elif name in original:
+                key = name
+            else:
+                continue
+            src = original[key]
+            current = getattr(obj, name)
+            if src == HISTORICAL_API_VERSION and name in {"api_version", "api"}:
+                if name == "api" and not (
+                    hasattr(obj, "semantic") and hasattr(obj, "operations")
+                ):
+                    continue
+                object.__setattr__(obj, name, HISTORICAL_API_VERSION)
+            else:
+                _restore_historical_api_versions(current, src)
+        return obj
+    if isinstance(obj, (list, tuple)) and isinstance(original, list):
+        for item, src in zip(obj, original):
+            _restore_historical_api_versions(item, src)
+        return obj
+    return obj
+
+
+def _validate_json_allowing_historical_api_version(
+    json_data: Union[str, bytes, bytearray],
+    *,
+    validate: Any,
+    **kwargs: Any,
+) -> Any:
+    try:
+        return validate(json_data, **kwargs)
+    except ValidationError:
+        if not _json_has_historical_api_version(json_data):
+            raise
+        document = json.loads(json_data)
+        rewritten = json.dumps(
+            _rewrite_historical_api_version_for_validation(document),
+            ensure_ascii=False,
+            allow_nan=False,
+        )
+        obj = validate(rewritten, **kwargs)
+        return _restore_historical_api_versions(obj, document)
+
+
 class ContractModel(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -151,7 +263,7 @@ class ContractModel(BaseModel):
                 raise TypeError(f"not a JSON wire value: {type(value).__name__}")
 
             raw = json.dumps(obj, ensure_ascii=False, allow_nan=False, default=json_default)
-            return super().model_validate_json(
+            return cls.model_validate_json(
                 raw,
                 strict=strict,
                 context=context,
@@ -166,6 +278,34 @@ class ContractModel(BaseModel):
             by_alias=by_alias,
             by_name=by_name,
         )
+
+
+    @classmethod
+    def model_validate_json(
+        cls,
+        json_data: Union[str, bytes, bytearray],
+        *,
+        strict: Optional[bool] = None,
+        context: Optional[dict[str, Any]] = None,
+        by_alias: Optional[bool] = None,
+        by_name: Optional[bool] = None,
+    ) -> Any:
+        """Validate wire JSON, accepting historical api_version=1.0.0 for storage rows.
+
+        This does not change the exported OpenAPI contract. HTTP adapters still
+        validate against the current API_VERSION only.
+        """
+        return _validate_json_allowing_historical_api_version(
+            json_data,
+            validate=lambda data, **kwargs: super(ContractModel, cls).model_validate_json(
+                data, **kwargs
+            ),
+            strict=strict,
+            context=context,
+            by_alias=by_alias,
+            by_name=by_name,
+        )
+
 
 
 class ApiVersion(ContractEnum):
@@ -4923,15 +5063,32 @@ def _normalize_json(value: object) -> object:
     return value
 
 
+def payload_api_version(payload: ContractModel) -> str:
+    """Return the API version recorded on a request payload, or the current version."""
+    data = payload.model_dump(mode="json", by_alias=True, exclude_none=False)
+    if isinstance(data.get("api_version"), str):
+        return str(data["api_version"])
+    versions = data.get("versions")
+    if isinstance(versions, dict) and isinstance(versions.get("api"), str):
+        return str(versions["api"])
+    return API_VERSION
+
+
 def canonical_payload_hash(
     key_scope: ApiActionKind,
     payload: ContractModel,
     *,
     resource_id: Optional[uuid.UUID] = None,
+    api_version: Optional[str] = None,
 ) -> Sha256Hex:
-    """Hash the normalized request body and context; Authorization is never an input."""
+    """Hash the normalized request body and context; Authorization is never an input.
+
+    The envelope api_version defaults to the version recorded on the payload so
+    historical 1.0.0 rows verify against the hash stored with them. Pass
+    api_version explicitly to override. HTTP entry still accepts only API_VERSION.
+    """
     document = {
-        "api_version": API_VERSION,
+        "api_version": api_version or payload_api_version(payload),
         "key_scope": key_scope.value,
         "resource_id": str(resource_id) if resource_id is not None else None,
         "payload": payload.model_dump(mode="json", by_alias=True, exclude_none=False),

@@ -68,7 +68,7 @@
   "self_hash": null,
   "semantic_version": "1.0.0",
   "source_fingerprints": {
-    "app/contracts.py": "a14b621d45f69063f62910d1a7e3511d85f7a8b351c87dab04d07ba0c220e167",
+    "app/contracts.py": "8979dea226cd47a7ceed364ff1a4cf6e83263314afbb9b37540eff6a233fba3f",
     "app/export_contracts.py": "0d9bed0d011b44994f139673fe08fee386d50686b76d0633efa531ed2c14de05",
     "app/mock_fixtures.py": "f2275b8df771ce65fa3a753d5b7aa0bc58e4d5353473fd2dfb18841a99527dcc",
     "requirements-contracts.txt": "ea5236e6063198756ba490ff6fbc032edfbe685f22e5e801103c569dd1f17fb4",
