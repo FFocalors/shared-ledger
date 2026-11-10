@@ -67,6 +67,8 @@ from .store import (
 
 _ACTIVE_TURN: ContextVar[uuid.UUID | None] = ContextVar("p2_active_turn", default=None)
 P5_DEV_POLICY_VERSION = "p5-dev-intent-v1"
+P5_MODEL_CREATE_POLICY_VERSION = "p5-model-expense-create-v1"
+P5_MODEL_UPDATE_POLICY_VERSION = "p5-model-expense-update-v1"
 P5_DEV_SUMMARY_PREFIX = "【P5 开发验证】"
 P5_DEV_UPDATE_POLICY_VERSION = "p5-dev-expense-update-v1"
 P5_DEV_UPDATE_SUMMARY_PREFIX = "【P5 开发验证·改账】"
@@ -107,6 +109,13 @@ def _dev_update_refusal_text(code: str) -> str:
         "expense_changed": "消费在预览期间发生变化，请重新发起。",
         "expense_not_found": "找不到要修改的消费。",
     }.get(code, f"无法生成改账预览（{code}）。")
+
+
+def _model_create_refusal_text(code: str) -> str:
+    return {
+        "foreign_currency_not_in_p5": "暂不支持外币记账，这笔没有记上。",
+        "unsupported_operation": "暂不支持这种记账，这笔没有记上。",
+    }.get(code, "暂时无法生成记账预览，这笔没有记上，请重试。")
 
 
 def _dev_presentation_refusal_text(code: str) -> str:
@@ -987,7 +996,19 @@ class P2Runtime(MockRuntime):
                                            gate.disable_revision)
                 return
             if isinstance(decision, c.ProposeDecision):
-                # Proposal permission only identifies intent; no proposal or preview is persisted.
+                if self._live_gateway is not None and isinstance(
+                    decision.fields, (c.ExpenseCreateIntent, c.ExpenseUpdateIntent),
+                ):
+                    # Phase 1 product path: natural-language expense create and
+                    # update become a real confirmable preview. Nothing is
+                    # written until the trusted confirm endpoint runs.
+                    aggregate = await self._save_decision(charged, decision, context, claimed.claim_token)
+                    await self._p5_model_expense_proposal(
+                        aggregate, decision, context, list(aggregate.record.bound_references),
+                        claimed, gate.disable_revision, state,
+                    )
+                    return
+                # Other operations only identify intent; no proposal or preview is persisted.
                 answer = P2Harness.proposal_acknowledgement()
                 aggregate = await self._save_decision(charged, answer, context, claimed.claim_token)
                 await self._complete_answer(aggregate, answer, context, claimed.claim_token,
@@ -3465,6 +3486,98 @@ class P2Runtime(MockRuntime):
                 state=snapshot.state, step=snapshot.step, state_revision=snapshot.state_revision,
                 wait_reason=snapshot.wait_reason, resume_state=snapshot.resume_state,
             ),
+        )
+
+    async def _p5_model_expense_proposal(
+        self,
+        aggregate: TurnAggregate,
+        decision: c.ProposeDecision,
+        context: c.ModelContext,
+        references: Sequence[c.BoundReference],
+        claimed: ClaimedTurn,
+        gate_revision: int,
+        state: _TurnP2State,
+    ) -> None:
+        """Turn a model expense.create/update proposal into a live preview.
+
+        The model only supplies opaque references and user-stated values; the
+        gateway re-reads the server and computes every amount. Any failure
+        completes the Turn with an explicit not-recorded message and leaves no
+        pending proposal, so it can never look like a successful write.
+        """
+        from .p5_write import LiveWriteError
+
+        intent = decision.fields
+        is_update = isinstance(intent, c.ExpenseUpdateIntent)
+        owner_id = aggregate.record.turn.owner_user_id
+        turn_id = aggregate.record.turn.turn_id
+        grant = self._active_grant(owner_id, turn_id)
+        build = (
+            self._live_gateway.build_update_preview if is_update
+            else self._live_gateway.build_preview
+        )
+        try:
+            proposal = await build(
+                owner_user_id=owner_id,
+                session_id=aggregate.record.turn.session_id,
+                turn_id=turn_id,
+                intent=intent,
+                bound_references=references,
+                access_token=grant.token,
+                expires_at=grant.expires_at,
+                agent_disable_revision=gate_revision,
+                policy_version=(
+                    P5_MODEL_UPDATE_POLICY_VERSION if is_update
+                    else P5_MODEL_CREATE_POLICY_VERSION
+                ),
+                summary_prefix="",
+                now=datetime.now(timezone.utc),
+            )
+        except LiveWriteError as exc:
+            _LOGGER.warning(
+                "p5 model proposal declined: turn=%s code=%s", turn_id, exc.code,
+            )
+            text = (
+                _dev_update_refusal_text(exc.code) + "原记录没有改动。" if is_update
+                else _model_create_refusal_text(exc.code)
+            )
+            await self._p5_dev_refusal(
+                aggregate, context, text, claimed, gate_revision, state, references,
+            )
+            return
+        except (BackendReadError, ScopeDenied, ValueError) as exc:
+            _LOGGER.warning(
+                "p5 model proposal failed: turn=%s type=%s", turn_id, type(exc).__name__,
+            )
+            text = (
+                "暂时无法生成改账预览，原记录没有改动，请重试。" if is_update
+                else "暂时无法生成记账预览，这笔没有记上，请重试。"
+            )
+            await self._p5_dev_refusal(
+                aggregate, context, text, claimed, gate_revision, state, references,
+            )
+            return
+        before = aggregate.record.turn
+        after = self._next_state(
+            before, c.TurnState.WAIT_CONFIRM, c.TurnStep.AWAITING_USER,
+            wait_reason=c.WaitReason.CONFIRM_REQUIRED, resume_state=None,
+        )
+        events = [
+            EventDraft(
+                type=c.EventType.PROPOSAL, occurred_at=datetime.now(timezone.utc),
+                simulation=False,
+                payload=c.ProposalEventPayload(
+                    proposal_id=proposal.proposal_id, revision=proposal.revision,
+                    operation=proposal.operation,
+                ),
+            ),
+            self._status_event(after),
+        ]
+        checkpoint = aggregate.checkpoint.model_copy(update={"resume_step": None})
+        await self._transition(
+            aggregate, after, events, claimed.claim_token,
+            checkpoint=checkpoint, bound_references=list(references),
+            new_proposal=proposal,
         )
 
     async def _p5_dev_live_proposal(
